@@ -1,0 +1,50 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Debug Server",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/rpc/server.py",
+            "console": "integratedTerminal",
+            "env": {
+              "PYTHONPATH": "${workspaceRoot}",
+              "DOCKER_HOST": "unix:///var/run/docker.sock"
+            },
+            "args": []
+          },
+          {
+            "name": "Python: Debug Launch Prototype",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/debug_prototype.py",
+            "console": "integratedTerminal",
+            "env": {
+              "PYTHONPATH": "${workspaceRoot}",
+              "DOCKER_HOST": "unix:///var/run/docker.sock"
+            },
+            "args": []
+        },
+    {
+        "name": "Python: Run wizzard_of_coin",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${workspaceFolder}/genvm/contracts/wizzard_of_coin.py",
+        "console": "integratedTerminal",
+        "env": {
+          "PYTHONPATH": "${workspaceRoot}",
+          "FLASK_APP": "json_rpc_server.py",
+          "FLASK_ENV": "development",
+          "DOCKER_HOST": "unix:///var/run/docker.sock"
+        },
+        "args": []
+      }
+    ],
+    "compounds": [
+        {
+        "name": "Debug All",
+        "configurations": ["Python: Debug Server", "Python: Debug Launch Prototype"]
+        }
+    ]
+  }
+  
