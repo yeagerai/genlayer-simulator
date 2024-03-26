@@ -7,7 +7,6 @@ let editor = ref<monaco.editor.IStandaloneCodeEditor | null>(null)
 const props = defineProps<{
   content?: string
 }>()
-
 const contract = `
 import json
 from genvm.contracts.base import icontract
