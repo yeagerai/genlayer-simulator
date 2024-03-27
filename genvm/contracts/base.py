@@ -46,7 +46,7 @@ def icontract(cls):
             elif self.mode == 'validator' and consensus_eq and leader_output:
                 validator_response = await call_ollama("generate", "llama2", prompt, None, None)
                 self.non_det_outputs[self.non_det_counter] = {}
-                self.non_det_outputs[self.non_det_counter]["output"] = validation_response
+                self.non_det_outputs[self.non_det_counter]["output"] = validator_response
                 eq_prompt = f"Given the equivalence principle '{consensus_eq}', decide whether the following two outputs can be considered equivalent.\nOutput 1: {leader_output}\nOutput 2: {validator_response}\nRespond with: TRUE or FALSE"
                 validation_response = await call_ollama("generate", "llama2", eq_prompt, None, None)
 
