@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
-import { ref, watchEffect } from 'vue'
+import { onUnmounted } from 'vue';
+import { onMounted, ref, shallowRef, watchEffect } from 'vue'
 
 const editorElement = ref(null)
-let editor = ref<monaco.editor.IStandaloneCodeEditor | null>(null)
+const editor = shallowRef<monaco.editor.IStandaloneCodeEditor | null>(null)
 const props = defineProps<{
   content?: string
 }>()
+let unwatch: () => void | null
 const contract = `
 import json
 from genvm.contracts.base import icontract
@@ -56,8 +58,10 @@ class WizzardOfCoin:
 #     print(f"Does the wizzard has the coin? {w_contract.have_coin}")
 #     print(f"Reasoning: {result['reasoning']}")
 `
-const unwatch = watchEffect(() => {
-  if (editorElement.value && !editor.value) {
+onMounted(() => {
+  // the instance has already been loaded
+  if (editor.value) return
+  unwatch = watchEffect(() => {
     editor.value = monaco.editor.create(editorElement.value!, {
       value: contract,
       language: 'python',
@@ -66,26 +70,62 @@ const unwatch = watchEffect(() => {
       formatOnPaste: true,
       formatOnType: true
     });
+  })
+})
+
+
+
+onUnmounted(() => {
+  if (unwatch) {
+    unwatch()
   }
 })
 
-if (editor.value) {
-  unwatch()
-}
+watchEffect(() => {
+  if (props.content) {
+    editor.value?.setValue(props.content);
+  }
+})
 </script>
 <template>
-  <v-container fluid class="m-0 p-0">
-    <v-row>
-      <v-col>Import</v-col>
-    </v-row>
-    <v-row>
-      <v-col>
-        <div class="editor" ref="editorElement">
+  <v-card>
+    <v-toolbar density="compact">
+      <v-spacer></v-spacer>
 
-        </div>
-      </v-col>
-    </v-row>
-  </v-container>
+
+      <v-tooltip text="New File">
+        <template v-slot:activator="{ props }">
+          <v-btn v-bind="props" icon>
+            <v-icon>mdi-file</v-icon>
+          </v-btn>
+        </template>
+      </v-tooltip>
+      <v-tooltip text="Upload">
+        <template v-slot:activator="{ props }">
+          <v-btn v-bind="props" icon>
+            <v-icon>mdi-upload</v-icon>
+          </v-btn>
+        </template>
+      </v-tooltip>
+
+      <v-tooltip text="Compile">
+        <template v-slot:activator="{ props }">
+          <v-btn v-bind="props" icon>
+            <v-icon>mdi-play</v-icon>
+          </v-btn>
+        </template>
+      </v-tooltip>
+
+      <v-tooltip text="Deploy">
+        <template v-slot:activator="{ props }">
+          <v-btn v-bind="props" icon>
+            <v-icon>mdi-cog-play</v-icon>
+          </v-btn>
+        </template>
+      </v-tooltip>
+    </v-toolbar>
+    <div class="editor" ref="editorElement"> </div>
+  </v-card>
 </template>
 <style>
 .editor {
