@@ -13,6 +13,22 @@ The GenLayer prototype consists of the following main components:
 
 ## Installation
 
+```
+$ sudo apt install postgresql
+$ sudo -u postgres psql
+# ALTER USER postgres WITH PASSWORD 'postgres';
+# ALTER USER postgres WITH SUPERUSER;
+# flush
+# \q
+$ sudo apt-get install libpq-dev
+$ sudo apt-get install python3-psycopg2
+$ virtualenv .venv
+$ source .venv/bin/activate
+(.venv) $ pip install -r rewquirments.txt
+(.venv) $ export PYTHONPATH="${PYTHONPATH}:/.../genlayer-prototype"
+(.venv) $ python database/init_db.py
+```
+
 * Install `postgresql` on your computer and start the server.
 * Create a user in the `postgresql` server named `postgresql` with password `postgresql`.
 * Create a new venv called `genlayer` with `python 3.11`. For instance `conda create --name genlayer python=3.11`.

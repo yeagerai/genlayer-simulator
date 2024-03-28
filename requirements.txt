@@ -3,3 +3,4 @@ Flask[async]==3.0.2
 psycopg2-binary>=2.9.9
 requests==2.31.0
 docker==7.0.0
+asgiref==3.7.2
