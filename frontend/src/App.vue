@@ -14,7 +14,12 @@ import logo from '@/assets/genlayer.png'
       </v-app-bar>
       <RouterView class="mt-12" />
     </v-container>
-
+    <v-footer border>
+      <v-row justify="center" no-gutters>
+        <v-col class="text-center mt-4" cols="12">
+          {{ new Date().getFullYear() }} — <strong>GenLayer</strong>
+        </v-col>
+      </v-row></v-footer>
   </v-app>
 </template>
 

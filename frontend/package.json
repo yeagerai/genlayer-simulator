@@ -16,11 +16,11 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
-    "@femessage/log-viewer": "^1.5.0",
     "@mdi/font": "^7.4.47",
     "monaco-editor": "^0.47.0",
     "pinia": "^2.1.7",
     "vue": "^3.4.21",
+    "vue-command": "^35.2.1",
     "vue-router": "^4.3.0",
     "vuetify": "^3.5.11"
   },
