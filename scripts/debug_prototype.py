@@ -3,9 +3,10 @@ import sys
 import time
 
 # Check you in a viretualenv
-if 'VIRTUAL_ENV' not in os.environ:
-    print('Enable viretualenv!')
-    print('(if you don\'t know how to do this read the README.md)')
+if 'VIRTUAL_ENV' not in os.environ and 'CONDA_DEFAULT_ENV' not in os.environ:
+    print('No active virtualenv or conda environment detected!')
+    print('Please activate a virtualenv or a conda environment.')
+    print('(If you don\'t know how to do this, please read the README.md or relevant documentation)')
     sys.exit()
 
 # Make sure the file is being run from the project folder (not the scipts folder)
