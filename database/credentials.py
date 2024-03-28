@@ -1,10 +1,11 @@
 import psycopg2
+from os import environ
 
 orig_db_params = {
     "dbname": "postgres",
-    "user": "postgres",
-    "password": "postgres",
-    "host": "localhost",
+    "user": environ.get('DBUSER'),
+    "password": environ.get('DBPASSWORD'),
+    "host": environ.get('DBHOST'),
 }
 
 
@@ -14,9 +15,9 @@ def get_orig_db_connection():
 
 genlayer_db_params = {
     "dbname": "genlayer_state",
-    "user": "postgres",
-    "password": "postgres",
-    "host": "localhost",
+    "user": environ.get('DBUSER'),
+    "password": environ.get('DBPASSWORD'),
+    "host": environ.get('DBHOST'),
 }
 
 

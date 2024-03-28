@@ -1,12 +1,14 @@
 import json
-import asyncio
 from database.credentials import get_genlayer_db_connection
 from consensus.utils import vrf, get_contract_state, create_tar_archive, write_json_from_docker_tar
-import docker
+#import docker
 
-client = docker.from_env()
+#client = docker.from_env()
 
-
+# Description: This will create the contract on the shared drive and then
+#              call the genvm to execute it. This will later will be
+# TODO: deliver the contract through S3, postgres, celery or sent as part
+#       of the call to the flaskapi in the genvm
 def leader_executes_transaction(transaction_input, leader):
     leader_receipt = {
         "leader":leader, 
@@ -33,6 +35,13 @@ if __name__=="__main__":
     asyncio.run(main())
     """
 
+    f = open('/icontracts/'+exec_file_name)
+    f.write(exec_file_for_genvm)
+    f.close()
+
+    return leader_receipt
+
+'''
     tar_stream = create_tar_archive(exec_file_name, exec_file_for_genvm)
 
     container = client.containers.create(image="genvm:latest", network_mode="host") # TODO: this has to be replaced with a compose and the ollama server there
@@ -63,7 +72,7 @@ if __name__=="__main__":
         container.remove()
 
     return leader_receipt
-
+'''
 
 async def validator_executes_transaction(transaction_input, leader_receipt, validator):
     validator_receipt = {

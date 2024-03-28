@@ -1,8 +1,9 @@
 import psycopg2
+from os import environ
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from database.credentials import get_orig_db_connection, get_genlayer_db_connection
 
-new_dbname = "genlayer_state"
+new_dbname = environ.get('DBNAME')
 
 connection = get_orig_db_connection()
 connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)

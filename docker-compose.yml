@@ -1,0 +1,50 @@
+version: '3'
+
+services:
+
+  jsonrpc:
+    build:
+      context: ./
+      dockerfile: ./docker/Dockerfile.rpc
+    environment:
+      - FLASK_SERVER_PORT=${RPCPORT}
+    ports:
+      - "${RPCPORT}:${RPCPORT}"
+    volumes:
+      - ./rpc:/app/rpc
+      - ./database:/app/database
+      - ./consensus:/app/consensus
+      - icontracts:/icontracts
+    depends_on:
+      - olama
+      - postgres
+      - genvm
+  
+  genvm:
+    build:
+      context: ./
+      dockerfile: ./docker/Dockerfile.genvm
+    environment:
+      - FLASK_SERVER_PORT=${GENVMPORT}
+    expose:
+      - "${GENVMPORT}"
+    volumes:
+      - ./genvm:/app/genvm
+      - icontracts:/icontracts
+  
+  olama:
+    image: ollama/ollama
+
+  postgres:
+    image: postgres:12.17
+    restart: always
+    environment:
+      - POSTGRES_USER=${DBUSER}
+      - POSTGRES_PASSWORD=${DBPASSWORD}
+      - POSTGRES_DB=${DBNAME}
+    # If you want your db to persist in dev
+    #volumes:
+    #  - "./data/postgres:/var/lib/postgresql/data"
+
+volumes:
+  icontracts:

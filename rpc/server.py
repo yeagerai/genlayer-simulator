@@ -1,3 +1,4 @@
+import os
 import json
 import asyncio
 import uuid
@@ -7,7 +8,10 @@ from flask_jsonrpc import JSONRPC
 from database.credentials import get_genlayer_db_connection
 from consensus.algorithm import exec_transaction
 
-app = Flask(__name__)
+from dotenv import load_dotenv
+load_dotenv()
+
+app = Flask('jsonrpc_api')
 jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
 
 
@@ -89,6 +93,7 @@ def send_transaction(from_account: str, to_account: str, amount: float) -> dict:
 
 @jsonrpc.method("deploy_intelligent_contract")
 def deploy_intelligent_contract(from_account: str, contract_code: str, initial_state: dict) -> dict:
+    return {"status": "deployed", "contract_id": "something"}
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
     contract_id = str(uuid.uuid4())
@@ -187,4 +192,4 @@ def get_last_contracts(number_of_contracts: int) -> list:
     return contracts_info
 
 if __name__ == "__main__":
-    app.run(debug=True, port=4000)
+    app.run(debug=True, port=os.environ['RPCPORT'], host='0.0.0.0')

@@ -1,4 +1,26 @@
+import os
+import sys
 import time
+
+# Check you in a viretualenv
+if 'VIRTUAL_ENV' not in os.environ:
+    print('Enable viretualenv!')
+    print('(if you don\'t know how to do this read the README.md)')
+    sys.exit()
+
+# Make sure the file is being run from the project folder (not the scipts folder)
+if os.path.basename(os.path.normpath(os.getcwd())) == 'scripts':
+    print('Run this script from the project root')
+    sys.exit()
+
+# make sure the PYTHONPATH is set
+# (export PYTHONPATH="${PYTHONPATH}:/home/personal/Projects/Genlayer/genlayer-prototype")
+if 'PYTHONPATH' not in os.environ:
+    print('Run the following command:')
+    print(('>>> export PYTHONPATH="${{PYTHONPATH}}:'+os.getcwd()+'" <<<').format(42))
+    sys.exit()
+
+
 from cli.genlayer import (
     last_contracts_logic,
     deploy_logic,
@@ -18,6 +40,9 @@ time.sleep(5)
 with open(contract_file_path, 'rb') as contract_file:
     deploy_output = deploy_logic(hardcoded_from_address, contract_file, initial_contract_state)
     print("Deploy command output:", deploy_output)
+
+import sys
+sys.exit()
 
 # Retrieve the last contract ID (you should parse the actual ID from the output)
 last_contract_output = last_contracts_logic(1)

@@ -2,9 +2,13 @@ import json
 import click
 import requests
 import random
+from os import environ
 from typing import IO
 
-json_rpc_url = "http://localhost:4000/api"
+from dotenv import load_dotenv
+load_dotenv()
+
+json_rpc_url = environ.get('RPCPROTOCOL')+"://localhost:"+environ.get('RPCPORT')+"/api"
 
 
 def create_eoa_logic(balance:float) -> dict:
@@ -42,7 +46,9 @@ def deploy_logic(from_account:str, contract_code_file:IO[bytes], initial_state:s
         "params": [from_account, contract_code.decode("utf-8"), initial_state_dict],
         "id": 2,
     }
+    print(json_rpc_url)
     response = requests.post(json_rpc_url, json=payload).json()
+    print(response)
     return response
 
 def contract_logic(from_account:str, contract_address:str, function:str, args:tuple) -> dict:
