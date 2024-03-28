@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 
 receipt.json
+.DS_Store
