@@ -5,14 +5,29 @@ import uuid
 from flask import Flask
 from flask_jsonrpc import JSONRPC
 
+from database.init_db import create_db_if_doesnt_already_exists, create_tables_in_db
 from database.credentials import get_genlayer_db_connection
 from consensus.algorithm import exec_transaction
 
 from dotenv import load_dotenv
 load_dotenv()
 
+# TODO: Do we need logging?
 app = Flask('jsonrpc_api')
 jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
+
+
+@jsonrpc.method("create_db")
+def create_db() -> dict:
+    result = create_db_if_doesnt_already_exists()
+    app.logger.info(result)
+    return {"status": result}
+
+@jsonrpc.method("create_tables")
+def create_tables() -> dict:
+    result = create_tables_in_db(app)
+    app.logger.info(result)
+    return {"status": result}
 
 
 @jsonrpc.method("create_new_EOA")
@@ -93,10 +108,10 @@ def send_transaction(from_account: str, to_account: str, amount: float) -> dict:
 
 @jsonrpc.method("deploy_intelligent_contract")
 def deploy_intelligent_contract(from_account: str, contract_code: str, initial_state: dict) -> dict:
-    return {"status": "deployed", "contract_id": "something"}
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
     contract_id = str(uuid.uuid4())
+    return {"status": "deployed", "contract_id": "something"}
 
     cursor.execute(
         "INSERT INTO current_state (id, state) VALUES (%s, %s);",

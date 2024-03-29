@@ -11,6 +11,16 @@ load_dotenv()
 json_rpc_url = environ.get('RPCPROTOCOL')+"://localhost:"+environ.get('RPCPORT')+"/api"
 
 
+def create_db_logic() -> dict:
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "create_db",
+        "params": [],
+        "id": 1,
+    }
+    response = requests.post(json_rpc_url, json=payload).json()
+    return response
+
 def create_eoa_logic(balance:float) -> dict:
     payload = {
         "jsonrpc": "2.0",
@@ -86,10 +96,21 @@ def last_contracts_logic(number:int) -> dict:
     response = requests.post(json_rpc_url, json=payload).json()
     return response
 
+
+# -- Click Commands ---
+
+
 @click.group()
 def cli():
     pass
 
+
+@click.command(
+    help="Create the GenLayer database and tables"
+)
+def create_db():
+    response = create_db_logic()
+    click.echo(response)
 
 @click.command(
     help="Create a new Externally Owned Account (EOA) with an initial balance."
