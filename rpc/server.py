@@ -2,6 +2,7 @@ import os
 import json
 import asyncio
 import uuid
+import psycopg2
 from flask import Flask
 from flask_jsonrpc import JSONRPC
 
@@ -111,17 +112,20 @@ def deploy_intelligent_contract(from_account: str, contract_code: str, initial_s
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
     contract_id = str(uuid.uuid4())
-    return {"status": "deployed", "contract_id": "something"}
 
-    cursor.execute(
-        "INSERT INTO current_state (id, state) VALUES (%s, %s);",
-        (contract_id, json.dumps({"code": contract_code, "state": initial_state})),
-    )
-
-    cursor.execute(
-        "INSERT INTO transactions (from_address, to_address, data, type) VALUES (%s, %s, %s, 1);",
-        (from_account, contract_id, json.dumps({"contract_code": contract_code})),
-    )
+    try:
+        cursor.execute(
+            "INSERT INTO current_state (id, state) VALUES (%s, %s);",
+            (contract_id, json.dumps({"code": contract_code, "state": initial_state})),
+        )
+        cursor.execute(
+            "INSERT INTO transactions (from_address, to_address, data, type) VALUES (%s, %s, %s, 1);",
+            (from_account, contract_id, json.dumps({"contract_code": contract_code})),
+        )
+    except psycopg2.errors.UndefinedTable:
+        app.logger.error('create the tables in the database first')
+    except psycopg2.errors.InFailedSqlTransaction:
+        app.logger.error('create the tables in the database first')
 
     connection.commit()
     cursor.close()

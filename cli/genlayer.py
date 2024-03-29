@@ -21,6 +21,16 @@ def create_db_logic() -> dict:
     response = requests.post(json_rpc_url, json=payload).json()
     return response
 
+def create_tables_logic() -> dict:
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "create_tables",
+        "params": [],
+        "id": 1,
+    }
+    response = requests.post(json_rpc_url, json=payload).json()
+    return response
+
 def create_eoa_logic(balance:float) -> dict:
     payload = {
         "jsonrpc": "2.0",
@@ -56,9 +66,7 @@ def deploy_logic(from_account:str, contract_code_file:IO[bytes], initial_state:s
         "params": [from_account, contract_code.decode("utf-8"), initial_state_dict],
         "id": 2,
     }
-    print(json_rpc_url)
     response = requests.post(json_rpc_url, json=payload).json()
-    print(response)
     return response
 
 def contract_logic(from_account:str, contract_address:str, function:str, args:tuple) -> dict:
@@ -106,10 +114,17 @@ def cli():
 
 
 @click.command(
-    help="Create the GenLayer database and tables"
+    help="Create the GenLayer database"
 )
 def create_db():
     response = create_db_logic()
+    click.echo(response)
+
+@click.command(
+    help="Create the GenLayer tables"
+)
+def create_tables():
+    response = create_tables_logic()
     click.echo(response)
 
 @click.command(
@@ -192,6 +207,10 @@ def last_contracts(number):
     response = last_contracts_logic(number)
     click.echo(json.dumps(response))
     return response
+
+# setup commands
+cli.add_command(create_db)
+cli.add_command(create_tables)
 
 ## read commands
 cli.add_command(last_contracts)
