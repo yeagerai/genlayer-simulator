@@ -26,7 +26,8 @@ $ virtualenv .venv
 $ source .venv/bin/activate
 (.venv) $ pip install -r rewquirments.txt
 (.venv) $ export PYTHONPATH="${PYTHONPATH}:/.../genlayer-prototype"
-(.venv) $ python database/init_db.py
+(.venv) $ python python cli/genlayer.py create-db
+(.venv) $ python python cli/genlayer.py create-tables
 ```
 
 * Install `postgresql` on your computer and start the server.
