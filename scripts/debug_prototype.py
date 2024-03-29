@@ -42,9 +42,6 @@ with open(contract_file_path, 'rb') as contract_file:
     deploy_output = deploy_logic(hardcoded_from_address, contract_file, initial_contract_state)
     print("Deploy command output:", deploy_output)
 
-import sys
-sys.exit()
-
 # Retrieve the last contract ID (you should parse the actual ID from the output)
 last_contract_output = last_contracts_logic(1)
 print("Last contract command output:", last_contract_output)
