@@ -1,8 +1,9 @@
 import os
 import sys
 import time
-from database.init_db import create_db_if_it_doesnt_already_exists, create_tables_if_they_dont_already_exist
+from cli.genlayer import create_eoa_logic, register_validators_logic, count_validators_logic
 
+print('Checking environement...')
 # Check you in a viretualenv
 if 'VIRTUAL_ENV' not in os.environ and 'CONDA_DEFAULT_ENV' not in os.environ:
     print('No active virtualenv or conda environment detected!')
@@ -24,20 +25,31 @@ if 'PYTHONPATH' not in os.environ:
 
 
 from cli.genlayer import (
+    create_db_logic,
+    create_tables_logic,
     last_contracts_logic,
     deploy_logic,
-    contract_logic,
+    contract_logic
 )
 
 # create the db and tables if you need to
-create_db_if_it_doesnt_already_exists()
-create_tables_if_they_dont_already_exist()
+print('Creating db and tables...')
+create_db_logic()
+create_tables_logic()
 
-# TODO: create nodes
-# TODO: create address
+# create initial data
+print('Creating validadtors and account...')
+if count_validators_logic() == 0:
+    register_validators_logic(10, 1, 10)
+create_account_result = create_eoa_logic(10)
+
+new_account = None
+if 'result' in create_account_result and 'id' in create_account_result['result']:
+    new_account = create_account_result['result']['id']
+else:
+    raise Exception('Could not create new account!') 
 
 # Your hardcoded values
-hardcoded_from_address = '95594942-17e5-4f91-8862-c3a4eae5b58c'
 contract_file_path = 'genvm/contracts/wizzard_of_coin.py'
 function_to_execute = 'WizzardOfCoin.ask_for_coin'
 initial_contract_state = '{"have_coin": true}'
@@ -47,7 +59,7 @@ time.sleep(5)
 
 # Deploy the contract
 with open(contract_file_path, 'rb') as contract_file:
-    deploy_output = deploy_logic(hardcoded_from_address, contract_file, initial_contract_state)
+    deploy_output = deploy_logic(new_account, contract_file, initial_contract_state)
     print("Deploy command output:", deploy_output)
 
 # Retrieve the last contract ID (you should parse the actual ID from the output)
@@ -57,6 +69,6 @@ last_contract_id = last_contract_output['result'][0]['contract_id']  # Example p
 
 
 # Call the contract
-args = (hardcoded_from_address, "Can you please return me my coin?")
-call_contract_output = contract_logic(hardcoded_from_address, last_contract_id, function_to_execute, args)
+args = (new_account, "Can you please return me my coin?")
+call_contract_output = contract_logic(new_account, last_contract_id, function_to_execute, args)
 print("Call contract command output:", call_contract_output)

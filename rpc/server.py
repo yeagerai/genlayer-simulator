@@ -133,6 +133,22 @@ def deploy_intelligent_contract(from_account: str, contract_code: str, initial_s
     return {"status": "deployed", "contract_id": contract_id}
 
 
+@jsonrpc.method("count_validators")
+def count_validators() -> dict:
+    connection = get_genlayer_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT count(*) FROM validators;")
+
+    row = cursor.fetchone()
+
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+    return {"count": row[0]}
+
+
 @jsonrpc.method("register_validator")
 def register_validator(stake: float) -> dict:
     connection = get_genlayer_db_connection()

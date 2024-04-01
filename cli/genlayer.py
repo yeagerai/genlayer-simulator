@@ -80,6 +80,15 @@ def contract_logic(from_account:str, contract_address:str, function:str, args:tu
     response = requests.post(json_rpc_url, json=payload).json()
     return response
 
+def count_validators_logic() -> list:
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "count_validators",
+        "params": [],
+        "id": 4,
+    }
+    return requests.post(json_rpc_url, json=payload).json()
+
 def register_validators_logic(count:int, min_stake:float, max_stake:float) -> list:
     responses = []
     for _ in range(count):
@@ -181,6 +190,13 @@ def deploy(from_account, contract_code_file, initial_state):
 def contract(from_account, contract_address, function, args):
     response = contract_logic(from_account, contract_address, function, args)
     click.echo(response)
+
+@click.command(help="Tells you how many validators there are in the network.")
+def count_validators(count, min_stake, max_stake):
+    response = count_validators_logic()
+    click.echo(
+        f"There are {response['count']} validators in the network."
+    )
 
 
 @click.command(help="Register X validators to the network with random stakes.")
