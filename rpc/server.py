@@ -6,7 +6,7 @@ import psycopg2
 from flask import Flask
 from flask_jsonrpc import JSONRPC
 
-from database.init_db import create_db_if_doesnt_already_exists, create_tables_in_db
+from database.init_db import create_db_if_it_doesnt_already_exists, create_tables_if_they_dont_already_exist
 from database.credentials import get_genlayer_db_connection
 from consensus.algorithm import exec_transaction
 
@@ -20,13 +20,13 @@ jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
 
 @jsonrpc.method("create_db")
 def create_db() -> dict:
-    result = create_db_if_doesnt_already_exists()
+    result = create_db_if_it_doesnt_already_exists()
     app.logger.info(result)
     return {"status": result}
 
 @jsonrpc.method("create_tables")
 def create_tables() -> dict:
-    result = create_tables_in_db(app)
+    result = create_tables_if_they_dont_already_exist(app)
     app.logger.info(result)
     return {"status": result}
 

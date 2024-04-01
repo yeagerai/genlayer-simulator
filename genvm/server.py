@@ -1,7 +1,4 @@
 import os
-import json
-import asyncio
-import uuid
 from flask import Flask
 from flask_jsonrpc import JSONRPC
 
@@ -13,16 +10,20 @@ jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
 
 
 @jsonrpc.method("leader_executes_transaction")
-def leader_executes_transaction() -> dict:
-    return {"status": "Success! (1)"}
+def leader_executes_transaction(icontract:str) -> dict:
+    # TODO: Leader needs to be the name of the VM
+    result = {
+        "leader":"", 
+        "contract_state":{}, 
+        "non_det_inputs": {}, 
+        "non_det_outputs":{},
+        "vote":"agree"
+    }
+    return {"status": result}
 
 @jsonrpc.method("validator_executes_transaction")
 def validator_executes_transaction() -> dict:
     return {"status": "Success! (2)"}
-
-@jsonrpc.method("deploy_intelligent_contract")
-def leader_executes_transaction() -> dict:
-    return {"status": "Success! (3)"}
 
 
 if __name__ == "__main__":

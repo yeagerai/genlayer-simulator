@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+from database.init_db import create_db_if_it_doesnt_already_exists, create_tables_if_they_dont_already_exist
 
 # Check you in a viretualenv
 if 'VIRTUAL_ENV' not in os.environ and 'CONDA_DEFAULT_ENV' not in os.environ:
@@ -15,10 +16,10 @@ if os.path.basename(os.path.normpath(os.getcwd())) == 'scripts':
     sys.exit()
 
 # make sure the PYTHONPATH is set
-# (export PYTHONPATH="${PYTHONPATH}:/home/personal/Projects/Genlayer/genlayer-prototype")
+# (export PYTHONPATH="/home/personal/Projects/Genlayer/genlayer-prototype")
 if 'PYTHONPATH' not in os.environ:
     print('Run the following command:')
-    print(('>>> export PYTHONPATH="${{PYTHONPATH}}:'+os.getcwd()+'" <<<').format(42))
+    print(('>>> export PYTHONPATH="'+os.getcwd()+'" <<<').format(42))
     sys.exit()
 
 
@@ -27,6 +28,13 @@ from cli.genlayer import (
     deploy_logic,
     contract_logic,
 )
+
+# create the db and tables if you need to
+create_db_if_it_doesnt_already_exists()
+create_tables_if_they_dont_already_exist()
+
+# TODO: create nodes
+# TODO: create address
 
 # Your hardcoded values
 hardcoded_from_address = '95594942-17e5-4f91-8862-c3a4eae5b58c'
@@ -46,6 +54,7 @@ with open(contract_file_path, 'rb') as contract_file:
 last_contract_output = last_contracts_logic(1)
 print("Last contract command output:", last_contract_output)
 last_contract_id = last_contract_output['result'][0]['contract_id']  # Example parsing
+
 
 # Call the contract
 args = (hardcoded_from_address, "Can you please return me my coin?")

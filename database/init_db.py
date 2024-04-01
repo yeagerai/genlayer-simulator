@@ -56,7 +56,7 @@ def db_cursor(db_name:str) -> psycopg2.extensions.connection:
     connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
     return connection
 
-def create_db_if_doesnt_already_exists() -> str:
+def create_db_if_it_doesnt_already_exists() -> str:
     new_dbname = environ.get('DBNAME')
     connection = db_cursor('postgres')
     cursor = connection.cursor()
@@ -73,7 +73,7 @@ def create_db_if_doesnt_already_exists() -> str:
     return result
 
 
-def create_tables_in_db(app:flask.app.Flask) -> str:
+def create_tables_if_they_dont_already_exist(app:flask.app.Flask) -> str:
     table_creation_commands = (
         db_get_transactions_table_create_command(),  # eq to blockchain
         db_get_current_state_table_create_command(),  # eq to eth state trie (type of Merkle Patricia Trie)
