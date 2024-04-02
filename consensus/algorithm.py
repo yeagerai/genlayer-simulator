@@ -70,7 +70,9 @@ async def validator_executes_transaction(transaction_input, leader_receipt, vali
     return validator_receipt
 
 
-async def exec_transaction(transaction_input):
+async def exec_transaction(transaction_input, logger=None):
+    if logger:
+        logger("Selecting validators with VRF...")
     # Select validators
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
@@ -87,11 +89,16 @@ async def exec_transaction(transaction_input):
     selected_validators = vrf(all_validators, validators_stakes, 5)
     leader = selected_validators[0]
     remaining_validators = selected_validators[1:]
-
+    if logger:
+        logger(f"Selected Leader: {leader}...")
+        logger(f"Selected Validators: {remaining_validators}...")
+        logger(f"Leader {leader} starts contract execution...")
     # Leader executes transaction
     leader_receipt = leader_executes_transaction(transaction_input, leader)
     votes = json.dumps({leader: leader_receipt["vote"]})
 
+    if logger:
+        logger(f"Leader {leader} has finished contract execution...")
 
     # Validators execute transaction
     # loop = asyncio.get_running_loop()
@@ -128,3 +135,6 @@ async def exec_transaction(transaction_input):
     connection.commit()
     cursor.close()
     connection.close()
+
+    if logger:
+        logger(f"Transaction has been fully executed...")

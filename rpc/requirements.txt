@@ -1,5 +1,6 @@
 Flask-JSONRPC==3.0.1
 Flask[async]==3.0.2
+flask-socketio==5.3.6
 psycopg2-binary>=2.9.9
 requests==2.31.0
 #docker==7.0.0

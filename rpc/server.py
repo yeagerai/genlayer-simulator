@@ -5,6 +5,7 @@ import uuid
 import psycopg2
 from flask import Flask
 from flask_jsonrpc import JSONRPC
+from flask_socketio import SocketIO
 
 from database.init_db import create_db_if_it_doesnt_already_exists, create_tables_if_they_dont_already_exist
 from database.credentials import get_genlayer_db_connection
@@ -14,10 +15,20 @@ from consensus.algorithm import exec_transaction
 from dotenv import load_dotenv
 load_dotenv()
 
-# TODO: Do we need logging?
 app = Flask('jsonrpc_api')
 jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
+socketio = SocketIO(app)
 
+@socketio.on('connect')
+def handle_connect():
+    print('Client connected')
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print('Client disconnected')
+
+def log_status(message):
+    socketio.emit('status_update', {'message': message})
 
 @jsonrpc.method("create_db")
 def create_db() -> dict:
@@ -190,9 +201,10 @@ async def call_contract_function(
     )
 
     connection.commit()
+    log_status(f"Transaction sent from {from_account} to {contract_address}...")
 
     # call consensus
-    asyncio.create_task(exec_transaction(json.loads(function_call_data)))
+    asyncio.create_task(exec_transaction(json.loads(function_call_data), logger=log_status))
 
     cursor.close()
     connection.close()
@@ -240,4 +252,4 @@ def get_last_contracts(contract_address: str) -> list:
     return json.dumps(contract)
 
 if __name__ == "__main__":
-    app.run(debug=True, port=os.environ['RPCPORT'], host='0.0.0.0')
+    app.run(debug=True, port=os.environ['RPCPORT', 5000], host='0.0.0.0')
