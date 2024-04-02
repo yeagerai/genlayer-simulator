@@ -8,6 +8,7 @@ from flask_jsonrpc import JSONRPC
 
 from database.init_db import create_db_if_it_doesnt_already_exists, create_tables_if_they_dont_already_exist
 from database.credentials import get_genlayer_db_connection
+from database.types import ConsensusData, ContractData, CallContractInputData
 from consensus.algorithm import exec_transaction
 
 from dotenv import load_dotenv
@@ -46,10 +47,9 @@ def create_new_eoa(balance: float) -> dict:
 
     # Optionally log the account creation in the transactions table
     cursor.execute(
-        "INSERT INTO transactions (from_address, to_address, data, value, type) VALUES (NULL, %s, %s, %s, 0);",
+        "INSERT INTO transactions (from_address, to_address, value, type) VALUES (NULL, %s, %s, %s, 0);",
         (
             new_eoa_id,
-            json.dumps({"action": "create_account", "initial_balance": balance}),
             balance,
         ),
     )
@@ -94,8 +94,8 @@ def send_transaction(from_account: str, to_account: str, amount: float) -> dict:
 
         # Log the transaction
         cursor.execute(
-            "INSERT INTO transactions (from_address, to_address, data, value, type) VALUES (%s, %s, %s, %s, 0);",
-            (from_account, to_account, json.dumps({"amount": amount}), amount),
+            "INSERT INTO transactions (from_address, to_address, value, type) VALUES (%s, %s, %s, %s, 0);",
+            (from_account, to_account, amount),
         )
         connection.commit()
         status = "success"
@@ -112,15 +112,15 @@ def deploy_intelligent_contract(from_account: str, contract_code: str, initial_s
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
     contract_id = str(uuid.uuid4())
-
+    contract_data = ContractData(contract_code, initial_state)
     try:
         cursor.execute(
-            "INSERT INTO current_state (id, state) VALUES (%s, %s);",
-            (contract_id, json.dumps({"code": contract_code, "state": initial_state})),
+            "INSERT INTO current_state (id, contract_data) VALUES (%s, %s);",
+            (contract_id, json.dumps(contract_data)),
         )
         cursor.execute(
-            "INSERT INTO transactions (from_address, to_address, data, type) VALUES (%s, %s, %s, 1);",
-            (from_account, contract_id, json.dumps({"contract_code": contract_code})),
+            "INSERT INTO transactions (from_address, to_address, contract_data, type) VALUES (%s, %s, %s, 1);",
+            (from_account, contract_id, json.dumps(contract_data)),
         )
     except psycopg2.errors.UndefinedTable:
         app.logger.error('create the tables in the database first')
@@ -181,11 +181,11 @@ async def call_contract_function(
     cursor = connection.cursor()
 
     function_call_data = json.dumps(
-        {"function": function_name, "args": args, "contract_address": contract_address}
+        CallContractInputData(contract_address, function_name, args)
     )
 
     cursor.execute(
-        "INSERT INTO transactions (from_address, to_address, data, type, created_at, final) VALUES (%s, %s, %s, 2, CURRENT_TIMESTAMP, %s);",
+        "INSERT INTO transactions (from_address, to_address, input_data, type, created_at, final) VALUES (%s, %s, %s, 2, CURRENT_TIMESTAMP, %s);",
         (from_account, contract_address, function_call_data, False),
     )
 
@@ -225,6 +225,19 @@ def get_last_contracts(number_of_contracts: int) -> list:
     connection.close()
 
     return contracts_info
+
+@jsonrpc.method("get_contract_state")
+def get_last_contracts(contract_address: str) -> list:
+    connection = get_genlayer_db_connection()
+    cursor = connection.cursor()
+
+    # Query the database for the current state of a deployed contract
+    cursor.execute(
+        "SELECT *, FROM current_state WHERE id = %s;",
+        (contract_address,)
+    )
+    contract = cursor.fetchall()
+    return json.dumps(contract)
 
 if __name__ == "__main__":
     app.run(debug=True, port=os.environ['RPCPORT'], host='0.0.0.0')

@@ -11,15 +11,17 @@ def db_get_transactions_table_create_command() -> str:
         id SERIAL PRIMARY KEY,
         from_address VARCHAR(255),
         to_address VARCHAR(255),
-        data JSONB NOT NULL,
+        input_data JSONB,
+        contract_data JSONB,
+        consensus_data JSONB,
         nonce INT,
         value NUMERIC,
         type INT CHECK (type IN (0, 1, 2)),
         gasLimit BIGINT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        final BOOLEAN,
-        votes JSONB,
-        leader_data JSONB
+        r INT,
+        s INT,
+        v INT,
     )
     """
 
@@ -31,7 +33,7 @@ def db_get_current_state_table_create_command() -> str:
     return """
     CREATE TABLE IF NOT EXISTS current_state (
         id VARCHAR(255) PRIMARY KEY,
-        state JSONB NOT NULL,
+        contract_data JSONB NOT NULL,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     )
     """
