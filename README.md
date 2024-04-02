@@ -16,6 +16,7 @@ The GenLayer prototype consists of the following main components:
 ### Window One
 
 ```
+$ cp .env.example .env
 $ docker-composer up
 ```
 
@@ -23,6 +24,7 @@ $ docker-composer up
 
 ```
 $ docker exec -it ollama ollama run llama2
+...
 ```
 
 ### Window Two
