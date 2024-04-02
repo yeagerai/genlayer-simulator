@@ -1,8 +1,12 @@
+import os
 import re
 import json
 import aiohttp
 import asyncio
 from typing import Optional
+
+from dotenv import load_dotenv
+load_dotenv()
 
 async def process_streaming_buffer(buffer: str, chunk: str, regex: str) -> str:
     updated_buffer = buffer + chunk
@@ -14,13 +18,14 @@ async def process_streaming_buffer(buffer: str, chunk: str, regex: str) -> str:
     return {'stop': False, 'match': None}
 
 async def stream_http_response(url, data):
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, json=data) as response:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
+        async with session.post(url, json=data, ssl=False) as response:
             async for chunk in response.content.iter_any():
                 yield chunk
 
 async def call_ollama(endpoint:str, model_name:str, prompt:str, regex: Optional[str], return_streaming_channel:Optional[asyncio.Queue]) -> str:
-    url = f"http://localhost:11434/api/{endpoint}" # TODO: when docker compose change that
+    url = f"{os.environ['OLAMAPROTOCOL']}://{os.environ['OLAMAHOST']}:{os.environ['OLAMAPORT']}/api/{endpoint}"
+
     data = {"model": model_name, "prompt": prompt}
 
     buffer = ""

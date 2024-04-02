@@ -13,13 +13,19 @@ The GenLayer prototype consists of the following main components:
 
 ## Installation
 
-# Window One
+### Window One
 
 ```
 $ docker-composer up
 ```
 
-# Window Two
+#### (Installing the Ollama model)
+
+```
+$ docker exec -it ollama ollama run llama2
+```
+
+### Window Two
 
 ```
 $ virtualenv .venv

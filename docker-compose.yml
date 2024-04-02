@@ -18,7 +18,7 @@ services:
       - ./consensus:/app/consensus
       - icontracts:/icontracts
     depends_on:
-      - olama
+      - ollama
       - postgres
       - genvm
   
@@ -28,14 +28,24 @@ services:
       dockerfile: ./docker/Dockerfile.genvm
     environment:
       - FLASK_SERVER_PORT=${GENVMPORT}
+      # TODO: Remove in production
+      - PYTHONUNBUFFERED=1
     expose:
       - "${GENVMPORT}"
     volumes:
       - ./genvm:/app/genvm
       - icontracts:/icontracts
-  
-  olama:
-    image: ollama/ollama
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - 11434:11434
+    volumes:
+      - ./.ollama:/root/.ollama
+    container_name: ollama
+    pull_policy: always
+    tty: true
+    restart: always
 
   postgres:
     image: postgres:12.17
