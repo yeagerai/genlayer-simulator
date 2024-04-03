@@ -16,9 +16,8 @@ services:
       - ./rpc:/app/rpc
       - ./database:/app/database
       - ./consensus:/app/consensus
-      - icontracts:/icontracts
     depends_on:
-      - olama
+      - ollama
       - postgres
       - genvm
   
@@ -28,14 +27,23 @@ services:
       dockerfile: ./docker/Dockerfile.genvm
     environment:
       - FLASK_SERVER_PORT=${GENVMPORT}
+      - DEBUG=${GENVMDEBUG}
+      - PYTHONUNBUFFERED=${GENVMDEBUG}
     expose:
       - "${GENVMPORT}"
     volumes:
       - ./genvm:/app/genvm
-      - icontracts:/icontracts
-  
-  olama:
-    image: ollama/ollama
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - 11434:11434
+    volumes:
+      - ./.ollama:/root/.ollama
+    container_name: ollama
+    pull_policy: always
+    tty: true
+    restart: always
 
   postgres:
     image: postgres:12.17
@@ -50,6 +58,3 @@ services:
     # If you want your db to persist in dev
     #volumes:
     #  - "./data/postgres:/var/lib/postgresql/data"
-
-volumes:
-  icontracts:

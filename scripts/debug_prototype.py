@@ -39,8 +39,15 @@ create_tables_logic()
 
 # create initial data
 print('Creating validadtors and account...')
-if count_validators_logic() == 0:
-    register_validators_logic(10, 1, 10)
+response = count_validators_logic()
+if 'result' in response and 'count' in response['result']:
+    if response['result']['count'] == 0:
+        print('Creating validators...')
+        register_validators_logic(10, 1, 10)
+    else:
+        print('Validators already created.')
+else:
+    raise Exception('The count_validators rpc function failed!')
 create_account_result = create_eoa_logic(10)
 
 new_account = None
