@@ -1,8 +1,10 @@
 import os
+import re
 import json
 import asyncio
-import uuid
 import psycopg2
+import random
+import string
 from flask import Flask
 from flask_jsonrpc import JSONRPC
 
@@ -17,6 +19,16 @@ load_dotenv()
 app = Flask('jsonrpc_api')
 jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
 
+def create_new_address() -> str:
+    new_address = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(40))
+    return '0x' + new_address
+
+def address_is_in_correct_format(address:str) -> bool:
+    pattern = r'^0x[A-Za-z0-9]{40}$'
+    if re.fullmatch(pattern, address):
+        return True
+    return False
+
 
 @jsonrpc.method("create_db")
 def create_db() -> dict:
@@ -30,25 +42,47 @@ def create_tables() -> dict:
     app.logger.info(result)
     return {"status": result}
 
+@jsonrpc.method("create_account")
+def create_account() -> dict:
+    balance = 0
+    new_address = create_new_address()
 
-@jsonrpc.method("create_new_EOA")
-def create_new_eoa(balance: float) -> dict:
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
-    new_eoa_id = str(uuid.uuid4())  # Generate a unique ID for the new EOA
+
+    account_state = json.dumps({"balance": balance})
+
+    cursor.execute(
+        "INSERT INTO current_state (id, state) VALUES (%s, %s);",
+        (new_address, account_state),
+    )
+    return {"address": new_address, "balance": balance, "status": "account created"}
+
+@jsonrpc.method("fund_account")
+def fund_account(account: string, balance: float) -> dict:
+
+    if not address_is_in_correct_format(account):
+        return {"status": "account not in ethereum address format"}
+
+    connection = get_genlayer_db_connection()
+    cursor = connection.cursor()
+
+    current_account = account
+    if account == 'create_account':
+        current_account = create_account()
     account_state = json.dumps({"balance": balance})
 
     # Update current_state table with the new account and its balance
     cursor.execute(
         "INSERT INTO current_state (id, state) VALUES (%s, %s);",
-        (new_eoa_id, account_state),
+        (current_account, account_state),
     )
 
     # Optionally log the account creation in the transactions table
     cursor.execute(
         "INSERT INTO transactions (from_address, to_address, data, value, type) VALUES (NULL, %s, %s, %s, 0);",
         (
-            new_eoa_id,
+            current_account,
             json.dumps({"action": "create_account", "initial_balance": balance}),
             balance,
         ),
@@ -57,11 +91,17 @@ def create_new_eoa(balance: float) -> dict:
     connection.commit()
     cursor.close()
     connection.close()
-    return {"id": new_eoa_id, "balance": balance, "status": "EOA created"}
+    return {"address": current_account, "balance": balance, "status": "account funded"}
 
 
 @jsonrpc.method("send_transaction")
 def send_transaction(from_account: str, to_account: str, amount: float) -> dict:
+
+    if not address_is_in_correct_format(from_account):
+        return {"status": "from_account not in ethereum address format"}
+
+    if not address_is_in_correct_format(to_account):
+        return {"status": "to_account not in ethereum address format"}
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
 
@@ -109,9 +149,13 @@ def send_transaction(from_account: str, to_account: str, amount: float) -> dict:
 
 @jsonrpc.method("deploy_intelligent_contract")
 def deploy_intelligent_contract(from_account: str, contract_code: str, initial_state: dict) -> dict:
+
+    if not address_is_in_correct_format(from_account):
+        return {"status": "from_account not in ethereum address format"}
+    
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
-    contract_id = str(uuid.uuid4())
+    contract_id = create_new_address()
 
     try:
         cursor.execute(
@@ -154,7 +198,7 @@ def register_validator(stake: float) -> dict:
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
 
-    eoa_id = str(uuid.uuid4())
+    eoa_id = create_new_address()
     eoa_state = json.dumps({"staked_balance": stake})
 
     cursor.execute(
@@ -177,6 +221,13 @@ def register_validator(stake: float) -> dict:
 async def call_contract_function(
     from_account: str, contract_address: str, function_name: str, args: list
 ) -> dict:
+
+    if not address_is_in_correct_format(from_account):
+        return {"status": "from_account not in ethereum address format"}
+
+    if not address_is_in_correct_format(contract_address):
+        return {"status": "contract_address not in ethereum address format"}
+    
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
 

@@ -17,6 +17,10 @@ def leader_executes_transaction(icontract:str) -> dict:
     icontract_file = os.environ.get('GENVMCONLOC') + '/icontract.py'
     recipt_file = os.environ.get('GENVMCONLOC') + '/receipt.json'
 
+    if int(os.environ.get('DEBUG')) == 1:
+        print('--- START: icontract ---')
+        print(icontract)
+        print('--- END: icontract ---')
 
     #TODO: a more secure directory or filename
     with open(icontract_file, 'w+') as file:
