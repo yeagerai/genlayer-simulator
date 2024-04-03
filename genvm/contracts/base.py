@@ -76,7 +76,7 @@ def icontract(cls):
                 "eq_principles_outs": self.eq_principles_outs
             }
 
-            with open(os.environ.get('DEBUG') + '/receipt.json', 'w') as file:
+            with open(os.environ.get('GENVMCONLOC') + '/receipt.json', 'w') as file:
                 if int(os.environ.get('DEBUG')) == 1:
                     print('--- START: receipt.json ---')
                     print(receipt)
