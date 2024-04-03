@@ -1,7 +1,8 @@
 import os
 import sys
 import time
-from cli.genlayer import create_eoa_logic, register_validators_logic, count_validators_logic
+from cli.genlayer import register_validators_logic, count_validators_logic
+
 
 print('Checking environement...')
 # Check you in a viretualenv
@@ -29,7 +30,9 @@ from cli.genlayer import (
     create_tables_logic,
     last_contracts_logic,
     deploy_logic,
-    contract_logic
+    contract_logic,
+    create_account_logic,
+    fund_account_logic,
 )
 
 # create the db and tables if you need to
@@ -48,13 +51,24 @@ if 'result' in response and 'count' in response['result']:
         print('Validators already created.')
 else:
     raise Exception('The count_validators rpc function failed!')
-create_account_result = create_eoa_logic(10)
+
+# Create a new account
+create_account_result = create_account_logic()
 
 new_account = None
-if 'result' in create_account_result and 'id' in create_account_result['result']:
-    new_account = create_account_result['result']['id']
+if 'result' in create_account_result and 'address' in create_account_result['result']:
+    new_account = create_account_result['result']['address']
+    print('Account created! ('+new_account+')')
 else:
     raise Exception('Could not create new account!') 
+
+# Fund the new account
+balance = 10
+fund_account_result = fund_account_logic(new_account, balance)
+
+if 'result' in fund_account_result and 'address' in fund_account_result['result']:
+    print('Account funded! ('+str(balance)+')')
+
 
 # Your hardcoded values
 contract_file_path = 'genvm/contracts/wizzard_of_coin.py'
