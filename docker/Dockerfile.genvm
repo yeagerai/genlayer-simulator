@@ -1,5 +1,3 @@
-# To build GenVM Image
-
 FROM python:3.12.2-slim
 
 ARG path=/app
@@ -10,17 +8,15 @@ WORKDIR $path
 COPY ../.env .
 
 ADD genvm $path/genvm
-RUN mkdir $path/icontract
 
 WORKDIR $path/genvm
+
+RUN ln contracts/base.py /tmp/base.py
+RUN ln contracts/llms.py /tmp/llms.py
 
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install Flask
 
-#EXPOSE 8000 11434
-
-#TODO: Why do we need to name it?
-#ENV NAME GenVM
 ENV PYTHONPATH "${PYTHONPATH}:/${path}"
 
 CMD ["python", "server.py"]

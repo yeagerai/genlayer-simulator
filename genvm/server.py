@@ -15,6 +15,8 @@ jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
 def leader_executes_transaction(icontract:str) -> dict:
 
     icontract_file = os.environ.get('GENVMCONLOC') + '/icontract.py'
+    recipt_file = os.environ.get('GENVMCONLOC') + '/receipt.json'
+
 
     #TODO: a more secure directory or filename
     with open(icontract_file, 'w+') as file:
@@ -22,19 +24,20 @@ def leader_executes_transaction(icontract:str) -> dict:
     file.close()
 
     result = subprocess.run(['python', icontract_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    if int(os.environ.get('DEBUG')) == 1:
+        print('--- START: LLM Result ---')
+        print(result)
+        print('--- END: LLM Result ---')
 
-    if result.returncode == 0:
-        print("Command executed successfully!")
-    else:
-        print("Command failed with return code:", result.returncode)
-        print("Stderr:", result.stderr)
+        if result.returncode == 0:
+            print("Command executed successfully!")
+        else:
+            print("Command failed with return code:", result.returncode)
+            print("Stderr:", result.stderr)
 
     # Access the output of the command
-    print('--- LLM Response ---')
-    file = open('/app/receipt.json', 'r')
+    file = open(recipt_file, 'r')
     contents = json.load(file)
-    print("Stdout:", contents)
-    print('--- LLM Response ---')
 
     # TODO: Leader needs to be the name of the VM
     result = {

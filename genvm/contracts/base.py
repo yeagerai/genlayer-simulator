@@ -1,9 +1,13 @@
+import os
 import time
 import asyncio
 import json
 import functools
 
 from genvm.contracts.llms import call_ollama
+
+from dotenv import load_dotenv
+load_dotenv()
 
 def gas_model_logic():
     return 1
@@ -72,7 +76,11 @@ def icontract(cls):
                 "eq_principles_outs": self.eq_principles_outs
             }
 
-            with open('/genvm/receipt.json', 'w') as file: # this is expected to run inside a docker, else remove the initial / 
+            with open(os.environ.get('DEBUG') + '/receipt.json', 'w') as file:
+                if int(os.environ.get('DEBUG')) == 1:
+                    print('--- START: receipt.json ---')
+                    print(receipt)
+                    print('--- END: receipt.json ---')
                 json.dump(receipt, file)
 
         def __getattribute__(self, name):
