@@ -1,12 +1,16 @@
 import json
-import asyncio
+import requests
 from database.credentials import get_genlayer_db_connection
-from consensus.utils import vrf, get_contract_state, create_tar_archive, write_json_from_docker_tar
-import docker
+from consensus.utils import vrf, get_contract_state, genvm_url
 
-client = docker.from_env()
+from dotenv import load_dotenv
+load_dotenv()
 
-
+# Description: This will create the contract on the shared drive and then
+#              call the genvm to execute it. This will be changed at a
+#              later date
+# TODO: deliver the contract through S3, postgres, celery or sent as part
+#       of the call to the flaskapi in the genvm
 def leader_executes_transaction(transaction_input, leader):
     leader_receipt = {
         "leader":leader, 
@@ -18,7 +22,6 @@ def leader_executes_transaction(transaction_input, leader):
     current_contract_state = get_contract_state(transaction_input["contract_address"])
 
     args_str = ", ".join(f"{json.dumps(arg)}" for arg in transaction_input["args"])
-    exec_file_name = "contract_execution.py"
 
     exec_file_for_genvm = f"""
 {current_contract_state['code']}
@@ -33,34 +36,20 @@ if __name__=="__main__":
     asyncio.run(main())
     """
 
-    tar_stream = create_tar_archive(exec_file_name, exec_file_for_genvm)
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "leader_executes_transaction",
+        "params": [exec_file_for_genvm],
+        "id": 2,
+    }
+    result = requests.post(genvm_url()+'/api', json=payload).json()
 
-    container = client.containers.create(image="genvm:latest", network_mode="host") # TODO: this has to be replaced with a compose and the ollama server there
-
-    try:
-        container.put_archive("/genvm/", tar_stream)
-
-        container.start()
-
-        logs = container.logs(stream=True)
-        for line in logs:
-            print(line.strip().decode())
-            if "Leader execution has ended." in line.decode():
-                bits, _ = container.get_archive("/genvm/receipt.json")
-                print("Detected script completion.")
-                break
-
-        container.stop()
-
-        write_json_from_docker_tar(bits, "genvm/receipt.json")
-
-        with open("genvm/receipt.json", "r") as file:
-            genvm_file = json.load(file)
-        leader_receipt["contract_state"] = genvm_file["contract_state"]
-        leader_receipt["non_det_inputs"] = genvm_file["non_det_inputs"]
-        leader_receipt["non_det_outputs"] = genvm_file["non_det_outputs"]
-    finally:
-        container.remove()
+    if 'result' in result and 'status' in result['result']:
+        leader_receipt["contract_state"] = result["result"]["status"]["contract_state"]
+        leader_receipt["non_det_inputs"] = result["result"]["status"]["non_det_inputs"]
+        leader_receipt["non_det_outputs"] = result["result"]["status"]["non_det_outputs"]
+    else:
+        raise Exception("The GenVM responded with: "+str(result))
 
     return leader_receipt
 

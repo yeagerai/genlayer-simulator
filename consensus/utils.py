@@ -1,3 +1,4 @@
+import os
 import random
 from database.credentials import get_genlayer_db_connection
 import tarfile
@@ -24,10 +25,9 @@ def get_contract_state(contract_address: str) -> dict: # that should be on the r
 
     try:
         cursor.execute(
-            "SELECT state FROM current_state WHERE id = %s;", (contract_address,)
+            "SELECT state FROM current_state WHERE id = (%s);", (contract_address,)
         )
         contract_row = cursor.fetchone()
-
         if contract_row is not None:
             contract_state = contract_row[0]
             return contract_state
@@ -40,29 +40,5 @@ def get_contract_state(contract_address: str) -> dict: # that should be on the r
         cursor.close()
         connection.close()
 
-
-def create_tar_archive(file_name, file_content):
-    pw_tarstream = BytesIO()
-    pw_tar = tarfile.TarFile(fileobj=pw_tarstream, mode="w")
-    file_data = file_content.encode("utf-8")
-
-    tarinfo = tarfile.TarInfo(name=file_name)
-    tarinfo.size = len(file_data)
-    tarinfo.mtime = time.time()
-
-    pw_tar.addfile(tarinfo, BytesIO(file_data))
-    pw_tar.close()
-    pw_tarstream.seek(0)
-    return pw_tarstream
-
-def write_json_from_docker_tar(bits, path):
-    file_like_object = BytesIO()
-    for chunk in bits:
-        file_like_object.write(chunk)
-    file_like_object.seek(0)  # Rewind the file-like object to read from it
-
-    with tarfile.open(fileobj=file_like_object) as tar:
-        member = tar.next()  # Get the first member in the tar archive
-        if member is not None:
-            with open(path, "wb") as receipt_file:
-                receipt_file.write(tar.extractfile(member).read())   
+def genvm_url():
+    return os.environ['GENVMPROTOCOL']+'://'+os.environ['GENVMHOST']+':'+os.environ['GENVMPORT']
