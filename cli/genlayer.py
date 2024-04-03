@@ -2,34 +2,10 @@ import json
 import click
 import requests
 import random
-from os import environ
 from typing import IO
 
-from dotenv import load_dotenv
-load_dotenv()
+json_rpc_url = "http://localhost:4000/api"
 
-json_rpc_url = environ.get('RPCPROTOCOL')+"://localhost:"+environ.get('RPCPORT')+"/api"
-
-
-def create_db_logic() -> dict:
-    payload = {
-        "jsonrpc": "2.0",
-        "method": "create_db",
-        "params": [],
-        "id": 1,
-    }
-    response = requests.post(json_rpc_url, json=payload).json()
-    return response
-
-def create_tables_logic() -> dict:
-    payload = {
-        "jsonrpc": "2.0",
-        "method": "create_tables",
-        "params": [],
-        "id": 1,
-    }
-    response = requests.post(json_rpc_url, json=payload).json()
-    return response
 
 def create_eoa_logic(balance:float) -> dict:
     payload = {
@@ -80,15 +56,6 @@ def contract_logic(from_account:str, contract_address:str, function:str, args:tu
     response = requests.post(json_rpc_url, json=payload).json()
     return response
 
-def count_validators_logic() -> list:
-    payload = {
-        "jsonrpc": "2.0",
-        "method": "count_validators",
-        "params": [],
-        "id": 4,
-    }
-    return requests.post(json_rpc_url, json=payload).json()
-
 def register_validators_logic(count:int, min_stake:float, max_stake:float) -> list:
     responses = []
     for _ in range(count):
@@ -113,28 +80,10 @@ def last_contracts_logic(number:int) -> dict:
     response = requests.post(json_rpc_url, json=payload).json()
     return response
 
-
-# -- Click Commands ---
-
-
 @click.group()
 def cli():
     pass
 
-
-@click.command(
-    help="Create the GenLayer database"
-)
-def create_db():
-    response = create_db_logic()
-    click.echo(response)
-
-@click.command(
-    help="Create the GenLayer tables"
-)
-def create_tables():
-    response = create_tables_logic()
-    click.echo(response)
 
 @click.command(
     help="Create a new Externally Owned Account (EOA) with an initial balance."
@@ -191,13 +140,6 @@ def contract(from_account, contract_address, function, args):
     response = contract_logic(from_account, contract_address, function, args)
     click.echo(response)
 
-@click.command(help="Tells you how many validators there are in the network.")
-def count_validators(count, min_stake, max_stake):
-    response = count_validators_logic()
-    click.echo(
-        f"There are {response['count']} validators in the network."
-    )
-
 
 @click.command(help="Register X validators to the network with random stakes.")
 @click.option(
@@ -223,10 +165,6 @@ def last_contracts(number):
     response = last_contracts_logic(number)
     click.echo(json.dumps(response))
     return response
-
-# setup commands
-cli.add_command(create_db)
-cli.add_command(create_tables)
 
 ## read commands
 cli.add_command(last_contracts)
