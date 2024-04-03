@@ -1,34 +1,14 @@
-import os
 import json
 import asyncio
 import uuid
-import psycopg2
 from flask import Flask
 from flask_jsonrpc import JSONRPC
 
-from database.init_db import create_db_if_it_doesnt_already_exists, create_tables_if_they_dont_already_exist
 from database.credentials import get_genlayer_db_connection
 from consensus.algorithm import exec_transaction
 
-from dotenv import load_dotenv
-load_dotenv()
-
-# TODO: Do we need logging?
-app = Flask('jsonrpc_api')
+app = Flask(__name__)
 jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
-
-
-@jsonrpc.method("create_db")
-def create_db() -> dict:
-    result = create_db_if_it_doesnt_already_exists()
-    app.logger.info(result)
-    return {"status": result}
-
-@jsonrpc.method("create_tables")
-def create_tables() -> dict:
-    result = create_tables_if_they_dont_already_exist(app)
-    app.logger.info(result)
-    return {"status": result}
 
 
 @jsonrpc.method("create_new_EOA")
@@ -113,40 +93,20 @@ def deploy_intelligent_contract(from_account: str, contract_code: str, initial_s
     cursor = connection.cursor()
     contract_id = str(uuid.uuid4())
 
-    try:
-        cursor.execute(
-            "INSERT INTO current_state (id, state) VALUES (%s, %s);",
-            (contract_id, json.dumps({"code": contract_code, "state": initial_state})),
-        )
-        cursor.execute(
-            "INSERT INTO transactions (from_address, to_address, data, type) VALUES (%s, %s, %s, 1);",
-            (from_account, contract_id, json.dumps({"contract_code": contract_code})),
-        )
-    except psycopg2.errors.UndefinedTable:
-        app.logger.error('create the tables in the database first')
-    except psycopg2.errors.InFailedSqlTransaction:
-        app.logger.error('create the tables in the database first')
+    cursor.execute(
+        "INSERT INTO current_state (id, state) VALUES (%s, %s);",
+        (contract_id, json.dumps({"code": contract_code, "state": initial_state})),
+    )
+
+    cursor.execute(
+        "INSERT INTO transactions (from_address, to_address, data, type) VALUES (%s, %s, %s, 1);",
+        (from_account, contract_id, json.dumps({"contract_code": contract_code})),
+    )
 
     connection.commit()
     cursor.close()
     connection.close()
     return {"status": "deployed", "contract_id": contract_id}
-
-
-@jsonrpc.method("count_validators")
-def count_validators() -> dict:
-    connection = get_genlayer_db_connection()
-    cursor = connection.cursor()
-
-    cursor.execute("SELECT count(*) FROM validators;")
-
-    row = cursor.fetchone()
-
-    connection.commit()
-    cursor.close()
-    connection.close()
-
-    return {"count": row[0]}
 
 
 @jsonrpc.method("register_validator")
@@ -227,4 +187,4 @@ def get_last_contracts(number_of_contracts: int) -> list:
     return contracts_info
 
 if __name__ == "__main__":
-    app.run(debug=True, port=os.environ['RPCPORT'], host='0.0.0.0')
+    app.run(debug=True, port=4000)
