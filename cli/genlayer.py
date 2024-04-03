@@ -31,11 +31,21 @@ def create_tables_logic() -> dict:
     response = requests.post(json_rpc_url, json=payload).json()
     return response
 
-def create_eoa_logic(balance:float) -> dict:
+def create_account_logic() -> dict:
     payload = {
         "jsonrpc": "2.0",
-        "method": "create_new_EOA",
-        "params": [balance],
+        "method": "create_account",
+        "params": [],
+        "id": 1,
+    }
+    response = requests.post(json_rpc_url, json=payload).json()
+    return response
+
+def fund_account_logic(address:str, balance:float) -> dict:
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "fund_account",
+        "params": [address, balance],
         "id": 1,
     }
     response = requests.post(json_rpc_url, json=payload).json()
@@ -137,13 +147,23 @@ def create_tables():
     click.echo(response)
 
 @click.command(
-    help="Create a new Externally Owned Account (EOA) with an initial balance."
+    help="Create a new account"
+)
+def create_account():
+    response = create_account_logic()
+    click.echo(response)
+
+@click.command(
+    help="Add funds to an account"
 )
 @click.option(
-    "--balance", type=float, required=True, help="Initial balance for the new account."
+    "--address", type=str, required=True, help="The address you would like to add the funds to."
 )
-def create_eoa(balance):
-    response = create_eoa_logic(balance)
+@click.option(
+    "--balance", type=float, default=10, help="Funds to add to account."
+)
+def fund_account(address, balance):
+    response = fund_account_logic(address, balance)
     click.echo(response)
 
 @click.command(help="Send currency from one account to another.")
@@ -232,7 +252,8 @@ cli.add_command(create_tables)
 cli.add_command(last_contracts)
 
 ## write commands
-cli.add_command(create_eoa)
+cli.add_command(create_account)
+cli.add_command(fund_account)
 cli.add_command(register_validators)
 cli.add_command(send)
 

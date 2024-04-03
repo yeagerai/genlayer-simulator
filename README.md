@@ -13,22 +13,45 @@ The GenLayer prototype consists of the following main components:
 
 ## Installation
 
-# Window One
+### Window One
 
 ```
+$ cp .env.example .env
 $ docker-composer up
 ```
 
-# Window Two
+#### (Installing the Ollama model)
+
+```
+$ docker exec -it ollama ollama run llama2
+...
+```
+
+### Window Two
 
 ```
 $ virtualenv .venv
 $ source .venv/bin/activate
-(.venv) $ pip install -r rewquirments.txt
-(.venv) $ export PYTHONPATH="${PYTHONPATH}:/.../genlayer-prototype"
+(.venv) $ pip install -r requirements.txt
+(.venv) $ export PYTHONPATH="$(pwd)"
+```
+
+#### Demo
+
+```
+(.venv) $ python scripts/debug_prototype.py
+```
+
+#### Seperate Steps
+
+```
 (.venv) $ python cli/genlayer.py create-db
 ...
 (.venv) $ python cli/genlayer.py create-tables
+...
+(.venv) # python cli/genlayer.py create-account
+{'id': 1, 'jsonrpc': '2.0', 'result': {'address': '0x...', 'balance': 0, 'status': 'account created'}}
+(.venv) # python cli/genlayer.py fund-account --address 0x...
 ...
 ```
 

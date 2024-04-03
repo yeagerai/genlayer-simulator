@@ -1,6 +1,9 @@
 import psycopg2
 from os import environ
 
+from dotenv import load_dotenv
+load_dotenv()
+
 orig_db_params = {
     "dbname": "postgres",
     "user": environ.get('DBUSER'),
