@@ -1,31 +1,31 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Python: Debug Server",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/rpc/server.py",
-            "console": "integratedTerminal",
-            "env": {
-              "PYTHONPATH": "${workspaceRoot}",
-              "DOCKER_HOST": "unix:///var/run/docker.sock"
-            },
-            "args": []
-          },
-          {
-            "name": "Python: Debug Launch Prototype",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/scripts/debug_prototype.py",
-            "console": "integratedTerminal",
-            "env": {
-              "PYTHONPATH": "${workspaceRoot}",
-              "DOCKER_HOST": "unix:///var/run/docker.sock"
-            },
-            "args": []
-        },
+  "version": "0.2.0",
+  "configurations": [
     {
+        "name": "Python: Debug Server",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${workspaceFolder}/rpc/server.py",
+        "console": "integratedTerminal",
+        "env": {
+          "PYTHONPATH": "${workspaceRoot}",
+          "DOCKER_HOST": "unix:///var/run/docker.sock"
+        },
+        "args": []
+      },
+      {
+        "name": "Python: Debug Launch Prototype",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${workspaceFolder}/scripts/debug_prototype.py",
+        "console": "integratedTerminal",
+        "env": {
+          "PYTHONPATH": "${workspaceRoot}",
+          "DOCKER_HOST": "unix:///var/run/docker.sock"
+        },
+        "args": []
+      },
+      {
         "name": "Python: Run wizzard_of_coin",
         "type": "debugpy",
         "request": "launch",
@@ -38,6 +38,27 @@
           "DOCKER_HOST": "unix:///var/run/docker.sock"
         },
         "args": []
+      },
+      // TODO: Need to get this working for debugging
+      {
+        "name": "Docker: RPC-endpoint",
+        "type": "docker",
+        "request": "launch",
+        "program": "${workspaceFolder}/script/debug_prototype.py",
+        "console": "integratedTerminal",
+        "env": {
+          "PYTHONPATH": "${workspaceRoot}"
+        },
+        "preLaunchTask": "docker-compose",
+        "python": {
+          "pathMappings": [
+            {
+              "localRoot": "${workspaceFolder}",
+              "remoteRoot": "/app"
+            }
+          ],
+          "projectType": "docker"
+        }
       }
     ],
     "compounds": [

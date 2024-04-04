@@ -13,58 +13,65 @@ The GenLayer prototype consists of the following main components:
 
 ## Installation
 
+### Window One
+
 ```
-$ sudo apt install postgresql
-$ sudo -u postgres psql
-# ALTER USER postgres WITH PASSWORD 'postgres';
-# ALTER USER postgres WITH SUPERUSER;
-# flush
-# \q
-$ sudo apt-get install libpq-dev
-$ sudo apt-get install python3-psycopg2
+$ cp .env.example .env
+$ docker compose build
+$ docker compose up
+```
+
+#### Installing the Ollama model
+
+```
+$ docker exec -it ollama ollama run llama2
+...
+```
+
+### Window Two
+
+```
 $ virtualenv .venv
 $ source .venv/bin/activate
-(.venv) $ pip install -r rewquirments.txt
-(.venv) $ export PYTHONPATH="${PYTHONPATH}:/.../genlayer-prototype"
-(.venv) $ python database/init_db.py
+(.venv) $ pip install -r requirements.txt
+(.venv) $ export PYTHONPATH="$(pwd)"
 ```
 
-* Install `postgresql` on your computer and start the server.
-* Create a user in the `postgresql` server named `postgresql` with password `postgresql`.
-* Create a new venv called `genlayer` with `python 3.11`. For instance `conda create --name genlayer python=3.11`.
-* Activate venv and install requirements.
-* Execute `python database/init_db.py` to create the tables of the db.
-* Build GenVM docker image. First `cd` into `genvm` folder. Then `docker build -t genvm .`.
+#### Demo
 
-## Execution
+```
+(.venv) $ python scripts/debug_prototype.py
+```
+
+#### Seperate Steps
+
+```
+(.venv) $ python cli/genlayer.py create-db
+...
+(.venv) $ python cli/genlayer.py create-tables
+...
+(.venv) # python cli/genlayer.py create-account
+{'id': 1, 'jsonrpc': '2.0', 'result': {'address': '0x...', 'balance': 0, 'status': 'account created'}}
+(.venv) # python cli/genlayer.py fund-account --address 0x...
+...
+```
+
+## Nodes
 
 * Run `rpc/server.py` to launch the server on port `4000`.
 * Run some CLI commands to create an initial state with validators, and deployed contracts:
     ```
-    python genlayer.py register-validators --count 10 --min-stake 1 --max-stake 10
-
-    New validator registered with stake 1.51
-    New validator registered with stake 6.96
-    New validator registered with stake 7.40
-    New validator registered with stake 3.95
-    New validator registered with stake 7.30
-    New validator registered with stake 2.26
-    New validator registered with stake 4.34
-    New validator registered with stake 8.26
-    New validator registered with stake 9.87
-    New validator registered with stake 8.13
+    (.venv) # python cli/genlayer.py register-validators --count 10 --min-stake 1 --max-stake 10
     Registered 10 validators with stakes ranging from 1.0 to 10.0.
-    ```
-    ```
-    python genlayer.py create-eoa --balance 10
-    
+    (.venv) # python cli/genlayer.py create-eoa --balance 10
     {'id': 1, 'jsonrpc': '2.0', 'result': {'balance': 10.0, 'id': '95594942-17e5-4f91-8862-c3a4eae5b58c', 'status': 'EOA created'}}
-    ```
-    ```
-    python genlayer.py deploy --from-account 95594942-17e5-4f91-8862-c3a4eae5b58c /home/user/Documents/genlayer/genlayer-node-prototype/contracts/wizzard_of_coin.py
-    
+    (.venv) # python cli/genlayer.py deploy --from-account 95594942-17e5-4f91-8862-c3a4eae5b58c genvm/contracts/wizzard_of_coin.py
     {{'30a079b5-4615-4b4f-a7c8-807f1f9d1577', 'status': 'deployed'}}
+    (.venv) # python cli/genlayer.py contract --from-account <from_address> --contract-address 30a079b5-4615-4b4f-a7c8-807f1f9d1577 --function WizzardOfCoin.ask_for_coin --args <from_address> --args Dave
+    {'id': 3, 'jsonrpc': '2.0', 'result': {'message': "Function 'WizzardOfCoin.ask_for_coin' called on contract at 30a079b5-4615-4b4f-a7c8-807f1f9d1577 with args ['<from_address>', 'Dave'].", 'status': 'success'}}
     ```
+
+    *(NOTE: <from_address> can be '95594942-17e5-4f91-8862-c3a4eae5b58c' or another address)*
 
     That will create an initial state that enables the user to start sending transactions to the network. You can check all the changes on DB with a viewer such as `dbeaver`.
 
