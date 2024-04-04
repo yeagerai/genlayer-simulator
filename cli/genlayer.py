@@ -73,7 +73,7 @@ def deploy_logic(from_account:str, contract_code_file:IO[bytes], initial_state:s
     payload = {
         "jsonrpc": "2.0",
         "method": "deploy_intelligent_contract",
-        "params": [from_account, contract_code.decode("utf-8"), initial_state_dict],
+        "params": [from_account, contract_code.decode("utf-8"), initial_state],
         "id": 2,
     }
     response = requests.post(json_rpc_url, json=payload).json()

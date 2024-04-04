@@ -1,6 +1,7 @@
 import json
 import requests
 from database.credentials import get_genlayer_db_connection
+from database.types import ConsensusData
 from consensus.utils import vrf, get_contract_state, genvm_url
 
 from dotenv import load_dotenv
@@ -27,9 +28,9 @@ def leader_executes_transaction(transaction_input, leader):
 {current_contract_state['code']}
 
 async def main():
-    current_contract = {transaction_input["function"].split('.')[0]}(**{str(current_contract_state['state'])})
+    current_contract = {transaction_input["function_name"].split('.')[0]}(**{str(current_contract_state['state'])})
     current_contract.mode = "leader"
-    await current_contract.{transaction_input["function"].split('.')[1]}({args_str})
+    await current_contract.{transaction_input["function_name"].split('.')[1]}({args_str})
 
 if __name__=="__main__":
     import asyncio    
@@ -95,7 +96,7 @@ async def exec_transaction(transaction_input, logger=None):
         logger(f"Leader {leader} starts contract execution...")
     # Leader executes transaction
     leader_receipt = leader_executes_transaction(transaction_input, leader)
-    votes = json.dumps({leader: leader_receipt["vote"]})
+    votes = {leader: leader_receipt["vote"]}
 
     if logger:
         logger(f"Leader {leader} has finished contract execution...")
@@ -117,18 +118,16 @@ async def exec_transaction(transaction_input, logger=None):
     data = json.dumps({"new_contract_state" : leader_receipt["contract_state"]})
     transaction_type = 2
     final = False
-    leader_data = json.dumps(leader_receipt)
-
+    leader_data = leader_receipt
+    consensus_data = ConsensusData(final=final, votes=votes, leader_data=leader_data).model_dump_json()
     cursor.execute(
-        "INSERT INTO transactions (from_address, to_address, data, type, created_at, final, votes, leader_data) VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP, %s, %s, %s);",
+        "INSERT INTO transactions (from_address, to_address, data, consensus_data, type, created_at) VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP);",
         (
             from_address,
             to_address,
             data,
+            consensus_data,
             transaction_type,
-            final,
-            votes,
-            leader_data,
         ),
     )
 

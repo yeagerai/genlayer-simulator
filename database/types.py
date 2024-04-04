@@ -1,24 +1,20 @@
 from typing import Dict, List
-from dataclasses import dataclass
+from pydantic import BaseModel
 
-@dataclass
-class LeaderData:
+class LeaderData(BaseModel):
     state: Dict
     non_det_calls: Dict[str,str] # input, output
 
-@dataclass
-class ConsensusData:
-    final: str
-    votes: Dict[str,bool]
-    leader_data: LeaderData
+class ConsensusData(BaseModel):
+    final: bool
+    votes: Dict[str,str]
+    leader_data: Dict #LeaderData TODO: finish the data enforcing
 
-@dataclass
-class ContractData:
+class ContractData(BaseModel):
     code: str
     state: Dict
 
-@dataclass
-class CallContractInputData:
+class CallContractInputData(BaseModel):
     contract_address: str
     function_name: str
     args: List

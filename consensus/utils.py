@@ -1,9 +1,7 @@
 import os
 import random
 from database.credentials import get_genlayer_db_connection
-import tarfile
-import time
-from io import BytesIO
+import json
 
 
 def vrf(items, weights, k):
@@ -25,12 +23,12 @@ def get_contract_state(contract_address: str) -> dict: # that should be on the r
 
     try:
         cursor.execute(
-            "SELECT state FROM current_state WHERE id = (%s);", (contract_address,)
+            "SELECT data FROM current_state WHERE id = (%s);", (contract_address,)
         )
         contract_row = cursor.fetchone()
         if contract_row is not None:
             contract_state = contract_row[0]
-            return contract_state
+            return json.loads(contract_state)
         else:
             return {}
     except Exception as e:

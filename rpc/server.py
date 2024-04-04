@@ -11,7 +11,7 @@ from flask_socketio import SocketIO
 
 from database.init_db import create_db_if_it_doesnt_already_exists, create_tables_if_they_dont_already_exist
 from database.credentials import get_genlayer_db_connection
-from database.types import ConsensusData, ContractData, CallContractInputData
+from database.types import ContractData, CallContractInputData
 from consensus.algorithm import exec_transaction
 
 from dotenv import load_dotenv
@@ -31,6 +31,7 @@ def handle_disconnect():
 
 def log_status(message):
     socketio.emit('status_update', {'message': message})
+
 def create_new_address() -> str:
     new_address = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(40))
     return '0x' + new_address
@@ -64,7 +65,7 @@ def create_account() -> dict:
     account_state = json.dumps({"balance": balance})
 
     cursor.execute(
-        "INSERT INTO current_state (id, state) VALUES (%s, %s);",
+        "INSERT INTO current_state (id, data) VALUES (%s, %s);",
         (new_address, account_state),
     )
     return {"address": new_address, "balance": balance, "status": "account created"}
@@ -85,13 +86,13 @@ def fund_account(account: string, balance: float) -> dict:
 
     # Update current_state table with the new account and its balance
     cursor.execute(
-        "INSERT INTO current_state (id, state) VALUES (%s, %s);",
+        "INSERT INTO current_state (id, data) VALUES (%s, %s);",
         (current_account, account_state),
     )
 
     # Optionally log the account creation in the transactions table
     cursor.execute(
-        "INSERT INTO transactions (from_address, to_address, value, type) VALUES (NULL, %s, %s, %s, 0);",
+        "INSERT INTO transactions (from_address, to_address, data, value, type) VALUES (NULL, %s, %s, %s, 0);",
         (
             current_account,
             json.dumps({"action": "create_account", "initial_balance": balance}),
@@ -117,29 +118,29 @@ def send_transaction(from_account: str, to_account: str, amount: float) -> dict:
     cursor = connection.cursor()
 
     # Verify sender's balance
-    cursor.execute("SELECT state FROM current_state WHERE id = %s;", (from_account,))
+    cursor.execute("SELECT data FROM current_state WHERE id = %s;", (from_account,))
     sender_state = cursor.fetchone()
     if sender_state and sender_state[0].get("balance", 0) >= amount:
         # Update sender's balance
         new_sender_balance = sender_state[0]["balance"] - amount
         cursor.execute(
-            "UPDATE current_state SET state = jsonb_set(state, '{balance}', %s) WHERE id = %s;",
+            "UPDATE current_state SET data = jsonb_set(data, '{balance}', %s) WHERE id = %s;",
             (json.dumps(new_sender_balance), from_account),
         )
 
         # Update recipient's balance
-        cursor.execute("SELECT state FROM current_state WHERE id = %s;", (to_account,))
+        cursor.execute("SELECT data FROM current_state WHERE id = %s;", (to_account,))
         recipient_state = cursor.fetchone()
         if recipient_state:
             new_recipient_balance = recipient_state[0].get("balance", 0) + amount
             cursor.execute(
-                "UPDATE current_state SET state = jsonb_set(state, '{balance}', %s) WHERE id = %s;",
+                "UPDATE current_state SET data = jsonb_set(data, '{balance}', %s) WHERE id = %s;",
                 (json.dumps(new_recipient_balance), to_account),
             )
         else:
             # Create account if it doesn't exist
             cursor.execute(
-                "INSERT INTO current_state (id, state) VALUES (%s, %s);",
+                "INSERT INTO current_state (id, data) VALUES (%s, %s);",
                 (to_account, json.dumps({"balance": amount})),
             )
 
@@ -159,7 +160,7 @@ def send_transaction(from_account: str, to_account: str, amount: float) -> dict:
 
 
 @jsonrpc.method("deploy_intelligent_contract")
-def deploy_intelligent_contract(from_account: str, contract_code: str, initial_state: dict) -> dict:
+def deploy_intelligent_contract(from_account: str, contract_code: str, initial_state: str) -> dict:
 
     if not address_is_in_correct_format(from_account):
         return {"status": "from_account not in ethereum address format"}
@@ -167,14 +168,14 @@ def deploy_intelligent_contract(from_account: str, contract_code: str, initial_s
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
     contract_id = create_new_address()
-    contract_data = ContractData(contract_code, initial_state)
+    contract_data = ContractData(code=contract_code, state=json.loads(initial_state)).model_dump_json()
     try:
         cursor.execute(
-            "INSERT INTO current_state (id, contract_data) VALUES (%s, %s);",
+            "INSERT INTO current_state (id, data) VALUES (%s, %s);",
             (contract_id, json.dumps(contract_data)),
         )
         cursor.execute(
-            "INSERT INTO transactions (from_address, to_address, contract_data, type) VALUES (%s, %s, %s, 1);",
+            "INSERT INTO transactions (from_address, to_address, data, type) VALUES (%s, %s, %s, 1);",
             (from_account, contract_id, json.dumps(contract_data)),
         )
     except psycopg2.errors.UndefinedTable:
@@ -213,7 +214,7 @@ def register_validator(stake: float) -> dict:
     eoa_state = json.dumps({"staked_balance": stake})
 
     cursor.execute(
-        "INSERT INTO current_state (id, state) VALUES (%s, %s);", (eoa_id, eoa_state)
+        "INSERT INTO current_state (id, data) VALUES (%s, %s);", (eoa_id, eoa_state)
     )
 
     validator_info = json.dumps({"eoa_id": eoa_id, "stake": stake})
@@ -242,13 +243,11 @@ async def call_contract_function(
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
 
-    function_call_data = json.dumps(
-        CallContractInputData(contract_address, function_name, args)
-    )
+    function_call_data = CallContractInputData(contract_address=contract_address, function_name=function_name, args=args).model_dump_json()
 
     cursor.execute(
-        "INSERT INTO transactions (from_address, to_address, input_data, type, created_at, final) VALUES (%s, %s, %s, 2, CURRENT_TIMESTAMP, %s);",
-        (from_account, contract_address, function_call_data, False),
+        "INSERT INTO transactions (from_address, to_address, input_data, type, created_at) VALUES (%s, %s, %s, 2, CURRENT_TIMESTAMP);",
+        (from_account, contract_address, function_call_data),
     )
 
     connection.commit()
@@ -303,4 +302,4 @@ def get_contract_state(contract_address: str) -> list:
     return json.dumps(contract)
 
 if __name__ == "__main__":
-    app.run(debug=True, port=os.environ['RPCPORT', 5000], host='0.0.0.0')
+    socketio.run(app, debug=True, port=os.environ.get('RPCPORT'), host='0.0.0.0', allow_unsafe_werkzeug=True)

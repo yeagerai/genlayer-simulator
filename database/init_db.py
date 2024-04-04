@@ -12,7 +12,7 @@ def db_get_transactions_table_create_command() -> str:
         from_address VARCHAR(255),
         to_address VARCHAR(255),
         input_data JSONB,
-        contract_data JSONB,
+        data JSONB,
         consensus_data JSONB,
         nonce INT,
         value NUMERIC,
@@ -21,7 +21,7 @@ def db_get_transactions_table_create_command() -> str:
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         r INT,
         s INT,
-        v INT,
+        v INT
     )
     """
 
@@ -33,7 +33,7 @@ def db_get_current_state_table_create_command() -> str:
     return """
     CREATE TABLE IF NOT EXISTS current_state (
         id VARCHAR(255) PRIMARY KEY,
-        contract_data JSONB NOT NULL,
+        data JSONB NOT NULL,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     )
     """
