@@ -1,0 +1,22 @@
+FROM python:3.12.2-slim
+
+ARG path=/app
+
+RUN mkdir $path
+WORKDIR $path
+
+COPY ../.env .
+
+ADD genvm $path/genvm
+
+WORKDIR $path/genvm
+
+RUN ln contracts/base.py /tmp/base.py
+RUN ln contracts/llms.py /tmp/llms.py
+
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install Flask
+
+ENV PYTHONPATH "${PYTHONPATH}:/${path}"
+
+CMD ["python", "server.py"]
