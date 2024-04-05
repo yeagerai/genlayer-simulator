@@ -30,6 +30,7 @@ def icontract(cls):
     class WrappedClass(cls):
         def __init__(self, *args, **kwargs):
             self.mode = ""
+            self.model = llms.get_random_llm_model()
             self.gas_used = 0
             self.non_det_counter = 0
             self.non_det_inputs = {}
@@ -37,31 +38,27 @@ def icontract(cls):
             self.eq_principles_outs = {}
             super(WrappedClass, self).__init__(*args, **kwargs)
 
-        async def call_llm(self, model, prompt, consensus_eq=None, mode='leader', leader_output=None):
-            endpoint = 'generate'
-
-            if model not in os.environ['GENVMOLLAMAMODELS'] and  model not in os.environ['GENVMOPENAIMODELS']:
-                raise Exception('That LLM model does not exist ('+model+')')
+        async def call_llm(self, prompt, consensus_eq=None, mode='leader', leader_output=None):
             
             llm_function = getattr(llms, 'call_ollama')
-            if model in os.environ['GENVMOPENAIMODELS']:
+            if self.model in os.environ['GENVMOPENAIMODELS']:
                 llm_function = getattr(llms, 'call_openai')
 
             self.non_det_inputs[self.non_det_counter] = {}
             self.non_det_inputs[self.non_det_counter]["input"] = prompt
             if self.mode == 'leader':
-                final_response = await llm_function(endpoint, model, prompt, None, None)
+                final_response = await llm_function(self.model, prompt, None, None)
                 self.non_det_outputs[self.non_det_counter] = {}
                 self.non_det_outputs[self.non_det_counter]["output"] = final_response
                 self.non_det_counter+=1
                 return final_response
             
             elif self.mode == 'validator' and consensus_eq and leader_output:
-                validator_response = await llm_function(endpoint, model, prompt, None, None)
+                validator_response = await llm_function(self.model, prompt, None, None)
                 self.non_det_outputs[self.non_det_counter] = {}
                 self.non_det_outputs[self.non_det_counter]["output"] = validator_response
                 eq_prompt = f"Given the equivalence principle '{consensus_eq}', decide whether the following two outputs can be considered equivalent.\nOutput 1: {leader_output}\nOutput 2: {validator_response}\nRespond with: TRUE or FALSE"
-                validation_response = await llm_function(endpoint, model, eq_prompt, None, None)
+                validation_response = await llm_function(self.model, eq_prompt, None, None)
 
                 agreement = True if validation_response.strip().upper() == "TRUE" else False
                 self.eq_principles_outs[self.non_det_counter] = {}

@@ -22,7 +22,6 @@ def leader_executes_transaction(icontract:str) -> dict:
         print(icontract)
         print('--- END: icontract ---')
 
-    #TODO: a more secure directory or filename
     with open(icontract_file, 'w+') as file:
         file.write(icontract)
     file.close()
