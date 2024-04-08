@@ -14,71 +14,66 @@ The GenLayer prototype consists of the following main components:
 
 ## Installation
 
-### Step 1: Set up the Docker environment
+### Window One - Set up the Docker environment
 
-Open a terminal window (Window One), navigate to the project directory, and run the following commands:
 ```
 $ cp .env.example .env
 $ docker compose build
 $ docker compose up
 ```
 
-### Step 2: Install the Ollama model
+### Window Two
 
-Open a new terminal window (Window Two) and run the following command to install the Ollama model:
+#### 1. Install the Ollama model
+
 ```
 $ docker exec -it ollama ollama run llama2
 ```
 
-### Step 3: Set up the virtual environment
+#### 2. Set up the virtual environment
 
-In the same terminal window (Window Two), create a new virtual environment and install the required packages:
-
-- For Linux/MacOS:
   ```
   $ virtualenv .venv
   $ source .venv/bin/activate
   (.venv) $ pip install -r requirements.txt
   (.venv) $ export PYTHONPATH="$(pwd)"
   ```
-- For Windows (cmd):
-  ```
-  $ virtualenv .venv
-  $ .\\.venv\\Scripts\\activate
-  (.venv) $ pip install -r requirements.txt
-  (.venv) $ set PYTHONPATH=%cd%
-  ```
-- For Windows (PowerShell):
-  ```
-  $ virtualenv .venv
-  $ .\\.venv\\Scripts\\activate
-  (.venv) $ pip install -r requirements.txt
-  (.venv) $ $env:PYTHONPATH = (Get-Location).Path
-  ```
 
-### Step 4: Execute the demo
+For Windows users, see the instructions at the bottom of this [README](instructions-for-windows-users).
 
-Run the demo script:
+#### 3: Execute the demo
+
+Run the demo script to create an initial state with validators, deploy a sample contract, and execute a transaction on the contract.
+
 ```
 (.venv) $ python scripts/debug_prototype.py
 ```
 
-### Alternative: Execute the steps separately
+#### Alternative: Execute the steps separately
 
 If you prefer to run the steps separately instead of using the demo script, follow these commands:
 
 1. Create the database:
    ```
    (.venv) $ python cli/genlayer.py create-db
+   ```
+
+2. Create the tables:
+   ```
    (.venv) $ python cli/genlayer.py create-tables
    ```
-2. Create and fund an account:
+
+3. Create an account:
    ```
    (.venv) # python cli/genlayer.py create-account
-   {'id': 1, 'jsonrpc': '2.0', 'result': {'address': '0x...', 'balance': 0, 'status': 'account created'}}
+   ```
+  
+4. Fund the account:
+   ```
    (.venv) # python cli/genlayer.py fund-account --address 0x...
    ```
-   Replace `0x...` with the address obtained from the `create-account` command.
+   Replace `0x...` with the address obtained from the `create-account` command. This command funds the specified account.
+
 
 ## Nodes
 
@@ -102,3 +97,24 @@ If you prefer to run the steps separately instead of using the demo script, foll
 * Execute a transaction. You can use the `scripts/debug_contract.py` there you would see the execution syntax, and you can start creating and debugging intelligent contracts.
 
 From now on you can create new intelligent contracts and test them by executing transactions with this prototype.
+
+## Instructions for Windows Users
+
+If you are using Windows, follow these steps to set up the virtual environment:
+
+- For Windows (cmd):
+  ```
+  $ virtualenv .venv
+  $ .\\.venv\\Scripts\\activate
+  (.venv) $ pip install -r requirements.txt
+  (.venv) $ set PYTHONPATH=%cd%
+  ```
+- For Windows (PowerShell):
+  ```
+  $ virtualenv .venv
+  $ .\\.venv\\Scripts\\activate
+  (.venv) $ pip install -r requirements.txt
+  (.venv) $ $env:PYTHONPATH = (Get-Location).Path
+  ```
+
+After setting up the virtual environment, you can continue with the installation and running the nodes as described above.
