@@ -158,3 +158,8 @@ async def exec_transaction(transaction_input, logger=None):
 
     if logger:
         logger(f"Transaction has been fully executed...")
+
+    execution_output = {}
+    execution_output["leader_data"] = leader_data
+    execution_output["consensus_data"] = consensus_data
+    return execution_output

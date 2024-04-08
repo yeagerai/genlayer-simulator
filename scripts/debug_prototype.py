@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+import json
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -103,4 +104,5 @@ last_contract_id = last_contract_output['result'][0]['contract_id']  # Example p
 # Call the contract
 args = (new_account, "Can you please return me my coin?")
 call_contract_output = contract_logic(new_account, last_contract_id, function_to_execute, args)
-print("Call contract command output:", call_contract_output)
+print("Call contract command output:")
+print(json.dumps(call_contract_output, indent=4))
