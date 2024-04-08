@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
-import { onMounted, ref, shallowRef, watchEffect, watch } from 'vue'
+import { ref, shallowRef, watch, defineEmits } from 'vue';
+import { rpc } from '@/utils';
+const emit = defineEmits(['contract-deployed']);
 
 const editorElement = ref(null)
-const content = ref('test')
+const content = ref('')
 const editorRef = shallowRef<monaco.editor.IStandaloneCodeEditor | null>(null)
 
 watch(
@@ -26,10 +28,24 @@ watch(
   () => content.value,
   (newValue: string) => {
     if (editorRef.value && editorRef.value.getValue() !== newValue) {
-      editorRef.value.setValue(newValue!)
+      editorRef.value.setValue(newValue!);
     }
   },
 )
+
+const deployContract = async () => {
+  console.log('handle contract deply')
+  // call json_rpc to get the abi
+  // deploy the contract code
+ const result = await rpc({
+    method: 'deploy_intelligent_contract', params: [
+      '0x17E317855F22eeFcCF6fFF5119AdfF6FFC98dBac',
+      content,
+      ''
+    ]
+  })
+  console.log({ result })
+}
 
 const clearContent = () => {
   content.value = '';
@@ -66,13 +82,7 @@ const loadContentFromFile = (event: Event) => {
           <input type="file" @change="loadContentFromFile">
         </div>
       </label>
-      <v-btn icon>
-        <v-icon>mdi-code-tags-check</v-icon>
-        <v-tooltip activator="parent" location="bottom">
-          Parse Contract
-        </v-tooltip>
-      </v-btn>
-      <v-btn icon>
+      <v-btn icon @click="deployContract" :disabled="content.length < 1">
         <v-icon>mdi-code-greater-than</v-icon>
         <v-tooltip activator="parent" location="bottom">
           Deploy Contract

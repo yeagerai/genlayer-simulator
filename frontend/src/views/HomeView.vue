@@ -3,6 +3,10 @@ import CodeEditor from '@/components/CodeEditor.vue'
 import ContractState from '@/components/ContractState.vue'
 import NodeLogs from '@/components/NodeLogs.vue'
 import ContractOperations from '@/components/ContractOperations.vue'
+
+function handleContentChange(content: string) {
+  console.log('handleContentChange', content)
+}
 </script>
 
 <template>
@@ -12,7 +16,7 @@ import ContractOperations from '@/components/ContractOperations.vue'
         <ContractState />
       </v-col>
       <v-col>
-        <CodeEditor />
+        <CodeEditor @contend-change="handleContentChange"/>
       </v-col>
     </v-row>
     <v-row>

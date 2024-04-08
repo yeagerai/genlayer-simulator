@@ -8,6 +8,7 @@ import string
 from flask import Flask
 from flask_jsonrpc import JSONRPC
 from flask_socketio import SocketIO
+from flask_cors import CORS
 
 from database.init_db import create_db_if_it_doesnt_already_exists, create_tables_if_they_dont_already_exist
 from database.credentials import get_genlayer_db_connection
@@ -20,6 +21,7 @@ load_dotenv()
 app = Flask('jsonrpc_api')
 jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
 socketio = SocketIO(app)
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 @socketio.on('connect')
 def handle_connect():
@@ -188,6 +190,9 @@ def deploy_intelligent_contract(from_account: str, contract_code: str, initial_s
     connection.close()
     return {"status": "deployed", "contract_id": contract_id}
 
+@jsonrpc.method("get_contract_abi")
+def deploy_intelligent_contract(contract_id: str) -> dict:
+    return {"status": "deployed", "contract_id": contract_id}
 
 @jsonrpc.method("count_validators")
 def count_validators() -> dict:
