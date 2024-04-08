@@ -12,10 +12,15 @@ jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
 
 
 @jsonrpc.method("leader_executes_transaction")
-def leader_executes_transaction(icontract:str) -> dict:
+def leader_executes_transaction(icontract:str, leader_config:dict) -> dict:
 
     icontract_file = os.environ.get('GENVMCONLOC') + '/icontract.py'
     recipt_file = os.environ.get('GENVMCONLOC') + '/receipt.json'
+    node_config_file = os.environ.get('GENVMCONLOC') + '/node-config.json'
+
+    with open(node_config_file, 'w') as file:
+        leader_config['type'] = 'leader'
+        json.dump(leader_config, file, indent=4)
 
     if int(os.environ.get('DEBUG')) == 1:
         print('--- START: icontract ---')

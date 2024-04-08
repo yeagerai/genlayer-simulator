@@ -4,14 +4,16 @@ import requests
 import numpy as np
 from random import random, choice
 
+from database.credentials import get_genlayer_loacalhost_db_connection
+
 from dotenv import load_dotenv
 load_dotenv()
 
 def get_ollama_url(endpoint:str) -> str:
     return f"{os.environ['OLAMAPROTOCOL']}://localhost:{os.environ['OLAMAPORT']}/api/{endpoint}"
 
-def provider_and_model_as_json(provider:str, model:str) -> dict:
-    return {'provider': provider, 'model': model}
+def base_node_json(provider:str, model:str, id:str) -> dict:
+    return {'provider': provider, 'model': model, 'id':id}
 
 def num_decimal_places(number:float) -> int:
     fractional_part = number - int(number)
@@ -24,6 +26,8 @@ def num_decimal_places(number:float) -> int:
 
 def create_nodes():
     cwd = os.path.abspath(os.getcwd())
+
+    nodes_dir = '/consensus/nodes'
 
     # make sure the models are avaliable
     result = requests.get(get_ollama_url('tags')).json()
@@ -43,7 +47,7 @@ def create_nodes():
     available_models = available_models[1:]
 
     # Get all the model defaults
-    file = open(cwd + '/defaults.json', 'r')
+    file = open(cwd + nodes_dir + '/defaults.json', 'r')
     contents = json.load(file)[0]
 
     defaults = contents['defaults']
@@ -52,19 +56,29 @@ def create_nodes():
 
     all_nodes = []
 
-    for _ in range(int(os.environ['NUMVALIDATORS'])):
+    connection = get_genlayer_loacalhost_db_connection()
+    cursor = connection.cursor()
+    cursor.execute(
+        "SELECT validator_info->>'eoa_id' AS validator_id, stake FROM validators;"
+    )
+    validator_data = cursor.fetchall()
+
+    # Are there validators?
+    if len(validator_data) < int(os.environ['NUMVALIDATORS']):
+        raise Exception('Add validators to the database')
+
+    for validator in validator_data:
 
         # Use OpenAI
         if random() >= ollama_openai_split:
             model = choice(defaults['openai_models'].split(','))
-            node_config = provider_and_model_as_json('openai', model)
+            node_config = base_node_json('openai', model, validator[0])
             node_config['config'] = {}
-            all_nodes.append(node_config)
 
         # Use Ollama
         else:
             model = choice(available_models.split(','))
-            node_config = provider_and_model_as_json('ollama', model)
+            node_config = base_node_json('ollama', model, validator[0])
 
             options = None
             for provider in contents['node_defaults']:
@@ -106,7 +120,7 @@ def create_nodes():
 
         all_nodes.append(node_config)
 
-    with open(cwd + '/nodes.json', 'w') as file:
+    with open(cwd + nodes_dir + '/nodes.json', 'w') as file:
         json.dump(all_nodes, file, indent=4)
 
 
@@ -114,7 +128,7 @@ if __name__=="__main__":
     
     cwd = os.path.abspath(os.getcwd())
     
-    if 'consensus' not in cwd or 'nodes' not in cwd:
+    if cwd.endswith('genlayter-prototype'):
         raise Exception('This script needs to be run from the consensus/nodes/ folder')
     
     if os.path.exists(cwd + '/nodes.json'):

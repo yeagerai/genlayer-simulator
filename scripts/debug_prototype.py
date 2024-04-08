@@ -1,10 +1,11 @@
 import os
 import sys
 import time
-from cli.genlayer import register_validators_logic, count_validators_logic
 
 from dotenv import load_dotenv
 load_dotenv()
+
+cwd = os.path.abspath(os.getcwd())
 
 
 print('Checking environement...')
@@ -16,7 +17,7 @@ if 'VIRTUAL_ENV' not in os.environ and 'CONDA_DEFAULT_ENV' not in os.environ:
     sys.exit()
 
 # Make sure the file is being run from the project folder (not the scipts folder)
-if os.path.basename(os.path.normpath(os.getcwd())) == 'scripts':
+if not cwd.endswith('genlayer-prototype'):
     print('Run this script from the project root')
     sys.exit()
 
@@ -24,11 +25,14 @@ if os.path.basename(os.path.normpath(os.getcwd())) == 'scripts':
 # (export PYTHONPATH="/home/personal/Projects/Genlayer/genlayer-prototype")
 if 'PYTHONPATH' not in os.environ:
     print('Run the following command:')
-    print(('>>> export PYTHONPATH="'+os.getcwd()+'" <<<').format(42))
+    print(('$ export PYTHONPATH="'+os.getcwd()+'"').format(42))
     sys.exit()
 
 
+from consensus.nodes.create_nodes import create_nodes
 from cli.genlayer import (
+    register_validators_logic,
+    count_validators_logic,
     create_db_logic,
     create_tables_logic,
     last_contracts_logic,
@@ -49,11 +53,15 @@ response = count_validators_logic()
 if 'result' in response and 'count' in response['result']:
     if response['result']['count'] == 0:
         print('Creating validators...')
-        register_validators_logic(os.environ['RCPNUMVALIDATORS'], 1, 10)
+        register_validators_logic(int(os.environ['NUMVALIDATORS']), 1, 10)
     else:
         print('Validators already created.')
 else:
     raise Exception('The count_validators rpc function failed!')
+
+# Create a config file for the nodes
+if not os.path.exists(cwd + 'consensus/nodes/nodes.json'):
+    create_nodes()
 
 # Create a new account
 create_account_result = create_account_logic()
