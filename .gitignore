@@ -133,3 +133,9 @@ receipt.json
 
 # LLM models
 .ollama
+
+# node config file
+consensus/node_configs.json
+
+# don't include the nodes configuration
+consensus/nodes/nodes.json

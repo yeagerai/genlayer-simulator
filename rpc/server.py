@@ -254,13 +254,14 @@ async def call_contract_function(
     log_status(f"Transaction sent from {from_account} to {contract_address}...")
 
     # call consensus
-    asyncio.create_task(exec_transaction(json.loads(function_call_data), logger=log_status))
+    execution_output = await exec_transaction(json.loads(function_call_data), logger=log_status)
 
     cursor.close()
     connection.close()
     return {
         "status": "success",
         "message": f"Function '{function_name}' called on contract at {contract_address} with args {args}.",
+        "execution_output": execution_output
     }
 
 @jsonrpc.method("get_last_contracts")

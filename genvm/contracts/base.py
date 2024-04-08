@@ -4,7 +4,7 @@ import asyncio
 import json
 import functools
 
-from genvm.contracts.llms import call_ollama
+from genvm.contracts import llms
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -29,7 +29,7 @@ def serialize(obj):
 def icontract(cls):
     class WrappedClass(cls):
         def __init__(self, *args, **kwargs):
-            self.mode = ""
+            self.node_config = json.load(open(os.environ.get('GENVMCONLOC') + '/node-config.json'))
             self.gas_used = 0
             self.non_det_counter = 0
             self.non_det_inputs = {}
@@ -38,21 +38,26 @@ def icontract(cls):
             super(WrappedClass, self).__init__(*args, **kwargs)
 
         async def call_llm(self, prompt, consensus_eq=None, mode='leader', leader_output=None):
+            
+            llm_function = getattr(llms, 'call_ollama')
+            if self.node_config['provider'] == 'openai':
+                llm_function = getattr(llms, 'call_openai')
+
             self.non_det_inputs[self.non_det_counter] = {}
             self.non_det_inputs[self.non_det_counter]["input"] = prompt
-            if self.mode == 'leader':
-                final_response = await call_ollama("generate", "llama2", prompt, None, None)
+            if self.node_config['type'] == 'leader':
+                final_response = await llm_function(self.node_config, prompt, None, None)
                 self.non_det_outputs[self.non_det_counter] = {}
                 self.non_det_outputs[self.non_det_counter]["output"] = final_response
                 self.non_det_counter+=1
                 return final_response
             
-            elif self.mode == 'validator' and consensus_eq and leader_output:
-                validator_response = await call_ollama("generate", "llama2", prompt, None, None)
+            elif self.confnode_configig['type'] == 'validator' and consensus_eq and leader_output:
+                validator_response = await llm_function(self.node_config, prompt, None, None)
                 self.non_det_outputs[self.non_det_counter] = {}
                 self.non_det_outputs[self.non_det_counter]["output"] = validator_response
                 eq_prompt = f"Given the equivalence principle '{consensus_eq}', decide whether the following two outputs can be considered equivalent.\nOutput 1: {leader_output}\nOutput 2: {validator_response}\nRespond with: TRUE or FALSE"
-                validation_response = await call_ollama("generate", "llama2", eq_prompt, None, None)
+                validation_response = await llm_function(self.node_config, eq_prompt, None, None)
 
                 agreement = True if validation_response.strip().upper() == "TRUE" else False
                 self.eq_principles_outs[self.non_det_counter] = {}
