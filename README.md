@@ -39,9 +39,9 @@ $ docker exec -it ollama ollama run llama2
   (.venv) $ export PYTHONPATH="$(pwd)"
   ```
 
-For Windows users, see the instructions at the bottom of this [README](instructions-for-windows-users).
+For Windows users, see the instructions at the bottom of this [README](#instructions-for-windows-users).
 
-#### 3: Execute the demo
+#### 3. Execute the demo
 
 Run the demo script to create an initial state with validators, deploy a sample contract, and execute a transaction on the contract.
 
@@ -117,4 +117,4 @@ If you are using Windows, follow these steps to set up the virtual environment:
   (.venv) $ $env:PYTHONPATH = (Get-Location).Path
   ```
 
-After setting up the virtual environment, you can continue with the installation and running the nodes as described above.
+After setting up the virtual environment, you can continue with the installation process as described above.
