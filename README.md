@@ -53,22 +53,20 @@ Run the demo script to create an initial state with validators, deploy a sample 
 
 If you prefer to run the steps separately instead of using the demo script, follow these commands:
 
-1. Create the database:
+- Create the database:
    ```
    (.venv) $ python cli/genlayer.py create-db
    ```
-
-2. Create the tables:
+- Create the tables:
    ```
    (.venv) $ python cli/genlayer.py create-tables
    ```
-
-3. Create an account:
+- Create an account:
    ```
    (.venv) # python cli/genlayer.py create-account
+   {'id': 1, 'jsonrpc': '2.0', 'result': {'address': '0x...', 'balance': 0, 'status': 'account created'}}
    ```
-  
-4. Fund the account:
+- Fund the account:
    ```
    (.venv) # python cli/genlayer.py fund-account --address 0x...
    ```
