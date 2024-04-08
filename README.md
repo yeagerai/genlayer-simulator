@@ -65,13 +65,12 @@ If you prefer to run the steps separately instead of using the demo script, foll
    ```
    (.venv) # python cli/genlayer.py create-account
    {'id': 1, 'jsonrpc': '2.0', 'result': {'address': '0xE36Ecf4fAc0EC678dbc0FD33280ff6A99C974e8d', 'balance': 0, 'status': 'account created'}}
-   ```
-   
+   ``` 
 5. Fund the account:
    ```
    (.venv) # python cli/genlayer.py fund-account --address 0xE36Ecf4fAc0EC678dbc0FD33280ff6A99C974e8d
    ```
-   **Note:** Replace 0xE36Ecf4fAc0EC678dbc0FD33280ff6A99C974e8d with your own account address.
+   **Note:** Replace `0xE36Ecf4fAc0EC678dbc0FD33280ff6A99C974e8d` with your own account address.
       
 6. Register validators:
    ```
@@ -79,19 +78,18 @@ If you prefer to run the steps separately instead of using the demo script, foll
    Registered 10 validators with stakes ranging from 1.0 to 10.0.
    ``` 
 7. Deploy a contract:
-
     ```
    (.venv) # python cli/genlayer.py deploy --from-account 0xE36Ecf4fAc0EC678dbc0FD33280ff6A99C974e8d genvm/contracts/wizzard_of_coin.py
    {'id': 2, 'jsonrpc': '2.0', 'result': {'contract_id': '0xFdCAf400cC808EfcBAfD1f6Ff53beEbfFea4bcEb', 'status': 'deployed'}}
    ```
-  **Note:** Replace 0xE36Ecf4fAc0EC678dbc0FD33280ff6A99C974e8d with your own account address.
+  **Note:** Replace `0xE36Ecf4fAc0EC678dbc0FD33280ff6A99C974e8d` with your own account address.
   
 8. Interact with the deployed contract:
    ```
    (.venv) # python cli/genlayer.py contract --from-account 0xE36Ecf4fAc0EC678dbc0FD33280ff6A99C974e8d --contract-address 0xFdCAf400cC808EfcBAfD1f6Ff53beEbfFea4bcEb --function WizzardOfCoin.ask_for_coin --args 95594942-17e5-4f91-8862-c3a4eae5b58c --args Dave
    {'id': 3, 'jsonrpc': '2.0', 'result': {'message': "Function 'WizzardOfCoin.ask_for_coin' called on contract at 0xFdCAf400cC808EfcBAfD1f6Ff53beEbfFea4bcEb with args ['95594942-17e5-4f91-8862-c3a4eae5b58c', 'Dave'].", 'status': 'success'}}
    ```
-**Note:** Replace 0xE36Ecf4fAc0EC678dbc0FD33280ff6A99C974e8d and 0xFdCAf400cC808EfcBAfD1f6Ff53beEbfFea4bcEb with your own account address and contract address.
+**Note:** Replace `0xE36Ecf4fAc0EC678dbc0FD33280ff6A99C974e8d` and `0xFdCAf400cC808EfcBAfD1f6Ff53beEbfFea4bcEb` with your own account address and contract address.
   
 You can check the changes in the database using a viewer like `dbeaver`.
 
@@ -115,5 +113,4 @@ If you are using Windows, follow these steps to set up the virtual environment:
   (.venv) $ pip install -r requirements.txt
   (.venv) $ $env:PYTHONPATH = (Get-Location).Path
   ```
-
 After setting up the virtual environment, you can continue with the installation process as described above.
