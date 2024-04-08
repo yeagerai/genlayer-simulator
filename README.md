@@ -93,8 +93,6 @@ If you prefer to run the steps separately instead of using the demo script, foll
   
 You can check the changes in the database using a viewer like `dbeaver`.
 
-You can now create and test new intelligent contracts by executing transactions with this prototype.
-
 ## Instructions for Windows Users
 
 If you are using Windows, follow these steps to set up the virtual environment:
