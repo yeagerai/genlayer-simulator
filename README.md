@@ -11,69 +11,76 @@ The GenLayer prototype consists of the following main components:
 * **The Consensus Algorithm:** A python routine that launches execution processes into the GenVM, following the approach defined in the whitepaper.
 * **Gen Virtual Machine (GenVM):** A Dockerized environment prepared to run intelligent contracts safely.
 
+
+Sure! Here's an updated version that keeps the related commands together to save space:
+
 ## Installation
 
-### Window One
+### Step 1: Set up the Docker environment
 
+Open a terminal window (Window One), navigate to the project directory, and run the following commands:
 ```
 $ cp .env.example .env
 $ docker compose build
 $ docker compose up
 ```
 
-### Window Two
+### Step 2: Install the Ollama model
 
-#### 1. Installing the Ollama model
-
+Open a new terminal window (Window Two) and run the following command to install the Ollama model:
 ```
 $ docker exec -it ollama ollama run llama2
-...
 ```
 
-#### 2. Set up the environment
+### Step 3: Set up the virtual environment
 
-##### Linux / MacOS
-```
-$ virtualenv .venv
-$ source .venv/bin/activate
-(.venv) $ pip install -r requirements.txt
-(.venv) $ export PYTHONPATH="$(pwd)"
-```
+In the same terminal window (Window Two), create a new virtual environment and install the required packages:
 
-##### Windows (cmd)
-```
-$ virtualenv .venv
-$  .\.venv\Scripts\activate
-(.venv) $ pip install -r requirements.txt
-(.venv) $ set PYTHONPATH=%cd%
-```
+- For Linux/MacOS:
+  ```
+  $ virtualenv .venv
+  $ source .venv/bin/activate
+  (.venv) $ pip install -r requirements.txt
+  (.venv) $ export PYTHONPATH="$(pwd)"
+  ```
+- For Windows (cmd):
+  ```
+  $ virtualenv .venv
+  $ .\\.venv\\Scripts\\activate
+  (.venv) $ pip install -r requirements.txt
+  (.venv) $ set PYTHONPATH=%cd%
+  ```
+- For Windows (PowerShell):
+  ```
+  $ virtualenv .venv
+  $ .\\.venv\\Scripts\\activate
+  (.venv) $ pip install -r requirements.txt
+  (.venv) $ $env:PYTHONPATH = (Get-Location).Path
+  ```
 
-##### Windows (PowerShell)
-```
-$ virtualenv .venv
-$  .\.venv\Scripts\activate
-(.venv) $ pip install -r requirements.txt
-(.venv) $ $env:PYTHONPATH = (Get-Location).Path
-```
+### Step 4: Execute the demo
 
-#### Execute the Demo
-
+Run the demo script:
 ```
 (.venv) $ python scripts/debug_prototype.py
 ```
 
-#### Seperate Steps
+### Alternative: Execute the steps separately
 
-```
-(.venv) $ python cli/genlayer.py create-db
-...
-(.venv) $ python cli/genlayer.py create-tables
-...
-(.venv) # python cli/genlayer.py create-account
-{'id': 1, 'jsonrpc': '2.0', 'result': {'address': '0x...', 'balance': 0, 'status': 'account created'}}
-(.venv) # python cli/genlayer.py fund-account --address 0x...
-...
-```
+If you prefer to run the steps separately instead of using the demo script, follow these commands:
+
+1. Create the database:
+   ```
+   (.venv) $ python cli/genlayer.py create-db
+   (.venv) $ python cli/genlayer.py create-tables
+   ```
+2. Create and fund an account:
+   ```
+   (.venv) # python cli/genlayer.py create-account
+   {'id': 1, 'jsonrpc': '2.0', 'result': {'address': '0x...', 'balance': 0, 'status': 'account created'}}
+   (.venv) # python cli/genlayer.py fund-account --address 0x...
+   ```
+   Replace `0x...` with the address obtained from the `create-account` command.
 
 ## Nodes
 
