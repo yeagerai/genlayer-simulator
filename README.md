@@ -12,8 +12,6 @@ The GenLayer prototype consists of the following main components:
 * **Gen Virtual Machine (GenVM):** A Dockerized environment prepared to run intelligent contracts safely.
 
 
-Sure! Here's an updated version that keeps the related commands together to save space:
-
 ## Installation
 
 ### Step 1: Set up the Docker environment
