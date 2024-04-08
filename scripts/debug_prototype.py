@@ -3,6 +3,9 @@ import sys
 import time
 from cli.genlayer import register_validators_logic, count_validators_logic
 
+from dotenv import load_dotenv
+load_dotenv()
+
 
 print('Checking environement...')
 # Check you in a viretualenv
@@ -46,7 +49,7 @@ response = count_validators_logic()
 if 'result' in response and 'count' in response['result']:
     if response['result']['count'] == 0:
         print('Creating validators...')
-        register_validators_logic(10, 1, 10)
+        register_validators_logic(os.environ['RCPNUMVALIDATORS'], 1, 10)
     else:
         print('Validators already created.')
 else:
