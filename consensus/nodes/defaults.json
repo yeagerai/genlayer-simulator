@@ -1,8 +1,8 @@
 [
     {
         "defaults": {
-            "ollama_openai_split": 0.5,
-            "openai_models": "gpt-3.5-turbo",
+            "ollama_openai_split": 0.0,
+            "openai_models": "gpt-4",
             "chance_of_default_value": 0.5
         },
         "node_defaults": [
