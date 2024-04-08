@@ -29,6 +29,9 @@ async def call_ollama(model_config:str, prompt:str, regex: Optional[str], return
 
     data = {"model": model_config['model'], "prompt": prompt}
 
+    for name, value in model_config['config'].items():
+        data[name] = value
+
     buffer = ""
     async for chunk_json in stream_http_response(url, data):
         chunk = json.loads(chunk_json)
