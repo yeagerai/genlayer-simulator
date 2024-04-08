@@ -75,25 +75,41 @@ $  .\.venv\Scripts\activate
 ...
 ```
 
-## Nodes
 
-* Run `rpc/server.py` to launch the server on port `4000`.
-* Run some CLI commands to create an initial state with validators, and deployed contracts:
-    ```
-    (.venv) # python cli/genlayer.py register-validators --count 10 --min-stake 1 --max-stake 10
-    Registered 10 validators with stakes ranging from 1.0 to 10.0.
-    (.venv) # python cli/genlayer.py create-eoa --balance 10
-    {'id': 1, 'jsonrpc': '2.0', 'result': {'balance': 10.0, 'id': '95594942-17e5-4f91-8862-c3a4eae5b58c', 'status': 'EOA created'}}
-    (.venv) # python cli/genlayer.py deploy --from-account 95594942-17e5-4f91-8862-c3a4eae5b58c genvm/contracts/wizzard_of_coin.py
-    {{'30a079b5-4615-4b4f-a7c8-807f1f9d1577', 'status': 'deployed'}}
-    (.venv) # python cli/genlayer.py contract --from-account <from_address> --contract-address 30a079b5-4615-4b4f-a7c8-807f1f9d1577 --function WizzardOfCoin.ask_for_coin --args <from_address> --args Dave
-    {'id': 3, 'jsonrpc': '2.0', 'result': {'message': "Function 'WizzardOfCoin.ask_for_coin' called on contract at 30a079b5-4615-4b4f-a7c8-807f1f9d1577 with args ['<from_address>', 'Dave'].", 'status': 'success'}}
-    ```
+## Running the Nodes
 
-    *(NOTE: <from_address> can be '95594942-17e5-4f91-8862-c3a4eae5b58c' or another address)*
+1. Run `rpc/server.py` to start the server on port `4000`.
 
-    That will create an initial state that enables the user to start sending transactions to the network. You can check all the changes on DB with a viewer such as `dbeaver`.
+2. Set up the initial state:
+   - Open a terminal and activate the virtual environment (if not already active):
+     ```
+     $ source .venv/bin/activate
+     ```
+   - Register validators:
+     ```
+     (.venv) # python cli/genlayer.py register-validators --count 10 --min-stake 1 --max-stake 10
+     ```
+     This command registers 10 validators with stakes ranging from 1.0 to 10.0.
+   - Create an externally owned account (EOA):
+     ```
+     (.venv) # python cli/genlayer.py create-eoa --balance 10
+     ```
+     This command creates an EOA with a balance of 10.0. The output will include the account's ID, which you'll need in the next steps.
+   - Deploy a contract:
+     ```
+     (.venv) # python cli/genlayer.py deploy --from-account <EOA_ID> genvm/contracts/wizzard_of_coin.py
+     ```
+     Replace `<EOA_ID>` with the ID of the EOA created in the previous step. This command deploys the "Wizzard of Coin" contract.
+   - Interact with the deployed contract:
+     ```
+     (.venv) # python cli/genlayer.py contract --from-account <EOA_ID> --contract-address <CONTRACT_ADDRESS> --function WizzardOfCoin.ask_for_coin --args <EOA_ID> --args Dave
+     ```
+     Replace `<EOA_ID>` with the ID of the EOA and `<CONTRACT_ADDRESS>` with the address of the deployed contract from the previous step. This command calls the `ask_for_coin` function of the "Wizzard of Coin" contract.
 
-* Execute a transaction. You can use the `scripts/debug_contract.py` there you would see the execution syntax, and you can start creating and debugging intelligent contracts.
+   After executing these commands, you will have an initial state set up with validators, an EOA, and a deployed contract. You can check the changes in the DB using a viewer like `dbeaver`.
 
-From now on you can create new intelligent contracts and test them by executing transactions with this prototype.
+3. Execute transactions:
+   - Use the `scripts/debug_contract.py` script to create and debug intelligent contracts.
+   - Modify the script to define your own transactions and test them by executing the script.
+
+Now you can create new intelligent contracts and test them by executing transactions with this prototype.
