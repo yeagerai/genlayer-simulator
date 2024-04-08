@@ -66,25 +66,25 @@ If you prefer to run the steps separately instead of using the demo script, foll
    (.venv) # python cli/genlayer.py create-account
    {'id': 1, 'jsonrpc': '2.0', 'result': {'address': '0xE36Ecf4fAc0EC678dbc0FD33280ff6A99C974e8d', 'balance': 0, 'status': 'account created'}}
    ``` 
-5. Fund the account:
+4. Fund the account:
    ```
    (.venv) # python cli/genlayer.py fund-account --address 0xE36Ecf4fAc0EC678dbc0FD33280ff6A99C974e8d
    ```
    **Note:** Replace `0xE36Ecf4fAc0EC678dbc0FD33280ff6A99C974e8d` with your own account address.
       
-6. Register validators:
+5. Register validators:
    ```
    (.venv) # python cli/genlayer.py register-validators --count 10 --min-stake 1 --max-stake 10
    Registered 10 validators with stakes ranging from 1.0 to 10.0.
    ``` 
-7. Deploy a contract:
+6. Deploy a contract:
     ```
    (.venv) # python cli/genlayer.py deploy --from-account 0xE36Ecf4fAc0EC678dbc0FD33280ff6A99C974e8d genvm/contracts/wizzard_of_coin.py
    {'id': 2, 'jsonrpc': '2.0', 'result': {'contract_id': '0xFdCAf400cC808EfcBAfD1f6Ff53beEbfFea4bcEb', 'status': 'deployed'}}
    ```
   **Note:** Replace `0xE36Ecf4fAc0EC678dbc0FD33280ff6A99C974e8d` with your own account address.
   
-8. Interact with the deployed contract:
+7. Interact with the deployed contract:
    ```
    (.venv) # python cli/genlayer.py contract --from-account 0xE36Ecf4fAc0EC678dbc0FD33280ff6A99C974e8d --contract-address 0xFdCAf400cC808EfcBAfD1f6Ff53beEbfFea4bcEb --function WizzardOfCoin.ask_for_coin --args 0xFdCAf400cC808EfcBAfD1f6Ff53beEbfFea4bcEb --args Dave
    {'id': 3, 'jsonrpc': '2.0', 'result': {'message': "Function 'WizzardOfCoin.ask_for_coin' called on contract at 0xFdCAf400cC808EfcBAfD1f6Ff53beEbfFea4bcEb with args ['0xFdCAf400cC808EfcBAfD1f6Ff53beEbfFea4bcEb', 'Dave'].", 'status': 'success'}}
