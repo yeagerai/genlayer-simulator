@@ -69,9 +69,7 @@ If you prefer to run the steps separately instead of using the demo script, foll
 4. Fund the account:
    ```
    (.venv) # python cli/genlayer.py fund-account --address 0xE36Ecf4fAc0EC678dbc0FD33280ff6A99C974e8d
-   ```
- **Note:** Replace `0xE36Ecf4fAc0EC678dbc0FD33280ff6A99C974e8d` with your own account address.
-      
+   ```  
 5. Register validators:
    ```
    (.venv) # python cli/genlayer.py register-validators --count 10 --min-stake 1 --max-stake 10
@@ -82,8 +80,6 @@ If you prefer to run the steps separately instead of using the demo script, foll
    (.venv) # python cli/genlayer.py deploy --from-account 0xE36Ecf4fAc0EC678dbc0FD33280ff6A99C974e8d genvm/contracts/wizzard_of_coin.py
    {'id': 2, 'jsonrpc': '2.0', 'result': {'contract_id': '0xFdCAf400cC808EfcBAfD1f6Ff53beEbfFea4bcEb', 'status': 'deployed'}}
    ```
- **Note:** Replace `0xE36Ecf4fAc0EC678dbc0FD33280ff6A99C974e8d` with your own account address.
-  
 7. Interact with the deployed contract:
    ```
    (.venv) # python cli/genlayer.py contract --from-account 0xE36Ecf4fAc0EC678dbc0FD33280ff6A99C974e8d --contract-address 0xFdCAf400cC808EfcBAfD1f6Ff53beEbfFea4bcEb --function WizzardOfCoin.ask_for_coin --args 0xFdCAf400cC808EfcBAfD1f6Ff53beEbfFea4bcEb --args Dave
