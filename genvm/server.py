@@ -71,13 +71,13 @@ def get_icontract_schema(icontract:str) -> dict:
 
     debug_output('icontract', icontract)
 
-    # Get the class name
-    class_name_matches = re.search("class [a-zA-Z]*:", icontract)
-    if not class_name_matches:
-        raise Exception('This contract does not have a class declaration')
+    class_name = None
+    for node in ast.parse(icontract).body:
+        if isinstance(node, ast.ClassDef):
+            class_name = node.name
     
-    # 'class dave:' => 'dave'
-    class_name = (class_name_matches.group()[:-1]).split(' ')[1]
+    if not class_name:
+        raise Exception('This contract does not have a class declaration')
 
     namespace = {}
     exec(icontract, globals(), namespace)
