@@ -72,15 +72,15 @@ def get_icontract_schema(icontract:str) -> dict:
     debug_output('icontract', icontract)
 
     class_name = None
-    for node in ast.parse(icontract).body:
-        if isinstance(node, ast.ClassDef):
-            class_name = node.name
+    namespace = {}
+    exec(icontract, globals(), namespace)
+    for class_name_in_contract, class_type_in_contract in namespace.items():
+        if 'WrappedClass' in str(class_type_in_contract):
+            class_name = class_name_in_contract
     
     if not class_name:
         raise Exception('This contract does not have a class declaration')
 
-    namespace = {}
-    exec(icontract, globals(), namespace)
     iclass = namespace[class_name]
 
     members = inspect.getmembers(iclass)
