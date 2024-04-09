@@ -1,10 +1,10 @@
 import os
 import re
 import json
-import asyncio
 import psycopg2
 import random
 import string
+import requests
 from flask import Flask
 from flask_jsonrpc import JSONRPC
 from flask_socketio import SocketIO
@@ -13,6 +13,7 @@ from database.init_db import create_db_if_it_doesnt_already_exists, create_table
 from database.credentials import get_genlayer_db_connection
 from database.types import ContractData, CallContractInputData
 from consensus.algorithm import exec_transaction
+from consensus.utils import genvm_url
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -300,7 +301,46 @@ def get_contract_state(contract_address: str) -> list:
         (contract_address,)
     )
     contract = cursor.fetchall()
+
+    if not contract:
+        raise Exception(contract_address + ' contract does not exist')
+    
     return json.dumps(contract)
+
+@jsonrpc.method("get_icontract_schema")
+def get_icontract_schema(contract_address: str) -> dict:
+    connection = get_genlayer_db_connection()
+    cursor = connection.cursor()
+
+    # Query the database for the current state of a deployed contract
+    cursor.execute(
+        "SELECT * FROM transactions WHERE to_address = %s AND type = 1;",
+        (contract_address,)
+    )
+    tx = cursor.fetchone()
+
+    if not tx:
+        raise Exception(contract_address + ' contract does not exist')
+
+    # 4 = data
+    if not tx[4]:
+        raise Exception('contract' + contract_address + ' does not contain any data')
+
+    tx_contract = tx[4]
+
+    if 'code' not in json.loads(tx_contract):
+        raise Exception('contract' + contract_address + ' does not contain any contract code')
+    
+    contract = json.loads(tx_contract)['code']
+
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "get_icontract_schema",
+        "params": [contract],
+        "id": 2,
+    }
+    
+    return requests.post(genvm_url()+'/api', json=payload).json()
 
 if __name__ == "__main__":
     socketio.run(app, debug=True, port=os.environ.get('RPCPORT'), host='0.0.0.0', allow_unsafe_werkzeug=True)
