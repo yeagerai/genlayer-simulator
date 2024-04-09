@@ -21,15 +21,18 @@ $ docker compose build
 $ docker compose up
 ```
 
-#### Installing the Ollama model
+### Window Two
+
+#### 1. Installing the Ollama model
 
 ```
 $ docker exec -it ollama ollama run llama2
 ...
 ```
 
-### Window Two
+#### 2. Set up the environment
 
+##### Linux / MacOS
 ```
 $ virtualenv .venv
 $ source .venv/bin/activate
@@ -37,7 +40,23 @@ $ source .venv/bin/activate
 (.venv) $ export PYTHONPATH="$(pwd)"
 ```
 
-#### Demo
+##### Windows (cmd)
+```
+$ virtualenv .venv
+$  .\.venv\Scripts\activate
+(.venv) $ pip install -r requirements.txt
+(.venv) $ set PYTHONPATH=%cd%
+```
+
+##### Windows (PowerShell)
+```
+$ virtualenv .venv
+$  .\.venv\Scripts\activate
+(.venv) $ pip install -r requirements.txt
+(.venv) $ $env:PYTHONPATH = (Get-Location).Path
+```
+
+#### Execute the Demo
 
 ```
 (.venv) $ python scripts/debug_prototype.py

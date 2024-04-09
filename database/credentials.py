@@ -26,3 +26,16 @@ genlayer_db_params = {
 
 def get_genlayer_db_connection():
     return psycopg2.connect(**genlayer_db_params)
+
+
+genlayer_localhost_db_params = {
+    "dbname": "genlayer_state",
+    "user": environ.get('DBUSER'),
+    "password": environ.get('DBPASSWORD'),
+    "host": "localhost",
+    "port": 6000,
+}
+
+
+def get_genlayer_loacalhost_db_connection():
+    return psycopg2.connect(**genlayer_localhost_db_params)

@@ -1,3 +1,4 @@
+import os
 import json
 import requests
 from database.credentials import get_genlayer_db_connection
@@ -12,7 +13,7 @@ load_dotenv()
 #              later date
 # TODO: deliver the contract through S3, postgres, celery or sent as part
 #       of the call to the flaskapi in the genvm
-def leader_executes_transaction(transaction_input, leader):
+def leader_executes_transaction(transaction_input:str, leader:str, leader_config:dict) -> dict:
     leader_receipt = {
         "leader":leader, 
         "contract_state":{}, 
@@ -40,7 +41,7 @@ if __name__=="__main__":
     payload = {
         "jsonrpc": "2.0",
         "method": "leader_executes_transaction",
-        "params": [exec_file_for_genvm],
+        "params": [exec_file_for_genvm, leader_config],
         "id": 2,
     }
     result = requests.post(genvm_url()+'/api', json=payload).json()
@@ -73,6 +74,14 @@ async def validator_executes_transaction(transaction_input, leader_receipt, vali
 
 async def exec_transaction(transaction_input, logger=None):
     if logger:
+        logger("Checking the nodes.json config file has been created...")
+    cwd = os.path.abspath(os.getcwd())
+    nodes_file = cwd + '/consensus/nodes/nodes.json'
+    if not os.path.exists(nodes_file):
+        raise Exception('Create a configuratrion file for the nodes')
+    nodes_config = json.load(open(nodes_file))
+
+    if logger:
         logger("Selecting validators with VRF...")
     # Select validators
     connection = get_genlayer_db_connection()
@@ -81,6 +90,9 @@ async def exec_transaction(transaction_input, logger=None):
         "SELECT validator_info->>'eoa_id' AS validator_id, stake FROM validators;"
     )
     validator_data = cursor.fetchall()
+
+    if len(nodes_config) < len(validator_data):
+        raise Exception('Nodes in database ('+str(len(validator_data))+'). Nodes configured ('+str(len(nodes_config))+')')
 
     # Prepare validators and their stakes
     all_validators = [row[0] for row in validator_data]
@@ -94,8 +106,17 @@ async def exec_transaction(transaction_input, logger=None):
         logger(f"Selected Leader: {leader}...")
         logger(f"Selected Validators: {remaining_validators}...")
         logger(f"Leader {leader} starts contract execution...")
+
+    leader_config = None
+    for validator_config in nodes_config:
+        if validator_config['id'] == leader:
+            leader_config = validator_config
+
+    if not leader_config:
+        raise Exception('The config for node '+leader+' is not in consensus/nodes/nodes.json')
+    
     # Leader executes transaction
-    leader_receipt = leader_executes_transaction(transaction_input, leader)
+    leader_receipt = leader_executes_transaction(transaction_input, leader, leader_config)
     votes = {leader: leader_receipt["vote"]}
 
     if logger:
@@ -137,3 +158,8 @@ async def exec_transaction(transaction_input, logger=None):
 
     if logger:
         logger(f"Transaction has been fully executed...")
+
+    execution_output = {}
+    execution_output["leader_data"] = leader_data
+    execution_output["consensus_data"] = consensus_data
+    return execution_output

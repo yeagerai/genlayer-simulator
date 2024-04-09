@@ -1,10 +1,10 @@
 import os
 import re
 import json
-import asyncio
 import psycopg2
 import random
 import string
+import requests
 from flask import Flask
 from flask_jsonrpc import JSONRPC
 from flask_socketio import SocketIO
@@ -14,6 +14,7 @@ from database.init_db import create_db_if_it_doesnt_already_exists, create_table
 from database.credentials import get_genlayer_db_connection
 from database.types import ContractData, CallContractInputData
 from consensus.algorithm import exec_transaction
+from consensus.utils import genvm_url
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -257,13 +258,14 @@ async def call_contract_function(
     log_status(f"Transaction sent from {from_account} to {contract_address}...")
 
     # call consensus
-    asyncio.create_task(exec_transaction(json.loads(function_call_data), logger=log_status))
+    execution_output = await exec_transaction(json.loads(function_call_data), logger=log_status)
 
     cursor.close()
     connection.close()
     return {
         "status": "success",
         "message": f"Function '{function_name}' called on contract at {contract_address} with args {args}.",
+        "execution_output": execution_output
     }
 
 @jsonrpc.method("get_last_contracts")
@@ -302,40 +304,52 @@ def get_contract_state(contract_address: str) -> dict:
         (contract_address,)
     )
     row = cursor.fetchall()
+
     cursor.close()
     connection.close()
+    
+    if not row:
+        raise Exception(contract_address + ' contract does not exist')
+    
     return {
         "id": row[0][0],
         "data": json.loads(row[0][1])
     }
 
-@jsonrpc.method("get_contract_abi")
-def get_contract_state(contract_address: str) -> dict:
+@jsonrpc.method("get_icontract_schema")
+def get_icontract_schema(contract_address: str) -> dict:
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
 
     # Query the database for the current state of a deployed contract
     cursor.execute(
-        "SELECT id, data FROM current_state WHERE id = %s;",
+        "SELECT * FROM transactions WHERE to_address = %s AND type = 1;",
         (contract_address,)
     )
-    row = cursor.fetchall()
-    cursor.close()
-    connection.close()
-    return {
-         "id": row[0][0],
-        "data": json.loads(row[0][1]),
-        "methods": [
-            {
-                "name": "send_transaction",
-                "params": [
-                    { "name": "from_account", "type": "str"},
-                    { "name": "to_account", "type": "str"},
-                    { "name": "amount", "type": "float"}
-                ]
-            }
-        ]
+    tx = cursor.fetchone()
+
+    if not tx:
+        raise Exception(contract_address + ' contract does not exist')
+
+    # 4 = data
+    if not tx[4]:
+        raise Exception('contract' + contract_address + ' does not contain any data')
+
+    tx_contract = tx[4]
+
+    if 'code' not in json.loads(tx_contract):
+        raise Exception('contract' + contract_address + ' does not contain any contract code')
+    
+    contract = json.loads(tx_contract)['code']
+
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "get_icontract_schema",
+        "params": [contract],
+        "id": 2,
     }
+    
+    return requests.post(genvm_url()+'/api', json=payload).json()['result']
 
 if __name__ == "__main__":
     socketio.run(app, debug=True, port=os.environ.get('RPCPORT'), host='0.0.0.0', allow_unsafe_werkzeug=True)

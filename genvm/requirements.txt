@@ -1,4 +1,6 @@
 Flask-JSONRPC==3.0.1
 Flask[async]==3.0.2
 aiohttp==3.9.3
+requests==2.31.0
 python-dotenv==1.0.1
+openai==1.16.1
