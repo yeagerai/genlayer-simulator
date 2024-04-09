@@ -37,7 +37,7 @@ def icontract(cls):
             self.eq_principles_outs = {}
             super(WrappedClass, self).__init__(*args, **kwargs)
 
-        async def call_llm(self, prompt, consensus_eq=None, mode='leader', leader_output=None):
+        async def call_llm(self, prompt:str, consensus_eq:str=None, mode:str='leader', leader_output:str=None):
             
             llm_function = getattr(llms, 'call_ollama')
             if self.node_config['provider'] == 'openai':
