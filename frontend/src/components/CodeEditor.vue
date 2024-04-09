@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
-import { ref, shallowRef, watch, defineEmits } from 'vue';
-import { rpc } from '@/utils';
-const emit = defineEmits(['contract-deployed']);
+import { ref, shallowRef, watch, defineEmits, defineProps } from 'vue';
+
+const props = defineProps({
+  content: { type: String, default: '' }
+})
+const emit = defineEmits(['content-change', 'deploy']);
 
 const editorElement = ref(null)
-const content = ref('')
 const editorRef = shallowRef<monaco.editor.IStandaloneCodeEditor | null>(null)
 
 watch(
@@ -13,7 +15,7 @@ watch(
   (newValue) => {
     if (!editorRef.value && newValue) {
       editorRef.value = monaco.editor.create(editorElement.value!, {
-        value: content.value,
+        value: props.content,
         language: 'python',
         theme: 'vs-dark',
         automaticLayout: true,
@@ -22,34 +24,24 @@ watch(
       });
     }
   },
-)
+);
 
 watch(
-  () => content.value,
-  (newValue: string) => {
+  () => props.content,
+  (newValue) => {
     if (editorRef.value && editorRef.value.getValue() !== newValue) {
-      editorRef.value.setValue(newValue!);
+      editorRef.value.setValue(newValue || '');
     }
   },
-)
+);
 
-const deployContract = async () => {
-  console.log('handle contract deply')
-  // call json_rpc to get the abi
-  // deploy the contract code
- const result = await rpc({
-    method: 'deploy_intelligent_contract', 
-    params: [
-      '0xcAE1bEb0daABFc1eF1f4A1C17be7E7b4cc12B33A',
-      content.value,
-      '{}'
-    ]
-  })
-  console.log({ result })
-}
 
 const clearContent = () => {
-  content.value = '';
+  emit('content-change', '');
+}
+
+const deployContract = () => {
+  emit('deploy');
 }
 
 const loadContentFromFile = (event: Event) => {
@@ -59,7 +51,7 @@ const loadContentFromFile = (event: Event) => {
     const reader = new FileReader();
     reader.onload = (ev: ProgressEvent<FileReader>) => {
       if (ev.target?.result) {
-        content.value = ev.target?.result as string || ''
+        emit('content-change', ev.target?.result as string || '')
       }
     };
     reader.readAsText(file);
@@ -83,7 +75,7 @@ const loadContentFromFile = (event: Event) => {
           <input type="file" @change="loadContentFromFile">
         </div>
       </label>
-      <v-btn icon @click="deployContract" :disabled="content.length < 1">
+      <v-btn icon @click="deployContract" :disabled="props.content.length < 1">
         <v-icon>mdi-code-greater-than</v-icon>
         <v-tooltip activator="parent" location="bottom">
           Deploy Contract

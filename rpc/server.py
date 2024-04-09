@@ -292,17 +292,50 @@ def get_last_contracts(number_of_contracts: int) -> list:
     return contracts_info
 
 @jsonrpc.method("get_contract_state")
-def get_contract_state(contract_address: str) -> list:
+def get_contract_state(contract_address: str) -> dict:
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
 
     # Query the database for the current state of a deployed contract
     cursor.execute(
-        "SELECT *, FROM current_state WHERE id = %s;",
+        "SELECT id, data FROM current_state WHERE id = %s;",
         (contract_address,)
     )
-    contract = cursor.fetchall()
-    return json.dumps(contract)
+    row = cursor.fetchall()
+    cursor.close()
+    connection.close()
+    return {
+        "id": row[0][0],
+        "data": json.loads(row[0][1])
+    }
+
+@jsonrpc.method("get_contract_abi")
+def get_contract_state(contract_address: str) -> dict:
+    connection = get_genlayer_db_connection()
+    cursor = connection.cursor()
+
+    # Query the database for the current state of a deployed contract
+    cursor.execute(
+        "SELECT id, data FROM current_state WHERE id = %s;",
+        (contract_address,)
+    )
+    row = cursor.fetchall()
+    cursor.close()
+    connection.close()
+    return {
+         "id": row[0][0],
+        "data": json.loads(row[0][1]),
+        "methods": [
+            {
+                "name": "send_transaction",
+                "params": [
+                    { "name": "from_account", "type": "str"},
+                    { "name": "to_account", "type": "str"},
+                    { "name": "amount", "type": "float"}
+                ]
+            }
+        ]
+    }
 
 if __name__ == "__main__":
     socketio.run(app, debug=True, port=os.environ.get('RPCPORT'), host='0.0.0.0', allow_unsafe_werkzeug=True)

@@ -5,20 +5,22 @@ export interface JsonRPCParams {
   params: any[]
 }
 
-export const rpc = async ({ method, params }: JsonRPCParams) => {
-  const requestId = uuidv4()
-  const data = {
-    jsonrpc: '2.0',
-    method,
-    params,
-    id: requestId
+export const rpcClient = {
+  call: async ({ method, params }: JsonRPCParams) => {
+    const requestId = uuidv4()
+    const data = {
+      jsonrpc: '2.0',
+      method,
+      params,
+      id: requestId
+    }
+    const response = await fetch(JSON_RPC_SERVER_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+    return response.json()
   }
-  const response = await fetch(JSON_RPC_SERVER_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(data)
-  })
-  return response.json()
 }
