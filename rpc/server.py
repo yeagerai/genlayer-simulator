@@ -19,9 +19,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask('jsonrpc_api')
+
+CORS(app, resources={r"/api/*": {"origins": "*"}}, intercept_exceptions=False)
 jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
-socketio = SocketIO(app)
-cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 @socketio.on('connect')
 def handle_connect():
@@ -190,9 +191,6 @@ def deploy_intelligent_contract(from_account: str, contract_code: str, initial_s
     connection.close()
     return {"status": "deployed", "contract_id": contract_id}
 
-@jsonrpc.method("get_contract_abi")
-def deploy_intelligent_contract(contract_id: str) -> dict:
-    return {"status": "deployed", "contract_id": contract_id}
 
 @jsonrpc.method("count_validators")
 def count_validators() -> dict:

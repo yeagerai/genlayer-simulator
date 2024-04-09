@@ -38,10 +38,11 @@ const deployContract = async () => {
   // call json_rpc to get the abi
   // deploy the contract code
  const result = await rpc({
-    method: 'deploy_intelligent_contract', params: [
-      '0x17E317855F22eeFcCF6fFF5119AdfF6FFC98dBac',
-      content,
-      ''
+    method: 'deploy_intelligent_contract', 
+    params: [
+      '0xcAE1bEb0daABFc1eF1f4A1C17be7E7b4cc12B33A',
+      content.value,
+      '{}'
     ]
   })
   console.log({ result })
