@@ -22,6 +22,7 @@ def get_contract_state(contract_address: str) -> dict: # that should be on the r
     cursor = connection.cursor()
 
     try:
+        #TODO: This needs to be better
         cursor.execute(
             "SELECT data FROM current_state WHERE id = (%s);", (contract_address,)
         )
@@ -37,6 +38,27 @@ def get_contract_state(contract_address: str) -> dict: # that should be on the r
     finally:
         cursor.close()
         connection.close()
+
+def build_icontract(
+        contract_code:str,
+        contract_state:str,
+        run_by:str,
+        class_name:str,
+        function_name:str,
+        args_str:str
+) -> str:
+    return f"""
+{contract_code}
+
+async def main():
+    current_contract = {class_name}(**{contract_state})
+    current_contract.mode = "{run_by}"
+    await current_contract.{function_name}({args_str})
+
+if __name__=="__main__":
+    import asyncio    
+    asyncio.run(main())
+    """
 
 def genvm_url():
     return os.environ['GENVMPROTOCOL']+'://'+os.environ['GENVMHOST']+':'+os.environ['GENVMPORT']

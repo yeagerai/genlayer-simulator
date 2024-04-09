@@ -3,7 +3,7 @@ import json
 import requests
 from database.credentials import get_genlayer_db_connection
 from database.types import ConsensusData
-from consensus.utils import vrf, get_contract_state, genvm_url
+from consensus.utils import vrf, get_contract_state, genvm_url, build_icontract
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -25,18 +25,14 @@ def leader_executes_transaction(transaction_input:str, leader:str, leader_config
 
     args_str = ", ".join(f"{json.dumps(arg)}" for arg in transaction_input["args"])
 
-    exec_file_for_genvm = f"""
-{current_contract_state['code']}
-
-async def main():
-    current_contract = {transaction_input["function_name"].split('.')[0]}(**{str(current_contract_state['state'])})
-    current_contract.mode = "leader"
-    await current_contract.{transaction_input["function_name"].split('.')[1]}({args_str})
-
-if __name__=="__main__":
-    import asyncio    
-    asyncio.run(main())
-    """
+    exec_file_for_genvm = build_icontract(
+        contract_code=current_contract_state['code'],
+        contract_state=str(current_contract_state['state']),
+        run_by='leader',
+        class_name=transaction_input["function_name"].split('.')[0],
+        function_name=transaction_input["function_name"].split('.')[1],
+        args_str=args_str
+    )
 
     payload = {
         "jsonrpc": "2.0",
