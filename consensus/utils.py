@@ -28,8 +28,7 @@ def get_contract_state(contract_address: str) -> dict: # that should be on the r
         )
         contract_row = cursor.fetchone()
         if contract_row is not None:
-            contract_state = contract_row[0]
-            return json.loads(contract_state)
+            return contract_row[0]
         else:
             return {}
     except Exception as e:
