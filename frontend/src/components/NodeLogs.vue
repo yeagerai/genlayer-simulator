@@ -46,7 +46,7 @@ onUnmounted(() => {
       <v-spacer></v-spacer>
     </v-toolbar>
     <div class="logs-container">
-      <v-virtual-scroll :items="logs" ref="virtualScroll">
+      <v-virtual-scroll :items="logs" ref="virtualScroll" :height="400">
         <template v-slot:default="{ item, index }">
           <v-list-item density="compact" class="item" :id="`log-item-${index}`">
             <template v-slot:prepend>
