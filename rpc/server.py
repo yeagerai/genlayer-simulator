@@ -190,6 +190,8 @@ def deploy_intelligent_contract(from_account: str, contract_code: str, initial_s
     connection.commit()
     cursor.close()
     connection.close()
+    
+    log_status(f"Intelligent Contract deployed ID: {contract_id}")
     return {"status": "deployed", "contract_id": contract_id}
 
 

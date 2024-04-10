@@ -9,6 +9,7 @@ const emit = defineEmits(['content-change', 'deploy']);
 
 const editorElement = ref(null)
 const editorRef = shallowRef<monaco.editor.IStandaloneCodeEditor | null>(null)
+const theme = ref('vs-dark');
 
 watch(
   () => editorElement.value,
@@ -17,11 +18,12 @@ watch(
       editorRef.value = monaco.editor.create(editorElement.value!, {
         value: props.content,
         language: 'python',
-        theme: 'vs-dark',
+        theme: theme.value,
         automaticLayout: true,
         formatOnPaste: true,
         formatOnType: true
       });
+
     }
   },
 );
@@ -35,6 +37,18 @@ watch(
   },
 );
 
+const switchTheme = () => {
+  if (theme.value === 'vs-dark') {
+    theme.value = 'vs';
+  } else {
+    theme.value = 'vs-dark';
+  }
+
+  editorRef.value?.updateOptions({
+    ...editorRef.value.getOptions(),
+    theme: theme.value,
+  })
+}
 
 const clearContent = () => {
   emit('content-change', '');
@@ -85,6 +99,12 @@ const loadContentFromFile = (event: Event) => {
         <v-icon>mdi-arrow-u-left-top</v-icon>
         <v-tooltip activator="parent" location="bottom">
           Restart
+        </v-tooltip>
+      </v-btn>
+      <v-btn icon @click="switchTheme">
+        <v-icon>mdi-theme-light-dark</v-icon>
+        <v-tooltip activator="parent" location="bottom">
+          Toogle Theme
         </v-tooltip>
       </v-btn>
     </v-toolbar>

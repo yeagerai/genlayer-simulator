@@ -19,6 +19,7 @@
     "@mdi/font": "^7.4.47",
     "monaco-editor": "^0.47.0",
     "pinia": "^2.1.7",
+    "socket.io-client": "^4.7.5",
     "uuid": "^9.0.1",
     "vue": "^3.4.21",
     "vue-command": "^35.2.1",
