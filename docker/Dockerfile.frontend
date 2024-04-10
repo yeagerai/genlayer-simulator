@@ -1,28 +1,23 @@
 
-FROM node:21 as Builder
+FROM node:21 as builder
 
-WORKDIR /usr/src/app
-# this will allow us to run vite and other tools directly
-ENV PATH /usr/src/node_modules/.bin:$PATH
+COPY ./frontend/package*.json ./
+ADD ../.env .
 
-# inject all environment vars we'll need
-ARG VITE_JSON_RPC_SERVER_URL
-ARG VITE_WS_SERVER_URL
-ENV VITE_JSON_RPC_SERVER_URL=$VITE_JSON_RPC_SERVER_URL
-ENV VITE_WS_SERVER_URL=$VITE_WS_SERVER_URL
-
-# Install packages
-RUN set -eux; \
-    # Packages to install
-    apk add --no-cache \
-        git \
-        python3 \
-        make \
-        g++ \
-    && \
-    # Clean out directories that don't need to be part of the image
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* 
-
-COPY . .
 RUN npm ci
-RUN npm run dev
+
+COPY ./frontend .
+# Build the project
+RUN npm run build
+
+
+FROM nginx:alpine as production-build
+COPY  --from=builder nginx.conf /etc/nginx/nginx.conf
+
+RUN rm -rf /usr/share/nginx/html/*
+# Copy from the stage 1
+COPY --from=builder /dist /usr/share/nginx/html/genlayer
+
+EXPOSE 8080
+
+ENTRYPOINT ["nginx", "-g", "daemon off;"]

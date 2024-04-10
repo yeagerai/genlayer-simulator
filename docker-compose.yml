@@ -2,6 +2,17 @@ version: '3'
 
 services:
 
+  frontend:
+    build:
+      context: ./
+      dockerfile: ./docker/Dockerfile.frontend
+    ports:
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+    depends_on:
+      - jsonrpc
+    expose:
+      - "${FRONTEND_PORT}"
+
   jsonrpc:
     build:
       context: ./
