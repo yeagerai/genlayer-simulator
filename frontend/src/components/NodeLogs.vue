@@ -13,8 +13,6 @@ const virtualScroll = ref<VVirtualScroll>()
 const scrollContainer = ref<Element>()
 const goTo = useGoTo()
 onMounted(() => {
-
-
   webSocketClient.on("status_update", (event) => {
     console.log('webSocketClient.details', event)
     logs.value.push({ date: (new Date()).toISOString(), message: event.message })
@@ -22,7 +20,6 @@ onMounted(() => {
 })
 
 watch(logs.value, () => {
-
   if (!scrollContainer.value) {
     scrollContainer.value = virtualScroll.value?.$el.querySelector('.v-virtual-scroll__container')
   }

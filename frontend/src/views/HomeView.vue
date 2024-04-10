@@ -26,8 +26,7 @@ const closeSnackbar = () => {
 };
 
 const deployContract = async () => {
-  const parsedState = defaultContractState.value.replace(/([a-z][^:]*)(?=\s*:)/g, '"$1"');
-  const state = JSON.parse(parsedState || "{}")
+  const state = JSON.parse(defaultContractState.value || "{}")
 
   if (Object.keys(state).length < 1) {
     shanckbarText.value = 'You should provide a valid json object as a default state';
