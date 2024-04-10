@@ -1,38 +1,64 @@
 <script setup lang="ts">
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
-import { onMounted, ref, shallowRef, watchEffect, watch } from 'vue'
+import { ref, shallowRef, watch, defineEmits, defineProps } from 'vue';
+import { pythonSyntaxDefinition } from '@/utils';
+
+const props = defineProps({
+  content: { type: String, default: '' }
+})
+const emit = defineEmits(['content-change', 'deploy']);
 
 const editorElement = ref(null)
-const content = ref('test')
 const editorRef = shallowRef<monaco.editor.IStandaloneCodeEditor | null>(null)
+const theme = ref('vs-dark');
 
 watch(
   () => editorElement.value,
   (newValue) => {
     if (!editorRef.value && newValue) {
+      monaco.languages.register({ id: 'python' });
+      monaco.languages.setMonarchTokensProvider('python', pythonSyntaxDefinition);
       editorRef.value = monaco.editor.create(editorElement.value!, {
-        value: content.value,
+        value: props.content,
         language: 'python',
-        theme: 'vs-dark',
+        theme: theme.value,
         automaticLayout: true,
         formatOnPaste: true,
         formatOnType: true
       });
+
     }
   },
-)
+);
 
 watch(
-  () => content.value,
-  (newValue: string) => {
+  () => props.content,
+  (newValue) => {
     if (editorRef.value && editorRef.value.getValue() !== newValue) {
-      editorRef.value.setValue(newValue!)
+      editorRef.value.setValue(newValue || '');
     }
   },
-)
+);
+
+const switchTheme = () => {
+  if (theme.value === 'vs-dark') {
+    theme.value = 'vs';
+  } else {
+    theme.value = 'vs-dark';
+  }
+
+  editorRef.value?.updateOptions({
+    ...editorRef.value.getOptions(),
+    theme: theme.value,
+  })
+}
 
 const clearContent = () => {
-  content.value = '';
+  emit('content-change', '');
+}
+
+const deployContract = () => {
+  emit('deploy');
 }
 
 const loadContentFromFile = (event: Event) => {
@@ -42,7 +68,7 @@ const loadContentFromFile = (event: Event) => {
     const reader = new FileReader();
     reader.onload = (ev: ProgressEvent<FileReader>) => {
       if (ev.target?.result) {
-        content.value = ev.target?.result as string || ''
+        emit('content-change', ev.target?.result as string || '')
       }
     };
     reader.readAsText(file);
@@ -66,13 +92,7 @@ const loadContentFromFile = (event: Event) => {
           <input type="file" @change="loadContentFromFile">
         </div>
       </label>
-      <v-btn icon>
-        <v-icon>mdi-code-tags-check</v-icon>
-        <v-tooltip activator="parent" location="bottom">
-          Parse Contract
-        </v-tooltip>
-      </v-btn>
-      <v-btn icon>
+      <v-btn icon @click="deployContract" :disabled="props.content.length < 1">
         <v-icon>mdi-code-greater-than</v-icon>
         <v-tooltip activator="parent" location="bottom">
           Deploy Contract
@@ -82,6 +102,12 @@ const loadContentFromFile = (event: Event) => {
         <v-icon>mdi-arrow-u-left-top</v-icon>
         <v-tooltip activator="parent" location="bottom">
           Restart
+        </v-tooltip>
+      </v-btn>
+      <v-btn icon @click="switchTheme">
+        <v-icon>mdi-theme-light-dark</v-icon>
+        <v-tooltip activator="parent" location="bottom">
+          Toogle Theme
         </v-tooltip>
       </v-btn>
     </v-toolbar>
