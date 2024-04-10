@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { ref, shallowRef, watch, defineEmits, defineProps } from 'vue';
+import { pythonSyntaxDefinition } from '@/utils';
 
 const props = defineProps({
   content: { type: String, default: '' }
@@ -15,6 +16,8 @@ watch(
   () => editorElement.value,
   (newValue) => {
     if (!editorRef.value && newValue) {
+      monaco.languages.register({ id: 'python' });
+      monaco.languages.setMonarchTokensProvider('python', pythonSyntaxDefinition);
       editorRef.value = monaco.editor.create(editorElement.value!, {
         value: props.content,
         language: 'python',
