@@ -69,7 +69,7 @@ const handleCallContractMethod = async ({ method, params }: { method: string, pa
     params: [
     contractId.value, // TODO: replace with a current account
     contractId.value,
-    method, 
+    `${abi.value.class}.${method}`, 
     params
     ]
   })
