@@ -52,6 +52,7 @@ def leader_executes_transaction(icontract:str, leader_config:dict) -> dict:
     # Access the output of the command
     file = open(recipt_file, 'r')
     contents = json.load(file)
+    debug_output('recipt.json', contents)
 
     # TODO: Leader needs to be the name of the VM
     result = {
