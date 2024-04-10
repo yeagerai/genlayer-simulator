@@ -70,10 +70,13 @@ const handleCallContractMethod = async ({ method, params }: { method: string, pa
     contractId.value, // TODO: replace with a current account
     contractId.value,
     method, 
-    ...params
+    params
     ]
   })
   console.log('handleCallContractMethod', result)
+  if(contractId.value) {
+    getContractState(contractId.value)
+  }
 }
 
 watch(
