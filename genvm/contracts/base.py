@@ -82,11 +82,7 @@ def icontract(cls):
             }
 
             with open(os.environ.get('GENVMCONLOC') + '/receipt.json', 'w') as file:
-                if int(os.environ.get('DEBUG')) == 1:
-                    print('--- START: receipt.json ---')
-                    print(receipt)
-                    print('--- END: receipt.json ---')
-                json.dump(receipt, file)
+                json.dump(receipt, file, indent=4)
 
         def __getattribute__(self, name):
             orig_attr = super().__getattribute__(name)
