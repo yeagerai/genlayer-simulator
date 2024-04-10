@@ -6,9 +6,23 @@ WORKDIR /usr/src/app
 ENV PATH /usr/src/node_modules/.bin:$PATH
 
 # inject all environment vars we'll need
-ARG VITE_BACKEND_URL
-ENV VITE_BACKEND_URL=$VITE_BACKEND_URL
+ARG VITE_JSON_RPC_SERVER_URL
+ARG VITE_WS_SERVER_URL
+ENV VITE_JSON_RPC_SERVER_URL=$VITE_JSON_RPC_SERVER_URL
+ENV VITE_WS_SERVER_URL=$VITE_WS_SERVER_URL
+
+# Install packages
+RUN set -eux; \
+    # Packages to install
+    apk add --no-cache \
+        git \
+        python3 \
+        make \
+        g++ \
+    && \
+    # Clean out directories that don't need to be part of the image
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* 
 
 COPY . .
-RUN npm install
+RUN npm ci
 RUN npm run dev
