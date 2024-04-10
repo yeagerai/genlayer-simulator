@@ -13,7 +13,15 @@ def gas_model_logic():
     return 1
 
 def serialize(obj):
-    exclude_attrs = ['mode', 'gas_used', 'non_det_counter', 'non_det_inputs', 'non_det_outputs', 'eq_principles_outs']
+    exclude_attrs = [
+        'mode',
+        'gas_used',
+        'non_det_counter',
+        'non_det_inputs',
+        'non_det_outputs',
+        'eq_principles_outs',
+        'node_config'
+    ]
 
     if isinstance(obj, (str, int, float, bool)) or obj is None:
         return obj
@@ -76,6 +84,7 @@ def icontract(cls):
                 "gas_used": self.gas_used,
                 "mode": self.mode,
                 "contract_state": serialize(self),
+                "node_config": self.node_config,
                 "non_det_inputs": self.non_det_inputs,
                 "non_det_outputs": self.non_det_outputs,
                 "eq_principles_outs": self.eq_principles_outs
