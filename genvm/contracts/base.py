@@ -79,6 +79,7 @@ def icontract(cls):
 
         def _write_receipt(self, method_name, args):
             receipt = {
+                "class": self.__class__.__name__,
                 "method": method_name,
                 "args":args,
                 "gas_used": self.gas_used,

@@ -3,7 +3,14 @@ import json
 import requests
 from database.credentials import get_genlayer_db_connection
 from database.types import ConsensusData
-from consensus.utils import vrf, get_contract_state, genvm_url, build_icontract
+from consensus.utils import (
+    vrf,
+    get_contract_state,
+    genvm_url,
+    build_icontract,
+    get_nodes_config,
+    get_validators
+)
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -14,23 +21,19 @@ load_dotenv()
 # TODO: deliver the contract through S3, postgres, celery or sent as part
 #       of the call to the flaskapi in the genvm
 def leader_executes_transaction(transaction_input:str, leader:str, leader_config:dict) -> dict:
-    leader_receipt = {
-        "leader":leader, 
-        "contract_state":{}, 
-        "non_det_inputs": {}, 
-        "non_det_outputs":{},
-        "vote":"agree"
-    }
     current_contract_state = get_contract_state(transaction_input["contract_address"])
 
     args_str = ", ".join(f"{json.dumps(arg)}" for arg in transaction_input["args"])
+
+    class_name = transaction_input["function_name"].split('.')[0]
+    function_name = transaction_input["function_name"].split('.')[1]
 
     exec_file_for_genvm = build_icontract(
         contract_code=current_contract_state['code'],
         contract_state=str(current_contract_state['state']),
         run_by='leader',
-        class_name=transaction_input["function_name"].split('.')[0],
-        function_name=transaction_input["function_name"].split('.')[1],
+        class_name=class_name,
+        function_name=function_name,
         args_str=args_str
     )
 
@@ -40,16 +43,15 @@ def leader_executes_transaction(transaction_input:str, leader:str, leader_config
         "params": [exec_file_for_genvm, leader_config],
         "id": 2,
     }
-    result = requests.post(genvm_url()+'/api', json=payload).json()
+    
+    response = requests.post(genvm_url()+'/api', json=payload).json()
 
-    if 'result' in result and 'status' in result['result']:
-        leader_receipt["contract_state"] = result["result"]["status"]["contract_state"]
-        leader_receipt["non_det_inputs"] = result["result"]["status"]["non_det_inputs"]
-        leader_receipt["non_det_outputs"] = result["result"]["status"]["non_det_outputs"]
-    else:
-        raise Exception("The GenVM responded with: "+str(result))
-
-    return leader_receipt
+    return {
+        'class':class_name,
+        'function':function_name,
+        'vote': 'agree',
+        'result': response['result']
+    }
 
 
 async def validator_executes_transaction(transaction_input, leader_receipt, validator):
@@ -69,30 +71,10 @@ async def validator_executes_transaction(transaction_input, leader_receipt, vali
 
 
 async def exec_transaction(transaction_input, logger=None):
-    if logger:
-        logger("Checking the nodes.json config file has been created...")
-    cwd = os.path.abspath(os.getcwd())
-    nodes_file = cwd + '/consensus/nodes/nodes.json'
-    if not os.path.exists(nodes_file):
-        raise Exception('Create a configuratrion file for the nodes')
-    nodes_config = json.load(open(nodes_file))
 
-    if logger:
-        logger("Selecting validators with VRF...")
-    # Select validators
-    connection = get_genlayer_db_connection()
-    cursor = connection.cursor()
-    cursor.execute(
-        "SELECT validator_info->>'eoa_id' AS validator_id, stake FROM validators;"
-    )
-    validator_data = cursor.fetchall()
+    nodes_config = get_nodes_config(logger)
 
-    if len(nodes_config) < len(validator_data):
-        raise Exception('Nodes in database ('+str(len(validator_data))+'). Nodes configured ('+str(len(nodes_config))+')')
-
-    # Prepare validators and their stakes
-    all_validators = [row[0] for row in validator_data]
-    validators_stakes = [float(row[1]) for row in validator_data]
+    all_validators, validators_stakes = get_validators(nodes_config, logger)
 
     # Select validators using VRF
     selected_validators = vrf(all_validators, validators_stakes, 5)
@@ -112,8 +94,9 @@ async def exec_transaction(transaction_input, logger=None):
         raise Exception('The config for node '+leader+' is not in consensus/nodes/nodes.json')
     
     # Leader executes transaction
-    leader_receipt = leader_executes_transaction(transaction_input, leader, leader_config)
-    votes = {leader: leader_receipt["vote"]}
+    leader_result = leader_executes_transaction(transaction_input, leader, leader_config)
+
+    votes = {leader: leader_result['vote']}
 
     if logger:
         logger(f"Leader {leader} has finished contract execution...")
@@ -130,13 +113,15 @@ async def exec_transaction(transaction_input, logger=None):
     #     votes[f"{validation_results[i]['validator']}"] = validation_results[i]["vote"]
 
     # Write transaction into DB
-    from_address = transaction_input["args"][0]
-    to_address = transaction_input["contract_address"]
-    data = json.dumps({"new_contract_state" : leader_receipt["contract_state"]})
+    from_address = transaction_input['args'][0]
+    to_address = transaction_input['contract_address']
+    data = json.dumps({"new_contract_state" : leader_result['result']['contract_state']})
     transaction_type = 2
     final = False
-    leader_data = leader_receipt
-    consensus_data = ConsensusData(final=final, votes=votes, leader_data=leader_data).model_dump_json()
+    valudators_results = []
+    consensus_data = ConsensusData(final=final, votes=votes, leader=leader_result, validators=valudators_results).model_dump_json()
+    connection = get_genlayer_db_connection()
+    cursor = connection.cursor()
     cursor.execute(
         "INSERT INTO transactions (from_address, to_address, data, consensus_data, type, created_at) VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP);",
         (
@@ -156,6 +141,6 @@ async def exec_transaction(transaction_input, logger=None):
         logger(f"Transaction has been fully executed...")
 
     execution_output = {}
-    execution_output["leader_data"] = leader_data
+    execution_output["leader_data"] = leader_result
     execution_output["consensus_data"] = consensus_data
     return execution_output

@@ -59,5 +59,35 @@ if __name__=="__main__":
     asyncio.run(main())
     """
 
+def get_nodes_config(logger=None) -> str:
+    if logger:
+        logger("Checking the nodes.json config file has been created...")
+    cwd = os.path.abspath(os.getcwd())
+    nodes_file = cwd + '/consensus/nodes/nodes.json'
+    if not os.path.exists(nodes_file):
+        raise Exception('Create a configuratrion file for the nodes')
+    return json.load(open(nodes_file))
+
+
+def get_validators(nodes_config:dict, logger=None) -> list:
+    if logger:
+        logger("Selecting validators with VRF...")
+    # Select validators
+    connection = get_genlayer_db_connection()
+    cursor = connection.cursor()
+    cursor.execute(
+        "SELECT validator_info->>'eoa_id' AS validator_id, stake FROM validators;"
+    )
+    validator_data = cursor.fetchall()
+
+    if len(nodes_config) < len(validator_data):
+        raise Exception('Nodes in database ('+str(len(validator_data))+'). Nodes configured ('+str(len(nodes_config))+')')
+
+    # Prepare validators and their stakes
+    all_validators = [row[0] for row in validator_data]
+    validators_stakes = [float(row[1]) for row in validator_data]
+
+    return all_validators, validators_stakes
+
 def genvm_url():
     return os.environ['GENVMPROTOCOL']+'://'+os.environ['GENVMHOST']+':'+os.environ['GENVMPORT']

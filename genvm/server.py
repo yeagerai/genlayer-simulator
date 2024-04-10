@@ -56,15 +56,22 @@ def leader_executes_transaction(icontract:str, leader_config:dict) -> dict:
 
     # TODO: Leader needs to be the name of the VM
     result = {
-        "leader":"", 
-        "contract_state":contents['contract_state'], 
+        "vote":"agree",
+        "node":leader_config['id'],
+        "node_config":contents['node_config'],
+        "contract_state":contents['contract_state'],
         "non_det_inputs": contents["non_det_inputs"], 
-        "non_det_outputs":contents["non_det_outputs"],
-        "vote":"agree"
+        "non_det_outputs":contents["non_det_outputs"]
     }
     file.close()
+    debug_output('leader_executes_transaction(response)', result)
 
-    return {"status": result}
+    return result
+    
+
+@jsonrpc.method("validator_executes_transaction")
+def validator_executes_transaction() -> dict:
+    return {"status": "Success! (2)"}
 
 
 @jsonrpc.method("get_icontract_schema")
@@ -117,12 +124,6 @@ def get_icontract_schema(icontract:str) -> dict:
                         variables[stmt.target.id] = stmt.annotation.id
     
     return {"class":class_name, "methods": methods, "variables": variables}
-    
-
-
-@jsonrpc.method("validator_executes_transaction")
-def validator_executes_transaction() -> dict:
-    return {"status": "Success! (2)"}
 
 
 if __name__ == "__main__":
