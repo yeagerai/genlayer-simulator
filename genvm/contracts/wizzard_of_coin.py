@@ -30,7 +30,7 @@ class WizzardOfCoin:
         """
         # llama2 or gpt-3.5-turbo
         model = 'gpt-3.5-turbo'
-        result = json.loads((await self.call_llm(model, prompt, consensus_eq="The result['give_coin'] has to be exactly the same")).replace("True","true").replace("False","false"))
+        result = json.loads((await self.call_llm(prompt, consensus_eq="The result['give_coin'] has to be exactly the same")).replace("True","true").replace("False","false"))
 
         if result['give_coin'] is False:
             self.have_coin = result['data_updates']['have_coin']
