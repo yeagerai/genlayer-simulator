@@ -8,6 +8,7 @@ import requests
 from flask import Flask
 from flask_jsonrpc import JSONRPC
 from flask_socketio import SocketIO
+from flask_cors import CORS
 
 from database.init_db import create_db_if_it_doesnt_already_exists, create_tables_if_they_dont_already_exist
 from database.credentials import get_genlayer_db_connection
@@ -19,8 +20,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask('jsonrpc_api')
+
+CORS(app, resources={r"/api/*": {"origins": "*"}}, intercept_exceptions=False)
 jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 @socketio.on('connect')
 def handle_connect():
@@ -187,6 +190,8 @@ def deploy_intelligent_contract(from_account: str, contract_code: str, initial_s
     connection.commit()
     cursor.close()
     connection.close()
+    
+    log_status(f"Intelligent Contract deployed ID: {contract_id}")
     return {"status": "deployed", "contract_id": contract_id}
 
 
@@ -291,21 +296,27 @@ def get_last_contracts(number_of_contracts: int) -> list:
     return contracts_info
 
 @jsonrpc.method("get_contract_state")
-def get_contract_state(contract_address: str) -> list:
+def get_contract_state(contract_address: str) -> dict:
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
 
     # Query the database for the current state of a deployed contract
     cursor.execute(
-        "SELECT *, FROM current_state WHERE id = %s;",
+        "SELECT id, data FROM current_state WHERE id = %s;",
         (contract_address,)
     )
-    contract = cursor.fetchall()
+    row = cursor.fetchall()
 
-    if not contract:
+    cursor.close()
+    connection.close()
+    
+    if not row:
         raise Exception(contract_address + ' contract does not exist')
     
-    return json.dumps(contract)
+    return {
+        "id": row[0][0],
+        "data": json.loads(row[0][1])
+    }
 
 @jsonrpc.method("get_icontract_schema")
 def get_icontract_schema(contract_address: str) -> dict:

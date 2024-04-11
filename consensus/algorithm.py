@@ -167,6 +167,7 @@ async def exec_transaction(transaction_input, logger=None):
 
     if logger:
         logger(f"Transaction has been fully executed...")
+        logger(f"This is the data produced by the leader:\n\n {leader_data}")
 
     execution_output = {}
     execution_output["leader_data"] = leader_recipt

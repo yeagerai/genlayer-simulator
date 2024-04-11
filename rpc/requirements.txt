@@ -6,3 +6,4 @@ requests==2.31.0
 asgiref==3.7.2
 python-dotenv==1.0.1
 pydantic==2.6.4
+Flask-Cors==4.0.0
