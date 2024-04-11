@@ -78,15 +78,9 @@ def icontract(cls):
                 self.non_det_outputs[self.non_det_counter]["output"] = validator_response
 
                 leader_output = leader_recipt['result']['non_det_outputs']['0']['output']
-                file = open("/tmp/debug.txt", "w")
-                file.write(f"Given the equivalence principle '{consensus_eq}', decide whether the following two outputs can be considered equivalent.\nOutput 1: {leader_output}\nOutput 2: {validator_response}\nRespond with: TRUE or FALSE")
-                file.write('\n---\n ')
 
                 eq_prompt = f"Given the equivalence principle '{consensus_eq}', decide whether the following two outputs can be considered equivalent.\nOutput 1: {leader_output}\nOutput 2: {validator_response}\nRespond with: TRUE or FALSE"
                 validation_response = await llm_function(self.node_config, eq_prompt, None, None)
-                file.write(validation_response)
-                file.write('\n---\n')
-                file.close()
 
                 agreement = True if validation_response.strip().upper() == "TRUE" else False
                 self.eq_principles_outs[self.non_det_counter] = {
