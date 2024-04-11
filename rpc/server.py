@@ -306,7 +306,6 @@ def get_contract_state(contract_address: str) -> dict:
         (contract_address,)
     )
     row = cursor.fetchall()
-
     cursor.close()
     connection.close()
     
@@ -315,7 +314,7 @@ def get_contract_state(contract_address: str) -> dict:
     
     return {
         "id": row[0][0],
-        "data": json.loads(row[0][1])
+        "data": row[0][1]
     }
 
 @jsonrpc.method("get_icontract_schema")
@@ -338,11 +337,11 @@ def get_icontract_schema(contract_address: str) -> dict:
         raise Exception('contract' + contract_address + ' does not contain any data')
 
     tx_contract = tx[4]
-
-    if 'code' not in json.loads(tx_contract):
+    
+    if 'code' not in tx_contract:
         raise Exception('contract' + contract_address + ' does not contain any contract code')
     
-    contract = json.loads(tx_contract)['code']
+    contract = tx_contract['code']
 
     payload = {
         "jsonrpc": "2.0",
