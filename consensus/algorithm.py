@@ -15,12 +15,8 @@ from consensus.utils import (
 from dotenv import load_dotenv
 load_dotenv()
 
-# Description: This will create the contract on the shared drive and then
-#              call the genvm to execute it. This will be changed at a
-#              later date
-# TODO: deliver the contract through S3, postgres, celery or sent as part
-#       of the call to the flaskapi in the genvm
-def leader_executes_transaction(transaction_input:str, leader:str, leader_config:dict) -> dict:
+
+def leader_executes_transaction(transaction_input:dict, leader_config:dict) -> dict:
     current_contract_state = get_contract_state(transaction_input["contract_address"])
 
     args_str = ", ".join(f"{json.dumps(arg)}" for arg in transaction_input["args"])
@@ -54,20 +50,45 @@ def leader_executes_transaction(transaction_input:str, leader:str, leader_config
     }
 
 
-async def validator_executes_transaction(transaction_input, leader_receipt, validator):
-    validator_receipt = {
-        "validator":validator, 
-        "contract_state":{}, 
-        "eq_principles_outs":{}
+async def validator_executes_transaction(transaction_input:dict , validator_config:dict, leader_receipt:dict) -> dict:
+    current_contract_state = get_contract_state(transaction_input["contract_address"])
+
+    args_str = ", ".join(f"{json.dumps(arg)}" for arg in transaction_input["args"])
+
+    class_name = transaction_input["function_name"].split('.')[0]
+    function_name = transaction_input["function_name"].split('.')[1]
+
+    exec_file_for_genvm = build_icontract(
+        contract_code=current_contract_state['code'],
+        contract_state=str(current_contract_state['state']),
+        run_by='validator',
+        class_name=class_name,
+        function_name=function_name,
+        args_str=args_str
+    )
+
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "validator_executes_transaction",
+        "params": [exec_file_for_genvm, validator_config, leader_receipt],
+        "id": 2,
+    }
+    
+    response = requests.post(genvm_url()+'/api', json=payload).json()
+
+    return_value = {
+        'class':class_name,
+        'function':function_name,
+        'vote': 'disagree',
+        'result': response['result']
     }
 
-    # TODO: finish function
-
-    if validator_receipt["contract_state"] == leader_receipt["contract_state"]:
-        validator_receipt["vote"] = "agree"
+    if return_value['result']['contract_state'] == leader_receipt['result']['contract_state']:
+        return_value['vote'] = 'agree'
     else:
-        validator_receipt["vote"] = "disagree"
-    return validator_receipt
+        return_value['vote'] = 'disagree'
+        
+    return return_value
 
 
 async def exec_transaction(transaction_input, logger=None):
@@ -77,9 +98,10 @@ async def exec_transaction(transaction_input, logger=None):
     all_validators, validators_stakes = get_validators(nodes_config, logger)
 
     # Select validators using VRF
+    num_validators = int(os.environ['NUMVALIDATORS'])
     selected_validators = vrf(all_validators, validators_stakes, 5)
     leader = selected_validators[0]
-    remaining_validators = selected_validators[1:]
+    remaining_validators = selected_validators[1 : num_validators + 1]
     if logger:
         logger(f"Selected Leader: {leader}...")
         logger(f"Selected Validators: {remaining_validators}...")
@@ -94,12 +116,19 @@ async def exec_transaction(transaction_input, logger=None):
         raise Exception('The config for node '+leader+' is not in consensus/nodes/nodes.json')
     
     # Leader executes transaction
-    leader_result = leader_executes_transaction(transaction_input, leader, leader_config)
+    leader_recipt = leader_executes_transaction(transaction_input, leader_config)
 
-    votes = {leader: leader_result['vote']}
+    votes = {leader: leader_recipt['vote']}
 
     if logger:
         logger(f"Leader {leader} has finished contract execution...")
+    
+    valudators_results = []
+    for validator_address in remaining_validators:
+        validator_config = next((item for item in nodes_config if item['id'] == validator_address), None)
+        if not validator_config:
+            raise Exception('Validator configuration for node '+validator_address+' not found in consensus/nodes/nodes.json')
+        valudators_results.append(await validator_executes_transaction(transaction_input, validator_config, leader_recipt))
 
     # Validators execute transaction
     # loop = asyncio.get_running_loop()
@@ -115,11 +144,10 @@ async def exec_transaction(transaction_input, logger=None):
     # Write transaction into DB
     from_address = transaction_input['args'][0]
     to_address = transaction_input['contract_address']
-    data = json.dumps({"new_contract_state" : leader_result['result']['contract_state']})
+    data = json.dumps({"new_contract_state" : leader_recipt['result']['contract_state']})
     transaction_type = 2
     final = False
-    valudators_results = []
-    consensus_data = ConsensusData(final=final, votes=votes, leader=leader_result, validators=valudators_results).model_dump_json()
+    consensus_data = ConsensusData(final=final, votes=votes, leader=leader_recipt, validators=valudators_results).model_dump_json()
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
     cursor.execute(
@@ -141,6 +169,6 @@ async def exec_transaction(transaction_input, logger=None):
         logger(f"Transaction has been fully executed...")
 
     execution_output = {}
-    execution_output["leader_data"] = leader_result
+    execution_output["leader_data"] = leader_recipt
     execution_output["consensus_data"] = consensus_data
     return execution_output
