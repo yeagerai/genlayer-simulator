@@ -64,7 +64,7 @@ def create_nodes():
     validator_data = cursor.fetchall()
 
     # Are there validators?
-    if len(validator_data) < int(os.environ['NUMVALIDATORS']):
+    if len(validator_data) < int(os.environ['TOTALVALIDATORS']):
         raise Exception('Add validators to the database')
 
     for validator in validator_data:

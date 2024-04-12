@@ -3,40 +3,35 @@ import json
 import requests
 from database.credentials import get_genlayer_db_connection
 from database.types import ConsensusData
-from consensus.utils import vrf, get_contract_state, genvm_url
+from consensus.utils import (
+    vrf,
+    get_contract_state,
+    genvm_url,
+    build_icontract,
+    get_nodes_config,
+    get_validators
+)
 
 from dotenv import load_dotenv
 load_dotenv()
 
-# Description: This will create the contract on the shared drive and then
-#              call the genvm to execute it. This will be changed at a
-#              later date
-# TODO: deliver the contract through S3, postgres, celery or sent as part
-#       of the call to the flaskapi in the genvm
-def leader_executes_transaction(transaction_input:str, leader:str, leader_config:dict) -> dict:
-    leader_receipt = {
-        "leader":leader, 
-        "contract_state":{}, 
-        "non_det_inputs": {}, 
-        "non_det_outputs":{},
-        "vote":"agree"
-    }
+
+def leader_executes_transaction(transaction_input:dict, leader_config:dict) -> dict:
     current_contract_state = get_contract_state(transaction_input["contract_address"])
 
     args_str = ", ".join(f"{json.dumps(arg)}" for arg in transaction_input["args"])
 
-    exec_file_for_genvm = f"""
-{current_contract_state['code']}
+    class_name = transaction_input["function_name"].split('.')[0]
+    function_name = transaction_input["function_name"].split('.')[1]
 
-async def main():
-    current_contract = {transaction_input["function_name"].split('.')[0]}(**{str(current_contract_state['state'])})
-    current_contract.mode = "leader"
-    await current_contract.{transaction_input["function_name"].split('.')[1]}({args_str})
-
-if __name__=="__main__":
-    import asyncio    
-    asyncio.run(main())
-    """
+    exec_file_for_genvm = build_icontract(
+        contract_code=current_contract_state['code'],
+        contract_state=str(current_contract_state['state']),
+        run_by='leader',
+        class_name=class_name,
+        function_name=function_name,
+        args_str=args_str
+    )
 
     payload = {
         "jsonrpc": "2.0",
@@ -44,64 +39,69 @@ if __name__=="__main__":
         "params": [exec_file_for_genvm, leader_config],
         "id": 2,
     }
-    result = requests.post(genvm_url()+'/api', json=payload).json()
+    
+    response = requests.post(genvm_url()+'/api', json=payload).json()
 
-    if 'result' in result and 'status' in result['result']:
-        leader_receipt["contract_state"] = result["result"]["status"]["contract_state"]
-        leader_receipt["non_det_inputs"] = result["result"]["status"]["non_det_inputs"]
-        leader_receipt["non_det_outputs"] = result["result"]["status"]["non_det_outputs"]
-    else:
-        raise Exception("The GenVM responded with: "+str(result))
-
-    return leader_receipt
-
-
-async def validator_executes_transaction(transaction_input, leader_receipt, validator):
-    validator_receipt = {
-        "validator":validator, 
-        "contract_state":{}, 
-        "eq_principles_outs":{}
+    return {
+        'class':class_name,
+        'function':function_name,
+        'vote': 'agree',
+        'result': response['result']
     }
 
-    # TODO: finish function
 
-    if validator_receipt["contract_state"] == leader_receipt["contract_state"]:
-        validator_receipt["vote"] = "agree"
+async def validator_executes_transaction(transaction_input:dict , validator_config:dict, leader_receipt:dict) -> dict:
+    current_contract_state = get_contract_state(transaction_input["contract_address"])
+
+    args_str = ", ".join(f"{json.dumps(arg)}" for arg in transaction_input["args"])
+
+    class_name = transaction_input["function_name"].split('.')[0]
+    function_name = transaction_input["function_name"].split('.')[1]
+
+    exec_file_for_genvm = build_icontract(
+        contract_code=current_contract_state['code'],
+        contract_state=str(current_contract_state['state']),
+        run_by='validator',
+        class_name=class_name,
+        function_name=function_name,
+        args_str=args_str
+    )
+
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "validator_executes_transaction",
+        "params": [exec_file_for_genvm, validator_config, leader_receipt],
+        "id": 2,
+    }
+    
+    response = requests.post(genvm_url()+'/api', json=payload).json()
+
+    return_value = {
+        'class':class_name,
+        'function':function_name,
+        'vote': 'disagree',
+        'result': response['result']
+    }
+
+    if return_value['result']['contract_state'] == leader_receipt['result']['contract_state']:
+        return_value['vote'] = 'agree'
     else:
-        validator_receipt["vote"] = "disagree"
-    return validator_receipt
+        return_value['vote'] = 'disagree'
+        
+    return return_value
 
 
 async def exec_transaction(transaction_input, logger=None):
-    if logger:
-        logger("Checking the nodes.json config file has been created...")
-    cwd = os.path.abspath(os.getcwd())
-    nodes_file = cwd + '/consensus/nodes/nodes.json'
-    if not os.path.exists(nodes_file):
-        raise Exception('Create a configuratrion file for the nodes')
-    nodes_config = json.load(open(nodes_file))
 
-    if logger:
-        logger("Selecting validators with VRF...")
-    # Select validators
-    connection = get_genlayer_db_connection()
-    cursor = connection.cursor()
-    cursor.execute(
-        "SELECT validator_info->>'eoa_id' AS validator_id, stake FROM validators;"
-    )
-    validator_data = cursor.fetchall()
+    nodes_config = get_nodes_config(logger)
 
-    if len(nodes_config) < len(validator_data):
-        raise Exception('Nodes in database ('+str(len(validator_data))+'). Nodes configured ('+str(len(nodes_config))+')')
-
-    # Prepare validators and their stakes
-    all_validators = [row[0] for row in validator_data]
-    validators_stakes = [float(row[1]) for row in validator_data]
+    all_validators, validators_stakes = get_validators(nodes_config, logger)
 
     # Select validators using VRF
+    num_validators = int(os.environ['NUMVALIDATORS'])
     selected_validators = vrf(all_validators, validators_stakes, 5)
     leader = selected_validators[0]
-    remaining_validators = selected_validators[1:]
+    remaining_validators = selected_validators[1 : num_validators + 1]
     if logger:
         logger(f"Selected Leader: {leader}...")
         logger(f"Selected Validators: {remaining_validators}...")
@@ -116,11 +116,19 @@ async def exec_transaction(transaction_input, logger=None):
         raise Exception('The config for node '+leader+' is not in consensus/nodes/nodes.json')
     
     # Leader executes transaction
-    leader_receipt = leader_executes_transaction(transaction_input, leader, leader_config)
-    votes = {leader: leader_receipt["vote"]}
+    leader_recipt = leader_executes_transaction(transaction_input, leader_config)
+
+    votes = {leader: leader_recipt['vote']}
 
     if logger:
         logger(f"Leader {leader} has finished contract execution...")
+    
+    valudators_results = []
+    for validator_address in remaining_validators:
+        validator_config = next((item for item in nodes_config if item['id'] == validator_address), None)
+        if not validator_config:
+            raise Exception('Validator configuration for node '+validator_address+' not found in consensus/nodes/nodes.json')
+        valudators_results.append(await validator_executes_transaction(transaction_input, validator_config, leader_recipt))
 
     # Validators execute transaction
     # loop = asyncio.get_running_loop()
@@ -134,13 +142,14 @@ async def exec_transaction(transaction_input, logger=None):
     #     votes[f"{validation_results[i]['validator']}"] = validation_results[i]["vote"]
 
     # Write transaction into DB
-    from_address = transaction_input["args"][0]
-    to_address = transaction_input["contract_address"]
-    data = json.dumps({"new_contract_state" : leader_receipt["contract_state"]})
+    from_address = transaction_input['args'][0]
+    to_address = transaction_input['contract_address']
+    data = json.dumps({"new_contract_state" : leader_recipt['result']['contract_state']})
     transaction_type = 2
     final = False
-    leader_data = leader_receipt
-    consensus_data = ConsensusData(final=final, votes=votes, leader_data=leader_data).model_dump_json()
+    consensus_data = ConsensusData(final=final, votes=votes, leader=leader_recipt, validators=valudators_results).model_dump_json()
+    connection = get_genlayer_db_connection()
+    cursor = connection.cursor()
     cursor.execute(
         "INSERT INTO transactions (from_address, to_address, data, consensus_data, type, created_at) VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP);",
         (
@@ -158,9 +167,9 @@ async def exec_transaction(transaction_input, logger=None):
 
     if logger:
         logger(f"Transaction has been fully executed...")
-        logger(f"This is the data produced by the leader:\n\n {leader_data}")
+        logger(f"This is the data produced by the leader:\n\n {leader_recipt}")
 
     execution_output = {}
-    execution_output["leader_data"] = leader_data
+    execution_output["leader_data"] = leader_recipt
     execution_output["consensus_data"] = consensus_data
     return execution_output
