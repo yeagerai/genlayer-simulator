@@ -1,0 +1,32 @@
+FROM ubuntu:22.04
+
+RUN apt update
+RUN apt upgrade -y
+
+RUN apt install wget python3 pip -y
+
+RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+RUN dpkg -i google-chrome-stable_current_amd64.deb || true
+RUN apt-get install -f -y
+RUN dpkg -i google-chrome-stable_current_amd64.deb
+RUN google-chrome --version
+
+ARG base=/app
+ARG path=webrequest
+
+RUN mkdir $base
+WORKDIR $base
+
+COPY ../.env .
+
+ADD $path $base/$path
+
+RUN pip install --no-cache-dir -r $path/requirements.txt
+
+#ENV PYTHONPATH "${PYTHONPATH}:/${path}"
+ENV PATH "${PATH}:/${base}"
+
+WORKDIR $path
+
+# You only need to specify python3 because it is an ubuntu image
+CMD ["python3", "server.py"]

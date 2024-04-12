@@ -33,6 +33,18 @@ services:
       - genvm
     expose:
       - "${RPCPORT}"
+
+  webrequest:
+    build:
+      context: ./
+      dockerfile: ./docker/Dockerfile.webrequest
+    shm_size: 2gb
+    volumes:
+      - ./webrequest:/app/webrequest
+    environment:
+      - FLASK_SERVER_PORT=${WEBREQUESTPORT}
+    expose:
+      - "${WEBREQUESTPORT}"
   
   genvm:
     build:
