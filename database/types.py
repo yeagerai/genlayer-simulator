@@ -1,5 +1,6 @@
 from typing import Dict, List
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
+from typing import Optional
 
 class LeaderData(BaseModel):
     state: Dict
@@ -8,7 +9,13 @@ class LeaderData(BaseModel):
 class ConsensusData(BaseModel):
     final: bool
     votes: Dict[str,str]
-    leader_data: Dict #LeaderData TODO: finish the data enforcing
+    leader: Dict #LeaderData TODO: finish the data enforcing
+    validators: Optional[List] = None
+
+    @validator('validators')
+    def prevent_none(cls, v):
+        assert v is not None, 'validators may not be None'
+        return v
 
 class ContractData(BaseModel):
     code: str

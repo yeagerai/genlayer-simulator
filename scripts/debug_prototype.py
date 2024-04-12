@@ -54,7 +54,7 @@ response = count_validators_logic()
 if 'result' in response and 'count' in response['result']:
     if response['result']['count'] == 0:
         print('Creating validators...')
-        register_validators_logic(int(os.environ['NUMVALIDATORS']), 1, 10)
+        register_validators_logic(int(os.environ['TOTALVALIDATORS']), 1, 10)
     else:
         print('Validators already created.')
 else:
@@ -86,9 +86,6 @@ if 'result' in fund_account_result and 'address' in fund_account_result['result'
 contract_file_path = 'genvm/contracts/wizzard_of_coin.py'
 function_to_execute = 'WizzardOfCoin.ask_for_coin'
 initial_contract_state = '{"have_coin": true}'
-
-# Wait a bit before starting
-time.sleep(5)
 
 # Deploy the contract
 with open(contract_file_path, 'rb') as contract_file:

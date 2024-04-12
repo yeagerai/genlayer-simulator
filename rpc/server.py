@@ -176,11 +176,11 @@ def deploy_intelligent_contract(from_account: str, contract_code: str, initial_s
     try:
         cursor.execute(
             "INSERT INTO current_state (id, data) VALUES (%s, %s);",
-            (contract_id, json.dumps(contract_data)),
+            (contract_id, contract_data),
         )
         cursor.execute(
             "INSERT INTO transactions (from_address, to_address, data, type) VALUES (%s, %s, %s, 1);",
-            (from_account, contract_id, json.dumps(contract_data)),
+            (from_account, contract_id, contract_data),
         )
     except psycopg2.errors.UndefinedTable:
         app.logger.error('create the tables in the database first')
@@ -306,7 +306,6 @@ def get_contract_state(contract_address: str) -> dict:
         (contract_address,)
     )
     row = cursor.fetchall()
-
     cursor.close()
     connection.close()
     
@@ -315,7 +314,7 @@ def get_contract_state(contract_address: str) -> dict:
     
     return {
         "id": row[0][0],
-        "data": json.loads(row[0][1])
+        "data": row[0][1]
     }
 
 @jsonrpc.method("get_icontract_schema")
@@ -338,11 +337,11 @@ def get_icontract_schema(contract_address: str) -> dict:
         raise Exception('contract' + contract_address + ' does not contain any data')
 
     tx_contract = tx[4]
-
-    if 'code' not in json.loads(tx_contract):
+    
+    if 'code' not in tx_contract:
         raise Exception('contract' + contract_address + ' does not contain any contract code')
     
-    contract = json.loads(tx_contract)['code']
+    contract = tx_contract['code']
 
     payload = {
         "jsonrpc": "2.0",

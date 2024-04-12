@@ -2,9 +2,6 @@ import time
 from click.testing import CliRunner
 from cli.genlayer import cli
 
-# Wait a bit before starting
-time.sleep(5)
-
 # Hardcoded values (change after install)
 hardcoded_from_address = '95594942-17e5-4f91-8862-c3a4eae5b58c'
 contract_file_path = 'genvm/contracts/wizzard_of_coin.py' 
