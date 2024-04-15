@@ -1,28 +1,25 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
-import { watchEffect } from "vue";
-import { watch } from "vue";
-import { onUnmounted } from "vue";
-import { ref } from "vue";
+import { onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
 import { useGoTo } from 'vuetify'
-import { VVirtualScroll } from "vuetify/components";
-import { webSocketClient } from "@/utils";
+import { VVirtualScroll } from 'vuetify/components'
+import { webSocketClient } from '@/utils'
 
-const logs = ref<{ message: string, date: string }[]>([])
+const logs = ref<{ message: string; date: string }[]>([])
 const virtualScroll = ref<VVirtualScroll>()
 const scrollContainer = ref<Element>()
 const goTo = useGoTo()
+
 onMounted(() => {
-  webSocketClient.on("status_update", (event) => {
+  webSocketClient.on('status_update', (event) => {
     console.log('webSocketClient.details', event)
-    logs.value.push({ date: (new Date()).toISOString(), message: event.message })
-  });
+    logs.value.push({ date: new Date().toISOString(), message: event.message })
+  })
 })
 
 watch(logs.value, () => {
-  if (!scrollContainer.value) {
+  if (!scrollContainer.value)
     scrollContainer.value = virtualScroll.value?.$el.querySelector('.v-virtual-scroll__container')
-  }
+
   const scrollTo = scrollContainer.value?.clientHeight || 400
 
   goTo(scrollTo, {
@@ -34,35 +31,36 @@ watch(logs.value, () => {
 })
 
 onUnmounted(() => {
-  if (webSocketClient.connected) {
-    webSocketClient.close()
-  }
+  if (webSocketClient.connected) webSocketClient.close()
 })
 </script>
+
 <template>
-  <v-card>
-    <v-toolbar density="compact">
-      <v-toolbar-title>Node Logs</v-toolbar-title>
-      <v-spacer></v-spacer>
-    </v-toolbar>
+  <VCard>
+    <VToolbar density="compact">
+      <VToolbarTitle>Node Logs</VToolbarTitle>
+      <VSpacer />
+    </VToolbar>
     <div class="logs-container">
-      <v-virtual-scroll :items="logs" ref="virtualScroll" :height="400">
-        <template v-slot:default="{ item, index }">
-          <v-list-item density="compact" class="item" :id="`log-item-${index}`">
-            <template v-slot:prepend>
-              <div class="mr-3 logs-line-number">{{ index + 1 }}</div>
+      <VVirtualScroll ref="virtualScroll" :items="logs" :height="400">
+        <template #default="{ item, index }">
+          <VListItem :id="`log-item-${index}`" density="compact" class="item">
+            <template #prepend>
+              <div class="mr-3 logs-line-number">
+                {{ index + 1 }}
+              </div>
             </template>
-            <template v-slot:append>
-            </template>
-            <v-list-item-subtitle class="subtitle">
+            <template #append />
+            <VListItemSubtitle class="subtitle">
               <small>{{ item.date }}</small> :: {{ item.message }}
-            </v-list-item-subtitle>
-          </v-list-item>
+            </VListItemSubtitle>
+          </VListItem>
         </template>
-      </v-virtual-scroll>
+      </VVirtualScroll>
     </div>
-  </v-card>
+  </VCard>
 </template>
+
 <style>
 .logs-line-number {
   font-size: 0.7rem;
@@ -75,7 +73,6 @@ onUnmounted(() => {
 }
 
 .logs-container {
-  
   height: 25rem;
   background-color: #333333;
   font-family: monospace;

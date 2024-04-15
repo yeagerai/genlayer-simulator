@@ -11,20 +11,33 @@ node_modules
 .DS_Store
 dist
 dist-ssr
-coverage
 *.local
 
 /cypress/videos/
 /cypress/screenshots/
 
+# 👉 Custom Git ignores
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/*.code-snippets
+!.vscode/tours
 .idea
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+.yarn
 
-*.tsbuildinfo
+# iconify dist files
+src/plugins/iconify/icons.css
+
+# Ignore MSW script
+public/mockServiceWorker.js
+
+# Env files
+.env*
+!.env.example
