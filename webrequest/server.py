@@ -2,6 +2,7 @@ import os
 from flask import Flask
 from flask_jsonrpc import JSONRPC
 from urllib.parse import urlparse
+from time import time
 
 from request import get_webdriver, get_text
 
@@ -27,7 +28,10 @@ def get_webpage(url:str) -> dict:
     else:
         driver = get_webdriver()
         try:
+            start_time = time()
             webpage_text = get_text(driver, url)
+            end_time = time()
+            print('Execution time: '+str(end_time - start_time)+'s')
         except Exception as e:
             return {
                 'status': 'error',
