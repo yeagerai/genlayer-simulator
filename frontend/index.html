@@ -1,9 +1,9 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>GenLayer - The Intelligence Layer of the Internet</title>
+
+<head>
+  <meta charset="UTF-8" />
+  <title>GenLayer - The Intelligence Layer of the Internet</title>
     <meta
       name="description"
       content="GenLayer is a new L2 Blockchain that shatters the bounds of Smart Contracts by making them AI-Powered and connected to the Internet."
@@ -90,9 +90,33 @@
       name="msapplication-TileImage"
       content="https://genlayer.com/images/favicon/ms-icon-144x144.png"
     />
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+  <link rel="stylesheet" type="text/css" href="/loader.css" />
+</head>
+
+<body>
+  <div id="app">
+    <div id="loading-bg">
+      <div class="loading-logo">
+        <img src="@/assets/logo.png" alt="">
+      </div>
+      <div class="loading">
+        <div class="effect-1 effects"></div>
+        <div class="effect-2 effects"></div>
+        <div class="effect-3 effects"></div>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+  <script>
+    const loaderColor = localStorage.getItem('materio-initial-loader-bg') || '#FFFFFF'
+    const primaryColor = localStorage.getItem('materio-initial-loader-color') || '#429293'
+
+    if (loaderColor)
+      document.documentElement.style.setProperty('--initial-loader-bg', loaderColor)
+
+    if (primaryColor)
+      document.documentElement.style.setProperty('--initial-loader-color', primaryColor)
+  </script>
+</body>
+
 </html>
