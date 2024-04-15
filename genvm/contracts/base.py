@@ -7,7 +7,7 @@ import functools
 import inspect
 
 from genvm.contracts import llms
-from genvm.utils import transaction_files
+from genvm.utils import transaction_files, get_webpage_content
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -41,12 +41,68 @@ def icontract(cls):
     class WrappedClass(cls):
         def __init__(self, *args, **kwargs):
             self.node_config = json.load(open(os.environ.get('GENVMCONLOC') + '/node-config.json'))
+            self.mode = None
             self.gas_used = 0
             self.non_det_counter = 0
             self.non_det_inputs = {}
             self.non_det_outputs = {}
             self.eq_principles_outs = {}
+            self.qw_similarity_scale = "between 1 to 10 (where 1 = 'not at all similar' and 10 = 'identical')"
+            self.qw_similarity_success = [7, 8, 9, 10]
             super(WrappedClass, self).__init__(*args, **kwargs)
+
+        async def query_webpage(self, url:str, prompt:str):
+
+            _, _, _, recipt_file = transaction_files()
+
+            llm_function = self.get_llm_function()
+
+            if self.node_config['type'] == 'leader':
+                self.mode = 'leader'
+                url_body = get_webpage_content(url)
+                submitted_prompt = f"Complete the following task:\n\nTask:\n{prompt}'\n\nUsing the following text:\n\nText:\n{url_body}"
+                leader_response = await llm_function(self.node_config, submitted_prompt, None, None)
+                self.non_det_outputs[self.non_det_counter]['input'] = {'prompt': prompt, 'url': url}
+                self.non_det_outputs[self.non_det_counter]['output'] = leader_response
+                self.non_det_counter+=1
+                return leader_response
+            elif self.node_config['type'] == 'validator':
+                self.mode = 'validator'
+                # make sure the leader file exists first
+                if not os.path.exists(recipt_file):
+                    raise Exception(recipt_file + ' does not exist!')
+                # get the leader file
+                file = open(recipt_file, 'r')
+                leader_recipt = json.load(file)
+                file.close()
+                # get the webpage
+                url_body = get_webpage_content(url)
+                submitted_prompt = f"Complete the following task:\n\nTask:\n{prompt}'\n\nUsing the following text:\n\nText:\n{url_body}"
+                wq_response = await llm_function(self.node_config, submitted_prompt, None, None)
+                self.non_det_outputs[self.non_det_counter]['input'] = {'prompt': prompt, 'url': url, 'leader_recipt': leader_recipt}
+                self.non_det_outputs[self.non_det_counter]['output'] = wq_response
+
+                leader_output = leader_recipt['result']['non_det_outputs']['0']['output']
+                # Compaire to the leaders
+                eq_prompt = f"Using a scale {self.qw_similarity_scale} tell me how similar the follow two blocks of text are.\n\nText 1:\n{leader_output}\n\nText 2:\n{wq_response}\n\nRespond using the following JSON format:\n{'similarity': a value from the scale,'reason': the reason for the lack of similarity (if there is any)}"
+                similarity_response = await llm_function(self.node_config, eq_prompt, None, None)
+
+                is_similar = False
+                if self.qw_similarity_success in similarity_response['similarity']:
+                    is_similar = True
+                self.eq_principles_outs[self.non_det_counter] = similarity_response
+                self.eq_principles_outs[self.non_det_counter]['is_similar'] = is_similar
+                self.non_det_counter+=1
+                if not is_similar:
+                    # 'call_llm' < 'wrapped_function' <'ask_for_coin' < 'wrapped_function' < 'main' < ...
+                    #                                  --------------
+                    method_name = inspect.stack()[2].function
+                    self._write_receipt(self, method_name, {})
+                    print('There was limited similarity between the validators output and the leaders output.', file=sys.stderr)
+                    sys.exit(1)
+                return leader_output
+            else:
+                raise ValueError("Invalid mode.")
 
         async def call_llm(self, prompt:str, consensus_eq:str=None):
 
@@ -58,9 +114,7 @@ def icontract(cls):
                 leader_recipt = json.load(file)
                 file.close()
 
-            llm_function = getattr(llms, 'call_ollama')
-            if self.node_config['provider'] == 'openai':
-                llm_function = getattr(llms, 'call_openai')
+            llm_function = self.get_llm_function()
 
             self.non_det_inputs[self.non_det_counter] = {}
             self.non_det_inputs[self.non_det_counter]["input"] = prompt
@@ -139,4 +193,12 @@ def icontract(cls):
                 return wrapped_function
             else:
                 return orig_attr
+        
+
+        def get_llm_function(self):
+            llm_function = getattr(llms, 'call_ollama')
+            if self.node_config['provider'] == 'openai':
+                llm_function = getattr(llms, 'call_openai')
+            return llm_function
+
     return WrappedClass

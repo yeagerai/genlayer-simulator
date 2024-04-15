@@ -11,6 +11,9 @@ class WizzardOfCoin:
         self.have_coin = have_coin
 
     async def ask_for_coin(self, user_address: str, request: str) -> None:
+        url = "https://www.python.org/"
+        prompt = "What is this webpage about?"
+        result = json.loads(await self.query_webpage(url, prompt))
         prompt = f"""
         {self.description}
 

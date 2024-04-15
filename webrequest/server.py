@@ -17,8 +17,8 @@ def is_valid_url(url):
     return all([parsed_url.scheme, parsed_url.netloc])
 
 
-@jsonrpc.method("get_website_text")
-def get_website_text(url:str) -> dict:
+@jsonrpc.method("get_webpage")
+def get_webpage(url:str) -> dict:
     if not is_valid_url(url):
         return {
             'status': 'error',
@@ -26,7 +26,13 @@ def get_website_text(url:str) -> dict:
         }
     else:
         driver = get_webdriver()
-        webpage_text = get_text(driver, url)
+        try:
+            webpage_text = get_text(driver, url)
+        except Exception as e:
+            return {
+                'status': 'error',
+                'result': str(e)
+            }
         return {
             'status': 'success',
             'result': webpage_text
