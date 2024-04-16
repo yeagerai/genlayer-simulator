@@ -12,7 +12,7 @@ import VerticalNavSectionTitle from '@/@layouts/components/VerticalNavSectionTit
       to: '/getting-started'
     }"
   />
-  <VerticalNavLink
+  <!-- <VerticalNavLink
     :item="{
       title: 'Accounts',
       icon: 'ri-table-alt-line',
@@ -25,5 +25,5 @@ import VerticalNavSectionTitle from '@/@layouts/components/VerticalNavSectionTit
       icon: 'ri-settings-line',
       to: '/settings'
     }"
-  />
+  /> -->
 </template>
