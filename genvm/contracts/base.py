@@ -59,7 +59,7 @@ def icontract(cls):
             if self.node_config['type'] == 'leader':
                 self.mode = 'leader'
                 url_body = get_webpage_content(url)
-                submitted_prompt = f"Complete the following task:\n\nTask:\n{prompt}\n\nUsing the following text:\n\nText:\n{url_body['result']}"
+                submitted_prompt = f"Complete the following task:\n\nTask:\n{prompt}\n\nUsing the following text:\n\nText:\n{url_body['response']}"
                 leader_response = await llm_function(self.node_config, submitted_prompt, None, None)
                 self.non_det_outputs[self.non_det_counter] = leader_response
                 self.non_det_counter+=1
@@ -76,7 +76,7 @@ def icontract(cls):
                 self.non_det_inputs[self.non_det_counter]['leader_reciept'] = leader_receipt
                 # get the webpage
                 url_body = get_webpage_content(url)
-                submitted_prompt = f"Complete the following task:\n\nTask:\n{prompt}'\n\nUsing the following text:\n\nText:\n{url_body['result']}"
+                submitted_prompt = f"Complete the following task:\n\nTask:\n{prompt}'\n\nUsing the following text:\n\nText:\n{url_body['response']}"
                 wq_response = await llm_function(self.node_config, submitted_prompt, None, None)
                 self.non_det_outputs[self.non_det_counter] = wq_response
 
