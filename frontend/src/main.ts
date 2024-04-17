@@ -1,17 +1,22 @@
+import './assets/main.css'
+
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
+import Notifications from '@kyvg/vue3-notification'
 
-import App from '@/App.vue'
-import { registerPlugins } from '@core/utils/plugins'
+import App from './App.vue'
+import router from './router'
+import { createToolTipPlugin } from './plugins'
 
-// Styles
-import '@core/scss/template/index.scss'
-import '@layouts/styles/index.scss'
-
-// Create vue app
 const app = createApp(App)
 
-// Register plugins
-registerPlugins(app)
+app.use(createPinia())
+app.use(router)
+app.use(
+  createToolTipPlugin({
+    arrow: true
+  })
+)
+app.use(Notifications)
 
-// Mount vue app
 app.mount('#app')
