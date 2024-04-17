@@ -62,11 +62,13 @@ const deployContract = () => {
 
 const loadContentFromFile = (event: Event) => {
   const target = event.target as HTMLInputElement
+  console.log(target)
   if (target.files && target.files.length > 0) {
     const [file] = target.files
     const reader = new FileReader()
 
     reader.onload = (ev: ProgressEvent<FileReader>) => {
+      
       if (ev.target?.result)
         emit('content-change', (ev.target?.result as string) || '')
     }

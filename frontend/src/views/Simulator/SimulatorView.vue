@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { RouterView } from 'vue-router'
 import SimulatorMenu from '@/components/SimulatorMenu.vue'
 import NodeLogs from '@/components/Simulator/NodeLogs.vue'
@@ -8,7 +8,10 @@ import CodeEditor from '@/components/Simulator/CodeEditor.vue'
 import { rpcClient } from '@/utils'
 import Modal from '@/components/Modal.vue'
 
-const width = ref(350)
+const [minWidth, maxWidth, defaultWidth] = [200, 500, 350]
+
+const width = ref(defaultWidth)
+const isResized = ref(false)
 
 const content = ref('')
 const contractId = ref<string>()
@@ -18,6 +21,7 @@ const defaultStateModalOpen = ref(false)
 const defaultContractState = ref('{}')
 const showShanckbar = ref(false)
 const shanckbarText = ref('')
+
 
 const handleContentChange = (value: string) => {
   content.value = value
@@ -93,20 +97,52 @@ watch(
     }
   }
 )
+const mouseMoveHandler = (e: any) => {
+  if (!isResized.value) {
+    return;
+  }
+  const previousWidth = width.value
+  const newWidth = previousWidth + e.movementX / 2;
+
+  const isWidthInRange = newWidth >= minWidth && newWidth <= maxWidth;
+  console.log({ newWidth, previousWidth })
+  width.value = isWidthInRange ? newWidth : previousWidth;
+}
+const mouseUpHandler = () => {
+  isResized.value = false;
+}
+onMounted(() => {
+
+  window.addEventListener("mousemove", mouseMoveHandler);
+  window.addEventListener("mouseup", mouseUpHandler)
+
+})
+
+onUnmounted(() => {
+  window.removeEventListener("mousemove", mouseMoveHandler)
+  window.removeEventListener("mouseup", mouseUpHandler)
+})
+
+const setResized = () => {
+  isResized.value = true
+}
+
 </script>
 
 <template>
   <div class="flex">
     <SimulatorMenu />
     <div class="flex">
-      <div class="flex p-2 border-r border-r-slate-500" :style="{ width: `${width / 16}rem` }">
+      <div class="flex justify-between" :style="`width: ${width / 16}rem`">
         <RouterView />
+        <div className="w-[0.09rem] border-x border-x-slate-500 cursor-col-resize" @mousedown="setResized" />
       </div>
       <div class="flex flex-col relative w-full">
         <div class="flex flex-col m-h-[70%] h-full">
           <SimulatorTabs />
           <CodeEditor :content="content" @deploy="handleDeployContract" @content-change="handleContentChange" />
         </div>
+
         <NodeLogs />
       </div>
     </div>
