@@ -1,3 +1,4 @@
+import re
 import os
 from math import ceil, floor
 from config import Config
@@ -98,6 +99,31 @@ def get_webpage_chunks(url:str, chunk_sizes: int, overlap:float) -> dict:
             return return_error('URL does not exist')
         return return_error(str(e))
     return return_success(chunks)
+
+
+@jsonrpc.method("get_webpage_xpaths")
+def get_webpage_xpaths(url:str, xpaths:list) -> dict:
+    if not is_valid_url(url):
+        return return_error('URL not in correct format')
+    xpath_pattern = r'^(/[a-zA-Z0-9_]+(\[[^\]]*\])*)+$'
+    for xpath in xpaths:
+        if not bool(re.match(xpath_pattern, xpath)):
+            return return_error(xpath + ' is not an xpath')
+    segments = []
+    driver = get_webdriver()
+    try:
+        start_time = time()
+        driver.get(url)
+        for xpath in xpaths:
+            segments.append(driver.find_element('xpath', xpath).text)
+        end_time = time()
+        print('Execution time: '+str(end_time - start_time)+'s')
+    except Exception as e:
+        if 'ERR_NAME_NOT_RESOLVED' in str(e):
+            return return_error('URL does not exist')
+        return return_error(str(e))
+    return return_success(segments)
+
 
 
 if __name__ == "__main__":

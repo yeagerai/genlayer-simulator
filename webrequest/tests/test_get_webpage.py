@@ -1,11 +1,16 @@
 import json
 
-from tests.base import get_payload, post_request
+from tests.base import (
+    not_url,
+    url_doesnt_exist,
+    working_url,
+    get_payload,
+    post_request
+)
 
 
 def test_get_webpage_bad_url():
-    url = '<this_is_not_a_URL>'
-    payload = get_payload('get_webpage', url)
+    payload = get_payload('get_webpage', not_url())
     response = post_request(payload)
     response_json = json.loads(response.text)
     assert response.status_code == 200
@@ -14,8 +19,7 @@ def test_get_webpage_bad_url():
 
 
 def test_get_webpage_url_doesnt_exist():
-    url = 'http://www.urlthatdoesntexist.com/'
-    payload = get_payload('get_webpage', url)
+    payload = get_payload('get_webpage', url_doesnt_exist())
     response = post_request(payload)
     response_json = json.loads(response.text)
     assert response.status_code == 200
@@ -24,8 +28,7 @@ def test_get_webpage_url_doesnt_exist():
 
 
 def test_get_webpage():
-    url = 'https://docs.python.org/3/license.html'
-    payload = get_payload('get_webpage', url)
+    payload = get_payload('get_webpage', working_url())
     test_text = 'INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS'
     response = post_request(payload)
     response_json = json.loads(response.text)
