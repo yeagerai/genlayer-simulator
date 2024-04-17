@@ -1,11 +1,17 @@
 import json
 from math import floor
 
-from tests.base import get_payload, post_request
+from tests.base import (
+    not_url,
+    url_doesnt_exist,
+    working_url,
+    get_payload,
+    post_request
+)
 
 
 def defaults():
-    url = 'https://docs.python.org/3/license.html'
+    url = working_url()
     chunck_size = 500
     overlap = 0.1
     return url, chunck_size, overlap
@@ -13,8 +19,7 @@ def defaults():
 
 def test_get_webpage_bad_url():
     _, chunk_size, overlap = defaults()
-    url = '<this_is_not_a_URL>'
-    payload = get_payload('get_webpage_chunks', url, chunk_size, overlap)
+    payload = get_payload('get_webpage_chunks', not_url(), chunk_size, overlap)
     response = post_request(payload)
     response_json = json.loads(response.text)
     assert response.status_code == 200
@@ -25,7 +30,7 @@ def test_get_webpage_bad_url():
 def test_get_webpage_url_doesnt_exist():
     _, chunk_size, overlap = defaults()
     url = 'http://www.urlthatdoesntexist.com/'
-    payload = get_payload('get_webpage_chunks', url, chunk_size, overlap)
+    payload = get_payload('get_webpage_chunks', url_doesnt_exist(), chunk_size, overlap)
     response = post_request(payload)
     response_json = json.loads(response.text)
     assert response.status_code == 200
