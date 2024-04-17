@@ -59,7 +59,7 @@ def icontract(cls):
             if self.node_config['type'] == 'leader':
                 self.mode = 'leader'
                 url_body = get_webpage_content(url)
-                submitted_prompt = f"Complete the following task:\n\nTask:\n{prompt}'\n\nUsing the following text:\n\nText:\n{url_body['result']}"
+                submitted_prompt = f"Complete the following task:\n\nTask:\n{prompt}\n\nUsing the following text:\n\nText:\n{url_body['result']}"
                 leader_response = await llm_function(self.node_config, submitted_prompt, None, None)
                 self.non_det_outputs[self.non_det_counter] = leader_response
                 self.non_det_counter+=1

@@ -9,7 +9,7 @@ load_dotenv()
 def debug_output(title:str, content:str):
     if int(os.environ.get('DEBUG')) == 1:
         print('--- START: '+title+' ---')
-        print(content)
+        print(f"""{content}""")
         print('--- END: '+title+' ---')
 
 
