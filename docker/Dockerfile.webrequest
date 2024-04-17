@@ -23,7 +23,7 @@ ADD $path $base/$path
 
 RUN pip install --no-cache-dir -r $path/requirements.txt
 
-#ENV PYTHONPATH "${PYTHONPATH}:/${path}"
+ENV PYTHONPATH "${base}/${path}"
 ENV PATH "${PATH}:/${base}"
 
 WORKDIR $path
