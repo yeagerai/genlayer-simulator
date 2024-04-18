@@ -3,14 +3,19 @@ import './assets/main.css'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import Notifications from '@kyvg/vue3-notification'
-
 import App from './App.vue'
 import router from './router'
-import { createToolTipPlugin } from './plugins'
+import { PersistStorePlugin, createToolTipPlugin } from '@/plugins'
+import { setupDB } from '@/utils'
 
 const app = createApp(App)
 
-app.use(createPinia())
+
+const pinia = createPinia()
+// give the plugin to pinia
+pinia.use(PersistStorePlugin)
+
+app.use(pinia)
 app.use(router)
 app.use(
   createToolTipPlugin({
@@ -20,3 +25,5 @@ app.use(
 app.use(Notifications)
 
 app.mount('#app')
+
+setupDB()

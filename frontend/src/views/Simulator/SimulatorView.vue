@@ -3,58 +3,20 @@ import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { RouterView } from 'vue-router'
 import SimulatorMenu from '@/components/SimulatorMenu.vue'
 import NodeLogs from '@/components/Simulator/NodeLogs.vue'
-import SimulatorTabs from '@/components/Simulator/SimulatorTabs.vue'
-import CodeEditor from '@/components/Simulator/CodeEditor.vue'
+import ContractsPanel from '@/components/Simulator/ContractsPanel.vue'
 import { rpcClient } from '@/utils'
-import Modal from '@/components/Modal.vue'
 
-const [minWidth, maxWidth, defaultWidth] = [200, 500, 350]
+const [minWidth, maxWidth, defaultWidth] = [200, 800, 350]
 
 const width = ref(defaultWidth)
 const isResized = ref(false)
 
-const content = ref('')
 const contractId = ref<string>()
 const abi = ref<any>()
 const contractState = ref<any>({})
-const defaultStateModalOpen = ref(false)
-const defaultContractState = ref('{}')
 const showShanckbar = ref(false)
 const shanckbarText = ref('')
 
-
-const handleContentChange = (value: string) => {
-  content.value = value
-}
-
-const closeSnackbar = () => {
-  showShanckbar.value = false
-  shanckbarText.value = ''
-}
-
-const deployContract = async () => {
-  const state = JSON.parse(defaultContractState.value || '{}')
-
-  if (Object.keys(state).length < 1) {
-    shanckbarText.value = 'You should provide a valid json object as a default state'
-    showShanckbar.value = true
-  } else {
-    defaultStateModalOpen.value = false
-    closeSnackbar()
-
-    const { result } = await rpcClient.call({
-      method: 'deploy_intelligent_contract',
-      params: ['0xcAE1bEb0daABFc1eF1f4A1C17be7E7b4cc12B33A', content.value, JSON.stringify(state)]
-    })
-
-    contractId.value = result.contract_id
-    defaultContractState.value = '{}'
-  }
-}
-
-const handleDeployContract = () => {
-  defaultStateModalOpen.value = true
-}
 
 const getContractState = async (contractAddress: string) => {
   const { result } = await rpcClient.call({
@@ -105,17 +67,16 @@ const mouseMoveHandler = (e: any) => {
   const newWidth = previousWidth + e.movementX / 2;
 
   const isWidthInRange = newWidth >= minWidth && newWidth <= maxWidth;
-  console.log({ newWidth, previousWidth })
   width.value = isWidthInRange ? newWidth : previousWidth;
 }
 const mouseUpHandler = () => {
   isResized.value = false;
 }
-onMounted(() => {
 
+
+onMounted(() => {
   window.addEventListener("mousemove", mouseMoveHandler);
   window.addEventListener("mouseup", mouseUpHandler)
-
 })
 
 onUnmounted(() => {
@@ -130,39 +91,20 @@ const setResized = () => {
 </script>
 
 <template>
-  <div class="flex">
+  <div class="flex w-full">
     <SimulatorMenu />
-    <div class="flex">
+    <div class="flex w-full">
       <div class="flex justify-between" :style="`width: ${width / 16}rem`">
         <RouterView />
-        <div className="w-[0.09rem] border-x border-x-slate-500 cursor-col-resize" @mousedown="setResized" />
+        <div className="w-2 border-x bg-slate-100 border-x-slate-500 hover:bg-slate-500 cursor-col-resize dark:bg-zinc-800 dark:text-white" @mousedown="setResized" />
       </div>
-      <div class="flex flex-col relative w-full">
-        <div class="flex flex-col m-h-[70%] h-full">
-          <SimulatorTabs />
-          <CodeEditor :content="content" @deploy="handleDeployContract" @content-change="handleContentChange" />
+      <div class="flex flex-col relative w-full h-full">
+        <div class="flex flex-col h-full w-full">
+          <ContractsPanel />
         </div>
-
         <NodeLogs />
       </div>
     </div>
-    <Modal :open="defaultStateModalOpen" @close="defaultStateModalOpen = false">
-      <div class="flex flex-col">
-        <div class="flex flex-col">
-          <h2>Set the default contrat state</h2>
-          <p>Please provide a json object with the default contract state.</p>
-        </div>
-        <div class="flex">
-          <textarea rows="10" class="w-full" v-model="defaultContractState" clear-icon="ri-close-circle"
-            label="State" />
-        </div>
-        <div class="flex justify-end mt-4">
-          <button class="bg-primary text-white px-4 py-2 border-r-4" prepend-icon="ri-code-greater-than"
-            @click="deployContract">
-            Deploy contract
-          </button>
-        </div>
-      </div>
-    </Modal>
+
   </div>
 </template>

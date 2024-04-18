@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
-import Header from '@/components/Header.vue'
+import Header from '@/components/HeaderComponent.vue'
+import { useUIStore } from '@/stores/ui'
+import { onBeforeMount } from 'vue';
+const uiStore = useUIStore()
+onBeforeMount(() => {
+  uiStore.initialize()
+})
 </script>
 <template>
-  <main data-mode="light" class="h-screen bg-white dark:bg-gray-dark flex flex-col">
+  <main :data-mode="uiStore.mode" class="h-full w-full bg-white dark:bg-zinc-800 dark:text-white flex flex-col">
     <Header />
     <div class="flex h-screen">
       <RouterView />
