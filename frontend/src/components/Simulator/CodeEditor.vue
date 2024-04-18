@@ -35,7 +35,8 @@ watch(
       editorRef.value.onDidChangeModelContent(() => {
         contractStore.updateContractFile(props.contract.id!, { content: editorRef.value?.getValue() || "" })
       })
-      editorHeight.value = editorElement.value?.parentNode?.parentElement?.clientHeight || 800
+      const height = editorElement.value?.parentNode?.parentElement?.clientHeight || 600
+      editorHeight.value = height - 40
       editorWidth.value = editorElement.value?.parentNode?.parentElement?.clientWidth || 950
     }
   },

@@ -50,7 +50,7 @@ const openContract = (id?: string) => {
 <template>
   <div class="flex flex-col w-full">
     <div class="flex flex-col p-2 w-full">
-      <h3>Your Contracts</h3>
+      <h3 class="text-xl">Your Contracts</h3>
     </div>
     <div class="flex px-1 py-2 w-full">
       <button class="flex ml-3" @click="addNewFile">
@@ -71,7 +71,7 @@ const openContract = (id?: string) => {
         :class="{ 'border-green-500': contract.id === store.currentContractId }">
         <button class="flex items-center" @click="openContract(contract.id)">
           <DocumentCheckIcon class="h-4 w-4 fill-primary mr-1" />
-          {{ contract.name }}.genpy
+          {{ contract.name }}.gpy
         </button>
         <div class="flex" v-show="showFileOptionsId === contract.id">
           <button>
