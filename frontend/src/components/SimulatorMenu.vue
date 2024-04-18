@@ -14,7 +14,7 @@ import { DocumentIcon, AdjustmentsHorizontalIcon, UserCircleIcon, CommandLineIco
             <RouterLink :to="{ name: 'simulator.run-debug' }"
                 class="p-3 border-r-4 border-transparent opacity-75 hover:border-r-primary hover:opacity-100">
                 <CommandLineIcon class="h-6 w-6 fill-primary" />
-                <ToolTip text="Run / Debug" :options="{ placement: 'right' }" />
+                <ToolTip text="Run and Debug" :options="{ placement: 'right' }" />
             </RouterLink>
             <RouterLink :to="{ name: 'simulator.settings' }"
                 class="p-3 border-r-4 border-transparent opacity-75 hover:border-r-primary hover:opacity-100">

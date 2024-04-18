@@ -11,7 +11,7 @@ const contractStore = useContractsFilesStore()
 const props = defineProps<{
   contract: ContractFile
 }>()
-const emit = defineEmits(['content-change', 'deploy'])
+const emit = defineEmits(['content-change', 'run-debug'])
 const editorElement = ref<HTMLDivElement | null>(null)
 const editorRef = shallowRef<monaco.editor.IStandaloneCodeEditor | null>(null)
 const theme = computed(() => uiStore.mode === 'light' ? 'vs' : 'vs-dark')
@@ -56,17 +56,17 @@ watch(
  *
  * @return {void} No return value.
  */
-const deployContract = (): void => {
-  emit('deploy', props.contract.id)
+const runDebug = (): void => {
+  emit('run-debug')
 }
 </script>
 
 <template>
   <div class="flex flex-col">
     <div class="flex p-2">
-      <button class="flex ml-3" @click="deployContract">
+      <button class="flex ml-3" @click="runDebug">
         <PlayIcon class="h-5 w-5 fill-primary" />
-        <ToolTip text="Deploy Contract" :options="{ placement: 'bottom' }" />
+        <ToolTip text="Run and Debug" :options="{ placement: 'bottom' }" />
       </button>
     </div>
     <div ref="editorElement" :style="`width: ${editorWidth / 16}rem; height: ${editorHeight / 16}rem`"/>
