@@ -99,7 +99,7 @@ const setResized = () => {
         <div className="w-2 border-x bg-slate-100 border-x-slate-500 hover:bg-slate-500 cursor-col-resize dark:bg-zinc-800 dark:text-white" @mousedown="setResized" />
       </div>
       <div class="flex flex-col relative w-full h-full">
-        <div class="flex flex-col h-full w-full">
+        <div class="flex flex-col h-full w-full overflow-y-auto">
           <ContractsPanel />
         </div>
         <NodeLogs />
