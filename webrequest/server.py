@@ -1,13 +1,13 @@
 import re
 import os
 from math import ceil, floor
-from config import Config
 from flask import Flask
 from flask_jsonrpc import JSONRPC
 from urllib.parse import urlparse
 from time import time
+from bs4 import BeautifulSoup
 
-from request import get_webdriver, get_text
+from request import get_webdriver, get_text, get_html
 
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -123,6 +123,32 @@ def get_webpage_xpaths(url:str, xpaths:list) -> dict:
             return return_error('URL does not exist')
         return return_error(str(e))
     return return_success(segments)
+
+
+@jsonrpc.method("get_webpage_regex")
+def get_webpage_regex(url:str, regex:str) -> dict:
+    if not is_valid_url(url):
+        return return_error('URL not in correct format')
+    matches = []
+    driver = get_webdriver()
+    webpage_html = ''
+    try:
+        start_time = time()
+        webpage_html = get_html(driver, url)
+        end_time = time()
+        print('Execution time: '+str(end_time - start_time)+'s')
+    except Exception as e:
+        if 'ERR_NAME_NOT_RESOLVED' in str(e):
+            return return_error('URL does not exist')
+        return return_error(str(e))
+    patten = re.compile(regex)
+    matches = patten.findall(webpage_html)
+    if not len(matches):
+        return return_error('No matches were found ('+regex+')')
+    matches_without_tags = []
+    for m in matches:
+        matches_without_tags.append(BeautifulSoup(m, "html.parser").get_text())
+    return return_success(matches_without_tags)
 
 
 
