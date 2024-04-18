@@ -1,6 +1,6 @@
 import os
 import sys
-import time
+import git
 import json
 
 from dotenv import load_dotenv
@@ -18,7 +18,9 @@ if 'VIRTUAL_ENV' not in os.environ and 'CONDA_DEFAULT_ENV' not in os.environ:
     sys.exit()
 
 # Make sure the file is being run from the project folder (not the scipts folder)
-if not cwd.endswith('genlayer-prototype'):
+repo = git.Repo(search_parent_directories=True)
+repo_name = repo.remotes.origin.url.split('/')[-1].split('.')[0]
+if not cwd.endswith(repo_name):
     print('Run this script from the project root')
     sys.exit()
 
