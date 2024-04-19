@@ -30,9 +30,9 @@ const contracts = computed(() => {
     <div class="flex flex-col w-full h-full">
         <nav class="border-b text-sm flex justify-start items-center">
             <div class="font-semibold flex justify-between px-2 py-2 text-neutral-500 hover:border-primary hover:text-primary"
-                :class="{ 'border-b-2 border-primary text-primary': !store.currentContractId }">
+                :class="{ 'border-b-2 border-primary text-primary': !!store.currentContractId }">
                 <button class="bg-transparent mr-2 flex" @click="setCurrentContractTab()">
-                    <HomeIcon class="mx-2 h-4 w-4" :class="{ 'fill-primary': !store.currentContractId }" />
+                    <HomeIcon class="mx-2 h-4 w-4" :class="{ 'fill-primary': !!store.currentContractId }" />
                 </button>
             </div>
             <div v-for="contract in contracts" :key="contract.id"
@@ -49,8 +49,8 @@ const contracts = computed(() => {
 
             </div>
         </nav>
-        <div v-show="!store.currentContractId" class="flex w-full h-full">
-            <HomeTab v-show="!store.currentContractId" />
+        <div v-show="!!store.currentContractId" class="flex w-full h-full">
+            <HomeTab />
         </div>
         <div v-for="contract in contracts" :key="contract.id" class="flex w-full h-full relative"
             v-show="contract.id === store.currentContractId">

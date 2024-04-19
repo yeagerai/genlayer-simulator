@@ -4,6 +4,8 @@ import { computed, ref, watch } from "vue";
 import { rpcClient } from '@/utils';
 import { notify } from "@kyvg/vue3-notification";
 import ContractState from '@/components/Simulator/ContractState.vue'
+import ExecuteTransactions from "@/components/Simulator/ExecuteTransactions.vue";
+
 const store = useContractsFilesStore()
 const defaultContractState = ref('{}')
 const abi = ref<any>()
@@ -117,6 +119,8 @@ watch(
       <div class="flex flex-col p-2 m-h-20 overflow-y-auto">
         <ContractState :contract-state="contractState" />
       </div>
+      
+      <ExecuteTransactions :abi="abi" />
     </template>
     <div class="flex flex-col px-2 py-2 w-full bg-slate-100" v-else>
       <div class="text-sm">Please select an intelligent contract first, you can go to <RouterLink

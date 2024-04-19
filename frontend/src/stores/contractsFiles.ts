@@ -1,12 +1,17 @@
 import { defineStore } from 'pinia'
 import type { ContractFile, ContractsState, DeployedContract } from '@/types'
 
+const getInitialOPenedFiles = (): string[] => {
+  const storage = localStorage.getItem('contractFiles.openedFiles')
+  if (storage) return storage.split(',')
+  return []
+}
 export const useContractsFilesStore = defineStore('contractsFiles', {
   state: (): ContractsState => {
     return {
       contracts: [],
-      openedFiles: [],
-      currentContractId: undefined,
+      openedFiles: getInitialOPenedFiles(),
+      currentContractId: localStorage.getItem('contractFiles.currentContractId') || undefined,
       deployedContracts: []
     }
   },
@@ -48,7 +53,8 @@ export const useContractsFilesStore = defineStore('contractsFiles', {
     },
     addDeployedContract({ contractId, address }: DeployedContract): void {
       const index = this.deployedContracts.findIndex((c) => c.contractId === contractId)
-      if (index === -1) this.$patch((state) => state.deployedContracts.push({ contractId, address }))
+      if (index === -1)
+        this.$patch((state) => state.deployedContracts.push({ contractId, address }))
       else this.$patch((state) => (state.deployedContracts[index] = { contractId, address }))
     }
   }

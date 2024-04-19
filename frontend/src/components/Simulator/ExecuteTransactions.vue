@@ -47,23 +47,11 @@ watch(
 </script>
 
 <template>
-  <VCard>
-    <VToolbar density="compact">
-      <VToolbarTitle>Operations</VToolbarTitle>
-      <VSpacer />
-    </VToolbar>
-    <VContainer fluid>
-      <VRow>
-        <VCol>
-          <h3>
-            Contract: <b>{{ props.abi?.class }}</b>
-          </h3>
-        </VCol>
-      </VRow>
-      <VRow>
-        <VCol>
-          <VList lines="one">
-            <VListItem
+  <div class="flex flex-col px-2 mt-6 pt-2 w-full bg-slate-100">
+    <h5 class="text-sm">Execute transactions</h5>
+  </div>
+  <div class="flex flex-col p-2 m-h-20 overflow-y-auto">
+    <!-- <VListItem
               v-for="method in methodList"
               :key="method.name"
             >
@@ -74,10 +62,7 @@ watch(
                   </VBtn>
                 </VListItemAction>
               </template>
-              <template
-                v-for="(inputType, input) in method.inputs"
-                :key="input"
-              >
+<template v-for="(inputType, input) in method.inputs" :key="input">
                 <VCheckbox
                   v-if="inputType === 'bool'"
                   v-model="inputs[method.name][input]"
@@ -91,12 +76,9 @@ watch(
                   :label="`${input}`"
                 />
               </template>
-            </VListItem>
-          </VList>
-        </VCol>
-      </VRow>
-    </VContainer>
-  </VCard>
+</VListItem> -->
+  </div>
+
 </template>
 
 <style>

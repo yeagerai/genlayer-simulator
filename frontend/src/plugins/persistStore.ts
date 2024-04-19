@@ -42,7 +42,7 @@ const upsertDeployedContract = async (contract: DeployedContract): Promise<void>
 export function PersistStorePlugin(context: PiniaPluginContext): void {
   initData(context)
   context.store.$onAction(({ store, name, args, after }) => {
-    console.log(`Start "${name}" with params [${JSON.stringify(args)}].`)
+    console.log(`Called Action "${name}" with params [${JSON.stringify(args)}].`)
     after(async (result) => {
       if (store.$id === 'contractsFiles') {
         switch (name) {
@@ -55,6 +55,14 @@ export function PersistStorePlugin(context: PiniaPluginContext): void {
           case 'removeContractFile':
             await db.contractFiles.delete(args[0] as string)
             break
+          case 'openFile':
+              localStorage.setItem('contractFiles.currentContractId', args[0] as string)
+              localStorage.setItem('contractFiles.openedFiles', store.openedFiles.join(','))
+              break
+          case 'closeFile':
+              localStorage.setItem('contractFiles.currentContractId', store.currentContractId)
+              localStorage.setItem('contractFiles.openedFiles', store.openedFiles.join(','))
+              break
           case 'addDeployedContract':
             await upsertDeployedContract(args[0] as DeployedContract)
             break
