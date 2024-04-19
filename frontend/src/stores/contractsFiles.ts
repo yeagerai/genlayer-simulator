@@ -6,6 +6,7 @@ const getInitialOPenedFiles = (): string[] => {
   if (storage) return storage.split(',')
   return []
 }
+
 export const useContractsFilesStore = defineStore('contractsFiles', {
   state: (): ContractsState => {
     return {
@@ -56,6 +57,9 @@ export const useContractsFilesStore = defineStore('contractsFiles', {
       if (index === -1)
         this.$patch((state) => state.deployedContracts.push({ contractId, address }))
       else this.$patch((state) => (state.deployedContracts[index] = { contractId, address }))
+    },
+    setCurrentContractId(id?: string) {
+      this.currentContractId = id
     }
   }
 })

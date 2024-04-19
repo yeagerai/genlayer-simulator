@@ -7,6 +7,7 @@ import App from './App.vue'
 import router from './router'
 import { PersistStorePlugin, createToolTipPlugin } from '@/plugins'
 import { setupDB } from '@/utils'
+import { seedStores } from '@/utils/store'
 
 const app = createApp(App)
 
@@ -26,4 +27,6 @@ app.use(Notifications)
 
 app.mount('#app')
 
-setupDB()
+setupDB().then(() => {
+  seedStores()
+})
