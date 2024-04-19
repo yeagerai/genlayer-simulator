@@ -31,7 +31,6 @@ const inputs = ref<{ [k: string]: any }>({})
 
 const handleMethodCall = (method: string) => {
   const params = Object.values(inputs.value[method] || {})
-
   emit('callMethod', { method, params })
 }
 
