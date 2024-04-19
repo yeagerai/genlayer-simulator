@@ -12,6 +12,7 @@ const abi = ref<any>()
 const contractState = ref<any>({})
 const contract = computed(() => store.contracts.find(contract => contract.id === store.currentContractId))
 const deployedContract = computed(() => store.deployedContracts.find(contract => contract.contractId === store.currentContractId))
+const contractTransactions = ref<any[]>([])
 
 const getContractState = async (contractAddress: string) => {
   const { result } = await rpcClient.call({
@@ -34,6 +35,7 @@ const handleCallContractMethod = async ({ method, params }: { method: string; pa
   })
 
   console.log('handleCallContractMethod', result)
+  contractTransactions.value.push(result)
   if (deployedContract.value?.address) getContractState(deployedContract.value?.address)
 }
 
@@ -86,7 +88,7 @@ watch(
 </script>
 
 <template>
-  <div class="flex flex-col w-full">
+  <div class="flex flex-col w-full overflow-y-auto">
     <div class="flex flex-col p-2 w-full">
       <h3 class="text-xl">Run and Debug</h3>
     </div>
@@ -114,9 +116,12 @@ watch(
           Contract</button>
       </div>
 
-      <ContractState :contract-state="contractState" :deployed-contract="deployedContract" v-if="deployedContract"/>
+      <template v-if="deployedContract">
+        <ContractState :contract-state="contractState" :deployed-contract="deployedContract"/>
 
-      <ExecuteTransactions :abi="abi" v-if="deployedContract"/>
+      <ExecuteTransactions :abi="abi" @call-method="handleCallContractMethod"/>
+      <TransactionsList :transactions="contractTransactions" />
+      </template>
     </template>
     <div class="flex flex-col px-2 py-2 w-full bg-slate-100" v-else>
       <div class="text-sm">Please select an intelligent contract first, you can go to <RouterLink

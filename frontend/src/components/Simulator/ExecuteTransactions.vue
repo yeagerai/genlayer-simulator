@@ -2,6 +2,10 @@
 import { computed, ref, watch } from 'vue'
 import { InputTypesMap } from '@/utils'
 
+interface ContractMethod {
+  name: string
+  inputs: { [k: string]: string }
+}
 interface Abi {
   methods: {
     [k: string]: {
@@ -18,7 +22,7 @@ interface Props {
 const props = defineProps<Props>()
 const emit = defineEmits(['callMethod'])
 
-const methodList = computed(() => {
+const methodList = computed<ContractMethod[]>(() => {
   return Object.entries(props.abi?.methods || {})
     .filter(m => m[0] !== 'call_llm')
     .map(m => ({
@@ -28,10 +32,13 @@ const methodList = computed(() => {
 })
 
 const inputs = ref<{ [k: string]: any }>({})
+const method = ref<ContractMethod>()
 
-const handleMethodCall = (method: string) => {
-  const params = Object.values(inputs.value[method] || {})
-  emit('callMethod', { method, params })
+const handleMethodCall = () => {
+  if (method.value) {
+    const params = Object.values(inputs.value[method.value.name] || {})
+    emit('callMethod', { method, params })
+  }
 }
 
 watch(
@@ -44,6 +51,14 @@ watch(
     }, {})
   },
 )
+
+const onMethodChange = (event: Event) => {
+  const selectedMethod = (event.target as HTMLSelectElement).value
+  if (selectedMethod) {
+    method.value = methodList.value.find((m) => m.name === selectedMethod)
+  } else
+    method.value = undefined
+}
 </script>
 
 <template>
@@ -51,34 +66,30 @@ watch(
     <h5 class="text-sm">Execute transactions</h5>
   </div>
   <div class="flex flex-col p-2 m-h-20 overflow-y-auto">
-    <!-- <VListItem
-              v-for="method in methodList"
-              :key="method.name"
-            >
-              <template #prepend>
-                <VListItemAction start>
-                  <VBtn @click="handleMethodCall(method.name)">
-                    {{ method.name }}()
-                  </VBtn>
-                </VListItemAction>
-              </template>
-<template v-for="(inputType, input) in method.inputs" :key="input">
-                <VCheckbox
-                  v-if="inputType === 'bool'"
-                  v-model="inputs[method.name][input]"
-                  :label="`${input}`"
-                />
-                <VTextField
-                  v-else
-                  :key="input"
-                  v-model="inputs[method.name][input]"
-                  :type="InputTypesMap[inputType]"
-                  :label="`${input}`"
-                />
-              </template>
-</VListItem> -->
+    <div class="flex justify-start w-full">
+      <select name="" id="" @change="onMethodChange" class="w-full">
+        <option value="">Select a method</option>
+        <option v-for="method in methodList" :key="method.name" :value="method.name">
+          {{ method.name }}()
+        </option>
+      </select>
+    </div>
+    <template v-if="method">
+      <div class="flex flex-col mt-4 w-full">
+        <div class="flex items-center py-2 justify-between" v-for="(inputType, input) in method.inputs" :key="input">
+          <label :for="`${input}`" class="text-xs mr-2">{{ input }}</label>
+          <input v-model="inputs[method.name][input]" :name="`${input}`" :type="InputTypesMap[inputType]"
+            :placeholder="`${input}`" class=" bg-slate-100 dark:dark:bg-zinc-700 p-2" label="Input" />
+        </div>
+      </div>
+      <div class="flex flex-col mt-4 w-full">
+        <ToolTip :text="`Excute ${method.name}()`" :options="{ placement: 'top' }" />
+        <button @click="handleMethodCall"
+          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">Excute {{ ` ${method.name}`
+          }}()</button>
+      </div>
+    </template>
   </div>
-
 </template>
 
 <style>
