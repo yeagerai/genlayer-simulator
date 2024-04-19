@@ -48,7 +48,7 @@ const handleDeployContract = async () => {
         type: 'error'
       })
     } else {
-      
+
       const { result } = await rpcClient.call({
         method: 'deploy_intelligent_contract',
         params: ['0xcAE1bEb0daABFc1eF1f4A1C17be7E7b4cc12B33A', contract.content, JSON.stringify(defaultState)]
@@ -113,14 +113,10 @@ watch(
           class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">Deploy Intelligent
           Contract</button>
       </div>
-      <div class="flex flex-col px-2 mt-6 pt-2 w-full bg-slate-100">
-        <h5 class="text-sm">Current Intelligent Contract State</h5>
-      </div>
-      <div class="flex flex-col p-2 m-h-20 overflow-y-auto">
-        <ContractState :contract-state="contractState" />
-      </div>
-      
-      <ExecuteTransactions :abi="abi" />
+
+      <ContractState :contract-state="contractState" :deployed-contract="deployedContract" v-if="deployedContract"/>
+
+      <ExecuteTransactions :abi="abi" v-if="deployedContract"/>
     </template>
     <div class="flex flex-col px-2 py-2 w-full bg-slate-100" v-else>
       <div class="text-sm">Please select an intelligent contract first, you can go to <RouterLink
