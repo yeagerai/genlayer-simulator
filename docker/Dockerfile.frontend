@@ -4,7 +4,7 @@ FROM node:21 as builder
 COPY ./frontend/package*.json ./
 ADD ../.env .
 
-RUN npm ci
+RUN npm i
 
 COPY ./frontend .
 # Build the project
