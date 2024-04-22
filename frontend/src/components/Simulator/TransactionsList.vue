@@ -3,7 +3,6 @@ const props = defineProps<{
   transactions: any[]
 }>()
 
-)
 </script>
 <template>
   <div class="flex flex-col px-2 mt-6 py-2 w-full bg-slate-100">

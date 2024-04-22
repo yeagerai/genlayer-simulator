@@ -11,54 +11,6 @@ const [minWidth, maxWidth, defaultWidth] = [200, 800, 350]
 const width = ref(defaultWidth)
 const isResized = ref(false)
 
-const contractId = ref<string>()
-const abi = ref<any>()
-const contractState = ref<any>({})
-const showShanckbar = ref(false)
-const shanckbarText = ref('')
-
-
-const getContractState = async (contractAddress: string) => {
-  const { result } = await rpcClient.call({
-    method: 'get_contract_state',
-    params: [contractAddress]
-  })
-
-  contractState.value = result.data.state
-}
-
-const handleCallContractMethod = async ({ method, params }: { method: string; params: any[] }) => {
-  const result = await rpcClient.call({
-    method: 'call_contract_function',
-    params: [
-      contractId.value, // TODO: replace with a current account
-      contractId.value,
-      `${abi.value.class}.${method}`,
-      params
-    ]
-  })
-
-  console.log('handleCallContractMethod', result)
-  if (contractId.value) getContractState(contractId.value)
-}
-
-watch(
-  () => contractId.value,
-  async (newValue: any): Promise<void> => {
-    if (newValue) {
-      if (newValue) {
-        await getContractState(newValue)
-
-        const { result } = await rpcClient.call({
-          method: 'get_icontract_schema',
-          params: [newValue]
-        })
-
-        abi.value = result
-      }
-    }
-  }
-)
 const mouseMoveHandler = (e: any) => {
   if (!isResized.value) {
     return;
