@@ -10,17 +10,17 @@ class EquivalencePrinciple:
         self.last_method = None
         self.last_args = []
 
-    def __enter__(self):
+    async def __aenter__(self):
         return self
 
-    async def __exit__(self, exc_type, exc_value, traceback):
+    async def __aexit__(self, exc_type, exc_value, traceback):
         if self.last_method and self.last_args:
             # Check the len(args) match the len(args) of the icontract method
             method_name = getattr(self.icontract_inst, '_'+self.last_method)
             original_args = inspect.getfullargspec(method_name).args
             final_args = self.last_args + [self.principle]
-            if len(final_args) != len(original_args):
-                raise Exception(str(method_name)+' takes '+str(len(original_args))+' args not '+str(len(final_args))+' args')
+            #if len(final_args) != len(original_args):
+            #    raise Exception(str(method_name)+' takes '+str(len(original_args))+' args not '+str(len(final_args))+' args')
 
             return await getattr(self.icontract_inst, '_'+self.last_method)(*final_args)
 

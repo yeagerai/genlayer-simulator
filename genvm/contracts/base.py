@@ -118,7 +118,7 @@ def icontract(cls):
                 leader_recipt = json.load(file)
                 file.close()
 
-            llm_function = await self.get_llm_function()
+            llm_function = self.get_llm_function()
 
             self.non_det_inputs[self.non_det_counter] = prompt
 
@@ -181,8 +181,11 @@ def icontract(cls):
                 json.dump(receipt, file, indent=4)
 
         def __getattribute__(self, name):
-            orig_attr = super().__getattribute__(name)
-            if name == '_get_webpage' or name == 'call_llm':
+            new_name = name
+            if name == 'get_webpage' or name == 'call_llm':
+                new_name = '_' + name
+            orig_attr = super().__getattribute__(new_name)
+            if new_name == '_get_webpage' or new_name == '_call_llm':
                 @functools.wraps(orig_attr)
                 async def wrapped_function(*args, **kwargs):
                     self.gas_used = gas_model_logic()
@@ -192,7 +195,7 @@ def icontract(cls):
                     else:
                         output = orig_attr(*args, **kwargs)
                     
-                    self._write_receipt(name, args)
+                    self._write_receipt(new_name, args)
                     print("Execution Finished!")
 
                     return output

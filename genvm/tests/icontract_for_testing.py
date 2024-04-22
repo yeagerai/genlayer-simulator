@@ -61,7 +61,7 @@ class TestContract:
 
     async def unittest_method_with_eq_principle_get_webpage(self):
         url, _, _, _, principle = self.get_test_attributes()
-        with EquivalencePrinciple(self, principle) as eq:
+        async with EquivalencePrinciple(self, principle) as eq:
             return await eq.get_webpage(url)
 
 
@@ -72,5 +72,5 @@ class TestContract:
 
     async def unittest_method_with_eq_principle_call_llm(self):
         _, prompt, _, _, principle = self.get_test_attributes()
-        with EquivalencePrinciple(self, principle) as eq:
+        async with EquivalencePrinciple(self, principle) as eq:
             return await eq.call_llm(prompt)

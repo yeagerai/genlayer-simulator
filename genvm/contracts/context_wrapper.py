@@ -2,8 +2,8 @@ from functools import wraps
 
 def enforce_with_context(cls):
     original_new = cls.__new__
-    original_enter = cls.__enter__
-    original_exit = cls.__exit__
+    original_aenter = cls.__aenter__
+    original_aexit = cls.__aexit__
 
     @wraps(original_new)
     def new_wrapper(cls, *args, **kwargs):
@@ -11,15 +11,15 @@ def enforce_with_context(cls):
         instance._is_within_with_block = False
         return instance
 
-    @wraps(original_enter)
-    def enter_wrapper(self):
+    @wraps(original_aenter)
+    def aenter_wrapper(self):
         self._is_within_with_block = True
-        return original_enter(self)
+        return original_aenter(self)
 
-    @wraps(original_exit)
-    def exit_wrapper(self, exc_type, exc_value, traceback):
+    @wraps(original_aexit)
+    def aexit_wrapper(self, exc_type, exc_value, traceback):
         self._is_within_with_block = True
-        return original_exit(self, exc_type, exc_value, traceback)
+        return original_aexit(self, exc_type, exc_value, traceback)
 
     def method_wrapper(method):
         @wraps(method)
@@ -36,7 +36,7 @@ def enforce_with_context(cls):
             setattr(cls, attr_name, method_wrapper(attr))
 
     cls.__new__ = new_wrapper
-    cls.__enter__ = enter_wrapper
-    cls.__exit__ = exit_wrapper
+    cls.__aenter__ = aenter_wrapper
+    cls.__aexit__ = aexit_wrapper
 
     return cls

@@ -58,3 +58,7 @@ async def test_with_eq_principle_calls_icontract__call_llm():
     test_contract = TestContract()
     result = await test_contract.unittest_method_with_eq_principle_call_llm()
     assert result == "icontract._call_llm()"
+
+# TODO: Test can't run self._call_llm from inside an EquivalencePrinciple with block
+
+# TODO: Test that the primciple is being passed through to the 'self._call_llm function
