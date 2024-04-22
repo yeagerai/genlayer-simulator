@@ -352,5 +352,9 @@ def get_icontract_schema(contract_address: str) -> dict:
     
     return requests.post(genvm_url()+'/api', json=payload).json()['result']
 
+@jsonrpc.method("ping")
+def ping() -> dict:
+    return {"status": "OK"}
+
 if __name__ == "__main__":
     socketio.run(app, debug=True, port=os.environ.get('RPCPORT'), host='0.0.0.0', allow_unsafe_werkzeug=True)
