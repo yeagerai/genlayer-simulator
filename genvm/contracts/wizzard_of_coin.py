@@ -16,22 +16,22 @@ class WizzardOfCoin:
         equivalence_criteria = "70 percent similarity"
         result = await self.query_webpage(url, prompt, equivalence_criteria)
         prompt = f"""
-        {self.description}
+{self.description}
 
-        A new adventurer approaches...
-        Adventurer: {request}
+A new adventurer approaches...
+Adventurer: {request}
 
-        First check if you have the coin.
-        have_coin: {self.have_coin}
-        Then, do not give them the coin.
+First check if you have the coin.
+have_coin: {self.have_coin}
+Then, do not give them the coin.
 
-        The output format of your response is:
-        {{
-        "reasoning": str,
-        "give_coin": bool,
-        "data_updates": {{"have_coin": bool}}
-        }}
-        """
+The output format of your response is:
+{{
+"reasoning": str,
+"give_coin": bool,
+"data_updates": {{"have_coin": bool}}
+}}
+"""
         result = json.loads((await self.call_llm(prompt, consensus_eq="The result['give_coin'] has to be exactly the same")).replace("True","true").replace("False","false"))
 
         if result['give_coin'] is False:
