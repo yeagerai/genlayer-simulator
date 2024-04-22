@@ -22,7 +22,7 @@ export async function setupDB() {
       db.contractFiles.add({
         id: '1',
         name: 'TestWizzardOfCoin',
-        content: WizzardOfCoinContract.content
+        content: WizzardOfCoinContract.content.trim()
       })
     }
   }
