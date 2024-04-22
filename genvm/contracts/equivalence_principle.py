@@ -24,10 +24,10 @@ class EquivalencePrinciple:
 
             return await getattr(self.icontract_inst, '_'+self.last_method)(*final_args)
 
-    async def query_webpage(self, url:str):
+    async def get_webpage(self, url:str):
         self.last_method = inspect.currentframe().f_code.co_name
         self.last_args = [url]
-        return await self.icontract_inst._query_webpage(url, self.principle)
+        return await self.icontract_inst._get_webpage(url, self.principle)
 
     async def call_llm(self, prompt:str):
         self.last_method = inspect.currentframe().f_code.co_name

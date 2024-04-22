@@ -9,9 +9,9 @@ def iContract_stub(cls):
         def __init__(self, *args, **kwargs):
             super(WrappedClass, self).__init__(*args, **kwargs)
 
-        async def _query_webpage(self, url:str, equivalence_criteria:str = None):
+        async def _get_webpage(self, url:str, equivalence_criteria:str = None):
             await asyncio.sleep(1)
-            return 'icontract._query_webpage()'
+            return 'icontract._get_webpage()'
 
 
         async def _call_llm(self, prompt:str, consensus_eq:str=None):
@@ -32,9 +32,9 @@ class TestContract:
             'simple principle'
 
 
-    def unittest_method_self_query_webpage(self):
+    def unittest_method_self_get_webpage(self):
         url, prompt, eq_principle, _, _ = self.get_test_attributes()
-        self.query_webpage(url, prompt, eq_principle)
+        self.get_webpage(url, prompt, eq_principle)
 
 
     def unittest_method_self_call_llm(self):
@@ -42,10 +42,10 @@ class TestContract:
         self.call_llm(prompt, consensus_eq)
 
 
-    def unittest_method_eq_principle_query_webpage(self):
+    def unittest_method_eq_principle_get_webpage(self):
         url, prompt, eq_principle, _, principle = self.get_test_attributes()
         eq_principle = EquivalencePrinciple(self, principle)
-        eq_principle.query_webpage(url, prompt, eq_principle)
+        eq_principle.get_webpage(url, prompt, eq_principle)
 
 
     def unittest_method_eq_principle_call_llm(self):
@@ -54,15 +54,15 @@ class TestContract:
         eq_principle.call_llm(prompt, consensus_eq)
 
 
-    async def unittest_method_self__query_webpage(self):
+    async def unittest_method_self__get_webpage(self):
         url, _, _, _, principle = self.get_test_attributes()
-        return await self._query_webpage(url, principle)
+        return await self._get_webpage(url, principle)
 
 
-    async def unittest_method_with_eq_principle_query_webpage(self):
+    async def unittest_method_with_eq_principle_get_webpage(self):
         url, _, _, _, principle = self.get_test_attributes()
         with EquivalencePrinciple(self, principle) as eq:
-            return await eq.query_webpage(url)
+            return await eq.get_webpage(url)
 
 
     async def unittest_method_self__call_llm(self):

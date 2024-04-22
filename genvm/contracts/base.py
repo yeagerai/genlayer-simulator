@@ -48,7 +48,7 @@ def icontract(cls):
             self.eq_principles_outs = {}
             super(WrappedClass, self).__init__(*args, **kwargs)
 
-        async def query_webpage(self, url:str, prompt:str, equivalence_criteria:str):
+        async def _get_webpage(self, url:str, prompt:str, equivalence_criteria:str):
 
             _, _, _, recipt_file = transaction_files()
 
@@ -108,7 +108,7 @@ def icontract(cls):
                 raise ValueError("Invalid mode.")
 
 
-        async def call_llm(self, prompt:str, consensus_eq:str=None):
+        async def _call_llm(self, prompt:str, consensus_eq:str=None):
 
             _, _, _, recipt_file = transaction_files()
 
@@ -182,7 +182,7 @@ def icontract(cls):
 
         def __getattribute__(self, name):
             orig_attr = super().__getattribute__(name)
-            if callable(orig_attr) and not name.startswith("_"):
+            if name == '_get_webpage' or name == 'call_llm':
                 @functools.wraps(orig_attr)
                 async def wrapped_function(*args, **kwargs):
                     self.gas_used = gas_model_logic()
