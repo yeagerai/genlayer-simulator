@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
 import { onMounted, ref, onUpdated, onUnmounted, inject } from "vue";
@@ -13,13 +13,13 @@ const props = defineProps({
   },
 });
 
-const tooltip = ref(null);
+const tooltip = ref();
 
-let tippyInstance = null;
+let tippyInstance: any = null;
 
 function initTippy() {
   if (tippyInstance) tippyInstance.destroy();
-  tippyInstance = tippy(tooltip.value.parentNode, {
+  tippyInstance = tippy(tooltip.value?.parentNode, {
     ...inject(tooltipOptionsInject),
     content: props.text,
     ...props.options,
