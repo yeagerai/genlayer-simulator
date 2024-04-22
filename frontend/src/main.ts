@@ -1,36 +1,34 @@
+import './assets/main.css'
+
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-
+import Notifications from '@kyvg/vue3-notification'
 import App from './App.vue'
 import router from './router'
+import { PersistStorePlugin, createToolTipPlugin } from '@/plugins'
+import { setupDB } from '@/utils'
+import { seedStores } from '@/utils/store'
 
-// Vuetify
-import 'vuetify/styles'
-import '@mdi/font/css/materialdesignicons.css'
-import { createVuetify } from 'vuetify'
-import * as components from 'vuetify/components'
-import * as directives from 'vuetify/directives'
-import { aliases, mdi } from 'vuetify/iconsets/mdi'
-
-const vuetify = createVuetify({
-  theme: {
-    defaultTheme: 'light'
-  },
-  components,
-  directives,
-  icons: {
-    defaultSet: 'mdi',
-    aliases,
-    sets: {
-      mdi
-    }
-  }
-})
-
+// Create vue app
 const app = createApp(App)
 
-app.use(createPinia())
-app.use(router)
-app.use(vuetify)
 
+const pinia = createPinia()
+// give the plugin to pinia
+pinia.use(PersistStorePlugin)
+
+app.use(pinia)
+app.use(router)
+app.use(
+  createToolTipPlugin({
+    arrow: true
+  })
+)
+app.use(Notifications)
+
+// Mount vue app
 app.mount('#app')
+
+setupDB().then(() => {
+  seedStores()
+})
