@@ -9,6 +9,7 @@ import { PersistStorePlugin, createToolTipPlugin } from '@/plugins'
 import { setupDB } from '@/utils'
 import { seedStores } from '@/utils/store'
 
+// Create vue app
 const app = createApp(App)
 
 
@@ -25,6 +26,7 @@ app.use(
 )
 app.use(Notifications)
 
+// Mount vue app
 app.mount('#app')
 
 setupDB().then(() => {

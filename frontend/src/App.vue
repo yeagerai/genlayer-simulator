@@ -17,5 +17,3 @@ onBeforeMount(() => {
   </main>
   <notifications />
 </template>
-
-<style scoped></style>
