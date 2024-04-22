@@ -48,7 +48,11 @@ def icontract(cls):
             self.eq_principles_outs = {}
             super(WrappedClass, self).__init__(*args, **kwargs)
 
-        async def _get_webpage(self, url:str, prompt:str, equivalence_criteria:str):
+        async def _get_webpage(self, url:str, prompt:str, equivalence_criteria:str=None):
+
+            # To ensure the method is not called directly
+            if not equivalence_criteria:
+                raise Exception('This method can not be called directly. Call it from within an EquivalencePrinciple with block')
 
             _, _, _, recipt_file = transaction_files()
 
@@ -109,6 +113,10 @@ def icontract(cls):
 
 
         async def _call_llm(self, prompt:str, consensus_eq:str=None):
+
+            # To ensure the method is not called directly
+            if not consensus_eq:
+                raise Exception('This method can not be called directly. Call it from within an EquivalencePrinciple with block')
 
             _, _, _, recipt_file = transaction_files()
 
