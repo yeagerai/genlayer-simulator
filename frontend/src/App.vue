@@ -1,26 +1,19 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
-import logo from '@/assets/genlayer.png'
+import Header from '@/components/HeaderComponent.vue'
+import { useUIStore } from '@/stores/ui'
+import { onBeforeMount } from 'vue';
+const uiStore = useUIStore()
+onBeforeMount(() => {
+  uiStore.initialize()
+})
 </script>
-
 <template>
-  <v-app>
-    <v-container fluid class="m-0 p-0">
-      <v-app-bar :elevation="2" rounded>
-        <template v-slot:prepend>
-          <img :src="logo" alt="" width="180">
-        </template>
-        <v-app-bar-title></v-app-bar-title>
-      </v-app-bar>
-      <RouterView class="mt-12" />
-    </v-container>
-    <v-footer border>
-      <v-row justify="center" no-gutters>
-        <v-col class="text-center mt-4" cols="12">
-          {{ new Date().getFullYear() }} — <strong>GenLayer</strong>
-        </v-col>
-      </v-row></v-footer>
-  </v-app>
+  <main :data-mode="uiStore.mode" class="h-full w-full bg-white dark:bg-zinc-800 dark:text-white flex flex-col">
+    <Header />
+    <div class="flex h-screen">
+      <RouterView />
+    </div>
+  </main>
+  <notifications />
 </template>
-
-<style scoped></style>

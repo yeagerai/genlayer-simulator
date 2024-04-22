@@ -1,8 +1,7 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8" />
     <title>GenLayer - The Intelligence Layer of the Internet</title>
     <meta
       name="description"
@@ -90,9 +89,24 @@
       name="msapplication-TileImage"
       content="https://genlayer.com/images/favicon/ms-icon-144x144.png"
     />
+    <link rel="stylesheet" type="text/css" href="/loader.css" />
+    <link href="/dist/main.css" rel="stylesheet" />
   </head>
+
   <body>
-    <div id="app"></div>
+    <div id="app" class="h-screen">
+      <div id="loading-bg">
+        <div class="loading-logo">
+          <img src="@/assets/logo.png" alt="" />
+        </div>
+        <div class="loading">
+          <div class="effect-1 effects"></div>
+          <div class="effect-2 effects"></div>
+          <div class="effect-3 effects"></div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.ts"></script>
+    <script></script>
   </body>
 </html>
