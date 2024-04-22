@@ -11,12 +11,12 @@ def iContract_stub(cls):
 
         async def _get_webpage(self, url:str, equivalence_criteria:str = None):
             await asyncio.sleep(1)
-            return 'icontract._get_webpage()'
+            return 'icontract._get_webpage('+equivalence_criteria+')'
 
 
         async def _call_llm(self, prompt:str, consensus_eq:str=None):
             await asyncio.sleep(1)
-            return 'icontract._call_llm()'
+            return 'icontract._call_llm('+consensus_eq+')'
 
     return WrappedClass
 

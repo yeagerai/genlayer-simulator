@@ -51,13 +51,13 @@ def test_eq_principle_call_llm():
 async def test_with_eq_principle_calls_icontract__get_webpage():
     test_contract = TestContract()
     result = await test_contract.unittest_method_with_eq_principle_get_webpage()
-    assert result == "icontract._get_webpage()"
+    assert result == "icontract._get_webpage(simple principle)"
 
 @pytest.mark.asyncio
 async def test_with_eq_principle_calls_icontract__call_llm():
     test_contract = TestContract()
     result = await test_contract.unittest_method_with_eq_principle_call_llm()
-    assert result == "icontract._call_llm()"
+    assert result == "icontract._call_llm(simple principle)"
 
 # TODO: Test can't run self._call_llm from inside an EquivalencePrinciple with block
 
