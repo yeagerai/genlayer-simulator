@@ -24,6 +24,7 @@ const getContractState = async (contractAddress: string) => {
 }
 
 const handleCallContractMethod = async ({ method, params }: { method: string; params: any[] }) => {
+  console.log('handleCallContractMethod', method, params, abi.value.class)
   const result = await rpcClient.call({
     method: 'call_contract_function',
     params: [

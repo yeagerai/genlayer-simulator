@@ -37,7 +37,7 @@ const method = ref<ContractMethod>()
 const handleMethodCall = () => {
   if (method.value) {
     const params = Object.values(inputs.value[method.value.name] || {})
-    emit('callMethod', { method, params })
+    emit('callMethod', { method: method.value.name, params })
   }
 }
 
