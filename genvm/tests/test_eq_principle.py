@@ -45,7 +45,8 @@ def test_eq_principle_call_llm():
         assert str(runerr) == "Methods of EquivalencePrinciple must be called inside a 'with' block."
 
 
-## Test iContract Methods ###
+## Test iContract Methods (SUCCESS!) ###
+
 
 @pytest.mark.asyncio
 async def test_with_eq_principle_calls_icontract__get_webpage():
@@ -56,8 +57,15 @@ async def test_with_eq_principle_calls_icontract__get_webpage():
 @pytest.mark.asyncio
 async def test_with_eq_principle_calls_icontract__call_llm():
     test_contract = TestContract()
-    result = await test_contract.unittest_method_with_eq_principle_call_llm()
-    assert result == "icontract._call_llm(simple principle)"
+    try:
+        result = await test_contract.unittest_method_with_eq_principle_call_llm()
+        assert result == "icontract._call_llm(simple principle)"
+    except Exception as e:
+        raise e
+
+
+## Test iContract Methods (FAILED!) ###
+
 
 @pytest.mark.asyncio
 async def test_with_eq_principle_calls_icontract__get_webpage_directly():
@@ -74,3 +82,21 @@ async def test_with_eq_principle_calls_icontract__call_llm_directly():
         await test_contract.unittest_method_with_eq_principle_self__call_llm()
     except Exception as e:
         assert str(e) == 'This method can not be called directly. Call it from within an EquivalencePrinciple with block'
+
+@pytest.mark.asyncio
+async def test_with_eq_principle_calls_icontract__get_webpage_directly_with_principle():
+    test_contract = TestContract()
+    try:
+        await test_contract.unittest_method_with_eq_principle_self__get_webpage_with_principle()
+    except Exception as e:
+        assert str(e) == 'This method can not be called directly. Call it from within an EquivalencePrinciple with block'
+
+@pytest.mark.asyncio
+async def test_with_eq_principle_calls_icontract__call_llm_directly_with_principle():
+    test_contract = TestContract()
+    try:
+        await test_contract.unittest_method_with_eq_principle_self__call_llm_with_principle()
+    except Exception as e:
+        assert str(e) == 'This method can not be called directly. Call it from within an EquivalencePrinciple with block'
+
+# TODO: Test that only the last _call_llm or _get_webpage is called.

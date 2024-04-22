@@ -32,4 +32,7 @@ class EquivalencePrinciple:
     async def call_llm(self, prompt:str):
         self.last_method = inspect.currentframe().f_code.co_name
         self.last_args = [prompt]
-        return await self.icontract_inst._call_llm(prompt, self.principle)
+        try:
+            return await self.icontract_inst._call_llm(prompt, self.principle)
+        except Exception as e:
+            raise Exception('something simple')
