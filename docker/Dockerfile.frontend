@@ -1,23 +1,15 @@
+FROM node:21-alpine
 
-FROM node:21 as builder
+WORKDIR /app
 
-COPY ./frontend/package*.json ./
-ADD ../.env .
+COPY /frontend/package.json .
 
-RUN npm i
+RUN npm install
 
 COPY ./frontend .
-# Build the project
+
 RUN npm run build
-
-
-FROM nginx:alpine as production-build
-COPY  --from=builder nginx.conf /etc/nginx/nginx.conf
-
-RUN rm -rf /usr/share/nginx/html/*
-# Copy from the stage 1
-COPY --from=builder /dist /usr/share/nginx/html/genlayer
 
 EXPOSE 8080
 
-ENTRYPOINT ["nginx", "-g", "daemon off;"]
+CMD [ "npm", "run", "preview" ]
