@@ -125,7 +125,7 @@ watch(
       <TransactionsList :transactions="contractTransactions" />
       </template>
     </template>
-    <div class="flex flex-col px-2 py-2 w-full bg-slate-100" v-else>
+    <div class="flex flex-col px-2 py-2 w-full bg-slate-100 dark:dark:bg-zinc-700" v-else>
       <div class="text-sm">Please select an intelligent contract first, you can go to <RouterLink
           :to="{ name: 'simulator.contracts' }" class="text-primary">
 

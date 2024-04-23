@@ -12,7 +12,7 @@ export const useContractsFilesStore = defineStore('contractsFiles', {
     return {
       contracts: [],
       openedFiles: getInitialOPenedFiles(),
-      currentContractId: localStorage.getItem('contractFiles.currentContractId') || undefined,
+      currentContractId: localStorage.getItem('contractFiles.currentContractId') || '',
       deployedContracts: []
     }
   },
@@ -22,6 +22,7 @@ export const useContractsFilesStore = defineStore('contractsFiles', {
     },
     removeContractFile(id: string): void {
       this.contracts = [...this.contracts.filter((c) => c.id !== id)]
+      this.deployedContracts = [...this.deployedContracts.filter((c) => c.contractId !== id)]
     },
     updateContractFile(id: string, { name, content }: { name?: string; content?: string }) {
       this.contracts = [

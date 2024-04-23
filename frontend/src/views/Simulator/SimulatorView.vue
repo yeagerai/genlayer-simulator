@@ -1,42 +1,21 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref } from 'vue'
 import { RouterView } from 'vue-router'
 import SimulatorMenu from '@/components/SimulatorMenu.vue'
 import NodeLogs from '@/components/Simulator/NodeLogs.vue'
 import ContractsPanel from '@/components/Simulator/ContractsPanel.vue'
-import { rpcClient } from '@/utils'
+import { Splitpanes, Pane } from 'splitpanes'
+import 'splitpanes/dist/splitpanes.css'
 
-const [minWidth, maxWidth, defaultWidth] = [200, 800, 350]
+const minEditorHeight: number = 10
+const editorHeight = ref<number>(minEditorHeight)
+const editorWidth = ref<number>(15)
 
-const width = ref(defaultWidth)
-const isResized = ref(false)
-
-const mouseMoveHandler = (e: any) => {
-  if (!isResized.value) {
-    return;
-  }
-  const previousWidth = width.value
-  const newWidth = previousWidth + e.movementX / 2;
-
-  const isWidthInRange = newWidth >= minWidth && newWidth <= maxWidth;
-  width.value = isWidthInRange ? newWidth : previousWidth;
+const handleLogsResize = (event: any) => {
+  editorHeight.value = event[0]?.size
 }
-const mouseUpHandler = () => {
-  isResized.value = false;
-}
-
-onMounted(() => {
-  window.addEventListener("mousemove", mouseMoveHandler);
-  window.addEventListener("mouseup", mouseUpHandler)
-})
-
-onUnmounted(() => {
-  window.removeEventListener("mousemove", mouseMoveHandler)
-  window.removeEventListener("mouseup", mouseUpHandler)
-})
-
-const setResized = () => {
-  isResized.value = true
+const handlePanelWidthResize = (event: any) => {
+  editorWidth.value = event[0]?.size
 }
 
 </script>
@@ -44,24 +23,42 @@ const setResized = () => {
 <template>
   <div class="flex w-full">
     <SimulatorMenu />
-    <div class="flex w-full">
-      <div class="flex justify-between" :style="`width: ${width / 16}rem`">
-        <router-view v-slot="{ Component }">
-          <keep-alive>
-            <component :is="Component" />
-          </keep-alive>
-        </router-view>
-        <div
-          className="w-2 border-x bg-slate-100 border-x-slate-500 hover:bg-slate-500 cursor-col-resize dark:bg-zinc-800 dark:text-white"
-          @mousedown="setResized" />
-      </div>
-      <div class="flex flex-col relative w-full h-full">
-        <div class="flex flex-col h-full w-full">
-          <ContractsPanel />
-        </div>
-        <NodeLogs />
-      </div>
+    <div class="flex w-full h-full">
+      <Splitpanes class="default-theme w-full h-full bg-white dark:bg-zinc-800 dark:text-white "
+        @resize="handlePanelWidthResize">
+        <Pane min-size="26" size="26" max-size="60" class="flex w-full">
+          <router-view v-slot="{ Component }">
+              <keep-alive>
+                <component :is="Component" />
+              </keep-alive>
+            </router-view>
+        </Pane>
+        <Pane>
+          <Splitpanes class="default-theme h-full" horizontal @resize="handleLogsResize">
+            <Pane min-size="20" size="80" max-size="80" class="flex flex-col relative w-full h-full">
+              <div class="flex flex-col h-full w-full">
+                <ContractsPanel :parent-height="editorHeight" :parent-width="editorWidth" class="w-full h-full" />
+              </div>
+            </Pane>
+            <Pane class="flex flex-col h-full w-full">
+              <NodeLogs />
+            </Pane>
+          </Splitpanes>
+        </Pane>
+      </Splitpanes>
     </div>
-
   </div>
 </template>
+<style>
+.splitpanes__pane {
+  display: flex;
+  position: relative;
+}
+
+
+
+.splitpanes.default-theme .splitpanes__pane {
+    background-color: transparent !important;
+}
+
+</style>

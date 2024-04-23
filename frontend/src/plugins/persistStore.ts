@@ -54,6 +54,7 @@ export function PersistStorePlugin(context: PiniaPluginContext): void {
             break
           case 'removeContractFile':
             await db.contractFiles.delete(args[0] as string)
+            await db.deployedContracts.where('contractId').equals(args[0] as string).delete()
             break
           case 'openFile':
               localStorage.setItem('contractFiles.currentContractId', args[0] as string)

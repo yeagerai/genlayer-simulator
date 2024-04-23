@@ -30,14 +30,14 @@ const toogleTerminal = () => {
 </script>
 
 <template>
-  <div class="z-20 flex flex-col w-full absolute bottom-0 left-0" :class="heigth">
-    <div class="flex bg-slate-100 p-1 dark:bg-zinc-700">
+  <div class="z-20 flex flex-col h-full w-full absolute bottom-0 left-0">
+    <!-- <div class="flex bg-slate-100 p-1 dark:bg-zinc-700">
       <button @click="toogleTerminal" class="ml-2">
         <ChevronDoubleUpIcon class="h-6 w-6 fill-primary" v-if="heigth === 'h-7'" />
         <ChevronDoubleDownIcon class="h-6 w-6 fill-primary" v-else />
         <ToolTip :text="heigth === 'h-7' ? 'Show terminal' : 'Hide terminal'" :options="{ placement: 'top' }" />
       </button>
-    </div>
+    </div> -->
     <div class="flex flex-col w-full overflow-y-auto h-full p-1 bg-white dark:bg-zinc-800 dark:text-white cursor-text">
       <dir v-if="logs.length > 0" class="flex flex-col scroll-smooth overscroll-contain snap-y scroll-ml-6 snap-start p-0"
         ref="scrollContainer">
