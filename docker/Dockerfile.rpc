@@ -6,6 +6,7 @@ RUN mkdir $path
 WORKDIR $path
 
 COPY ../.env .
+COPY ../logging_config.json .
 
 ADD rpc $path/rpc
 ADD database $path/database

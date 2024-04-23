@@ -52,8 +52,8 @@ create_tables_logic()
 # create initial data
 print('Creating validadtors and account...')
 response = count_validators_logic()
-if 'result' in response and 'count' in response['result']:
-    if response['result']['count'] == 0:
+if 'result' in response and 'count' in response['result']['data']:
+    if response['result']['data']['count'] == 0:
         print('Creating validators...')
         register_validators_logic(int(os.environ['TOTALVALIDATORS']), 1, 10)
     else:
@@ -69,8 +69,8 @@ if not os.path.exists(cwd + 'consensus/nodes/nodes.json'):
 create_account_result = create_account_logic()
 
 new_account = None
-if 'result' in create_account_result and 'address' in create_account_result['result']:
-    new_account = create_account_result['result']['address']
+if 'result' in create_account_result and 'address' in create_account_result['result']['data']:
+    new_account = create_account_result['result']['data']['address']
     print('Account created! ('+new_account+')')
 else:
     raise Exception('Could not create new account!') 
@@ -79,7 +79,7 @@ else:
 balance = 10
 fund_account_result = fund_account_logic(new_account, balance)
 
-if 'result' in fund_account_result and 'address' in fund_account_result['result']:
+if 'result' in fund_account_result and 'address' in fund_account_result['result']['data']:
     print('Account funded! ('+str(balance)+')')
 
 
@@ -96,7 +96,7 @@ with open(contract_file_path, 'rb') as contract_file:
 # Retrieve the last contract ID (you should parse the actual ID from the output)
 last_contract_output = last_contracts_logic(1)
 print("Last contract command output:", last_contract_output)
-last_contract_id = last_contract_output['result'][0]['contract_id']  # Example parsing
+last_contract_id = last_contract_output['result']['data']['contract_id']  # Example parsing
 
 
 # Call the contract
