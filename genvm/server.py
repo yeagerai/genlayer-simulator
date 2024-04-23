@@ -1,5 +1,4 @@
 import os
-import re
 import ast
 import subprocess
 import json
@@ -22,77 +21,72 @@ def execute_transaction() -> dict:
 @jsonrpc.method("leader_executes_transaction")
 def leader_executes_transaction(icontract:str, node_config:dict) -> dict:
 
+    return_data = {'status': 'error', 'data': None}
+
     icontract_file, recipt_file, _, _ = transaction_files()
 
     save_files(icontract, node_config, 'leader')
 
-    result = subprocess.run(['python', icontract_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    try:
+        result = subprocess.run(['python', icontract_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    except Exception as e:
+        return_data['data'] = str(e)
+        return return_data
 
     debug_output('LLM Result', result)
 
-    if result.returncode == 0:
-        print("Command executed successfully!")
-    else:
-        print("Command failed with return code:", result.returncode)
-        print("Stderr:", result.stderr)
+    if result.returncode != 0:
+        return_data['data'] = str(result.returncode) + ': ' + str(result.stderr)
+        return return_data
 
     # Access the output of the subprocess.run command
     file = open(recipt_file, 'r')
     contents = json.load(file)
-    debug_output('recipt.json', contents)
+    file.close()
 
     # TODO: Leader needs to be the name of the VM
-    result = {
-        "vote":"agree",
-        "node":node_config['id'],
-        "node_config":contents['node_config'],
-        "contract_state":contents['contract_state'],
-        "non_det_inputs": contents["non_det_inputs"],
-        "non_det_outputs":contents["non_det_outputs"]
-    }
-    file.close()
-    debug_output('leader_executes_transaction(response)', result)
+    debug_output('leader_executes_transaction(response)', contents)
 
-    return result
+    #os.remove(recipt_file)
+
+    return_data['status'] = 'success'
+    return_data['data'] = contents
+    return return_data
     
 
 @jsonrpc.method("validator_executes_transaction")
 def validator_executes_transaction(icontract:str, node_config:dict, leader_recipt:dict) -> dict:
 
+    return_data = {'status': 'error', 'data': None}
+
     icontract_file, recipt_file, _, leader_recipt_file = transaction_files()
 
     save_files(icontract, node_config, 'validator', leader_recipt)
 
-    result = subprocess.run(['python', icontract_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    try:
+        result = subprocess.run(['python', icontract_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    except Exception as e:
+        return_data['data'] = str(e)
+        return return_data
     
     debug_output('LLM Result', result)
 
-    if result.returncode == 0:
-        print("Command executed successfully!")
-    else:
-        print("Command failed with return code:", result.returncode)
-        print("Stderr:", result.stderr)
+    if result.returncode != 0:
+        return_data['data'] = str(result.returncode) + ': ' + str(result.stderr)
+        return return_data
 
     # Access the output of the subprocess.run command
     file = open(recipt_file, 'r')
     contents = json.load(file)
     file.close()
-    debug_output('recipt.json', contents)
 
-    # TODO: Leader needs to be the name of the VM
-    result = {
-        "vote":"agree",
-        "node":node_config['id'],
-        "node_config":contents['node_config'],
-        "contract_state":contents['contract_state'],
-        "non_det_inputs": contents["non_det_inputs"], 
-        "non_det_outputs":contents["non_det_outputs"]
-    }
-    debug_output('validator_executes_transaction(response)', result)
+    debug_output('validator_executes_transaction(response)', contents)
 
-    os.remove(leader_recipt_file)
+    #os.remove(leader_recipt_file)
 
-    return result
+    return_data['status'] = 'success'
+    return_data['data'] = contents
+    return return_data
 
 
 @jsonrpc.method("get_icontract_schema")

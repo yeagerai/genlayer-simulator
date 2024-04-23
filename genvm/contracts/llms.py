@@ -53,6 +53,7 @@ async def call_openai(model_config:str, prompt:str, regex: Optional[str], return
     client = OpenAI(
         api_key=os.environ.get("GENVMOPENAIKEY"),
     )
+    # TODO: OpenAI exceptions need to be caught here
     stream = client.chat.completions.create(
         model=model_config['model'],
         messages=[{"role": "user", "content": prompt}],

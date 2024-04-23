@@ -65,7 +65,7 @@ def deploy_logic(from_account:str, contract_code_file:IO[bytes], initial_state:s
     contract_code = contract_code_file.read()
     
     try:
-        initial_state_dict = json.loads(initial_state)
+        json.loads(initial_state)
     except json.JSONDecodeError as e:
         click.echo(f"Error parsing initial state JSON: {e}")
         return
