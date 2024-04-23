@@ -18,7 +18,7 @@ if 'VIRTUAL_ENV' not in os.environ and 'CONDA_DEFAULT_ENV' not in os.environ:
     sys.exit()
 
 # Make sure the file is being run from the project folder (not the scipts folder)
-if not cwd.endswith('genlayer-simulator'):
+if "debug_prototype.py" in os.listdir(cwd):
     print(cwd)
     print('Run this script from the project root')
     sys.exit()

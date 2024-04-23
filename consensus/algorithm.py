@@ -42,15 +42,20 @@ def leader_executes_transaction(transaction_input:dict, leader_config:dict) -> d
     
     response = requests.post(genvm_url()+'/api', json=payload).json()
 
+    if response['result']['status'] == 'error':
+        raise Exception(response['result']['data'])
+
+    # TODO: Figure out how to do this in the GenVM
+    result = response['result']['data']
+    result['class'] = class_name
+
     return {
-        'class':class_name,
-        'function':function_name,
         'vote': 'agree',
-        'result': response['result']
+        'result': result
     }
 
 
-async def validator_executes_transaction(transaction_input:dict , validator_config:dict, leader_receipt:dict) -> dict:
+def validator_executes_transaction(transaction_input:dict , validator_config:dict, leader_receipt:dict) -> dict:
     current_contract_state = get_contract_state(transaction_input["contract_address"])
 
     args_str = ", ".join(f"{json.dumps(arg)}" for arg in transaction_input["args"])
@@ -76,17 +81,20 @@ async def validator_executes_transaction(transaction_input:dict , validator_conf
     
     response = requests.post(genvm_url()+'/api', json=payload).json()
 
+    if response['result']['status'] == 'error':
+        raise Exception(response['result']['data'])
+
+    # TODO: Figure out how to do this in the GenVM
+    result = response['result']['data']
+    result['class'] = class_name
+
     return_value = {
-        'class':class_name,
-        'function':function_name,
         'vote': 'disagree',
-        'result': response['result']
+        'result': result
     }
 
     if return_value['result']['contract_state'] == leader_receipt['result']['contract_state']:
         return_value['vote'] = 'agree'
-    else:
-        return_value['vote'] = 'disagree'
         
     return return_value
 
@@ -116,9 +124,9 @@ async def exec_transaction(transaction_input, logger=None):
         raise Exception('The config for node '+leader+' is not in consensus/nodes/nodes.json')
     
     # Leader executes transaction
-    leader_recipt = leader_executes_transaction(transaction_input, leader_config)
+    leader_receipt = leader_executes_transaction(transaction_input, leader_config)
 
-    votes = {leader: leader_recipt['vote']}
+    votes = {leader: leader_receipt['vote']}
 
     if logger:
         logger(f"Leader {leader} has finished contract execution...")
@@ -128,7 +136,9 @@ async def exec_transaction(transaction_input, logger=None):
         validator_config = next((item for item in nodes_config if item['id'] == validator_address), None)
         if not validator_config:
             raise Exception('Validator configuration for node '+validator_address+' not found in consensus/nodes/nodes.json')
-        valudators_results.append(await validator_executes_transaction(transaction_input, validator_config, leader_recipt))
+        validator_receipt = validator_executes_transaction(transaction_input, validator_config, leader_receipt)
+        votes[validator_config['id']] = validator_receipt['vote']
+        valudators_results.append(validator_receipt)
 
     # Validators execute transaction
     # loop = asyncio.get_running_loop()
@@ -144,10 +154,10 @@ async def exec_transaction(transaction_input, logger=None):
     # Write transaction into DB
     from_address = transaction_input['args'][0]
     to_address = transaction_input['contract_address']
-    data = json.dumps({"new_contract_state" : leader_recipt['result']['contract_state']})
+    data = json.dumps({"new_contract_state" : leader_receipt['result']['contract_state']})
     transaction_type = 2
     final = False
-    consensus_data = ConsensusData(final=final, votes=votes, leader=leader_recipt, validators=valudators_results).model_dump_json()
+    consensus_data = ConsensusData(final=final, votes=votes, leader=leader_receipt, validators=valudators_results).model_dump_json()
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
     cursor.execute(
@@ -167,9 +177,9 @@ async def exec_transaction(transaction_input, logger=None):
 
     if logger:
         logger(f"Transaction has been fully executed...")
-        logger(f"This is the data produced by the leader:\n\n {leader_recipt}")
+        logger(f"This is the data produced by the leader:\n\n {leader_receipt}")
 
     execution_output = {}
-    execution_output["leader_data"] = leader_recipt
+    execution_output["leader_data"] = leader_receipt
     execution_output["consensus_data"] = consensus_data
     return execution_output

@@ -1,13 +1,12 @@
 import os
 import sys
-import time
 import asyncio
 import json
 import functools
 import inspect
 
 from genvm.contracts import llms
-from genvm.utils import transaction_files
+from genvm.utils import transaction_files, get_webpage_content
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -41,6 +40,7 @@ def icontract(cls):
     class WrappedClass(cls):
         def __init__(self, *args, **kwargs):
             self.node_config = json.load(open(os.environ.get('GENVMCONLOC') + '/node-config.json'))
+            self.mode = None
             self.gas_used = 0
             self.non_det_counter = 0
             self.non_det_inputs = {}
@@ -48,7 +48,75 @@ def icontract(cls):
             self.eq_principles_outs = {}
             super(WrappedClass, self).__init__(*args, **kwargs)
 
-        async def call_llm(self, prompt:str, consensus_eq:str=None):
+        async def _get_webpage(self, url:str, prompt:str, equivalence_criteria:str=None):
+
+            # To ensure the method is not called directly
+            if not equivalence_criteria:
+                raise Exception('This method can not be called directly. Call it from within an EquivalencePrinciple with block')
+
+            _, _, _, recipt_file = transaction_files()
+
+            llm_function = await self.get_llm_function()
+
+            self.non_det_inputs[self.non_det_counter] = {'prompt': prompt, 'url': url}
+
+            if self.node_config['type'] == 'leader':
+                self.mode = 'leader'
+                url_body = get_webpage_content(url)
+                submitted_prompt = f"Complete the following task:\n\nTask:\n{prompt}\n\nUsing the following text:\n\nText:\n{url_body['response']}"
+                leader_response = await llm_function(self.node_config, submitted_prompt, None, None)
+                self.non_det_outputs[self.non_det_counter] = leader_response
+                self.non_det_counter+=1
+                return leader_response
+            elif self.node_config['type'] == 'validator':
+                self.mode = 'validator'
+                # make sure the leader file exists first
+                if not os.path.exists(recipt_file):
+                    raise Exception(recipt_file + ' does not exist!')
+                # get the leader file
+                file = open(recipt_file, 'r')
+                leader_receipt = json.load(file)
+                file.close()
+                self.non_det_inputs[self.non_det_counter]['leader_reciept'] = leader_receipt
+                # get the webpage
+                url_body = get_webpage_content(url)
+                submitted_prompt = f"Complete the following task:\n\nTask:\n{prompt}'\n\nUsing the following text:\n\nText:\n{url_body['response']}"
+                wq_response = await llm_function(self.node_config, submitted_prompt, None, None)
+                self.non_det_outputs[self.non_det_counter] = wq_response
+
+                leader_output = leader_receipt['result']['non_det_outputs'][str(self.non_det_counter)]
+                # Compare to the leaders
+                eq_prompt = f"Using the following equivalence criteria:\n\nCriteria:\n{equivalence_criteria}\n\nAgainst the follow two blocks of text.\n\nText 1:\n{leader_output}\n\nText 2:\n{wq_response}\n\nRespond with True or False"
+                similarity_response = await llm_function(self.node_config, eq_prompt, None, None)
+
+                if similarity_response not in ['True', 'False']:
+                    raise Exception('Similarity response was not a Boolean ('+similarity_response+')')
+
+                # Store the similarity_response as a boolean
+                similar = False
+                if similarity_response == 'True':
+                    similar = True
+                self.eq_principles_outs[self.non_det_counter] = {'is_similar': similar}
+                self.non_det_counter+=1
+
+                if not similar:
+                    # 'call_llm' < 'wrapped_function' <'ask_for_coin' < 'wrapped_function' < 'main' < ...
+                    #                                  --------------
+                    method_name = inspect.stack()[2].function
+                    self._write_receipt(self, method_name, {})
+                    print('There was limited similarity between the validators output and the leaders output.', file=sys.stderr)
+                    sys.exit(1)
+
+                return leader_output
+            else:
+                raise ValueError("Invalid mode.")
+
+
+        async def _call_llm(self, prompt:str, consensus_eq:str=None):
+
+            # To ensure the method is not called directly
+            if not consensus_eq:
+                raise Exception('This method can not be called directly. Call it from within an EquivalencePrinciple with block')
 
             _, _, _, recipt_file = transaction_files()
 
@@ -58,28 +126,24 @@ def icontract(cls):
                 leader_recipt = json.load(file)
                 file.close()
 
-            llm_function = getattr(llms, 'call_ollama')
-            if self.node_config['provider'] == 'openai':
-                llm_function = getattr(llms, 'call_openai')
+            llm_function = self.get_llm_function()
 
-            self.non_det_inputs[self.non_det_counter] = {}
-            self.non_det_inputs[self.non_det_counter]["input"] = prompt
+            self.non_det_inputs[self.non_det_counter] = prompt
+
+            final_response = None
+
             if self.node_config['type'] == 'leader':
                 self.mode = 'leader'
                 final_response = await llm_function(self.node_config, prompt, None, None)
-                self.non_det_outputs[self.non_det_counter] = {}
-                self.non_det_outputs[self.non_det_counter]["output"] = final_response
-                self.non_det_counter+=1
-                return final_response
+                self.non_det_outputs[self.non_det_counter] = final_response
             
             elif self.node_config['type'] == 'validator' and consensus_eq and leader_recipt:
                 validator_response = await llm_function(self.node_config, prompt, None, None)
-                self.non_det_outputs[self.non_det_counter] = {}
-                self.non_det_outputs[self.non_det_counter]["output"] = validator_response
+                self.non_det_outputs[self.non_det_counter] = validator_response
 
-                leader_output = leader_recipt['result']['non_det_outputs']['0']['output']
+                leader_response = leader_recipt['result']['non_det_outputs'][str(self.non_det_counter)]
 
-                eq_prompt = f"Given the equivalence principle '{consensus_eq}', decide whether the following two outputs can be considered equivalent.\nOutput 1: {leader_output}\nOutput 2: {validator_response}\nRespond with: TRUE or FALSE"
+                eq_prompt = f"Given the equivalence principle '{consensus_eq}', decide whether the following two outputs can be considered equivalent.\nOutput 1: {leader_response}\nOutput 2: {validator_response}\nRespond with: TRUE or FALSE"
                 validation_response = await llm_function(self.node_config, eq_prompt, None, None)
 
                 agreement = True if validation_response.strip().upper() == "TRUE" else False
@@ -87,7 +151,6 @@ def icontract(cls):
                     "response": validation_response,
                     "agrees_with_leader": agreement
                 }
-                self.non_det_counter+=1
                 if not agreement:
                     # 'call_llm' < 'wrapped_function' <'ask_for_coin' < 'wrapped_function' < 'main' < ...
                     #                                  --------------
@@ -95,16 +158,21 @@ def icontract(cls):
                     self._write_receipt(self, method_name, {})
                     print('The validator did not agree with the leader.', file=sys.stderr)
                     sys.exit(1)
-                return leader_output
+
+                final_response = leader_response
 
             else:
                 raise ValueError("Invalid mode or missing parameters for validator.")
+            
+            self.non_det_counter+=1
+            return final_response
 
         # This will get excuited under the following TWO conditiions:
-        # 1. When the method on the class has finished
+        # 1. When the method on the icontract has finished (i.e. ask_for_coin)
         # 2. When a validator disagrees with the leaders outcome
         def _write_receipt(self, method_name, args):
             receipt = {
+                # You can't get the name of the inherited class here
                 "class": self.__class__.__name__,
                 "method": method_name,
                 "args":args,
@@ -121,8 +189,11 @@ def icontract(cls):
                 json.dump(receipt, file, indent=4)
 
         def __getattribute__(self, name):
-            orig_attr = super().__getattribute__(name)
-            if callable(orig_attr) and not name.startswith("_"):
+            new_name = name
+            if name == 'get_webpage' or name == 'call_llm':
+                new_name = '_' + name
+            orig_attr = super().__getattribute__(new_name)
+            if new_name == '_get_webpage' or new_name == '_call_llm':
                 @functools.wraps(orig_attr)
                 async def wrapped_function(*args, **kwargs):
                     self.gas_used = gas_model_logic()
@@ -132,11 +203,19 @@ def icontract(cls):
                     else:
                         output = orig_attr(*args, **kwargs)
                     
-                    self._write_receipt(name, args)
+                    self._write_receipt(new_name, args)
                     print("Execution Finished!")
 
                     return output
                 return wrapped_function
             else:
                 return orig_attr
+        
+
+        def get_llm_function(self):
+            llm_function = getattr(llms, 'call_ollama')
+            if self.node_config['provider'] == 'openai':
+                llm_function = getattr(llms, 'call_openai')
+            return llm_function
+
     return WrappedClass

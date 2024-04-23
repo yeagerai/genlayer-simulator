@@ -5,6 +5,7 @@ import { rpcClient } from '@/utils';
 import { notify } from "@kyvg/vue3-notification";
 import ContractState from '@/components/Simulator/ContractState.vue'
 import ExecuteTransactions from "@/components/Simulator/ExecuteTransactions.vue";
+import TransactionsList from "@/components/Simulator/TransactionsList.vue";
 
 const store = useContractsFilesStore()
 const defaultContractState = ref('{}')

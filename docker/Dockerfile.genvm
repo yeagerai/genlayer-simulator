@@ -13,6 +13,8 @@ WORKDIR $path/genvm
 
 RUN ln contracts/base.py /tmp/base.py
 RUN ln contracts/llms.py /tmp/llms.py
+RUN ln contracts/context_wrapper.py /tmp/context_wrapper.py
+RUN ln contracts/equivalence_principle.py /tmp/equivalence_principle.py
 
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install Flask
