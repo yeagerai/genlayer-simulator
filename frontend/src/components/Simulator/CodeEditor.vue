@@ -67,24 +67,10 @@ watch(
       editorRef.value.updateOptions({ theme: newValue === 'light' ? 'vs' : 'vs-dark' })
   },
 )
-/**
- * Emits a 'deploy' event with the ID of the contract.
- *
- * @return {void} No return value.
- */
-const runDebug = (): void => {
-  emit('run-debug')
-}
 </script>
 
 <template>
   <div class="flex flex-col">
-    <div class="flex p-2">
-      <button class="flex ml-3" @click="runDebug">
-        <PlayIcon class="h-5 w-5 fill-primary" />
-        <ToolTip text="Run and Debug" :options="{ placement: 'bottom' }" />
-      </button>
-    </div>
     <div ref="editorElement" :style="`width: ${editorWidth / 16}rem; height: ${editorHeight / 16}rem`"/>
   </div>
 </template>

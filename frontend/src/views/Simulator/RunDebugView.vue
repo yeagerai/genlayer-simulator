@@ -14,7 +14,9 @@ const contractState = ref<any>({})
 const contract = computed(() => store.contracts.find(contract => contract.id === store.currentContractId))
 const deployedContract = computed(() => store.deployedContracts.find(contract => contract.contractId === store.currentContractId))
 const contractTransactions = ref<any[]>([])
-
+const storeContractState = computed(() => {
+  return store.defaultContractStates.find(c => c.contractId === store.currentContractId)?.defaultState
+})
 const getContractState = async (contractAddress: string) => {
   const { result } = await rpcClient.call({
     method: 'get_contract_state',
@@ -36,7 +38,6 @@ const handleCallContractMethod = async ({ method, params }: { method: string; pa
     ]
   })
 
-  console.log('handleCallContractMethod', result)
   contractTransactions.value.push(result)
   if (deployedContract.value?.address) getContractState(deployedContract.value?.address)
 }
@@ -53,13 +54,14 @@ const handleDeployContract = async () => {
       })
     } else {
 
+      const defaultStateContent = JSON.stringify(defaultState, null, 2)
       const { result } = await rpcClient.call({
         method: 'deploy_intelligent_contract',
-        params: ['0xcAE1bEb0daABFc1eF1f4A1C17be7E7b4cc12B33A', contract.content, JSON.stringify(defaultState)]
+        params: ['0xcAE1bEb0daABFc1eF1f4A1C17be7E7b4cc12B33A', contract.content, defaultStateContent]
       })
 
       store.addDeployedContract({ address: result.contract_id, contractId: contract.id })
-      defaultContractState.value = '{}'
+      store.addDefaultContractState({ address: result.contract_id, contractId: contract.id, defaultState: defaultStateContent })
       notify({
         title: 'OK',
         text: 'Contract deployed',
@@ -74,19 +76,29 @@ watch(
   () => deployedContract.value,
   async (newValue: any): Promise<void> => {
     if (newValue) {
-      if (newValue) {
-        await getContractState(newValue.address)
+      await getContractState(newValue.address)
 
-        const { result } = await rpcClient.call({
-          method: 'get_icontract_schema',
-          params: [newValue.address]
-        })
+      const { result } = await rpcClient.call({
+        method: 'get_icontract_schema',
+        params: [newValue.address]
+      })
 
-        abi.value = result
-      }
+      abi.value = result
+
     }
   }
 )
+watch(
+  () => storeContractState.value,
+  async (newValue: any): Promise<void> => {
+    if (newValue) {
+
+      defaultContractState.value = newValue
+
+    }
+  }
+)
+
 </script>
 
 <template>
@@ -119,10 +131,10 @@ watch(
       </div>
 
       <template v-if="deployedContract">
-        <ContractState :contract-state="contractState" :deployed-contract="deployedContract"/>
+        <ContractState :contract-state="contractState" :deployed-contract="deployedContract" />
 
-      <ExecuteTransactions :abi="abi" @call-method="handleCallContractMethod"/>
-      <TransactionsList :transactions="contractTransactions" />
+        <ExecuteTransactions :abi="abi" @call-method="handleCallContractMethod" />
+        <TransactionsList :transactions="contractTransactions" />
       </template>
     </template>
     <div class="flex flex-col px-2 py-2 w-full bg-slate-100 dark:dark:bg-zinc-700" v-else>
