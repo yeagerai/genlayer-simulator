@@ -59,7 +59,7 @@ $  .\.venv\Scripts\activate
 #### Execute the Demo
 
 ```
-(.venv) $ python scripts/debug_prototype.py
+(.venv) $ python scripts/debug_simulator.py
 ```
 
 #### Seperate Steps
