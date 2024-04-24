@@ -46,8 +46,8 @@ export const useContractsFilesStore = defineStore('contractsFiles', {
 
       if (index > -1 && openedIndex === -1) {
         this.openedFiles = [...this.openedFiles, id]
-        this.currentContractId = id
       }
+      this.currentContractId = id
     },
     closeFile(id: string) {
       this.openedFiles = [...this.openedFiles.filter((c) => c !== id)]
