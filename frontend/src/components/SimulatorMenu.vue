@@ -4,7 +4,7 @@ import { DocumentIcon, AdjustmentsHorizontalIcon, UserCircleIcon, CommandLineIco
 </script>
 
 <template>
-    <nav class="flex flex-col items-center w-12 justify-between border-r border-r-slate-500 dark:border-r-white/60 dark:bg-zinc-800 dark:text-white">
+    <nav class="flex flex-col h-full items-center w-12 justify-between border-r border-r-slate-300 dark:border-r-white/60 dark:bg-zinc-800 dark:text-white">
         <div class="flex flex-col items-center">
             <RouterLink :to="{ name: 'simulator.contracts' }"
                 class="p-3 border-r-4 border-transparent opacity-75 hover:border-r-primary hover:opacity-100">
