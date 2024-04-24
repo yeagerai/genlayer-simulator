@@ -47,12 +47,9 @@ const toogleTerminal = () => {
       <dir v-if="logs.length > 0"
         class="flex flex-col scroll-smooth overscroll-contain snap-y scroll-ml-6 snap-start p-0" ref="scrollContainer">
         <div v-for="(item, index) in logs" :key="index" class="flex items-center">
-          <div class="flex flex-col items-center w-8">
-            <small class="logs-small-text font-light">{{ index + 1 }}</small>
-          </div>
-          <div class="flex items-center">
-            <span class="logs-small-text font-light">{{ item.date }} :: </span>
-            <span class="text-xs ml-1">{{ item.message }}</span>
+          <div class="flex items-start">
+            <div class="flex logs-small-text font-light"><span  class="flex flex-col items-center w-8">{{ index + 1 }}</span> {{ item.date }} :: </div>
+            <div class="flex text-xs ml-1 flex-1">{{ item.message }}</div>
           </div>
         </div>
       </dir>

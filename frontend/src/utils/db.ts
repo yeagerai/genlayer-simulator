@@ -1,6 +1,6 @@
 import type { ContractFile, DefaultContractState, DeployedContract } from '@/types'
 import Dexie, { type Table } from 'dexie'
-import { contract as WizzardOfCoinContract } from '@/assets/contractExample'
+import { contract as WizardOfCoinContract } from '@/assets/contractExample'
 
 export class GenLayerSimulatorDB extends Dexie {
   contractFiles!: Table<ContractFile>
@@ -23,8 +23,8 @@ export async function setupDB() {
   if ((await db.contractFiles.count()) === 0) {
     db.contractFiles.add({
       id: '1',
-      name: 'TestWizzardOfCoin',
-      content: WizzardOfCoinContract.content.trim()
+      name: 'WizardOfCoin',
+      content: WizardOfCoinContract.content.trim()
     })
   }
 }
