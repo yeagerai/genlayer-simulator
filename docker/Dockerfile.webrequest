@@ -8,7 +8,7 @@ RUN apt install wget python3 pip -y
 RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 RUN dpkg -i google-chrome-stable_current_amd64.deb || true
 RUN apt-get install -f -y
-RUN dpkg -i google-chrome-stable_current_amd64.deb
+RUN dpkg -i --force-architecture google-chrome-stable_current_amd64.deb
 RUN google-chrome --version
 
 ARG base=/app
