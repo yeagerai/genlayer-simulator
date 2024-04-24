@@ -4,6 +4,7 @@ from contracts.context_wrapper import enforce_with_context
 
 @enforce_with_context
 class EquivalencePrinciple:
+
     def __init__(self, icontract_inst:object, principle:str):
         self.icontract_inst = icontract_inst
         self.principle = principle
@@ -27,7 +28,8 @@ class EquivalencePrinciple:
     async def get_webpage(self, url:str):
         self.last_method = inspect.currentframe().f_code.co_name
         self.last_args = [url]
-        return await self.icontract_inst._get_webpage(url, self.principle)
+        similarity_test = 'are these two texts 70 percent similar of more'
+        return await self.icontract_inst._get_webpage(url, similarity_test)
 
     async def call_llm(self, prompt:str):
         self.last_method = inspect.currentframe().f_code.co_name
