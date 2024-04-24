@@ -44,15 +44,15 @@ const toogleTerminal = () => {
       </button>
     </div>
     <div class="flex flex-col w-full overflow-y-auto h-full p-1 bg-white dark:bg-zinc-800 dark:text-white cursor-text">
-      <dir v-if="logs.length > 0"
-        class="flex flex-col scroll-smooth overscroll-contain snap-y scroll-ml-6 snap-start p-0" ref="scrollContainer">
+      <div v-if="logs.length > 0"
+        class="flex flex-col scroll-smooth overscroll-contain snap-y  snap-start p-0" ref="scrollContainer">
         <div v-for="(item, index) in logs" :key="index" class="flex items-center">
           <div class="flex items-start">
             <div class="flex logs-small-text font-light"><span  class="flex flex-col items-center w-8">{{ index + 1 }}</span> {{ item.date }} :: </div>
             <div class="flex text-xs ml-1 flex-1">{{ item.message }}</div>
           </div>
         </div>
-      </dir>
+      </div>
       <div v-else class="flex flex-col justify-center items-center h-full">
         <div class="flex text-xl">Logs</div>
         <div class="flex">Here you will see every log produced by the simulator</div>

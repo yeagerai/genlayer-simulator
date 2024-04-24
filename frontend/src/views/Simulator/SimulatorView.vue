@@ -19,9 +19,10 @@ const handleLogsResize = (event: any) => {
   } else {
     showLogsTerminal.value = true
   }
+
+  logsHeight.value = event[1]?.size < 2 ? 4 : event[1]?.size
+  editorHeight.value = event[0]?.size < minEditorHeight ? minEditorHeight : event[0]?.size
   
-  logsHeight.value = event[1]?.size
-  editorHeight.value = event[0]?.size
 }
 const handlePanelWidthResize = (event: any) => {
   editorWidth.value = event[0]?.size
@@ -31,6 +32,8 @@ const handleToogleTerminal = () => {
   showLogsTerminal.value = !showLogsTerminal.value
   if (!showLogsTerminal.value) {
     editorHeight.value = 2
+  } else {
+    editorHeight.value = 20
   }
 
 }
@@ -39,24 +42,27 @@ const handleToogleTerminal = () => {
 <template>
   <div class="flex w-full">
     <SimulatorMenu />
-    <div class="flex w-full h-full">
-      <Splitpanes class="default-theme w-full h-full bg-white dark:bg-zinc-800 dark:text-white "
+    <div class="flex w-full relative">
+      <Splitpanes class="default-theme relative w-full bg-white dark:bg-zinc-800 dark:text-white "
         @resize="handlePanelWidthResize">
         <Pane min-size="26" size="26" max-size="60" class="flex w-full">
-          <router-view v-slot="{ Component }">
+          
+          <div class="overflow-y-auto flex w-full">
+            <router-view v-slot="{ Component }">
             <keep-alive>
               <component :is="Component" />
             </keep-alive>
           </router-view>
+          </div>
         </Pane>
         <Pane>
-          <Splitpanes class="default-theme h-full" horizontal @resize="handleLogsResize">
-            <Pane class="flex flex-col relative w-full h-full">
+          <Splitpanes class="default-theme" horizontal @resize="handleLogsResize">
+            <Pane class="flex flex-col w-full h-full" min-size="20" size="80" max-size="80">
               <div class="flex flex-col h-full w-full">
                 <ContractsPanel :parent-height="editorHeight" :parent-width="editorWidth" class="w-full h-full" />
               </div>
             </Pane>
-            <Pane class="flex flex-col h-full w-full" min-size="4" :size="logsHeight" max-size="80">
+            <Pane class="flex flex-col w-full" min-size="20" :size="20" max-size="80">
               <NodeLogs :show-terminal="showLogsTerminal" @toggle-terminal="handleToogleTerminal" />
             </Pane>
           </Splitpanes>

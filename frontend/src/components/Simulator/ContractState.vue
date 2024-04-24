@@ -22,7 +22,7 @@ watch(
   <div class="flex flex-col px-2 mt-6 py-2 w-full bg-slate-100">
     <h5 class="text-sm">Current Intelligent Contract State</h5>
   </div>
-  <div class="flex flex-col p-2 m-h-20 overflow-y-auto">
+  <div class="flex flex-col p-2 overflow-y-auto">
     <div class="flex justify-start w-full px-1">
       <span class="text-xs text-primary">{{ deployedContract?.address }}</span>
     </div>

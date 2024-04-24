@@ -102,41 +102,48 @@ watch(
 </script>
 
 <template>
-  <div class="flex flex-col w-full overflow-y-auto">
+  <div class="flex flex-col overflow-y-auto max-h-[93vh]">
     <div class="flex flex-col p-2 w-full">
       <h3 class="text-xl">Run and Debug</h3>
     </div>
-    <template v-if="!!store.currentContractId">
-      <div class="flex flex-col px-2 py-2 w-full bg-slate-100">
-        <div class="text-sm">Intelligent Contract:</div>
-        <div class="text-xs text-neutral-800">
-          {{ contract?.name }}.gpy
+    <div class="flex flex-col overflow-y-auto" v-if="!!store.currentContractId">
+      <div class="flex flex-col">
+        <div class="flex flex-col px-2 py-2 w-full bg-slate-100">
+          <div class="text-sm">Intelligent Contract:</div>
+          <div class="text-xs text-neutral-800">
+            {{ contract?.name }}.gpy
+          </div>
+        </div>
+        <div class="flex flex-col p-2 my-4">
+          <div class="flex flex-col text-xs">
+            <h2>Set the default contrat state</h2>
+            <p>Please provide a json object with the default contract state.</p>
+          </div>
+          <div class="flex mt-2">
+            <textarea rows="5" class="w-full bg-slate-100 dark:dark:bg-zinc-700 p-2" v-model="defaultContractState"
+              clear-icon="ri-close-circle" label="State" />
+          </div>
+        </div>
+        <div class="flex flex-col p-2 w-full justify-center">
+          <ToolTip text="Deploy" :options="{ placement: 'top' }" />
+          <button @click="handleDeployContract"
+            class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">Deploy Intelligent
+            Contract</button>
         </div>
       </div>
-      <div class="flex flex-col p-2 my-4">
-        <div class="flex flex-col text-xs">
-          <h2>Set the default contrat state</h2>
-          <p>Please provide a json object with the default contract state.</p>
+      <div class="flex flex-col" v-if="deployedContract">
+        <div class="flex flex-col">
+          <ContractState :contract-state="contractState" :deployed-contract="deployedContract" />
         </div>
-        <div class="flex mt-2">
-          <textarea rows="5" class="w-full bg-slate-100 dark:dark:bg-zinc-700 p-2" v-model="defaultContractState"
-            clear-icon="ri-close-circle" label="State" />
-        </div>
-      </div>
-      <div class="flex flex-col p-2 w-full justify-center">
-        <ToolTip text="Deploy" :options="{ placement: 'top' }" />
-        <button @click="handleDeployContract"
-          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">Deploy Intelligent
-          Contract</button>
-      </div>
 
-      <template v-if="deployedContract">
-        <ContractState :contract-state="contractState" :deployed-contract="deployedContract" />
-
-        <ExecuteTransactions :abi="abi" @call-method="handleCallContractMethod" />
-        <TransactionsList :transactions="contractTransactions" />
-      </template>
-    </template>
+        <div class="flex flex-col">
+          <ExecuteTransactions :abi="abi" @call-method="handleCallContractMethod" />
+        </div>
+        <div class="flex flex-col">
+          <TransactionsList :transactions="contractTransactions" />
+        </div>
+      </div>
+    </div>
     <div class="flex flex-col px-2 py-2 w-full bg-slate-100 dark:dark:bg-zinc-700" v-else>
       <div class="text-sm">Please select an intelligent contract first, you can go to <RouterLink
           :to="{ name: 'simulator.contracts' }" class="text-primary">
