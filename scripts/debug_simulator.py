@@ -9,14 +9,6 @@ load_dotenv()
 cwd = os.path.abspath(os.getcwd())
 
 
-print('Checking environement...')
-# Check you in a viretualenv
-if 'VIRTUAL_ENV' not in os.environ and 'CONDA_DEFAULT_ENV' not in os.environ:
-    print('No active virtualenv or conda environment detected!')
-    print('Please activate a virtualenv or a conda environment.')
-    print('(If you don\'t know how to do this, please read the README.md or relevant documentation)')
-    sys.exit()
-
 # Make sure the file is being run from the project folder (not the scipts folder)
 if "debug_prototype.py" in os.listdir(cwd):
     print(cwd)
@@ -84,7 +76,7 @@ if 'result' in fund_account_result and 'address' in fund_account_result['result'
 
 
 # Your hardcoded values
-contract_file_path = 'genvm/contracts/wizzard_of_coin.py'
+contract_file_path = 'examples/contracts/wizzard_of_coin.py'
 function_to_execute = 'WizzardOfCoin.ask_for_coin'
 initial_contract_state = '{"have_coin": true}'
 
