@@ -63,7 +63,7 @@ const handleToogleTerminal = () => {
               </div>
             </Pane>
             <Pane class="flex flex-col w-full" min-size="20" :size="20" max-size="80">
-              <NodeLogs :show-terminal="showLogsTerminal" @toggle-terminal="handleToogleTerminal" />
+              <NodeLogs />
             </Pane>
           </Splitpanes>
         </Pane>
