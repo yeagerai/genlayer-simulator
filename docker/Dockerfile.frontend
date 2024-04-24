@@ -7,7 +7,7 @@ COPY /frontend/package.json .
 RUN npm i
 
 COPY ./frontend .
-COPY ./examples examples
+COPY ./examples src/assets/examples
 
 RUN npm run build
 
