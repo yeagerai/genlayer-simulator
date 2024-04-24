@@ -5,7 +5,10 @@ from contracts.context_wrapper import enforce_with_context
 @enforce_with_context
 class EquivalencePrinciple:
 
-    def __init__(self, icontract_inst:object, principle:str):
+    def __init__(self, icontract_inst:object, result:dict, principle:str):
+        if len(result) > 0:
+            raise Exception('result must be empty')
+        self.result = result
         self.icontract_inst = icontract_inst
         self.principle = principle
         self.last_method = None
@@ -38,3 +41,6 @@ class EquivalencePrinciple:
             return await self.icontract_inst._call_llm(prompt, self.principle)
         except Exception as e:
             raise Exception('something simple')
+
+    def set(self, value):
+        self.result['output'] = value

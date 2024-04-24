@@ -29,18 +29,21 @@ The output format of your response is:
 "data_updates": {{"have_coin": bool}}
 }}
 """
-        result = None
-        async with EquivalencePrinciple(self, "The result['give_coin'] has to be exactly the same") as eq:
+        final_result = {}
+        async with EquivalencePrinciple(self, final_result, "The result['give_coin'] has to be exactly the same") as eq:
             result = await eq.call_llm(prompt)
-        result_clean = result.replace("True","true").replace("False","false")
-        result_json = json.loads(result_clean)
+            result_clean = result.replace("True","true").replace("False","false")
+            result_json = json.loads(result_clean)
+            eq.set(result_json)
 
-        if result_json['give_coin'] is False:
-            self.have_coin = result_json['data_updates']['have_coin']
+        output = final_result['output']
+
+        if output['give_coin'] is False:
+            self.have_coin = output['data_updates']['have_coin']
 
         return {
-            "reasoning": result_json['reasoning'],
-            "give_coin": result_json['give_coin'],
+            "reasoning": output['reasoning'],
+            "give_coin": output['give_coin'],
             "state_updated": {"have_coin":self.have_coin},
             "gas_used": self.gas_used
         }
