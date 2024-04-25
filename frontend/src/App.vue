@@ -9,9 +9,9 @@ onBeforeMount(() => {
 })
 </script>
 <template>
-  <main :data-mode="uiStore.mode" class="h-full w-full bg-white dark:bg-zinc-800 dark:text-white flex flex-col">
+  <main :data-mode="uiStore.mode" class="h-screen w-full bg-white dark:bg-zinc-800 dark:text-white flex flex-col">
     <Header />
-    <div class="flex h-screen">
+    <div class="flex h-full">
       <RouterView />
     </div>
   </main>

@@ -8,6 +8,8 @@ services:
       dockerfile: ./docker/Dockerfile.frontend
     ports:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+    volumes:
+      - ./examples:/app/src/assets/examples
     depends_on:
       - jsonrpc
     expose:

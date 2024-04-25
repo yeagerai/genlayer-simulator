@@ -7,6 +7,7 @@ import VueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: "/",
   plugins: [
     vue(),
     vueJsx(),
@@ -17,9 +18,14 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
-  server: {
+  preview: {
+    port: 8080,
+    strictPort: true,
+   },
+   server: {
+    port: 8080,
+    strictPort: true,
     host: true,
-    port: 8080
-  }
-  
+    origin: "http://0.0.0.0:8080",
+   },
 })
