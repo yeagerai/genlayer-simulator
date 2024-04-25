@@ -49,7 +49,7 @@ console.log('store.currentContractId', showHome.value)
                     <button class="bg-transparent flex" @click="setCurrentContractTab(contract.id)">
                         <DocumentCheckIcon class="h-4 w-4 mr-2"
                             :class="{ 'fill-primary': contract.id === store.currentContractId }" />
-                        {{ contract.name }}.gpy
+                        {{ contract.name }}
                     </button>
                     <button class="bg-transparent" @click="handleCloseContract(contract.id)">
                         <XMarkIcon class="ml-4 h-4 w-4" />

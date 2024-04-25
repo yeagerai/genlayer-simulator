@@ -111,7 +111,7 @@ watch(
         <div class="flex flex-col px-2 py-2 w-full bg-slate-100">
           <div class="text-sm">Intelligent Contract:</div>
           <div class="text-xs text-neutral-800">
-            {{ contract?.name }}.gpy
+            {{ contract?.name }}
           </div>
         </div>
         <div class="flex flex-col p-2 my-4">

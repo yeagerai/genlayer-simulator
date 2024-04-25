@@ -61,27 +61,29 @@ const openContract = (id?: string) => {
         <div class="flex">
           <ArrowUpTrayIcon class="h-5 w-5 fill-primary" />
           <ToolTip text="Upload File" :options="{ placement: 'bottom' }" />
-          <input type="file" @change="loadContentFromFile">
+          <input type="file" @change="loadContentFromFile" accept=".gpy,.py">
         </div>
       </label>
     </div>
     <div v-for="contract in store.contracts" :key="contract.id" class="flex flex-col">
       <div @mouseover="showFileOptions(contract.id)" @mouseout="showFileOptions()"
-        class="flex justify-between text-xs text-neutral-500 py-1 px-2 border border-transparent hover:border-green-500 font-semibold"
+        class="flex text-xs text-neutral-500 py-1 px-2 border border-transparent hover:border-green-500 font-semibold"
         :class="{ 'border-green-500': contract.id === store.currentContractId }">
-        <button class="flex items-center" @click="openContract(contract.id)">
-          <DocumentCheckIcon class="h-4 w-4 fill-primary mr-1" />
-          {{ contract.name }}.gpy
-        </button>
-        <div class="flex" v-show="showFileOptionsId === contract.id">
-          <button>
-            <ToolTip text="Edit Name" :options="{ placement: 'bottom' }" />
-            <PencilIcon class="h-3 w-4 mr-1" />
-          </button>
-          <button>
-            <ToolTip text="Delete file" :options="{ placement: 'bottom' }" />
-            <TrashIcon class="h-4 w-4 mr-1" />
-          </button>
+        <DocumentCheckIcon class="h-4 w-4 fill-primary mr-1" />
+        <div class="flex items-center justify-between">
+          <div class="flex max-w-[80%]" @click="openContract(contract.id)">
+            {{ contract.name }}
+          </div>
+          <div class="flex" v-show="showFileOptionsId === contract.id">
+            <button>
+              <ToolTip text="Edit Name" :options="{ placement: 'bottom' }" />
+              <PencilIcon class="h-3 w-4 mr-1" />
+            </button>
+            <button>
+              <ToolTip text="Delete file" :options="{ placement: 'bottom' }" />
+              <TrashIcon class="h-4 w-4 mr-1" />
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -1,19 +1,6 @@
 import type { ContractFile, DefaultContractState, DeployedContract } from '@/types'
 import { db } from '@/utils'
-import { liveQuery } from 'dexie'
 import { type PiniaPluginContext } from 'pinia'
-
-const initData = ({ store }: PiniaPluginContext) => {
-  if (store.$id === 'contractsFiles') {
-    const contractsObservable = liveQuery(() => db.contractFiles.toArray())
-    const contracts = contractsObservable.subscribe({
-      next: (c) => {
-        store.$state.contracts = c
-        contracts.unsubscribe()
-      }
-    })
-  }
-}
 
 /**
  * Upserts a deployed contract into the database.
@@ -52,7 +39,7 @@ const upsertDefaultContractState = async (contract: DefaultContractState): Promi
  * @return {void} This function does not return anything.
  */
 export function PersistStorePlugin(context: PiniaPluginContext): void {
-  initData(context)
+
   context.store.$onAction(({ store, name, args, after }) => {
     console.log(`Called Action "${name}" with params [${JSON.stringify(args)}].`)
     after(async (result) => {
