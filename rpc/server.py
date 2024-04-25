@@ -1,16 +1,18 @@
+import re
 import os
 import json
 import psycopg2
 import string
 import requests
 import logging
+import random
+import inspect
 from logging.config import dictConfig
 from flask import Flask
 from flask_jsonrpc import JSONRPC
 from flask_socketio import SocketIO
 from flask_cors import CORS
 
-from utils import create_new_address, address_is_in_correct_format, error_response, success_response
 from database.init_db import create_db_if_it_doesnt_already_exists, create_tables_if_they_dont_already_exist
 from database.credentials import get_genlayer_db_connection
 from database.types import ContractData, CallContractInputData
@@ -26,6 +28,33 @@ with open('logging_config.json', 'r') as file:
 logger = logging.getLogger(os.environ['LOGCONFIG'])
 
 dictConfig(logging_config)
+
+
+def create_new_address() -> str:
+    new_address = ''.join(random.choice(string.hexdigits) for _ in range(40))
+    return '0x' + new_address
+
+def address_is_in_correct_format(address:str) -> bool:
+    pattern = r'^0x['+string.hexdigits+']{40}$'
+    if re.fullmatch(pattern, address):
+        return True
+    return False
+
+def error_response(message:str) -> dict:
+    return response_format('error', message=message)
+
+def success_response(data) -> dict:
+    return response_format('success', data=data)
+
+def response_format(status:str, message:str='', data={}) -> dict:
+    result = {
+        'status': status,
+        'message': message,
+        'data': data
+    }
+    function_name = inspect.stack()[1].function
+    log_status({'function': function_name, 'response': result})
+    return result
 
 
 app = Flask('jsonrpc_api')
