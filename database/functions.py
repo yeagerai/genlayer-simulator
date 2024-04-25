@@ -31,8 +31,15 @@ class DatabaseFunctions:
         self.connection.commit()
         return self.get_validator(address)
 
+    def delete_validator(self, address:str):
+        self.cursor.execute(
+            "DELETE FROM validators WHERE address = %s;",
+            (address,),
+        )
+        self.connection.commit()
+        return {}
 
-    def update_validator(self, validator_address:str, stake:int, provider:str, model:str, config:str):
+    def update_validator(self, validator_address:str, stake:float, provider:str, model:str, config:str):
         self.cursor.execute(
             "UPDATE validators SET stake = %s, provider = %s, model = %s, config = %s, created_at = CURRENT_TIMESTAMP WHERE address = %s;",
             (stake, provider, model, config, validator_address),
@@ -43,7 +50,11 @@ class DatabaseFunctions:
     def get_validator(self, address:str):
         self.cursor.execute("SELECT * FROM validators WHERE address = %s", (address,))
         self.connection.commit()
-        return self.validator_details(self.cursor.fetchone())
+        validator = self.cursor.fetchone()
+        if validator:
+            return self.validator_details(validator)
+        else:
+            return {}
 
     def all_validators(self):
         self.cursor.execute("SELECT * FROM validators")
