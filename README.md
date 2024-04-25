@@ -18,8 +18,10 @@ The GenLayer prototype consists of the following main components:
 
 ```
 $ cp .env.example .env
-$ docker compose build
-$ docker compose up
+$ vim .env
+GENVMOPENAIKEY     = '...' # Replace the placeholder with your actual OpenAI API key
+$ docker-compose build
+$ docker-compose up
 ```
 
 ### Window Two
