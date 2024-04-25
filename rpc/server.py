@@ -12,9 +12,11 @@ from flask_cors import CORS
 
 from database.init_db import create_db_if_it_doesnt_already_exists, create_tables_if_they_dont_already_exist
 from database.credentials import get_genlayer_db_connection
+from database.functions import DatabaseFunctions
 from database.types import ContractData, CallContractInputData
 from consensus.algorithm import exec_transaction
 from consensus.utils import genvm_url
+from consensus.nodes.create_nodes import random_validator_config
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -211,6 +213,97 @@ def count_validators() -> dict:
     return {"count": row[0]}
 
 
+@jsonrpc.method("get_validator")
+def get_validator(validator_address:str) -> dict:
+    with DatabaseFunctions() as dbf:
+        validator = dbf.get_validator(validator_address)
+        dbf.close()
+
+    if len(validator) > 0:
+        return {
+            'status': 'success',
+            'message': '',
+            'data': validator
+        }
+    else:
+        return {
+            'status': 'error',
+            'message': 'validator not found',
+            'data': {}
+        }
+
+
+@jsonrpc.method("get_all_validators")
+def get_all_validators() -> dict:
+    with DatabaseFunctions() as dbf:
+        validators = dbf.all_validators()
+        dbf.close()
+
+    return {
+        'status': 'success',
+        'message': '',
+        'data': validators
+    }
+
+
+@jsonrpc.method("create_validator")
+def create_validator(stake: float, provider:str, model:str, config:json) -> dict:
+    new_address = create_new_address()
+    config_json = json.dumps(config)
+    with DatabaseFunctions() as dbf:
+        dbf.create_validator(new_address, stake, provider, model, config_json)
+        dbf.close()
+    return get_validator(new_address)
+
+
+@jsonrpc.method("update_validator")
+def update_validator(validator_address:str, stake:float, provider:str, model:str, config:json) -> dict:
+    validator = get_validator(validator_address)
+    if validator['status'] == 'error':
+        return validator
+    config_json = json.dumps(config)
+    with DatabaseFunctions() as dbf:
+        dbf.update_validator(validator_address, stake, provider, model, config_json)
+        dbf.close()
+    return get_validator(validator_address)
+
+
+@jsonrpc.method("delete_validator")
+def delete_validator(validator_address:str) -> dict:
+    validator = get_validator(validator_address)
+    if validator['status'] == 'error':
+        return validator
+    with DatabaseFunctions() as dbf:
+        dbf.delete_validator(validator_address)
+        dbf.close()
+
+    return {
+        'status': 'success',
+        'message': '',
+        'data': {'address': validator_address}
+    }
+
+
+@jsonrpc.method("delete_all_validators")
+def delete_all_validator() -> dict:
+    all_validators = get_all_validators()
+    data = all_validators['data']
+    addresses = []
+    with DatabaseFunctions() as dbf:
+        for validator in data:
+            addresses.append(validator['address'])
+            dbf.delete_validator(validator['address'])
+        dbf.close()
+    return get_all_validators()
+
+
+@jsonrpc.method("create_random_validator")
+def create_random_validator(stake:float) -> dict:
+    details = random_validator_config()
+    return create_validator(stake, details['provider'], details['model'], details['config'])
+
+
+# TODO: DEPRECIATED
 @jsonrpc.method("register_validator")
 def register_validator(stake: float) -> dict:
     connection = get_genlayer_db_connection()
@@ -223,10 +316,10 @@ def register_validator(stake: float) -> dict:
         "INSERT INTO current_state (id, data) VALUES (%s, %s);", (eoa_id, eoa_state)
     )
 
-    validator_info = json.dumps({"eoa_id": eoa_id, "stake": stake})
+    config = json.dumps({"eoa_id": eoa_id, "stake": stake})
     cursor.execute(
-        "INSERT INTO validators (stake, validator_info) VALUES (%s, %s);",
-        (stake, validator_info),
+        "INSERT INTO validators (stake, config) VALUES (%s, %s);",
+        (stake, config),
     )
 
     connection.commit()

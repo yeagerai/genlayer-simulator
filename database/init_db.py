@@ -42,8 +42,11 @@ def db_get_validators_table_create_command() -> str:
     return """
     CREATE TABLE IF NOT EXISTS validators (
         id SERIAL PRIMARY KEY,
+        address VARCHAR(255),
         stake NUMERIC NOT NULL,
-        validator_info JSONB NOT NULL,
+        provider VARCHAR(255),
+        model VARCHAR(255),
+        config JSONB NOT NULL,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     )
     """
