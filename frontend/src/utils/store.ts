@@ -15,7 +15,7 @@ export const setupStores = async () => {
       const contract = {
         id: uuidv4(),
         name,
-        content: raw?.trim()
+        content: (raw as string || '').trim()
       }
       contractsFilesStore.addContractFile(contract)
     }
