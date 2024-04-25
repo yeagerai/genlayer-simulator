@@ -3,6 +3,11 @@ from rpc.tests.base import payload, post_request
 validator_keys = ['id', 'address', 'stake', 'provider','model', 'config', 'updated_at']
 
 
+def test_create_db_and_tables():
+    post_request(payload('create_db'))
+    post_request(payload('create_tables'))
+    assert True
+
 def test_create_random_validator():
     response = post_request(payload('create_random_validator', 10)).json()
     assert response['result']['status'] == 'success'
