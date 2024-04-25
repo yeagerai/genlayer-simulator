@@ -12,9 +12,11 @@ from flask_cors import CORS
 
 from database.init_db import create_db_if_it_doesnt_already_exists, create_tables_if_they_dont_already_exist
 from database.credentials import get_genlayer_db_connection
+from database.functions import DatabaseFunctions
 from database.types import ContractData, CallContractInputData
 from consensus.algorithm import exec_transaction
 from consensus.utils import genvm_url
+from consensus.nodes.create_nodes import random_validator_config
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -211,6 +213,43 @@ def count_validators() -> dict:
     return {"count": row[0]}
 
 
+@jsonrpc.method("create_validator")
+def create_validator(stake: float, provider:str, model:str, config:json) -> dict:
+    new_address = create_new_address()
+    new_validator = None
+    config_json = json.dumps(config)
+    with DatabaseFunctions() as dbf:
+        new_validator = dbf.create_validator(new_address, stake, provider, model, config_json)
+        dbf.close()
+
+    return {
+        'status': 'success',
+        'message': '',
+        'data': new_validator
+    }
+
+
+@jsonrpc.method("update_validator")
+def update_validator(validator_address:str, stake:float, provider:str, model:str, config:json) -> dict:
+    updated_validator = None
+    with DatabaseFunctions() as dbf:
+        updated_validator = dbf.update_validator(validator_address, stake, provider, model, config)
+        dbf.close()
+
+    return {
+        'status': 'success',
+        'message': '',
+        'data': updated_validator
+    }
+
+
+@jsonrpc.method("create_random_validator")
+def create_random_validator(stake:float) -> dict:
+    details = random_validator_config()
+    return create_validator(stake, details['provider'], details['model'], details['config'])
+
+
+# TODO: DEPRECIATED
 @jsonrpc.method("register_validator")
 def register_validator(stake: float) -> dict:
     connection = get_genlayer_db_connection()
@@ -223,10 +262,10 @@ def register_validator(stake: float) -> dict:
         "INSERT INTO current_state (id, data) VALUES (%s, %s);", (eoa_id, eoa_state)
     )
 
-    validator_info = json.dumps({"eoa_id": eoa_id, "stake": stake})
+    config = json.dumps({"eoa_id": eoa_id, "stake": stake})
     cursor.execute(
-        "INSERT INTO validators (stake, validator_info) VALUES (%s, %s);",
-        (stake, validator_info),
+        "INSERT INTO validators (stake, config) VALUES (%s, %s);",
+        (stake, config),
     )
 
     connection.commit()

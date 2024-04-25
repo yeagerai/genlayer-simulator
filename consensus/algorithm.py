@@ -3,6 +3,7 @@ import json
 import requests
 from database.credentials import get_genlayer_db_connection
 from database.types import ConsensusData
+from database.functions import DatabaseFunctions
 from consensus.utils import (
     vrf,
     get_contract_state,
@@ -101,13 +102,14 @@ def validator_executes_transaction(transaction_input:dict , validator_config:dic
 
 async def exec_transaction(transaction_input, logger=None):
 
-    nodes_config = get_nodes_config(logger)
-
-    all_validators, validators_stakes = get_validators(nodes_config, logger)
+    with DatabaseFunctions() as dbf:
+        all_validators = dbf.all_validators()
+        dbf.close()
 
     # Select validators using VRF
     num_validators = int(os.environ['NUMVALIDATORS'])
-    selected_validators = vrf(all_validators, validators_stakes, 5)
+    selected_validators = vrf(all_validators, 5)
+
     leader = selected_validators[0]
     remaining_validators = selected_validators[1 : num_validators + 1]
     if logger:
@@ -115,29 +117,18 @@ async def exec_transaction(transaction_input, logger=None):
         logger(f"Selected Validators: {remaining_validators}...")
         logger(f"Leader {leader} starts contract execution...")
 
-    leader_config = None
-    for validator_config in nodes_config:
-        if validator_config['id'] == leader:
-            leader_config = validator_config
-
-    if not leader_config:
-        raise Exception('The config for node '+leader+' is not in consensus/nodes/nodes.json')
-    
     # Leader executes transaction
-    leader_receipt = leader_executes_transaction(transaction_input, leader_config)
+    leader_receipt = leader_executes_transaction(transaction_input, leader)
 
-    votes = {leader: leader_receipt['vote']}
+    votes = {leader['address']: leader_receipt['vote']}
 
     if logger:
         logger(f"Leader {leader} has finished contract execution...")
     
     valudators_results = []
-    for validator_address in remaining_validators:
-        validator_config = next((item for item in nodes_config if item['id'] == validator_address), None)
-        if not validator_config:
-            raise Exception('Validator configuration for node '+validator_address+' not found in consensus/nodes/nodes.json')
-        validator_receipt = validator_executes_transaction(transaction_input, validator_config, leader_receipt)
-        votes[validator_config['id']] = validator_receipt['vote']
+    for validator in remaining_validators:
+        validator_receipt = validator_executes_transaction(transaction_input, validator, leader_receipt)
+        votes[validator['address']] = validator_receipt['vote']
         valudators_results.append(validator_receipt)
 
     # Validators execute transaction
