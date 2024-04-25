@@ -31,3 +31,13 @@ export type UIMode = 'light' | 'dark'
 export interface UIState {
   mode: UIMode
 }
+
+export interface ValidatorRecord {
+  address: string
+  config: any
+  id: number
+  model: string
+  provider: string
+  stake: number
+  updated_at: string
+}

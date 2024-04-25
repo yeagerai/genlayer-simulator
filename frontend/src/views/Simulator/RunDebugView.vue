@@ -98,11 +98,10 @@ watch(
     }
   }
 )
-
 </script>
 
 <template>
-  <div class="flex flex-col overflow-y-auto max-h-[93vh]">
+  <div class="flex flex-col w-full overflow-y-auto max-h-[93vh]">
     <div class="flex flex-col p-2 w-full">
       <h3 class="text-xl">Run and Debug</h3>
     </div>
