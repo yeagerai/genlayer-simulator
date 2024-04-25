@@ -30,11 +30,19 @@ The output format of your response is:
 }}
 """
         final_result = {}
+        # Validator
         async with EquivalencePrinciple(self, final_result, "The result['give_coin'] has to be exactly the same") as eq:
+            _ = await eq.get_webpage('https://www.example.com/')
             result = await eq.call_llm(prompt)
             result_clean = result.replace("True","true").replace("False","false")
             result_json = json.loads(result_clean)
             eq.set(result_json)
+            # result_json => block_1.json
+        
+        with open('/tmp/error.txt', 'w') as file:
+            file.write('---')
+            file.write(result_clean)
+            file.write('---')
 
         output = final_result['output']
 

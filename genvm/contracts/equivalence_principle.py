@@ -2,6 +2,15 @@ import inspect
 from contracts.context_wrapper import enforce_with_context
 
 
+def clear_locals(scope):
+    inside_eq = False
+    local_vars = scope.copy()
+    for var in local_vars:
+        if inside_eq:
+            del scope[var]
+        if var == 'eq':
+            inside_eq = True
+
 @enforce_with_context
 class EquivalencePrinciple:
 
@@ -25,6 +34,11 @@ class EquivalencePrinciple:
             final_args = self.last_args + [self.principle]
             #if len(final_args) != len(original_args):
             #    raise Exception(str(method_name)+' takes '+str(len(original_args))+' args not '+str(len(final_args))+' args')
+
+            caller_frame = inspect.currentframe().f_back
+            locals_in_caller = caller_frame.f_locals
+            
+            vars = clear_locals(locals_in_caller)
 
             return await getattr(self.icontract_inst, '_'+self.last_method)(*final_args)
 
