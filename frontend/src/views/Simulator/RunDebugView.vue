@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { useMainStore } from "@/stores"
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { rpcClient } from '@/utils';
 import { notify } from "@kyvg/vue3-notification";
 import ContractState from '@/components/Simulator/ContractState.vue'
 import ExecuteTransactions from "@/components/Simulator/ExecuteTransactions.vue";
 import TransactionsList from "@/components/Simulator/TransactionsList.vue";
+import type { DeployedContract } from "@/types";
 
 const store = useMainStore()
 const defaultContractState = ref('{}')
@@ -69,32 +70,29 @@ const handleDeployContract = async () => {
 
 }
 
-watch(
-  () => deployedContract.value,
-  async (newValue: any): Promise<void> => {
-    if (newValue) {
-      await getContractState(newValue.address)
 
-      const { result } = await rpcClient.call({
-        method: 'get_icontract_schema',
-        params: [newValue.address]
-      })
+const setDefaultState = async (contracct: DeployedContract) => {
+  defaultContractState.value = contracct.defaultState
+  await getContractState(contracct.address)
 
-      abi.value = result
+  const { result } = await rpcClient.call({
+    method: 'get_icontract_schema',
+    params: [contracct.address]
+  })
 
-    }
+  abi.value = result
+
+}
+
+watch(deployedContract, (newValue) => {
+  if (newValue) {
+    setDefaultState(newValue)
   }
-)
-watch(
-  () => deployedContract.value?.defaultState,
-  async (newValue: any): Promise<void> => {
-    if (newValue) {
+})
 
-      defaultContractState.value = newValue
-
-    }
-  }
-)
+onMounted(() => {
+  if (deployedContract.value) setDefaultState(deployedContract.value)
+})
 </script>
 
 <template>
