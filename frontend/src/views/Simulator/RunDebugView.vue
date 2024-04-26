@@ -17,6 +17,7 @@ const contractTransactions = ref<any[]>([])
 const storeContractState = computed(() => {
   return store.defaultContractStates.find(c => c.contractId === store.currentContractId)?.defaultState
 })
+
 const getContractState = async (contractAddress: string) => {
   const { result } = await rpcClient.call({
     method: 'get_contract_state',

@@ -78,7 +78,6 @@ const closeUpdateValidatorModal = () => {
 
 const handleUpdateValidator = async () => {
   try {
-    //validator_address: str, stake: float, provider: str, model: str, config
     const { stake, provider, model, config } = validatorToUpdate.value
 
     if (stake <= 0 || !provider || !model || !config) {
@@ -92,7 +91,7 @@ const handleUpdateValidator = async () => {
     const contractConfig = JSON.parse(config || '{}')
     const { result } = await rpcClient.call({
       method: 'update_validator',
-      params: [selectedValidator.value?.address, stake, provider, model, contractConfig] //TODO: replace with a input for the stake
+      params: [selectedValidator.value?.address, stake, provider, model, contractConfig] 
     })
     if (result?.status === 'success') {
 
@@ -180,7 +179,7 @@ const handleCreateNewValidator = async () => {
     }
     const { result } = await rpcClient.call({
       method: 'create_random_validator',
-      params: [validatorToCreate.value.stake] //TODO: replace with a input for the stake
+      params: [validatorToCreate.value.stake] 
     })
     if (result?.status === 'success') {
       validators.value.push(result.data)
