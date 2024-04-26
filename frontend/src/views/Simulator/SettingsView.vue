@@ -125,6 +125,14 @@ const handleUpdateValidator = async () => {
 
 const handleDeleteValidator = async (address: string) => {
   try {
+    if(validators.value.length === 1) {
+      notify({
+        title: 'Error',
+        text: 'You must have at least one validator',
+        type: 'error'
+      })
+      return
+    }
     const { result } = await rpcClient.call({
       method: 'delete_validator',
       params: [address]
