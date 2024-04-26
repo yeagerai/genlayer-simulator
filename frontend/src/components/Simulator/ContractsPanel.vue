@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { HomeIcon, XMarkIcon, DocumentCheckIcon, PlayIcon } from '@heroicons/vue/24/solid'
 import CodeEditor from '@/components/Simulator/CodeEditor.vue'
-import { useContractsFilesStore } from '@/stores';
+import { useMainStore } from '@/stores';
 import { computed } from 'vue';
 import HomeTab from './HomeTab.vue'
 import { useRouter } from 'vue-router';
@@ -11,7 +11,7 @@ defineProps<{
     parentHeight: number,
     parentWidth: number
 }>()
-const store = useContractsFilesStore()
+const store = useMainStore()
 const router = useRouter()
 const handleRunDebug = () => {
     router.push({ name: 'simulator.run-debug' })

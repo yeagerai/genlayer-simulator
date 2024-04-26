@@ -1,9 +1,9 @@
-import { useContractsFilesStore } from '@/stores'
+import { useMainStore } from '@/stores'
 import { db } from './db'
 import { v4 as uuidv4 } from 'uuid'
 
 export const setupStores = async () => {
-  const contractsFilesStore = useContractsFilesStore()
+  const contractsFilesStore = useMainStore()
   if ((await db.contractFiles.count()) === 0) {
     const contractsBlob = import.meta.glob('@/assets/examples/contracts/*.py', {
       query: '?raw',

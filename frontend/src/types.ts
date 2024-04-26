@@ -19,12 +19,13 @@ export interface DefaultContractState {
   defaultState: string
 }
 
-export interface ContractsState {
+export interface MainStoreState {
   contracts: ContractFile[]
   openedFiles: string[]
   currentContractId?: string
   deployedContracts: DeployedContract[]
   defaultContractStates: DefaultContractState[]
+  currentUserAddress?: string
 }
 
 export type UIMode = 'light' | 'dark'

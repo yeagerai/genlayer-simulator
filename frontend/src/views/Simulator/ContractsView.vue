@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { useContractsFilesStore } from "@/stores"
+import { useMainStore } from "@/stores"
 import { DocumentCheckIcon, ArrowUpTrayIcon, PlusIcon, TrashIcon, PencilIcon } from '@heroicons/vue/24/solid'
 import { ref } from "vue";
 import { v4 as uuidv4 } from 'uuid'
-const store = useContractsFilesStore()
+const store = useMainStore()
 const showFileOptionsId = ref('')
 const editingFileId = ref('')
 const editingFileName = ref('')

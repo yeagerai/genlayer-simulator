@@ -63,12 +63,12 @@ export function PersistStorePlugin(context: PiniaPluginContext): void {
               .delete()
             break
           case 'openFile':
-            localStorage.setItem('contractFiles.currentContractId', args[0] as string)
-            localStorage.setItem('contractFiles.openedFiles', store.openedFiles.join(','))
+            localStorage.setItem('mainStore.currentContractId', args[0] as string)
+            localStorage.setItem('mainStore.openedFiles', store.openedFiles.join(','))
             break
           case 'closeFile':
-            localStorage.setItem('contractFiles.currentContractId', store.currentContractId)
-            localStorage.setItem('contractFiles.openedFiles', store.openedFiles.join(','))
+            localStorage.setItem('mainStore.currentContractId', store.currentContractId)
+            localStorage.setItem('mainStore.openedFiles', store.openedFiles.join(','))
             break
           case 'addDeployedContract':
             await upsertDeployedContract(args[0] as DeployedContract)
@@ -77,7 +77,7 @@ export function PersistStorePlugin(context: PiniaPluginContext): void {
             await upsertDefaultContractState(args[0] as DefaultContractState)
             break
           case 'setCurrentContractId':
-            localStorage.setItem('contractFiles.currentContractId', args[0] as string)
+            localStorage.setItem('mainStore.currentContractId', args[0] as string)
             break
           default:
             break

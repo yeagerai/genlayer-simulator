@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useContractsFilesStore } from "@/stores"
+import { useMainStore } from "@/stores"
 import { computed, ref, watch } from "vue";
 import { rpcClient } from '@/utils';
 import { notify } from "@kyvg/vue3-notification";
@@ -7,7 +7,7 @@ import ContractState from '@/components/Simulator/ContractState.vue'
 import ExecuteTransactions from "@/components/Simulator/ExecuteTransactions.vue";
 import TransactionsList from "@/components/Simulator/TransactionsList.vue";
 
-const store = useContractsFilesStore()
+const store = useMainStore()
 const defaultContractState = ref('{}')
 const abi = ref<any>()
 const contractState = ref<any>({})
@@ -57,7 +57,7 @@ const handleDeployContract = async () => {
       const defaultStateContent = JSON.stringify(defaultState, null, 2)
       const { result } = await rpcClient.call({
         method: 'deploy_intelligent_contract',
-        params: ['0xcAE1bEb0daABFc1eF1f4A1C17be7E7b4cc12B33A', contract.content, defaultStateContent]
+        params: [store.currentUserAddress, contract.content, defaultStateContent]
       })
 
       store.addDeployedContract({ address: result.contract_id, contractId: contract.id })

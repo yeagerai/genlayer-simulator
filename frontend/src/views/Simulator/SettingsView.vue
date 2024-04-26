@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ValidatorModel, UpdateValidatorModel, CreateValidatorModel } from '@/types';
 import { rpcClient } from '@/utils';
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref } from 'vue';
 import { notify } from "@kyvg/vue3-notification";
 import Modal from '@/components/ModalComponent.vue'
 import { shortenAddress } from '@/utils'
