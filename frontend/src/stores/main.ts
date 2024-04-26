@@ -8,7 +8,7 @@ const getInitialOPenedFiles = (): string[] => {
   return []
 }
 
-export const useMainStore = defineStore('contractsFiles', {
+export const useMainStore = defineStore('mainStore', {
   state: (): MainStoreState => {
     return {
       contractsModified: localStorage.getItem('mainStore.contractsModified') || '',
@@ -17,7 +17,8 @@ export const useMainStore = defineStore('contractsFiles', {
       currentContractId: localStorage.getItem('mainStore.currentContractId') || '',
       deployedContracts: [],
       currentUserAddress: localStorage.getItem('mainStore.currentUserAddress') || '',
-      nodeLogs: []
+      nodeLogs: [],
+      accounts: localStorage.getItem('mainStore.accounts') ?  (localStorage.getItem('mainStore.accounts') || '').split(',') : []
     }
   },
   actions: {
@@ -74,6 +75,8 @@ export const useMainStore = defineStore('contractsFiles', {
           params: []
         })
         if (result) {
+          console.log('result', result)
+          this.accounts = [...this.accounts, result.address]
           this.currentUserAddress = result.address
           return result.address
         }

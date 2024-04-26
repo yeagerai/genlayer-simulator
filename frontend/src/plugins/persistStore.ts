@@ -62,6 +62,7 @@ export function PersistStorePlugin(context: PiniaPluginContext): void {
             localStorage.setItem('mainStore.currentContractId', args[0] as string)
             break
           case 'generateNewAccount':
+            localStorage.setItem('mainStore.accounts', store.accounts.join(','))
             localStorage.setItem('mainStore.currentUserAddress', store.currentUserAddress)
             break
           default:

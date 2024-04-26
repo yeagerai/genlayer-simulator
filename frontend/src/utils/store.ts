@@ -27,9 +27,10 @@ export const setupStores = async () => {
   }
 
   mainStore.deployedContracts = await db.deployedContracts.toArray()
-
-  if (!mainStore.currentUserAddress) {
-    const address = await mainStore.generateNewAccount()
-    mainStore.currentUserAddress = address || ''
+  console.log(  mainStore.accounts, "mainStore.accounts")
+  if ( mainStore.accounts.length < 1) {
+    await mainStore.generateNewAccount()
+  } else {
+    mainStore.accounts = localStorage.getItem('mainStore.accounts') ?  (localStorage.getItem('mainStore.accounts') || '').split(',') : []
   }
 }

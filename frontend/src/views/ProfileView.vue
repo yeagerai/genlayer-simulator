@@ -19,7 +19,11 @@ const handleCreateNewAddress = async () => {
       type: 'error'
     })
   }
-
+}
+const setCurentUserAddress = (event: Event) => {
+  if((event.target as HTMLSelectElement)?.value) {
+    store.currentUserAddress = (event.target as HTMLSelectElement)?.value
+  }
 }
 </script>
 
@@ -35,7 +39,12 @@ const handleCreateNewAddress = async () => {
           <div class="flex flex-col">
             <div class="flex flex-col mt-2">
               <p class="text-md font-semibold">Your Current Address:</p>
-              <span class="text-primary"> {{ store.currentUserAddress }}</span>
+              <select class="p-2 w-full bg-slate-100 text-primary overflow-y-auto" @change="setCurentUserAddress"
+                :value="store.currentUserAddress">
+                <option v-for="account in store.accounts" :key="account" :value="account">
+                  {{ account }}
+                </option>
+              </select>
             </div>
           </div>
           <div class="flex flex-col mt-4">

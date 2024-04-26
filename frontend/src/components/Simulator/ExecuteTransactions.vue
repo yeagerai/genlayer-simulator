@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { InputTypesMap } from '@/utils'
+import { useMainStore } from '@/stores';
 
 interface ContractMethod {
   name: string
@@ -19,6 +20,7 @@ interface Props {
   abi?: Abi
 }
 
+const store = useMainStore()
 const props = defineProps<Props>()
 const emit = defineEmits(['callMethod'])
 
@@ -59,6 +61,12 @@ const onMethodChange = (event: Event) => {
   } else
     method.value = undefined
 }
+
+const setCurentUserAddress = (event: Event) => {
+  if ((event.target as HTMLSelectElement)?.value) {
+    store.currentUserAddress = (event.target as HTMLSelectElement)?.value
+  }
+}
 </script>
 
 <template>
@@ -66,7 +74,15 @@ const onMethodChange = (event: Event) => {
     <h5 class="text-sm">Execute transactions</h5>
   </div>
   <div class="flex flex-col p-2 overflow-y-auto">
-    <div class="flex justify-start w-full">
+    <div class="flex flex-col items-start w-full">
+      <p>Current Account:</p>
+      <select name="" id="" @change="setCurentUserAddress" class="text-xs w-full" :value="store.currentUserAddress">
+        <option v-for="account in store.accounts" :key="account" :value="account">
+          {{ account }}
+        </option>
+      </select>
+    </div>
+    <div class="flex justify-start w-full mt-4">
       <select name="" id="" @change="onMethodChange" class="w-full">
         <option value="">Select a method</option>
         <option v-for="method in methodList" :key="method.name" :value="method.name">

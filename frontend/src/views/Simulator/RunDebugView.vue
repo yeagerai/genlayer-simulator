@@ -30,7 +30,7 @@ const handleCallContractMethod = async ({ method, params }: { method: string; pa
   const result = await rpcClient.call({
     method: 'call_contract_function',
     params: [
-      deployedContract.value?.address, // TODO: replace with a current account
+      store.currentUserAddress, 
       deployedContract.value?.address,
       `${abi.value.class}.${method}`,
       params
