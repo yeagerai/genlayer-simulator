@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { useMainStore } from "@/stores"
 import { DocumentCheckIcon, ArrowUpTrayIcon, PlusIcon, TrashIcon, PencilIcon } from '@heroicons/vue/24/solid'
-import { ref } from "vue";
+import { nextTick, ref, watch, watchEffect } from "vue";
 import { v4 as uuidv4 } from 'uuid'
 const store = useMainStore()
 const showFileOptionsId = ref('')
 const editingFileId = ref('')
+const newFileName = ref('.gpy')
+const showNewFileInput = ref(false)
 const editingFileName = ref('')
+const newFileNameInputRef = ref<HTMLInputElement | null>(null)
 /**
  * Loads content from a file and adds it to the contract file store.
  *
@@ -33,12 +36,30 @@ const loadContentFromFile = (event: Event) => {
 }
 
 const handleAddNewFile = () => {
-
+  if (!showNewFileInput.value) {
+    showNewFileInput.value = true
+  }
 }
 
+watchEffect(() => {
+  if (showNewFileInput.value && newFileNameInputRef.value) {
+    nextTick(() => 
+  {
+    newFileNameInputRef?.value?.focus()
+    newFileNameInputRef?.value?.setSelectionRange(0, 0)
+  })
+  }
+})
+
 const handleSaveNewFile = () => {
-  // store new empty file
-  // open new tab
+  if (newFileName.value && newFileName.value.replace('.gpy', '') !== '') {
+    const id = uuidv4()
+    store.addContractFile({ id, name: newFileName.value, content: '' })
+    store.openFile(id)
+  }
+
+  showNewFileInput.value = false
+  newFileName.value = '.gpy'
 }
 
 const handleRemoveFile = (id?: string) => {
@@ -88,7 +109,7 @@ const openContract = (id?: string) => {
     </div>
     <div v-for="(contract, index) in store.contracts" :key="contract.id" class="flex flex-col w-full">
       <div @mouseover="showFileOptions(contract.id)" @mouseout="showFileOptions()"
-        :class="[index > 0 ? 'border-x border-b' : 'border', 'flex items-center text-xs text-neutral-500 py-1 px-2 font-semibold hover:border-green-500', (contract.id === store.currentContractId ? 'border-green-500' : '')]">
+        :class="[index > 0 ? 'border-x border-y' : 'border', 'flex items-center text-xs text-neutral-500 py-1 px-2 font-semibold hover:border-green-500', (contract.id === store.currentContractId ? 'border-green-500' : '')]">
         <DocumentCheckIcon class="h-4 w-4 fill-primary mr-1" />
 
         <div class="flex items-center justify-between w-full" v-if="editingFileId === contract.id">
@@ -110,8 +131,14 @@ const openContract = (id?: string) => {
             </button>
           </div>
         </div>
-
       </div>
+    </div>
+    <div
+      class="flex flex-col w-full items-center justify-between py-1 px-2 text-neutral-500 border border-transparent font-semibold"
+      v-show="showNewFileInput">
+      <input type="text" ref="newFileNameInputRef" class="bg-slate-100 dark:dark:bg-zinc-700 w-full"
+        v-model="newFileName" @blur="handleSaveNewFile" @keyup.enter="handleSaveNewFile"
+        @keydown.escape="handleSaveNewFile">
     </div>
   </div>
 </template>
