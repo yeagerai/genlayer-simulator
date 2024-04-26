@@ -228,7 +228,7 @@ def count_validators(count, min_stake, max_stake):
 def create_random_validators(count, min_stake, max_stake):
     responses = create_random_validators_logic(count, min_stake, max_stake)
     click.echo(
-        f"Registered {len(responses)} validators with stakes ranging from {min_stake} to {max_stake}."
+        f"Registered {len(responses['result'])} validator(s) with stakes ranging from {min_stake} to {max_stake}."
     )
 
 @click.command(help="Retrieve the last N deployed contracts.")
