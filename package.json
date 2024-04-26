@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "vite-svg-loader": "^5.1.0"
+  }
+}
