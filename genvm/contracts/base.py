@@ -4,6 +4,7 @@ import asyncio
 import json
 import functools
 import inspect
+import traceback
 
 from genvm.contracts import llms
 from genvm.utils import transaction_files, get_webpage_content
@@ -48,7 +49,7 @@ def icontract(cls):
             self.eq_principles_outs = {}
             super(WrappedClass, self).__init__(*args, **kwargs)
 
-        async def _get_webpage(self, url:str, prompt:str, equivalence_criteria:str=None):
+        async def _get_webpage(self, url:str, equivalence_criteria:str=None):
 
             # To ensure the method is not called directly
             if not equivalence_criteria:
@@ -56,18 +57,21 @@ def icontract(cls):
 
             _, _, _, recipt_file = transaction_files()
 
-            llm_function = await self.get_llm_function()
+            llm_function = self.get_llm_function()
 
-            self.non_det_inputs[self.non_det_counter] = {'prompt': prompt, 'url': url}
+            self.non_det_inputs[self.non_det_counter] = {'url': url}
+
+            final_response = None
 
             if self.node_config['type'] == 'leader':
                 self.mode = 'leader'
-                url_body = get_webpage_content(url)
-                submitted_prompt = f"Complete the following task:\n\nTask:\n{prompt}\n\nUsing the following text:\n\nText:\n{url_body['response']}"
-                leader_response = await llm_function(self.node_config, submitted_prompt, None, None)
-                self.non_det_outputs[self.non_det_counter] = leader_response
-                self.non_det_counter+=1
-                return leader_response
+                stack_trace = traceback.extract_stack()
+                if stack_trace[-3].name == '__aexit__':
+                    self.non_det_outputs[self.non_det_counter] = '__aexit__ call'
+                else:
+                    url_body = get_webpage_content(url)
+                    self.non_det_outputs[self.non_det_counter] = url_body['response']
+                    final_response = url_body['response']
             elif self.node_config['type'] == 'validator':
                 self.mode = 'validator'
                 # make sure the leader file exists first
@@ -80,13 +84,13 @@ def icontract(cls):
                 self.non_det_inputs[self.non_det_counter]['leader_reciept'] = leader_receipt
                 # get the webpage
                 url_body = get_webpage_content(url)
-                submitted_prompt = f"Complete the following task:\n\nTask:\n{prompt}'\n\nUsing the following text:\n\nText:\n{url_body['response']}"
-                wq_response = await llm_function(self.node_config, submitted_prompt, None, None)
-                self.non_det_outputs[self.non_det_counter] = wq_response
-
+                self.non_det_outputs[self.non_det_counter] = url_body['response']
                 leader_output = leader_receipt['result']['non_det_outputs'][str(self.non_det_counter)]
+                # if it's the with's exit function then use the leader's previous output
+                if leader_receipt['result']['non_det_outputs'][str(self.non_det_counter)] == '__aexit__ call':
+                    leader_output = leader_receipt['result']['non_det_outputs'][str(self.non_det_counter-1)]
                 # Compare to the leaders
-                eq_prompt = f"Using the following equivalence criteria:\n\nCriteria:\n{equivalence_criteria}\n\nAgainst the follow two blocks of text.\n\nText 1:\n{leader_output}\n\nText 2:\n{wq_response}\n\nRespond with True or False"
+                eq_prompt = f"Using the following equivalence criteria:\n\nCriteria:\n{equivalence_criteria}\n\nAgainst the follow two blocks of text.\n\nText 1:\n{leader_output}\n\nText 2:\n{url_body['response']}\n\nRespond with True or False"
                 similarity_response = await llm_function(self.node_config, eq_prompt, None, None)
 
                 if similarity_response not in ['True', 'False']:
@@ -97,19 +101,23 @@ def icontract(cls):
                 if similarity_response == 'True':
                     similar = True
                 self.eq_principles_outs[self.non_det_counter] = {'is_similar': similar}
-                self.non_det_counter+=1
 
                 if not similar:
-                    # 'call_llm' < 'wrapped_function' <'ask_for_coin' < 'wrapped_function' < 'main' < ...
+                    # TODO: This needs to be revisted (eq_principle function)
+                    # '_call_llm' < 'wrapped_function' <'ask_for_coin' < 'wrapped_function' < 'main' < ...
                     #                                  --------------
                     method_name = inspect.stack()[2].function
-                    self._write_receipt(self, method_name, {})
+                    self._write_receipt(self, method_name, None)
                     print('There was limited similarity between the validators output and the leaders output.', file=sys.stderr)
                     sys.exit(1)
 
-                return leader_output
+                final_response = leader_output
             else:
-                raise ValueError("Invalid mode.")
+                raise ValueError("Invalid mode")
+
+            self.non_det_counter+=1
+
+            return final_response
 
 
         async def _call_llm(self, prompt:str, consensus_eq:str=None):
