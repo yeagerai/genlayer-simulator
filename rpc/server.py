@@ -288,7 +288,7 @@ def delete_validator(validator_address: str) -> dict:
 
 
 @jsonrpc.method("delete_all_validators")
-def delete_all_validator() -> dict:
+def delete_all_validators() -> dict:
     all_validators = get_all_validators()
     data = all_validators["data"]
     addresses = []
