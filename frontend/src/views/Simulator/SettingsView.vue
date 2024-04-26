@@ -7,8 +7,7 @@ import Modal from '@/components/ModalComponent.vue'
 import { shortenAddress } from '@/utils'
 import { TrashIcon } from '@heroicons/vue/24/solid'
 
-const models = ['llama2', 'gemma', 'mistral', 'mixtral', 'gpt-4']
-const providers = ['openai']
+const nodeProviders: Record<string, string[]> = { 'openai': ['gpt-3.5-turbo', 'gpt-4'], 'ollama': ['llama2', 'gemma', 'mistral', 'mixtral', 'gpt-4'] }
 // state
 const validators = ref<ValidatorModel[]>([])
 const updateValidatorModalOpen = ref<boolean>(false)
@@ -91,7 +90,7 @@ const handleUpdateValidator = async () => {
     const contractConfig = JSON.parse(config || '{}')
     const { result } = await rpcClient.call({
       method: 'update_validator',
-      params: [selectedValidator.value?.address, stake, provider, model, contractConfig] 
+      params: [selectedValidator.value?.address, stake, provider, model, contractConfig]
     })
     if (result?.status === 'success') {
 
@@ -179,7 +178,7 @@ const handleCreateNewValidator = async () => {
     }
     const { result } = await rpcClient.call({
       method: 'create_random_validator',
-      params: [validatorToCreate.value.stake] 
+      params: [validatorToCreate.value.stake]
     })
     if (result?.status === 'success') {
       validators.value.push(result.data)
@@ -266,18 +265,18 @@ const handleCreateNewValidator = async () => {
           </div>
         </div>
         <div class="flex flex-col p-2 mt-2">
-          <p class="text-md font-semibold">Model:</p>
-          <select class="p-2 w-full bg-slate-100 overflow-y-auto" name="" id="" v-model="validatorToUpdate.model">
-            <option v-for="model in models" :key="model" :value="model">
-              {{ model }}
+          <p class="text-md font-semibold">Provider:</p>
+          <select class="p-2 w-full bg-slate-100 overflow-y-auto" name="" id="" v-model="validatorToUpdate.provider">
+            <option v-for="(_, provider) in nodeProviders" :key="provider" :value="provider" :selected="provider === validatorToUpdate.provider">
+              {{ provider }}
             </option>
           </select>
         </div>
         <div class="flex flex-col p-2 mt-2">
-          <p class="text-md font-semibold">Provider:</p>
-          <select class="p-2 w-full bg-slate-100 overflow-y-auto" name="" id="" v-model="validatorToUpdate.provider">
-            <option v-for="provider in providers" :key="provider" :value="provider">
-              {{ provider }}
+          <p class="text-md font-semibold">Model:</p>
+          <select class="p-2 w-full bg-slate-100 overflow-y-auto" name="" id="" v-model="validatorToUpdate.model">
+            <option v-for="model in nodeProviders[validatorToUpdate.provider]" :key="model" :value="model" :selected="model === validatorToUpdate.model">
+              {{ model }}
             </option>
           </select>
         </div>
