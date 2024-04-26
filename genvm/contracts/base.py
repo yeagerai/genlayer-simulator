@@ -213,9 +213,12 @@ def icontract(cls):
         
 
         def get_llm_function(self):
-            llm_function = getattr(llms, 'call_ollama')
-            if self.node_config['provider'] == 'openai':
-                llm_function = getattr(llms, 'call_openai')
+            provider = self.node_config['provider']
+            llm_function = None
+            if provider in ['ollama', 'openai', 'heuristai']:
+                llm_function = getattr(llms, 'call_'+provider)
+            else:
+                raise Exception('Provider ' + provider + ' unknow')
             return llm_function
 
     return WrappedClass

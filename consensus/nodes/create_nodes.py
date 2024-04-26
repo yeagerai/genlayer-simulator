@@ -2,7 +2,7 @@ import os
 import json
 import requests
 import numpy as np
-from random import random, choice
+from random import random, choice, uniform
 
 from database.credentials import get_genlayer_db_connection
 
@@ -14,6 +14,26 @@ def get_ollama_url(endpoint:str) -> str:
 
 def base_node_json(provider:str, model:str) -> dict:
     return {'provider': provider, 'model': model, 'config':{}}
+
+def get_random_provider_using_weights(defaults):
+    provider_weights = defaults['provider_weights']
+    total_weight = sum(provider_weights.values())
+    random_num = uniform(0, total_weight)
+    
+    cumulative_weight = 0
+    for key, weight in provider_weights.items():
+        cumulative_weight += weight
+        if random_num <= cumulative_weight:
+            return key
+
+def get_options(provider, contents):
+    options = None
+    for node_default in contents['node_defaults']:
+        if node_default['provider'] == provider:
+            options = node_default['options']
+    if not options:
+        raise Exception(provider + ' is not specified in node_defaults')
+    return options
 
 def num_decimal_places(number:float) -> int:
     fractional_part = number - int(number)
@@ -30,21 +50,24 @@ def random_validator_config():
     nodes_dir = '/consensus/nodes'
 
     # make sure the models are avaliable
-    result = requests.get(get_ollama_url('tags')).json()
-    if not len(result['models']) and os.environ['GENVMOPENAIKEY'] == '<add_your_open_ai_key_here>':
+    ollama_models_result = requests.get(get_ollama_url('tags')).json()
+    if not len(ollama_models_result['models']) and \
+        os.environ['GENVMOPENAIKEY'] == '<add_your_open_ai_key_here>' and \
+        os.environ['HEURISTAIAPIKEY'] == '<add_your_heurist_api_key_here>':
         raise Exception('No models avaliable.')
 
-    # See if they have an OpenAPI key
-    available_models = ''
-    if os.environ['GENVMOPENAIKEY'] != '<add_your_open_ai_key_here>':
-        available_models = os.environ['GENVMOPENAIMODELS']
-
-    # Get a list of avaliable models
-    for ollama_model in result['models']:
+    # Ollama models
+    ollama_models = []
+    for ollama_model in ollama_models_result['models']:
         # "llama2:latest" => "llama2"
-        available_models += ',' + ollama_model['name'].split(':')[0]
-    # remove the first ","
-    available_models = available_models[1:]
+        ollama_models.append(ollama_model['name'].split(':')[0])
+
+    # See if they have an OpenAPI key
+    
+    heuristic_models_result = requests.get(os.environ['HEURISTAIMODELSURL']).json()
+    heuristic_models = []
+    for entry in heuristic_models_result:
+        heuristic_models.append(entry['name'])
 
     # Get all the model defaults
     file = open(cwd + nodes_dir + '/defaults.json', 'r')
@@ -52,24 +75,16 @@ def random_validator_config():
 
     defaults = contents['defaults']
 
-    ollama_openai_split = defaults['ollama_openai_split']
+    provider = get_random_provider_using_weights(defaults)
 
-    # Use OpenAI
-    if random() >= ollama_openai_split:
-        model = choice(defaults['openai_models'].split(','))
-        node_config = base_node_json('openai', model)
+    options = get_options(provider, contents)
 
-    # Use Ollama
-    else:
-        model = choice(available_models.split(','))
-        node_config = base_node_json('ollama', model)
+    if provider == 'openai':
+        openai_models = choice(defaults['openai_models'].split(','))
+        node_config = base_node_json('openai', choice(openai_models))
 
-        options = None
-        for provider in contents['node_defaults']:
-            if provider['provider'] == 'ollama':
-                options = provider['options']
-        if not options:
-            raise Exception('Ollama is not specified in node_defaults')
+    elif provider == 'ollama':
+        node_config = base_node_json('ollama', choice(ollama_models))
         
         for option, option_config in options.items():
             # Just pass the string (for "stop")
@@ -96,9 +111,27 @@ def random_validator_config():
                         if isinstance(random_value, np.float64):
                             random_value = float(random_value)
                         node_config['config'][option] = round(random_value, num_decimal_places(option_config['step']))
-                else:
-                    pass
             else:
                 raise Exception('Option is not a dict or str ('+option+')')
+
+    elif provider == 'heuristai':
+        node_config = base_node_json('heuristai', choice(heuristic_models))
+        for option, option_config in options.items():
+            if random() > defaults['chance_of_default_value']:
+                random_value = choice(
+                    np.arange(
+                        option_config['min'],
+                        option_config['max'],
+                        option_config['step']
+                    )
+                )
+                if isinstance(random_value, np.int64):
+                    random_value = int(random_value)
+                if isinstance(random_value, np.float64):
+                    random_value = float(random_value)
+                node_config['config'][option] = round(random_value, num_decimal_places(option_config['step']))
+
+    else:
+        raise Exception('Provider ' + provider + ' is not specified in defaults')
 
     return node_config

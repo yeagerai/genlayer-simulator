@@ -50,16 +50,45 @@ async def call_ollama(model_config:str, prompt:str, regex: Optional[str], return
                 return result['match']
 
 async def call_openai(model_config:str, prompt:str, regex: Optional[str], return_streaming_channel:Optional[asyncio.Queue]) -> str:
-    client = OpenAI(
-        api_key=os.environ.get("GENVMOPENAIKEY"),
-    )
+    client = get_openai_client(os.environ.get("GENVMOPENAIKEY"))
     # TODO: OpenAI exceptions need to be caught here
-    stream = client.chat.completions.create(
-        model=model_config['model'],
-        messages=[{"role": "user", "content": prompt}],
-        stream=True,
-    )
+    stream = get_openai_stream(client, prompt, model_config)
 
+    return get_openai_output(stream, return_streaming_channel)
+
+async def call_heuristai(model_config:str, prompt:str, regex: Optional[str], return_streaming_channel:Optional[asyncio.Queue]) -> str:
+    client = get_openai_client(os.environ.get("HEURISTAIAPIKEY"), os.environ.get("GENVMOPENAIURL"))
+    # TODO: OpenAI exceptions need to be caught here
+    stream = get_openai_stream(client, prompt, model_config)
+
+    return get_openai_output(stream, return_streaming_channel)
+
+
+def get_openai_client(api_key:str, url:str=None):
+    openai_client = None
+    if url:
+        openai_client = OpenAI(api_key=api_key, base_url=url)
+    else:
+        openai_client = OpenAI(api_key=api_key)
+    return openai_client
+
+def get_openai_stream(client, prompt, model_config):
+    if 'temperature' in model_config and 'max_tokens' in model_config:
+        return client.chat.completions.create(
+            model=model_config['model'],
+            messages=[{"role": "user", "content": prompt}],
+            stream=True,
+            temperature=model_config['temperature'],
+            max_tokens=model_config['max_tokens']
+        )
+    else:
+        return client.chat.completions.create(
+            model=model_config['model'],
+            messages=[{"role": "user", "content": prompt}],
+            stream=True,
+        )
+
+async def get_openai_output(stream, return_streaming_channel):
     buffer = ""
     for chunk in stream:
         chunk_str = chunk.choices[0].delta.content
@@ -78,6 +107,7 @@ async def call_openai(model_config:str, prompt:str, regex: Optional[str], return
                     return buffer
         else:
             return buffer
+
 
 def get_ollama_url(endpoint:str) -> str:
     return f"{os.environ['OLAMAPROTOCOL']}://{os.environ['OLAMAHOST']}:{os.environ['OLAMAPORT']}/api/{endpoint}"
