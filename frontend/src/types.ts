@@ -22,6 +22,7 @@ export interface MainStoreState {
   currentContractId?: string
   deployedContracts: DeployedContract[]
   currentUserAddress?: string
+  nodeLogs: { message: string; date: string }[]
 }
 
 export type UIMode = 'light' | 'dark'

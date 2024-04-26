@@ -1,4 +1,4 @@
-import type { ContractFile, DefaultContractState, DeployedContract } from '@/types'
+import type { ContractFile, DeployedContract } from '@/types'
 import { db } from '@/utils'
 import { type PiniaPluginContext } from 'pinia'
 
@@ -20,17 +20,6 @@ const upsertDeployedContract = async (contract: DeployedContract): Promise<void>
   }
 }
 
-const upsertDefaultContractState = async (contract: DefaultContractState): Promise<void> => {
-  const existingContract = await db.defaultContractStates
-    .where('contractId')
-    .equals(contract.contractId)
-    .first()
-  if (existingContract) {
-    await db.defaultContractStates.where('contractId').equals(contract.contractId).modify(contract)
-  } else {
-    await db.defaultContractStates.add(contract)
-  }
-}
 
 /**
  * A plugin for persisting the state of a Pinia store.
@@ -57,10 +46,6 @@ export function PersistStorePlugin(context: PiniaPluginContext): void {
               .where('contractId')
               .equals(args[0] as string)
               .delete()
-            await db.defaultContractStates
-              .where('contractId')
-              .equals(args[0] as string)
-              .delete()
             break
           case 'openFile':
             localStorage.setItem('mainStore.currentContractId', args[0] as string)
@@ -72,9 +57,6 @@ export function PersistStorePlugin(context: PiniaPluginContext): void {
             break
           case 'addDeployedContract':
             await upsertDeployedContract(args[0] as DeployedContract)
-            break
-          case 'addDefaultContractState':
-            await upsertDefaultContractState(args[0] as DefaultContractState)
             break
           case 'setCurrentContractId':
             localStorage.setItem('mainStore.currentContractId', args[0] as string)

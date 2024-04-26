@@ -16,7 +16,8 @@ export const useMainStore = defineStore('contractsFiles', {
       openedFiles: getInitialOPenedFiles(),
       currentContractId: localStorage.getItem('mainStore.currentContractId') || '',
       deployedContracts: [],
-      currentUserAddress: localStorage.getItem('mainStore.currentUserAddress') || ''
+      currentUserAddress: localStorage.getItem('mainStore.currentUserAddress') || '',
+      nodeLogs: []
     }
   },
   actions: {
