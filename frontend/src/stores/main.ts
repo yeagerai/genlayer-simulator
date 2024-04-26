@@ -87,7 +87,6 @@ export const useMainStore = defineStore('contractsFiles', {
         })
         if (result) {
           this.currentUserAddress = result.address
-          localStorage.setItem('mainStore.currentUserAddress', result.address)
           return result.address
         }
         return null

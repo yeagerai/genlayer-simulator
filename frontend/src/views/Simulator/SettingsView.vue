@@ -95,8 +95,10 @@ const handleUpdateValidator = async () => {
       params: [selectedValidator.value?.address, stake, provider, model, contractConfig] //TODO: replace with a input for the stake
     })
     if (result?.status === 'success') {
+
       const index = validators.value.findIndex(v => v.address === selectedValidator.value?.address)
-      if (index > 0) {
+
+      if (index >= 0) {
 
         validators.value.splice(index, 1, result.data)
       }
@@ -125,7 +127,7 @@ const handleUpdateValidator = async () => {
 
 const handleDeleteValidator = async (address: string) => {
   try {
-    if(validators.value.length === 1) {
+    if (validators.value.length === 1) {
       notify({
         title: 'Error',
         text: 'You must have at least one validator',

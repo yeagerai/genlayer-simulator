@@ -39,7 +39,6 @@ const upsertDefaultContractState = async (contract: DefaultContractState): Promi
  * @return {void} This function does not return anything.
  */
 export function PersistStorePlugin(context: PiniaPluginContext): void {
-
   context.store.$onAction(({ store, name, args, after }) => {
     console.log(`Called Action "${name}" with params [${JSON.stringify(args)}].`)
     after(async (result) => {
@@ -78,6 +77,9 @@ export function PersistStorePlugin(context: PiniaPluginContext): void {
             break
           case 'setCurrentContractId':
             localStorage.setItem('mainStore.currentContractId', args[0] as string)
+            break
+          case 'generateNewAccount':
+            localStorage.setItem('mainStore.currentUserAddress', store.currentUserAddress)
             break
           default:
             break

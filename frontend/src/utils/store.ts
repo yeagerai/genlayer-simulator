@@ -3,7 +3,7 @@ import { db } from './db'
 import { v4 as uuidv4 } from 'uuid'
 
 export const setupStores = async () => {
-  const contractsFilesStore = useMainStore()
+  const mainStore = useMainStore()
   if ((await db.contractFiles.count()) === 0) {
     const contractsBlob = import.meta.glob('@/assets/examples/contracts/*.py', {
       query: '?raw',
@@ -17,12 +17,17 @@ export const setupStores = async () => {
         name,
         content: (raw as string || '').trim()
       }
-      contractsFilesStore.addContractFile(contract)
+      mainStore.addContractFile(contract)
     }
   } else {
-    contractsFilesStore.contracts = await db.contractFiles.toArray()
+    mainStore.contracts = await db.contractFiles.toArray()
   }
 
-  contractsFilesStore.deployedContracts = await db.deployedContracts.toArray()
-  contractsFilesStore.defaultContractStates = await db.defaultContractStates.toArray()
+  mainStore.deployedContracts = await db.deployedContracts.toArray()
+  mainStore.defaultContractStates = await db.defaultContractStates.toArray()
+
+  if(!mainStore.currentUserAddress) {
+    const address = await mainStore.generateNewAccount()
+    mainStore.currentUserAddress = address || ''
+  }
 }
