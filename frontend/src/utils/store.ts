@@ -27,7 +27,6 @@ export const setupStores = async () => {
   }
 
   mainStore.deployedContracts = await db.deployedContracts.toArray()
-  mainStore.defaultContractStates = await db.defaultContractStates.toArray()
 
   if (!mainStore.currentUserAddress) {
     const address = await mainStore.generateNewAccount()

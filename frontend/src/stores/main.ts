@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { ContractFile, MainStoreState, DefaultContractState, DeployedContract } from '@/types'
+import type { ContractFile, MainStoreState, DeployedContract } from '@/types'
 import { rpcClient } from '@/utils'
 
 const getInitialOPenedFiles = (): string[] => {
@@ -16,7 +16,6 @@ export const useMainStore = defineStore('contractsFiles', {
       openedFiles: getInitialOPenedFiles(),
       currentContractId: localStorage.getItem('mainStore.currentContractId') || '',
       deployedContracts: [],
-      defaultContractStates: [],
       currentUserAddress: localStorage.getItem('mainStore.currentUserAddress') || ''
     }
   },
@@ -27,9 +26,7 @@ export const useMainStore = defineStore('contractsFiles', {
     removeContractFile(id: string): void {
       this.contracts = [...this.contracts.filter((c) => c.id !== id)]
       this.deployedContracts = [...this.deployedContracts.filter((c) => c.contractId !== id)]
-      this.defaultContractStates = [
-        ...this.defaultContractStates.filter((c) => c.contractId !== id)
-      ]
+    
     },
     updateContractFile(id: string, { name, content }: { name?: string; content?: string }) {
       this.contracts = [
@@ -60,22 +57,11 @@ export const useMainStore = defineStore('contractsFiles', {
         this.currentContractId = undefined
       }
     },
-    addDeployedContract({ contractId, address }: DeployedContract): void {
+    addDeployedContract({ contractId, address, defaultState }: DeployedContract): void {
       const index = this.deployedContracts.findIndex((c) => c.contractId === contractId)
       if (index === -1)
-        this.$patch((state) => state.deployedContracts.push({ contractId, address }))
-      else this.$patch((state) => (state.deployedContracts[index] = { contractId, address }))
-    },
-    addDefaultContractState({ contractId, address, defaultState }: DefaultContractState): void {
-      const index = this.defaultContractStates.findIndex((c) => c.contractId === contractId)
-      if (index === -1)
-        this.$patch((state) =>
-          state.defaultContractStates.push({ contractId, address, defaultState })
-        )
-      else
-        this.$patch(
-          (state) => (state.defaultContractStates[index] = { contractId, address, defaultState })
-        )
+        this.$patch((state) => state.deployedContracts.push({ contractId, address, defaultState }))
+      else this.$patch((state) => (state.deployedContracts[index] = { contractId, address, defaultState }))
     },
     setCurrentContractId(id?: string) {
       this.currentContractId = id

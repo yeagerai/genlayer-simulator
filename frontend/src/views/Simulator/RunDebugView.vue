@@ -14,9 +14,6 @@ const contractState = ref<any>({})
 const contract = computed(() => store.contracts.find(contract => contract.id === store.currentContractId))
 const deployedContract = computed(() => store.deployedContracts.find(contract => contract.contractId === store.currentContractId))
 const contractTransactions = ref<any[]>([])
-const storeContractState = computed(() => {
-  return store.defaultContractStates.find(c => c.contractId === store.currentContractId)?.defaultState
-})
 
 const getContractState = async (contractAddress: string) => {
   const { result } = await rpcClient.call({
@@ -61,8 +58,7 @@ const handleDeployContract = async () => {
         params: [store.currentUserAddress, contract.content, defaultStateContent]
       })
 
-      store.addDeployedContract({ address: result.contract_id, contractId: contract.id })
-      store.addDefaultContractState({ address: result.contract_id, contractId: contract.id, defaultState: defaultStateContent })
+      store.addDeployedContract({ address: result.contract_id, contractId: contract.id, defaultState: defaultStateContent })
       notify({
         title: 'OK',
         text: 'Contract deployed',
@@ -90,7 +86,7 @@ watch(
   }
 )
 watch(
-  () => storeContractState.value,
+  () => deployedContract.value?.defaultState,
   async (newValue: any): Promise<void> => {
     if (newValue) {
 

@@ -12,10 +12,6 @@ export interface OpenedFile {
 export interface DeployedContract {
   contractId: string
   address: string
-}
-export interface DefaultContractState {
-  contractId: string
-  address: string
   defaultState: string
 }
 
@@ -25,7 +21,6 @@ export interface MainStoreState {
   openedFiles: string[]
   currentContractId?: string
   deployedContracts: DeployedContract[]
-  defaultContractStates: DefaultContractState[]
   currentUserAddress?: string
 }
 
