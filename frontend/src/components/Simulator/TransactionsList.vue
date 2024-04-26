@@ -38,17 +38,17 @@ const handleCloseModal = () => {
       </div>
       <div class="flex flex-col p-2 mt-2">
         <p class="text-md font-semibold">Result:</p>
-        
+
         <div class="p-2 w-full bg-slate-100 overflow-y-auto">
           {{ selectedTransaction?.result.message }}
         </div>
       </div>
       <div class="flex flex-col p-2 mt-2">
         <p class="text-md font-semibold">Ouput:</p>
-        <div class="p-2 max-h-64 w-full bg-slate-100 overflow-y-auto">{{ JSON.stringify(selectedTransaction?.result?.execution_output || {}, null, 2) }}</div>
+        <div class="p-2 max-h-64 w-full bg-slate-100 overflow-y-auto">{{
+        JSON.stringify(selectedTransaction?.result?.execution_output || {}, null, 2) }}</div>
       </div>
     </div>
-
   </Modal>
 </template>
 <style></style>

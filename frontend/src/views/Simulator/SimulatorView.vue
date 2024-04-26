@@ -45,8 +45,7 @@ const handleToogleTerminal = () => {
     <div class="flex w-full relative">
       <Splitpanes class="default-theme relative w-full bg-white dark:bg-zinc-800 dark:text-white "
         @resize="handlePanelWidthResize">
-        <Pane min-size="26" size="26" max-size="60" class="flex w-full">
-          
+        <Pane min-size="18" size="18" max-size="60" class="flex w-full">
           <div class="overflow-y-auto flex w-full">
             <router-view v-slot="{ Component }">
             <keep-alive>

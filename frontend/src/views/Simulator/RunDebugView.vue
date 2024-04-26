@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useContractsFilesStore } from "@/stores"
+import { useMainStore } from "@/stores"
 import { computed, ref, watch } from "vue";
 import { rpcClient } from '@/utils';
 import { notify } from "@kyvg/vue3-notification";
@@ -7,7 +7,7 @@ import ContractState from '@/components/Simulator/ContractState.vue'
 import ExecuteTransactions from "@/components/Simulator/ExecuteTransactions.vue";
 import TransactionsList from "@/components/Simulator/TransactionsList.vue";
 
-const store = useContractsFilesStore()
+const store = useMainStore()
 const defaultContractState = ref('{}')
 const abi = ref<any>()
 const contractState = ref<any>({})
@@ -17,6 +17,7 @@ const contractTransactions = ref<any[]>([])
 const storeContractState = computed(() => {
   return store.defaultContractStates.find(c => c.contractId === store.currentContractId)?.defaultState
 })
+
 const getContractState = async (contractAddress: string) => {
   const { result } = await rpcClient.call({
     method: 'get_contract_state',
@@ -57,7 +58,7 @@ const handleDeployContract = async () => {
       const defaultStateContent = JSON.stringify(defaultState, null, 2)
       const { result } = await rpcClient.call({
         method: 'deploy_intelligent_contract',
-        params: ['0xcAE1bEb0daABFc1eF1f4A1C17be7E7b4cc12B33A', contract.content, defaultStateContent]
+        params: [store.currentUserAddress, contract.content, defaultStateContent]
       })
 
       store.addDeployedContract({ address: result.contract_id, contractId: contract.id })
@@ -98,11 +99,10 @@ watch(
     }
   }
 )
-
 </script>
 
 <template>
-  <div class="flex flex-col overflow-y-auto max-h-[93vh]">
+  <div class="flex flex-col w-full overflow-y-auto max-h-[93vh]">
     <div class="flex flex-col p-2 w-full">
       <h3 class="text-xl">Run and Debug</h3>
     </div>
@@ -111,7 +111,7 @@ watch(
         <div class="flex flex-col px-2 py-2 w-full bg-slate-100">
           <div class="text-sm">Intelligent Contract:</div>
           <div class="text-xs text-neutral-800">
-            {{ contract?.name }}.gpy
+            {{ contract?.name }}
           </div>
         </div>
         <div class="flex flex-col p-2 my-4">

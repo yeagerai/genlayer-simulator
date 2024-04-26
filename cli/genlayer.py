@@ -99,14 +99,14 @@ def count_validators_logic() -> list:
     }
     return requests.post(json_rpc_url, json=payload).json()
 
-def register_validators_logic(count:int, min_stake:float, max_stake:float) -> list:
+def create_random_validators_logic(count:int, min_stake:float, max_stake:float) -> list:
     responses = []
     for _ in range(count):
         stake = random.uniform(min_stake, max_stake)
 
         payload = {
             "jsonrpc": "2.0",
-            "method": "register_validator",
+            "method": "create_random_validator",
             "params": [stake],
             "id": 4,
         }
@@ -229,8 +229,8 @@ def count_validators(count, min_stake, max_stake):
 @click.option(
     "--max-stake", type=float, required=True, help="Maximum stake for each validator."
 )
-def register_validators(count, min_stake, max_stake):
-    responses = register_validators_logic(count, min_stake, max_stake)
+def create_random_validators(count, min_stake, max_stake):
+    responses = create_random_validators_logic(count, min_stake, max_stake)
     click.echo(
         f"Registered {len(responses)} validators with stakes ranging from {min_stake} to {max_stake}."
     )
@@ -254,7 +254,7 @@ cli.add_command(last_contracts)
 ## write commands
 cli.add_command(create_account)
 cli.add_command(fund_account)
-cli.add_command(register_validators)
+cli.add_command(create_random_validators)
 cli.add_command(send)
 
 cli.add_command(deploy)

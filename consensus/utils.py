@@ -4,7 +4,10 @@ from database.credentials import get_genlayer_db_connection
 import json
 
 
-def vrf(items, weights, k):
+def vrf(items, k):
+    weights = []
+    for i in items:
+        weights.append(float(i['stake']))
     weighted_indices = random.choices(range(len(items)), weights=weights, k=k * 10)
     unique_indices = set()
     random.shuffle(weighted_indices)
@@ -75,10 +78,10 @@ def get_validators(nodes_config:dict, logger=None) -> list:
     # Select validators
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
-    cursor.execute(
-        "SELECT validator_info->>'eoa_id' AS validator_id, stake FROM validators;"
-    )
+    cursor.execute("SELECT address, stake FROM validators;")
     validator_data = cursor.fetchall()
+    cursor.close()
+    connection.close()
 
     if len(nodes_config) < len(validator_data):
         raise Exception('Nodes in database ('+str(len(validator_data))+'). Nodes configured ('+str(len(nodes_config))+')')

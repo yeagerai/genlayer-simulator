@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { HomeIcon, XMarkIcon, DocumentCheckIcon, PlayIcon } from '@heroicons/vue/24/solid'
 import CodeEditor from '@/components/Simulator/CodeEditor.vue'
-import { useContractsFilesStore } from '@/stores';
+import { useMainStore } from '@/stores';
 import { computed } from 'vue';
 import HomeTab from './HomeTab.vue'
 import { useRouter } from 'vue-router';
@@ -11,7 +11,7 @@ defineProps<{
     parentHeight: number,
     parentWidth: number
 }>()
-const store = useContractsFilesStore()
+const store = useMainStore()
 const router = useRouter()
 const handleRunDebug = () => {
     router.push({ name: 'simulator.run-debug' })
@@ -49,7 +49,7 @@ console.log('store.currentContractId', showHome.value)
                     <button class="bg-transparent flex" @click="setCurrentContractTab(contract.id)">
                         <DocumentCheckIcon class="h-4 w-4 mr-2"
                             :class="{ 'fill-primary': contract.id === store.currentContractId }" />
-                        {{ contract.name }}.gpy
+                        {{ contract.name }}
                     </button>
                     <button class="bg-transparent" @click="handleCloseContract(contract.id)">
                         <XMarkIcon class="ml-4 h-4 w-4" />

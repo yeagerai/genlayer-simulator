@@ -1,19 +1,6 @@
 import type { ContractFile, DefaultContractState, DeployedContract } from '@/types'
 import { db } from '@/utils'
-import { liveQuery } from 'dexie'
 import { type PiniaPluginContext } from 'pinia'
-
-const initData = ({ store }: PiniaPluginContext) => {
-  if (store.$id === 'contractsFiles') {
-    const contractsObservable = liveQuery(() => db.contractFiles.toArray())
-    const contracts = contractsObservable.subscribe({
-      next: (c) => {
-        store.$state.contracts = c
-        contracts.unsubscribe()
-      }
-    })
-  }
-}
 
 /**
  * Upserts a deployed contract into the database.
@@ -52,7 +39,6 @@ const upsertDefaultContractState = async (contract: DefaultContractState): Promi
  * @return {void} This function does not return anything.
  */
 export function PersistStorePlugin(context: PiniaPluginContext): void {
-  initData(context)
   context.store.$onAction(({ store, name, args, after }) => {
     console.log(`Called Action "${name}" with params [${JSON.stringify(args)}].`)
     after(async (result) => {
@@ -76,12 +62,12 @@ export function PersistStorePlugin(context: PiniaPluginContext): void {
               .delete()
             break
           case 'openFile':
-            localStorage.setItem('contractFiles.currentContractId', args[0] as string)
-            localStorage.setItem('contractFiles.openedFiles', store.openedFiles.join(','))
+            localStorage.setItem('mainStore.currentContractId', args[0] as string)
+            localStorage.setItem('mainStore.openedFiles', store.openedFiles.join(','))
             break
           case 'closeFile':
-            localStorage.setItem('contractFiles.currentContractId', store.currentContractId)
-            localStorage.setItem('contractFiles.openedFiles', store.openedFiles.join(','))
+            localStorage.setItem('mainStore.currentContractId', store.currentContractId)
+            localStorage.setItem('mainStore.openedFiles', store.openedFiles.join(','))
             break
           case 'addDeployedContract':
             await upsertDeployedContract(args[0] as DeployedContract)
@@ -90,7 +76,10 @@ export function PersistStorePlugin(context: PiniaPluginContext): void {
             await upsertDefaultContractState(args[0] as DefaultContractState)
             break
           case 'setCurrentContractId':
-            localStorage.setItem('contractFiles.currentContractId', args[0] as string)
+            localStorage.setItem('mainStore.currentContractId', args[0] as string)
+            break
+          case 'generateNewAccount':
+            localStorage.setItem('mainStore.currentUserAddress', store.currentUserAddress)
             break
           default:
             break
