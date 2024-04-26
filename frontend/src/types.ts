@@ -32,7 +32,7 @@ export interface UIState {
   mode: UIMode
 }
 
-export interface ValidatorRecord {
+export interface ValidatorModel {
   address: string
   config: any
   id: number
@@ -40,4 +40,15 @@ export interface ValidatorRecord {
   provider: string
   stake: number
   updated_at: string
+}
+
+export interface CreateValidatorModel {
+  stake: number
+}
+
+export interface UpdateValidatorModel {
+  config: string
+  model: string
+  provider: string
+  stake: number
 }

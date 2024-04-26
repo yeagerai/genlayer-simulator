@@ -1,12 +1,30 @@
 <script setup lang="ts">
-import type { ValidatorRecord } from '@/types';
+import type { ValidatorModel, UpdateValidatorModel, CreateValidatorModel } from '@/types';
 import { rpcClient } from '@/utils';
 import { onMounted, ref, watch } from 'vue';
 import { notify } from "@kyvg/vue3-notification";
 import Modal from '@/components/ModalComponent.vue'
 import { shortenAddress } from '@/utils'
 import { TrashIcon } from '@heroicons/vue/24/solid'
-const validators = ref<ValidatorRecord[]>([])
+
+const models = ['llama2', 'gemma', 'mistral', 'mixtral', 'gpt-4']
+const providers = ['openai']
+// state
+const validators = ref<ValidatorModel[]>([])
+const updateValidatorModalOpen = ref<boolean>(false)
+const createValidatorModalOpen = ref<boolean>(false)
+const selectedValidator = ref<ValidatorModel>()
+const validatorToUpdate = ref<UpdateValidatorModel>({
+  model: '',
+  provider: '',
+  stake: 0,
+  config: '{ }'
+})
+const validatorToCreate = ref<CreateValidatorModel>({
+  stake: 0,
+})
+
+// Hooks
 onMounted(async () => {
 
   try {
@@ -33,18 +51,76 @@ onMounted(async () => {
   }
 })
 
-const selectedValidator = ref<ValidatorRecord>()
-const validatorConfig = ref('')
-const handleSelectValidator = (validator: ValidatorRecord) => {
+const handleSelectValidator = (validator: ValidatorModel) => {
   selectedValidator.value = validator
+  const { model,
+    provider,
+    stake, config } = validator
+  validatorToUpdate.value = {
+    model,
+    provider,
+    stake,
+    config: JSON.stringify(config || '{ }', null, 2)
+  }
+  updateValidatorModalOpen.value = true
 }
 
-const handleCloseModal = () => {
+const closeUpdateValidatorModal = () => {
   selectedValidator.value = undefined
+  updateValidatorModalOpen.value = false
+  validatorToUpdate.value = {
+    model: '',
+    provider: '',
+    stake: 0,
+    config: '{ }'
+  }
 }
 
 const handleUpdateValidator = async () => {
+  try {
+    //validator_address: str, stake: float, provider: str, model: str, config
+    const { stake, provider, model, config } = validatorToUpdate.value
 
+    if (stake <= 0 || !provider || !model || !config) {
+      notify({
+        title: 'Error',
+        text: 'Please fill all the required fields',
+        type: 'warning'
+      })
+      return
+    }
+    const contractConfig = JSON.parse(config || '{}')
+    const { result } = await rpcClient.call({
+      method: 'update_validator',
+      params: [selectedValidator.value?.address, stake, provider, model, contractConfig] //TODO: replace with a input for the stake
+    })
+    if (result?.status === 'success') {
+      const index = validators.value.findIndex(v => v.address === selectedValidator.value?.address)
+      if (index > 0) {
+
+        validators.value.splice(index, 1, result.data)
+      }
+      notify({
+        title: 'Success',
+        text: 'Validator updated successfully',
+        type: 'success'
+      })
+      closeUpdateValidatorModal()
+    } else {
+      notify({
+        title: 'Error',
+        text: 'Error udpating the validator',
+        type: 'error'
+      })
+    }
+  } catch (error) {
+    console.error(error)
+    notify({
+      title: 'Error',
+      text: 'Error udpating the validator',
+      type: 'error'
+    })
+  }
 }
 
 const handleDeleteValidator = async (address: string) => {
@@ -71,14 +147,39 @@ const handleDeleteValidator = async (address: string) => {
     })
   }
 }
+
+const openCreateNewValidatorModal = async () => {
+  createValidatorModalOpen.value = true
+}
+
+const closeNewValidatorModal = () => {
+  createValidatorModalOpen.value = false
+  validatorToCreate.value = {
+    stake: 0
+  }
+}
 const handleCreateNewValidator = async () => {
   try {
+    if (!validatorToCreate.value.stake) {
+      notify({
+        title: 'Error',
+        text: 'Please fill the stake field',
+        type: 'warning'
+      })
+      return
+    }
     const { result } = await rpcClient.call({
       method: 'create_random_validator',
-      params: [7] //TODO: replace with a input for the stake
+      params: [validatorToCreate.value.stake] //TODO: replace with a input for the stake
     })
     if (result?.status === 'success') {
       validators.value.push(result.data)
+      notify({
+        title: 'Success',
+        text: 'New Validator created successfully',
+        type: 'success'
+      })
+      closeNewValidatorModal()
     } else {
       notify({
         title: 'Error',
@@ -95,11 +196,6 @@ const handleCreateNewValidator = async () => {
     })
   }
 }
-watch(() => selectedValidator.value, async (newValue) => {
-  if (newValue) {
-    validatorConfig.value = JSON.stringify(newValue.config, null, 2)
-  }
-})
 </script>
 
 <template>
@@ -144,10 +240,10 @@ watch(() => selectedValidator.value, async (newValue) => {
       </div>
     </div>
     <div class="flex flex-col mt-4 w-full px-2">
-      <button @click="handleCreateNewValidator"
-        class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">Create new Validator</button>
+      <button @click="openCreateNewValidatorModal"
+        class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">New Validator</button>
     </div>
-    <Modal :open="true" @close="handleCloseModal" v-if="selectedValidator">
+    <Modal :open="updateValidatorModalOpen" @close="closeUpdateValidatorModal">
       <div class="flex flex-col">
         <div class="flex justify-between">
           <div class="text-xl">Validator Details</div>
@@ -156,35 +252,35 @@ watch(() => selectedValidator.value, async (newValue) => {
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Address:</p>
 
-          <div class="p-2 w-full bg-slate-100 overflow-y-auto">
+          <div class="py-2 w-full">
             {{ selectedValidator?.address }}
           </div>
         </div>
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Model:</p>
-
-          <div class="p-2 w-full bg-slate-100 overflow-y-auto">
-            {{ selectedValidator?.model }}
-          </div>
+          <select class="p-2 w-full bg-slate-100 overflow-y-auto" name="" id="" v-model="validatorToUpdate.model">
+            <option v-for="model in models" :key="model" :value="model">
+              {{ model }}
+            </option>
+          </select>
         </div>
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Provider:</p>
-
-          <div class="p-2 w-full bg-slate-100 overflow-y-auto">
-            {{ selectedValidator?.provider }}
-          </div>
+          <select class="p-2 w-full bg-slate-100 overflow-y-auto" name="" id="" v-model="validatorToUpdate.provider">
+            <option v-for="provider in providers" :key="provider" :value="provider">
+              {{ provider }}
+            </option>
+          </select>
         </div>
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Stake:</p>
-
-          <div class="p-2 w-full bg-slate-100 overflow-y-auto">
-            {{ selectedValidator?.stake }}
-          </div>
+          <input type="number" min="0.01" v-model="validatorToUpdate.stake" class="p-2 w-full bg-slate-100" required />
         </div>
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Config:</p>
 
-          <textarea name="" id="" rows="5" cols="60" class="p-2 max-h-64 w-full bg-slate-100" v-model="validatorConfig">
+          <textarea name="" id="" rows="5" cols="60" class="p-2 max-h-64 w-full bg-slate-100"
+            v-model="validatorToUpdate.config">
 
           </textarea>
         </div>
@@ -192,6 +288,21 @@ watch(() => selectedValidator.value, async (newValue) => {
       <div class="flex flex-col mt-4 w-full">
         <button @click="handleUpdateValidator"
           class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">Save</button>
+      </div>
+    </Modal>
+    <Modal :open="createValidatorModalOpen" @close="closeNewValidatorModal">
+      <div class="flex flex-col w-full">
+        <div class="flex justify-between">
+          <div class="text-xl">Create New Validator</div>
+        </div>
+        <div class="flex flex-col p-2 mt-2">
+          <p class="text-md font-semibold">Stake:</p>
+          <input type="number" min="0.01" v-model="validatorToCreate.stake" class="p-2 w-full bg-slate-100" required />
+        </div>
+      </div>
+      <div class="flex flex-col mt-4 w-full">
+        <button @click="handleCreateNewValidator"
+          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">Create</button>
       </div>
     </Modal>
   </div>
