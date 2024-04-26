@@ -16,7 +16,7 @@ const toogleMode = () => {
     <header
         class="flex justify-between items-center p-2 border-b border-b-slate-500 dark:border-b-white/60 dark:bg-zinc-800">
         <a href="/">
-            <img alt="GenLayer Logo" class="logo" src="@/assets/logo.png" width="125" height="125" />
+            <img alt="GenLayer Logo" class="logo" src="@/assets/images/logo.png" width="125" height="125" />
         </a>
         <div class="flex items-center">
             <RouterLink :to="{ name: 'profile' }" class="text-sm text-primary">

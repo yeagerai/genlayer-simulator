@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
 import { DocumentIcon, AdjustmentsHorizontalIcon, UserCircleIcon, CommandLineIcon, HandThumbUpIcon } from '@heroicons/vue/24/solid'
-import TelegramIcon from '@/assets/images/telegram.svg?component'
+import TelegramIcon from '@/assets/icons/TelegramIcon.vue'
 </script>
 
 <template>
