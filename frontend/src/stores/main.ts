@@ -11,6 +11,7 @@ const getInitialOPenedFiles = (): string[] => {
 export const useMainStore = defineStore('contractsFiles', {
   state: (): MainStoreState => {
     return {
+      contractsModified: localStorage.getItem('mainStore.contractsModified') || '',
       contracts: [],
       openedFiles: getInitialOPenedFiles(),
       currentContractId: localStorage.getItem('mainStore.currentContractId') || '',

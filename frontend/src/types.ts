@@ -20,6 +20,7 @@ export interface DefaultContractState {
 }
 
 export interface MainStoreState {
+  contractsModified: string
   contracts: ContractFile[]
   openedFiles: string[]
   currentContractId?: string

@@ -116,8 +116,8 @@ watch(
         </div>
         <div class="flex flex-col p-2 my-4">
           <div class="flex flex-col text-xs">
-            <h2>Set the default contrat state</h2>
-            <p>Please provide a json object with the default contract state.</p>
+            <h2>Constructor Parameters </h2>
+            <p>Please provide a json object with the constructor parameters.</p>
           </div>
           <div class="flex mt-2">
             <textarea rows="5" class="w-full bg-slate-100 dark:dark:bg-zinc-700 p-2" v-model="defaultContractState"
