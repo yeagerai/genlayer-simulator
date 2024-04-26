@@ -4,8 +4,6 @@ import requests
 import numpy as np
 from random import random, choice, uniform
 
-from database.credentials import get_genlayer_db_connection
-
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -16,7 +14,14 @@ def base_node_json(provider:str, model:str) -> dict:
     return {'provider': provider, 'model': model, 'config':{}}
 
 def get_random_provider_using_weights(defaults):
+    # remove providers if no api key
     provider_weights = defaults['provider_weights']
+    default_value = '<add_your_open_ai_key_here>'
+    if 'GENVMOPENAIKEY' not in os.environ or os.environ['GENVMOPENAIKEY'] == default_value:
+        provider_weights.pop('openai')
+    if 'HEURISTAIAPIKEY' not in os.environ or os.environ['HEURISTAIAPIKEY'] == default_value:
+        provider_weights.pop('heurist')
+
     total_weight = sum(provider_weights.values())
     random_num = uniform(0, total_weight)
     
@@ -80,8 +85,8 @@ def random_validator_config():
     options = get_options(provider, contents)
 
     if provider == 'openai':
-        openai_models = choice(defaults['openai_models'].split(','))
-        node_config = base_node_json('openai', choice(openai_models))
+        openai_model = choice(defaults['openai_models'].split(','))
+        node_config = base_node_json('openai', openai_model)
 
     elif provider == 'ollama':
         node_config = base_node_json('ollama', choice(ollama_models))
