@@ -2,6 +2,7 @@ import json
 from genvm.contracts.base import icontract
 from genvm.contracts.equivalence_principle import EquivalencePrinciple
 
+
 @icontract
 class WizzardOfCoin:
     description: str = """You are a wizard, and you hold a magical coin.
@@ -31,27 +32,32 @@ The output format of your response is:
 """
         final_result = {}
         # Validator
-        async with EquivalencePrinciple(self, final_result, "The result['give_coin'] has to be exactly the same") as eq:
-            _ = await eq.get_webpage('https://www.example.com/')
+        async with EquivalencePrinciple(
+            icontract_inst=self,
+            result=final_result,
+            principle="The result['give_coin'] has to be exactly the same",
+            comparative=True,
+        ) as eq:
+            _ = await eq.get_webpage("https://www.example.com/")
             result = await eq.call_llm(prompt)
-            result_clean = result.replace("True","true").replace("False","false")
+            result_clean = result.replace("True", "true").replace("False", "false")
             result_json = json.loads(result_clean)
             eq.set(result_json)
             # result_json => block_1.json
-        
-        with open('/tmp/error.txt', 'w') as file:
-            file.write('---')
+
+        with open("/tmp/error.txt", "w") as file:
+            file.write("---")
             file.write(result_clean)
-            file.write('---')
+            file.write("---")
 
-        output = final_result['output']
+        output = final_result["output"]
 
-        if output['give_coin'] is False:
-            self.have_coin = output['data_updates']['have_coin']
+        if output["give_coin"] is False:
+            self.have_coin = output["data_updates"]["have_coin"]
 
         return {
-            "reasoning": output['reasoning'],
-            "give_coin": output['give_coin'],
-            "state_updated": {"have_coin":self.have_coin},
-            "gas_used": self.gas_used
+            "reasoning": output["reasoning"],
+            "give_coin": output["give_coin"],
+            "state_updated": {"have_coin": self.have_coin},
+            "gas_used": self.gas_used,
         }
