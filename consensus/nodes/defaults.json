@@ -1,6 +1,6 @@
 [
     {
-        "defaults": {
+        "providers": {
             "provider_weights": {
                 "ollama": 0.5,
                 "openai": 0.5,

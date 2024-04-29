@@ -13,13 +13,6 @@ def get_ollama_url(endpoint:str) -> str:
 def base_node_json(provider:str, model:str) -> dict:
     return {'provider': provider, 'model': model, 'config':{}}
 
-def get_node_defaults():
-    cwd = os.path.abspath(os.getcwd())
-    nodes_dir = '/consensus/nodes'
-    file = open(cwd + nodes_dir + '/defaults.json', 'r')
-    contents = json.load(file)[0]
-    return contents['defaults']
-
 def get_random_provider_using_weights(defaults):
     # remove providers if no api key
     provider_weights = defaults['provider_weights']
@@ -60,6 +53,12 @@ def get_provider_models(defaults:str, provider:str) -> list:
 def get_providers() -> list:
     return ['openai', 'ollama', 'heuristai']
 
+def get_config_for_providers_and_nodes() -> dict:
+    cwd = os.path.abspath(os.getcwd())
+    nodes_dir = '/consensus/nodes'
+    file = open(cwd + nodes_dir + '/defaults.json', 'r')
+    return json.load(file)[0]
+
 def get_options(provider, contents):
     options = None
     for node_default in contents['node_defaults']:
@@ -79,9 +78,9 @@ def num_decimal_places(number:float) -> int:
     return decimal_places
 
 def random_validator_config():
-    defaults = get_node_defaults()
+    config = get_config_for_providers_and_nodes()
 
-    ollama_models = get_provider_models(defaults, 'ollama')
+    ollama_models = get_provider_models({}, 'ollama')
 
     if not len(ollama_models) and \
         os.environ['GENVMOPENAIKEY'] == '<add_your_open_ai_key_here>' and \
@@ -95,50 +94,14 @@ def random_validator_config():
     #for entry in heuristic_models_result:
     #    heuristic_models.append(entry['name'])
 
-    provider = get_random_provider_using_weights(defaults)
+    provider = get_random_provider_using_weights(config['providers'])
 
-    options = get_options(provider, contents)
+    options = get_options(provider, config)
 
     if provider == 'openai':
-        openai_model = choice(get_provider_models(defaults, 'openai'))
+        openai_model = choice(get_provider_models(config['providers'], 'openai'))
         node_config = base_node_json('openai', openai_model)
 
-        options = None
-        for provider in contents['node_defaults']:
-            if provider['provider'] == 'ollama':
-                options = provider['options']
-        if not options:
-            raise Exception('Ollama is not specified in node_defaults')
-        
-        for option, option_config in options.items():
-            # Just pass the string (for "stop")
-            if isinstance(option_config, str):
-                node_config['config'][option] = option_config
-            # Create a random value
-            elif isinstance(option_config, dict):
-                if random() > defaults['chance_of_default_value']:
-                    random_value = None
-                    if isinstance(option_config['step'], str):
-                        random_value = choice(
-                            option_config['step'].split(',')
-                        )
-                    else:
-                        random_value = choice(
-                            np.arange(
-                                option_config['min'],
-                                option_config['max'],
-                                option_config['step']
-                            )
-                        )
-                        if isinstance(random_value, np.int64):
-                            random_value = int(random_value)
-                        if isinstance(random_value, np.float64):
-                            random_value = float(random_value)
-                        node_config['config'][option] = round(random_value, num_decimal_places(option_config['step']))
-                else:
-                    pass
-            else:
-                raise Exception('Option is not a dict or str ('+option+')')
     elif provider == 'ollama':
         node_config = base_node_json('ollama', choice(ollama_models))
         
@@ -148,7 +111,7 @@ def random_validator_config():
                 node_config['config'][option] = option_config
             # Create a random value
             elif isinstance(option_config, dict):
-                if random() > defaults['chance_of_default_value']:
+                if random() > config['providers']['chance_of_default_value']:
                     random_value = None
                     if isinstance(option_config['step'], str):
                         random_value = choice(
@@ -171,10 +134,10 @@ def random_validator_config():
                 raise Exception('Option is not a dict or str ('+option+')')
 
     elif provider == 'heuristai':
-        heuristic_model = choice(get_provider_models(defaults, 'heuristai'))
+        heuristic_model = choice(get_provider_models(config['providers'], 'heuristai'))
         node_config = base_node_json('heuristai', heuristic_model)
         for option, option_config in options.items():
-            if random() > defaults['chance_of_default_value']:
+            if random() > config['providers']['chance_of_default_value']:
                 random_value = choice(
                     np.arange(
                         option_config['min'],

@@ -22,7 +22,7 @@ from consensus.algorithm import exec_transaction
 from consensus.utils import genvm_url
 from consensus.nodes.create_nodes import (
     random_validator_config,
-    get_node_defaults,
+    get_config_for_providers_and_nodes,
     get_providers,
     get_provider_models
 )
@@ -483,11 +483,11 @@ def get_icontract_schema_for_code(code: str) -> dict:
 
 @jsonrpc.method("get_providers_and_models")
 def get_providers_and_models() -> dict:
-    defaults = get_node_defaults()
+    config = get_config_for_providers_and_nodes()
     providers = get_providers()
     providers_and_models = {}
     for provider in providers:
-        providers_and_models[provider] = get_provider_models(defaults, provider)
+        providers_and_models[provider] = get_provider_models(config['providers'], provider)
     return providers_and_models
 
 
