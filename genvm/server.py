@@ -161,7 +161,21 @@ def get_icontract_schema(icontract:str) -> dict:
                 if isinstance(stmt, ast.AnnAssign):
                     if hasattr(stmt.annotation, 'id') and hasattr(stmt.target, 'id'):
                         variables[stmt.target.id] = stmt.annotation.id
-    
+
+    tree = ast.parse(icontract)
+
+    for node in tree.body:
+        if isinstance(node, ast.ClassDef) and node.name == class_name:
+            for class_body_item in node.body:
+                if isinstance(class_body_item, ast.FunctionDef) and class_body_item.name == '__init__':
+                    inputs = {}
+                    for arg in class_body_item.args.args[1:]:
+                        arg_name = arg.arg
+                        arg_type = arg.annotation.id if isinstance(arg.annotation, ast.Name) else None
+                        inputs[arg_name] = arg_type
+
+                    methods['__init__'] = {'inputs': inputs, 'output': ''}
+
     return {"class":class_name, "methods": methods, "variables": variables}
 
 
