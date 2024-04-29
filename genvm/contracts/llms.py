@@ -54,14 +54,14 @@ async def call_openai(model_config:str, prompt:str, regex: Optional[str], return
     # TODO: OpenAI exceptions need to be caught here
     stream = get_openai_stream(client, prompt, model_config)
 
-    return get_openai_output(stream, return_streaming_channel)
+    return await get_openai_output(stream, regex, return_streaming_channel)
 
 async def call_heuristai(model_config:str, prompt:str, regex: Optional[str], return_streaming_channel:Optional[asyncio.Queue]) -> str:
     client = get_openai_client(os.environ.get("HEURISTAIAPIKEY"), os.environ.get("GENVMOPENAIURL"))
     # TODO: OpenAI exceptions need to be caught here
     stream = get_openai_stream(client, prompt, model_config)
 
-    return get_openai_output(stream, return_streaming_channel)
+    return await get_openai_output(stream, regex, return_streaming_channel)
 
 
 def get_openai_client(api_key:str, url:str=None):
@@ -88,7 +88,7 @@ def get_openai_stream(client, prompt, model_config):
             stream=True,
         )
 
-async def get_openai_output(stream, return_streaming_channel):
+async def get_openai_output(stream, regex, return_streaming_channel):
     buffer = ""
     for chunk in stream:
         chunk_str = chunk.choices[0].delta.content
