@@ -1,2 +1,2 @@
-export * from './contractsFiles'
+export * from './main'
 export * from './ui'

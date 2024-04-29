@@ -1,20 +1,22 @@
 import { defineStore } from 'pinia'
-import type { ContractFile, ContractsState, DefaultContractState, DeployedContract } from '@/types'
+import type { ContractFile, MainStoreState, DefaultContractState, DeployedContract } from '@/types'
+import { rpcClient } from '@/utils'
 
 const getInitialOPenedFiles = (): string[] => {
-  const storage = localStorage.getItem('contractFiles.openedFiles')
+  const storage = localStorage.getItem('mainStore.openedFiles')
   if (storage) return storage.split(',')
   return []
 }
 
-export const useContractsFilesStore = defineStore('contractsFiles', {
-  state: (): ContractsState => {
+export const useMainStore = defineStore('contractsFiles', {
+  state: (): MainStoreState => {
     return {
       contracts: [],
       openedFiles: getInitialOPenedFiles(),
-      currentContractId: localStorage.getItem('contractFiles.currentContractId') || '',
+      currentContractId: localStorage.getItem('mainStore.currentContractId') || '',
       deployedContracts: [],
-      defaultContractStates: []
+      defaultContractStates: [],
+      currentUserAddress: localStorage.getItem('mainStore.currentUserAddress') || ''
     }
   },
   actions: {
@@ -76,6 +78,22 @@ export const useContractsFilesStore = defineStore('contractsFiles', {
     },
     setCurrentContractId(id?: string) {
       this.currentContractId = id
+    },
+    async generateNewAccount(): Promise<string | null> {
+      try {
+        const { result } = await rpcClient.call({
+          method: 'create_account',
+          params: []
+        })
+        if (result) {
+          this.currentUserAddress = result.address
+          return result.address
+        }
+        return null
+      } catch (error) {
+        console.error
+        return null
+      }
     }
   }
 })

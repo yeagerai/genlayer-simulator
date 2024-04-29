@@ -100,6 +100,42 @@ def random_validator_config():
         openai_model = choice(get_provider_models(defaults, 'openai'))
         node_config = base_node_json('openai', openai_model)
 
+        options = None
+        for provider in contents['node_defaults']:
+            if provider['provider'] == 'ollama':
+                options = provider['options']
+        if not options:
+            raise Exception('Ollama is not specified in node_defaults')
+        
+        for option, option_config in options.items():
+            # Just pass the string (for "stop")
+            if isinstance(option_config, str):
+                node_config['config'][option] = option_config
+            # Create a random value
+            elif isinstance(option_config, dict):
+                if random() > defaults['chance_of_default_value']:
+                    random_value = None
+                    if isinstance(option_config['step'], str):
+                        random_value = choice(
+                            option_config['step'].split(',')
+                        )
+                    else:
+                        random_value = choice(
+                            np.arange(
+                                option_config['min'],
+                                option_config['max'],
+                                option_config['step']
+                            )
+                        )
+                        if isinstance(random_value, np.int64):
+                            random_value = int(random_value)
+                        if isinstance(random_value, np.float64):
+                            random_value = float(random_value)
+                        node_config['config'][option] = round(random_value, num_decimal_places(option_config['step']))
+                else:
+                    pass
+            else:
+                raise Exception('Option is not a dict or str ('+option+')')
     elif provider == 'ollama':
         node_config = base_node_json('ollama', choice(ollama_models))
         
