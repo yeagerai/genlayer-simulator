@@ -54,7 +54,7 @@ services:
     build:
       context: ./
       dockerfile: ./docker/Dockerfile.genvm
-      target: prod
+      target: debug
     container_name: genvm
     environment:
       - FLASK_SERVER_PORT=${GENVMPORT}
