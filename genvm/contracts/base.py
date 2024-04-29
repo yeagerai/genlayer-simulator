@@ -163,7 +163,7 @@ def icontract(cls):
                     # 'call_llm' < 'wrapped_function' <'ask_for_coin' < 'wrapped_function' < 'main' < ...
                     #                                  --------------
                     method_name = inspect.stack()[2].function
-                    self._write_receipt(self, method_name, {})
+                    self._write_receipt(method_name, {})
                     print('The validator did not agree with the leader.', file=sys.stderr)
                     sys.exit(1)
 

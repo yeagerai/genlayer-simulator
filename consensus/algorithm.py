@@ -83,7 +83,7 @@ def validator_executes_transaction(transaction_input:dict , validator_config:dic
     response = requests.post(genvm_url()+'/api', json=payload).json()
 
     if response['result']['status'] == 'error':
-        raise Exception(response['result']['data'])
+        raise Exception(response['result']['message'])
 
     # TODO: Figure out how to do this in the GenVM
     result = response['result']['data']
