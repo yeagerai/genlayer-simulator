@@ -69,26 +69,21 @@ const setCurentUserAddress = (address: string) => {
                       </div>
                     </div>
                     <div class="flex text-primary  w-6 h-6">
-                      <button>
-                        <CheckIcon class="h-4 w-4 mr-1" />
-                      </button>
+                      <CheckIcon class="h-4 w-4 mr-1" />
                     </div>
                   </template>
                   <template v-else>
-                    <div class="flex items-center">
+                    <div class="flex items-center cursor-pointer" @click="setCurentUserAddress(account)"
+                      @mouseover="handleShowSetDefaultAccount(account)"
+                      @mouseleave="handleHideSetDefaultAccount(account)">
+                      <ToolTip text="Set as Current Account" :options="{ placement: 'right' }" />
                       <div class="flex text-primary pl-4 pr-2">
                         {{ account }}
                       </div>
                     </div>
-                    <div class="flex text-primary cursor-pointer w-6 h-6"
-                      @mouseover="handleShowSetDefaultAccount(account)"
-                      @mouseleave="handleHideSetDefaultAccount(account)">
-                      <button v-show="showSetDefaultAccount[account]">
-                        <CheckIcon class="h-4 w-4 mr-1" @click="setCurentUserAddress(account)" />
-                        <ToolTip text="Set as Current Account" :options="{ placement: 'right' }" />
-                      </button>
+                    <div class="flex text-primary w-6 h-6">
+                      <CheckIcon v-show="showSetDefaultAccount[account]" class="h-4 w-4 mr-1" />
                     </div>
-
                   </template>
                 </div>
               </div>
