@@ -62,7 +62,7 @@ def icontract(cls):
 
             _, _, _, recipt_file = transaction_files()
 
-            llm_function = self.get_llm_function()
+            llm_function = self._get_llm_function()
 
             self.non_det_inputs[self.non_det_counter] = {'url': url}
 
@@ -152,7 +152,7 @@ def icontract(cls):
                 leader_recipt = json.load(file)
                 file.close()
 
-            llm_function = self.get_llm_function()
+            llm_function = self._get_llm_function()
 
             self.non_det_inputs[self.non_det_counter] = prompt
 
@@ -257,7 +257,7 @@ def icontract(cls):
                 return orig_attr
         
 
-        def get_llm_function(self):
+        def _get_llm_function(self):
             llm_function = getattr(llms, 'call_ollama')
             if self.node_config['provider'] == 'openai':
                 llm_function = getattr(llms, 'call_openai')
