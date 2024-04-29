@@ -366,7 +366,7 @@ async def call_contract_function(
     cursor = connection.cursor()
 
     function_call_data = CallContractInputData(
-        contract_address=contract_address, function_name=function_name, args=args
+        from_address=from_account, contract_address=contract_address, function_name=function_name, args=args
     ).model_dump_json()
 
     log_status(f"Transaction sent from {from_account} to {contract_address}...")

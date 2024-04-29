@@ -100,6 +100,7 @@ def validator_executes_transaction(transaction_input:dict , validator_config:dic
 
 
 async def exec_transaction(transaction_input, logger=None):
+    raise Exception(transaction_input)
 
     return_data = {'status': 'error', 'data': None}
 
@@ -151,8 +152,7 @@ async def exec_transaction(transaction_input, logger=None):
 
     all_votes = set([validator['vote'] for validator in valudators_results])
     if len(all_votes) == 1 and list(all_votes)[0] == 'agree':
-
-        from_address = transaction_input['args'][0]
+        from_address = transaction_input['from_address']
         to_address = transaction_input['contract_address']
         data = json.dumps({"new_contract_state" : leader_receipt['result']['contract_state']})
         transaction_type = 2

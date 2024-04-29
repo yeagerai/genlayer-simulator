@@ -22,6 +22,7 @@ class ContractData(BaseModel):
     state: Dict
 
 class CallContractInputData(BaseModel):
+    from_address: str
     contract_address: str
     function_name: str
     args: List
