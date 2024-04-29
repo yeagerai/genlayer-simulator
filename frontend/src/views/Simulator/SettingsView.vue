@@ -12,6 +12,7 @@ const nodeProviders: Record<string, string[]> = { 'openai': ['gpt-3.5-turbo', 'g
 const validators = ref<ValidatorModel[]>([])
 const updateValidatorModalOpen = ref<boolean>(false)
 const createValidatorModalOpen = ref<boolean>(false)
+const deleteValidatorModalOpen = ref<boolean>(false)
 const selectedValidator = ref<ValidatorModel>()
 const validatorToUpdate = ref<UpdateValidatorModel>({
   model: '',
@@ -50,7 +51,12 @@ onMounted(async () => {
   }
 })
 
-const handleSelectValidator = (validator: ValidatorModel) => {
+const openDeleteValidatorModal = (validator) => {
+  selectedValidator.value = validator
+  deleteValidatorModalOpen.value = true
+}
+
+const openUpdateValidatorModal = (validator) => {
   selectedValidator.value = validator
   const { model,
     provider,
@@ -73,6 +79,11 @@ const closeUpdateValidatorModal = () => {
     stake: 0,
     config: '{ }'
   }
+}
+
+const closeDeleteValidatorModal = () => {
+  selectedValidator.value = undefined
+  deleteValidatorModalOpen.value = false
 }
 
 const handleUpdateValidator = async () => {
@@ -123,7 +134,8 @@ const handleUpdateValidator = async () => {
   }
 }
 
-const handleDeleteValidator = async (address: string) => {
+const handleDeleteValidator = async () => {
+  const address = selectedValidator.value?.address
   try {
     if (validators.value.length === 1) {
       notify({
@@ -146,6 +158,8 @@ const handleDeleteValidator = async (address: string) => {
         type: 'error'
       })
     }
+
+    closeDeleteValidatorModal()
   } catch (error) {
     console.error(error)
     notify({
@@ -226,7 +240,7 @@ const handleCreateNewValidator = async () => {
       <div class="flex flex-col text-xs w-full">
         <div class="flex px-2 justify-between items-center hover:bg-slate-100 p-1" v-for="validator in validators"
           :key="validator.id">
-          <div class="flex items-center cursor-pointer" @click="handleSelectValidator(validator)">
+          <div class="flex items-center cursor-pointer" @click="openUpdateValidatorModal(validator)">
             <div class="flex text-primary">{{ validator.id }} - </div>
             <div class="flex flex-col items-start ml-2">
               <div class="flex"><span class="font-semibold mr-1">Model: </span> <span class="text-primary">{{
@@ -239,7 +253,7 @@ const handleCreateNewValidator = async () => {
             </div>
           </div>
           <div class="flex text-primary">
-            <button @click="handleDeleteValidator(validator.address)">
+            <button @click="openDeleteValidatorModal(validator)">
               <ToolTip text="Delete Validator" :options="{ placement: 'bottom' }" />
               <TrashIcon class="h-4 w-4 mr-1" />
             </button>
@@ -267,7 +281,8 @@ const handleCreateNewValidator = async () => {
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Provider:</p>
           <select class="p-2 w-full bg-slate-100 overflow-y-auto" name="" id="" v-model="validatorToUpdate.provider">
-            <option v-for="(_, provider) in nodeProviders" :key="provider" :value="provider" :selected="provider === validatorToUpdate.provider">
+            <option v-for="(_, provider) in nodeProviders" :key="provider" :value="provider"
+              :selected="provider === validatorToUpdate.provider">
               {{ provider }}
             </option>
           </select>
@@ -275,7 +290,8 @@ const handleCreateNewValidator = async () => {
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Model:</p>
           <select class="p-2 w-full bg-slate-100 overflow-y-auto" name="" id="" v-model="validatorToUpdate.model">
-            <option v-for="model in nodeProviders[validatorToUpdate.provider]" :key="model" :value="model" :selected="model === validatorToUpdate.model">
+            <option v-for="model in nodeProviders[validatorToUpdate.provider]" :key="model" :value="model"
+              :selected="model === validatorToUpdate.model">
               {{ model }}
             </option>
           </select>
@@ -311,6 +327,40 @@ const handleCreateNewValidator = async () => {
       <div class="flex flex-col mt-4 w-full">
         <button @click="handleCreateNewValidator"
           class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">Create</button>
+      </div>
+    </Modal>
+    <Modal :open="deleteValidatorModalOpen" @close="closeDeleteValidatorModal">
+      <div class="flex flex-col">
+        <div class="flex justify-between">
+          <div class="text-xl">Delete Validator</div>
+          <div class="text-primary">ID: {{ selectedValidator?.id }}</div>
+        </div>
+        <div class="flex justify-between font-bold bg-slate-100 p-2 mt-4">
+          Are you sure you want to delete this validator?
+        </div>
+        <div class="flex flex-col p-2 mt-2">
+          <p class="text-md font-semibold">Address:</p>
+
+          <div class="py-2 w-full">
+            {{ selectedValidator?.address }}
+          </div>
+        </div>
+        <div class="flex flex-col p-2 mt-2">
+          <p class="text-md font-semibold">Provider: </p>
+          {{ selectedValidator?.provider }}
+        </div>
+        <div class="flex flex-col p-2 mt-2">
+          <p class="text-md font-semibold">Model: </p>
+          {{ selectedValidator?.model }}
+        </div>
+        <div class="flex flex-col p-2 mt-2">
+          <p class="text-md font-semibold">Stake: </p>
+          {{ selectedValidator?.stake }}
+        </div>
+      </div>
+      <div class="flex flex-col mt-4 w-full">
+        <button @click="handleDeleteValidator"
+          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">Delete Validator</button>
       </div>
     </Modal>
   </div>

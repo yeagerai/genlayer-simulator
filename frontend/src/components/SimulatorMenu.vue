@@ -26,11 +26,11 @@ import DiscordIcon from '@/assets/icons/DiscordIcon.vue'
             </RouterLink>
         </div>
         <div class="flex flex-col items-center">
-            <a href="https://docs.genlayer.com"
+            <a href="https://genlayer-docs.netlify.app/"
                 target="_blank"
                 class="p-3 border-r-4 border-transparent opacity-75 hover:border-r-primary hover:opacity-100">
                 <DocumentTextIcon class="h-5 w-5 fill-primary" />
-                <ToolTip text="Feedback form" :options="{ placement: 'right' }" />
+                <ToolTip text="GenLayer Docs" :options="{ placement: 'right' }" />
             </a>
             <a href="https://discord.gg/wNSBXcYmJP"
                 target="_blank"
