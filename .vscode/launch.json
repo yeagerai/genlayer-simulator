@@ -41,24 +41,24 @@
       },
       // TODO: Need to get this working for debugging
       {
-        "name": "Docker: RPC-endpoint",
-        "type": "docker",
+        "name": "Python: Flask (Docker)",
+        "type": "python",
         "request": "launch",
-        "program": "${workspaceFolder}/script/debug_prototype.py",
-        "console": "integratedTerminal",
+        "python": "/usr/bin/python",
+        "cwd": "${workspaceFolder}",
         "env": {
-          "PYTHONPATH": "${workspaceRoot}"
+            "PYTHONPATH": "${workspaceRoot}",
+            "FLASK_APP": "server.py",
+            "FLASK_ENV": "development",
+            "DOCKER_HOST": "unix:///var/run/docker.sock"
         },
-        "preLaunchTask": "docker-compose",
-        "python": {
-          "pathMappings": [
-            {
-              "localRoot": "${workspaceFolder}",
-              "remoteRoot": "/app"
-            }
-          ],
-          "projectType": "docker"
-        }
+        "args": [
+            "run",
+            "--no-debugger",
+            "--no-reload"
+        ],
+        "stopOnEntry": false,
+        "module": "flask"
       }
     ],
     "compounds": [

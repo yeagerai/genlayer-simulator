@@ -54,12 +54,16 @@ services:
     build:
       context: ./
       dockerfile: ./docker/Dockerfile.genvm
+      target: prod
+    container_name: genvm
     environment:
       - FLASK_SERVER_PORT=${GENVMPORT}
       - DEBUG=${GENVMDEBUG}
       - PYTHONUNBUFFERED=${GENVMDEBUG}
     expose:
       - "${GENVMPORT}"
+    ports:
+      - "6678:6678"
     volumes:
       - ./genvm:/app/genvm
 
