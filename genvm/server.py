@@ -1,4 +1,5 @@
 import os
+import re
 import ast
 import subprocess
 import json
@@ -14,17 +15,25 @@ app = Flask('genvm_api')
 jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
 
 
-def execute_transaction() -> dict:
-    pass
+def add_async_to_all_class_methods(code:str) -> str:
+    pattern = r'\b(?:async\s+)?def\s+([a-zA-Z][a-zA-Z_0-9]*)\s*\(self'
+    return re.sub(pattern, re_replace_method, code)
+
+
+def re_replace_method(match):
+    method_name = match.group(1)
+    prefix = 'async ' if 'async' in match.group(0) else ''
+    return f'{prefix}def {method_name}(self'
 
 
 @jsonrpc.method("leader_executes_transaction")
 def leader_executes_transaction(icontract:str, node_config:dict) -> dict:
 
     error_file = '/tmp/error.json'
-
     if os.path.exists(error_file):
         os.remove(error_file)
+
+    icontract = add_async_to_all_class_methods(icontract)
 
     return_data = {'status': 'error', 'data': None}
 
@@ -63,9 +72,10 @@ def leader_executes_transaction(icontract:str, node_config:dict) -> dict:
 def validator_executes_transaction(icontract:str, node_config:dict, leader_recipt:dict) -> dict:
 
     error_file = '/tmp/error.json'
-
     if os.path.exists(error_file):
         os.remove(error_file)
+
+    icontract = add_async_to_all_class_methods(icontract)
 
     return_data = {'status': 'error', 'message': '', 'data': None}
 
