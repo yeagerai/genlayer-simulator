@@ -100,7 +100,6 @@ def validator_executes_transaction(transaction_input:dict , validator_config:dic
 
 
 async def exec_transaction(transaction_input, logger=None):
-    raise Exception(transaction_input)
 
     return_data = {'status': 'error', 'data': None}
 
