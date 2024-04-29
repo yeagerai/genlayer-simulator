@@ -21,7 +21,7 @@ def execute_transaction() -> dict:
 @jsonrpc.method("leader_executes_transaction")
 def leader_executes_transaction(icontract:str, node_config:dict) -> dict:
 
-    return_data = {'status': 'error', 'data': None}
+    return_data = {'status': 'error', 'message': '', 'data': None}
 
     icontract_file, recipt_file, _, _ = transaction_files()
 
@@ -30,13 +30,15 @@ def leader_executes_transaction(icontract:str, node_config:dict) -> dict:
     try:
         result = subprocess.run(['python', icontract_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     except Exception as e:
-        return_data['data'] = str(e)
+        return_data['message'] = str(e)
+        return_data['data'] = str(e.with_traceback)
         return return_data
 
     debug_output('LLM Result', result)
 
     if result.returncode != 0:
-        return_data['data'] = str(result.returncode) + ': ' + str(result.stderr)
+        return_data['data'] = str(result.stderr)
+        return_data['message'] = result.stderr.split('\n')[-2]
         return return_data
 
     # Access the output of the subprocess.run command
