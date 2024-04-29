@@ -354,6 +354,8 @@ async def call_contract_function(
     from_account: str, contract_address: str, function_name: str, args: list
 ) -> dict:
 
+    return_data = {'status': 'error', 'message': '', 'data': None}
+
     if not address_is_in_correct_format(from_account):
         return {"status": "from_account not in ethereum address format"}
 
@@ -367,12 +369,6 @@ async def call_contract_function(
         contract_address=contract_address, function_name=function_name, args=args
     ).model_dump_json()
 
-    cursor.execute(
-        "INSERT INTO transactions (from_address, to_address, input_data, type, created_at) VALUES (%s, %s, %s, 2, CURRENT_TIMESTAMP);",
-        (from_account, contract_address, function_call_data),
-    )
-
-    connection.commit()
     log_status(f"Transaction sent from {from_account} to {contract_address}...")
 
     # call consensus
@@ -380,13 +376,19 @@ async def call_contract_function(
         json.loads(function_call_data), logger=log_status
     )
 
-    cursor.close()
-    connection.close()
-    return {
-        "status": "success",
-        "message": f"Function '{function_name}' called on contract at {contract_address} with args {args}.",
-        "execution_output": execution_output,
-    }
+    return_data['message'] = f"Function '{function_name}' called on contract at {contract_address} with args {args}."
+    # TODO: This will be return_data['data'] in future releases
+    return_data['execution_output'] = execution_output
+
+    if execution_output["status"] == "success":
+        cursor.execute(
+            "INSERT INTO transactions (from_address, to_address, input_data, type, created_at) VALUES (%s, %s, %s, 2, CURRENT_TIMESTAMP);",
+            (from_account, contract_address, function_call_data),
+        )
+        connection.commit()
+        return_data['status'] = 'success'
+
+    return return_data
 
 
 @jsonrpc.method("get_last_contracts")

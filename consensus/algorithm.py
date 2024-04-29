@@ -82,9 +82,6 @@ def validator_executes_transaction(transaction_input:dict , validator_config:dic
     
     response = requests.post(genvm_url()+'/api', json=payload).json()
 
-    if response['result']['status'] == 'error':
-        raise Exception(response['result']['message'])
-
     # TODO: Figure out how to do this in the GenVM
     result = response['result']['data']
     result['class'] = class_name
@@ -94,13 +91,17 @@ def validator_executes_transaction(transaction_input:dict , validator_config:dic
         'result': result
     }
 
-    if return_value['result']['contract_state'] == leader_receipt['result']['contract_state']:
-        return_value['vote'] = 'agree'
+
+    if response['result']['status'] == 'success':
+        if return_value['result']['contract_state'] == leader_receipt['result']['contract_state']:
+            return_value['vote'] = 'agree'
         
     return return_value
 
 
 async def exec_transaction(transaction_input, logger=None):
+
+    return_data = {'status': 'error', 'data': None}
 
     with DatabaseFunctions() as dbf:
         all_validators = dbf.all_validators()
@@ -126,9 +127,13 @@ async def exec_transaction(transaction_input, logger=None):
         logger(f"Leader {leader} has finished contract execution...")
     
     valudators_results = []
+    disagree_validator_data = {}
     for validator in remaining_validators:
         validator_receipt = validator_executes_transaction(transaction_input, validator, leader_receipt)
         votes[validator['address']] = validator_receipt['vote']
+        if validator_receipt['vote'] == 'disagree':
+            disagree_validator_data = validator_receipt
+            break
         valudators_results.append(validator_receipt)
 
     # Validators execute transaction
@@ -143,34 +148,41 @@ async def exec_transaction(transaction_input, logger=None):
     #     votes[f"{validation_results[i]['validator']}"] = validation_results[i]["vote"]
 
     # Write transaction into DB
-    from_address = transaction_input['args'][0]
-    to_address = transaction_input['contract_address']
-    data = json.dumps({"new_contract_state" : leader_receipt['result']['contract_state']})
-    transaction_type = 2
-    final = False
-    consensus_data = ConsensusData(final=final, votes=votes, leader=leader_receipt, validators=valudators_results).model_dump_json()
-    connection = get_genlayer_db_connection()
-    cursor = connection.cursor()
-    cursor.execute(
-        "INSERT INTO transactions (from_address, to_address, data, consensus_data, type, created_at) VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP);",
-        (
-            from_address,
-            to_address,
-            data,
-            consensus_data,
-            transaction_type,
-        ),
-    )
 
-    connection.commit()
-    cursor.close()
-    connection.close()
+    all_votes = set([validator['vote'] for validator in valudators_results])
+    if len(all_votes) == 1 and list(all_votes)[0] == 'agree':
+
+        from_address = transaction_input['args'][0]
+        to_address = transaction_input['contract_address']
+        data = json.dumps({"new_contract_state" : leader_receipt['result']['contract_state']})
+        transaction_type = 2
+        final = False
+        consensus_data = ConsensusData(final=final, votes=votes, leader=leader_receipt, validators=valudators_results).model_dump_json()
+        connection = get_genlayer_db_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            "INSERT INTO transactions (from_address, to_address, data, consensus_data, type, created_at) VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP);",
+            (
+                from_address,
+                to_address,
+                data,
+                consensus_data,
+                transaction_type,
+            ),
+        )
+
+        connection.commit()
+        cursor.close()
+        connection.close()
+
+        return_data['status'] = 'success'
+        return_data['data'] = {"leader_data": leader_receipt, "consensus_data": consensus_data}
+
+    else:
+        return_data['data'] = disagree_validator_data
 
     if logger:
         logger(f"Transaction has been fully executed...")
         logger(f"This is the data produced by the leader:\n\n {leader_receipt}")
 
-    execution_output = {}
-    execution_output["leader_data"] = leader_receipt
-    execution_output["consensus_data"] = consensus_data
-    return execution_output
+    return return_data

@@ -21,6 +21,11 @@ def execute_transaction() -> dict:
 @jsonrpc.method("leader_executes_transaction")
 def leader_executes_transaction(icontract:str, node_config:dict) -> dict:
 
+    error_file = '/tmp/error.json'
+
+    if os.path.exists(error_file):
+        os.remove(error_file)
+
     return_data = {'status': 'error', 'data': None}
 
     icontract_file, recipt_file, _, _ = transaction_files()
@@ -57,7 +62,12 @@ def leader_executes_transaction(icontract:str, node_config:dict) -> dict:
 @jsonrpc.method("validator_executes_transaction")
 def validator_executes_transaction(icontract:str, node_config:dict, leader_recipt:dict) -> dict:
 
-    return_data = {'status': 'error', 'data': None}
+    error_file = '/tmp/error.json'
+
+    if os.path.exists(error_file):
+        os.remove(error_file)
+
+    return_data = {'status': 'error', 'message': '', 'data': None}
 
     icontract_file, recipt_file, _, leader_recipt_file = transaction_files()
 
@@ -72,7 +82,11 @@ def validator_executes_transaction(icontract:str, node_config:dict, leader_recip
     debug_output('LLM Result', result)
 
     if result.returncode != 0:
-        return_data['data'] = str(result.returncode) + ': ' + str(result.stderr)
+        return_data['message'] = str(result.stderr)
+        if os.path.exists(error_file):
+            file = open(error_file, 'r')
+            return_data['data'] = json.load(file)
+            file.close()
         return return_data
 
     # Access the output of the subprocess.run command

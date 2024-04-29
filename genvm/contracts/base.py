@@ -37,6 +37,11 @@ def serialize(obj):
     else:
         raise TypeError(f"Type {type(obj)} not serializable")
 
+# ""something"" => "something"
+def clean_response(response):
+    return json.dumps(response)[1:-1]
+
+
 def icontract(cls):
     class WrappedClass(cls):
         def __init__(self, *args, **kwargs):
@@ -107,7 +112,20 @@ def icontract(cls):
                     # '_call_llm' < 'wrapped_function' <'ask_for_coin' < 'wrapped_function' < 'main' < ...
                     #                                  --------------
                     method_name = inspect.stack()[2].function
-                    self._write_receipt(self, method_name, None)
+                    self._write_receipt(method_name, {})
+                    file = open(recipt_file, 'r')
+                    validator_recipt = json.load(file)
+                    file.close()
+
+                    error_output = {
+                        "leader_recipt": leader_receipt,
+                        "validator_recipt": validator_recipt,
+                        "eq_principle_prompt": clean_response(eq_prompt),
+                        "eq_principle_response": similarity_response
+                    }
+                    with open('/tmp/error.json', 'w') as file:
+                        json.dump(error_output, file, indent=4)
+
                     print('There was limited similarity between the validators output and the leaders output.', file=sys.stderr)
                     sys.exit(1)
 
@@ -164,7 +182,22 @@ def icontract(cls):
                     #                                  --------------
                     method_name = inspect.stack()[2].function
                     self._write_receipt(method_name, {})
-                    print('The validator did not agree with the leader.', file=sys.stderr)
+                    file = open(recipt_file, 'r')
+                    validator_recipt = json.load(file)
+                    file.close()
+
+                    error_output = {
+                        "leader_recipt": leader_recipt,
+                        "validator_recipt": validator_recipt,
+                        "eq_principle_prompt": eq_prompt,
+                        "eq_principle_response": validation_response
+                    }
+
+                    with open('/tmp/error.json', 'w') as file:
+                        json.dump(error_output, file, indent=4)
+
+                    print('The validator did not agree with the leader', file=sys.stderr)
+
                     sys.exit(1)
 
                 final_response = leader_response
