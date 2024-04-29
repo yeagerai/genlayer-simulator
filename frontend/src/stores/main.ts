@@ -8,6 +8,13 @@ const getInitialOPenedFiles = (): string[] => {
   return []
 }
 
+const valdiateFileName = (name: string) => {
+  const tokens = name.split('.')
+      if (tokens.length < 2) {
+        return `${tokens[0]}.gpy`
+      }
+  return name
+}
 export const useMainStore = defineStore('mainStore', {
   state: (): MainStoreState => {
     return {
@@ -18,23 +25,25 @@ export const useMainStore = defineStore('mainStore', {
       deployedContracts: [],
       currentUserAddress: localStorage.getItem('mainStore.currentUserAddress') || '',
       nodeLogs: [],
-      accounts: localStorage.getItem('mainStore.accounts') ?  (localStorage.getItem('mainStore.accounts') || '').split(',') : []
+      accounts: localStorage.getItem('mainStore.accounts')
+        ? (localStorage.getItem('mainStore.accounts') || '').split(',')
+        : []
     }
   },
   actions: {
     addContractFile(contract: ContractFile): void {
-      this.contracts.push(contract)
+      const name = valdiateFileName(contract.name)
+      this.contracts.push({ ...contract, name })
     },
     removeContractFile(id: string): void {
       this.contracts = [...this.contracts.filter((c) => c.id !== id)]
       this.deployedContracts = [...this.deployedContracts.filter((c) => c.contractId !== id)]
-    
     },
     updateContractFile(id: string, { name, content }: { name?: string; content?: string }) {
       this.contracts = [
         ...this.contracts.map((c) => {
           if (c.id === id) {
-            const _name = name || c.name
+            const _name = valdiateFileName(name || c.name)
             const _content = content || c.content
             return { ...c, name: _name, content: _content }
           }
@@ -63,7 +72,10 @@ export const useMainStore = defineStore('mainStore', {
       const index = this.deployedContracts.findIndex((c) => c.contractId === contractId)
       if (index === -1)
         this.$patch((state) => state.deployedContracts.push({ contractId, address, defaultState }))
-      else this.$patch((state) => (state.deployedContracts[index] = { contractId, address, defaultState }))
+      else
+        this.$patch(
+          (state) => (state.deployedContracts[index] = { contractId, address, defaultState })
+        )
     },
     setCurrentContractId(id?: string) {
       this.currentContractId = id

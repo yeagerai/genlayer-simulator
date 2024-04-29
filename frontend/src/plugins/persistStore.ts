@@ -27,7 +27,7 @@ const upsertDeployedContract = async (contract: DeployedContract): Promise<void>
  * @param {PiniaPluginContext} context - The context object containing the Pinia store.
  * @return {void} This function does not return anything.
  */
-export function PersistStorePlugin(context: PiniaPluginContext): void {
+export function persistStorePlugin(context: PiniaPluginContext): void {
   context.store.$onAction(({ store, name, args, after }) => {
     console.log(`Called Action "${name}" with params [${JSON.stringify(args)}].`)
     after(async (result) => {
