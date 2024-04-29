@@ -5,8 +5,7 @@ import Notifications from '@kyvg/vue3-notification'
 import App from './App.vue'
 import router from './router'
 import { PersistStorePlugin, createToolTipPlugin } from '@/plugins'
-import { setupDB } from '@/utils'
-import { seedStores } from '@/utils/store'
+import { setupStores } from '@/utils'
 
 // Create vue app
 const app = createApp(App)
@@ -28,6 +27,4 @@ app.use(Notifications)
 // Mount vue app
 app.mount('#app')
 
-setupDB().then(() => {
-  seedStores()
-})
+setupStores()
