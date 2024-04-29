@@ -13,6 +13,7 @@ from flask_cors import CORS
 from database.init_db import (
     create_db_if_it_doesnt_already_exists,
     create_tables_if_they_dont_already_exist,
+    clear_db_tables,
 )
 from database.credentials import get_genlayer_db_connection
 from database.functions import DatabaseFunctions
@@ -68,6 +69,12 @@ def create_db() -> dict:
 @jsonrpc.method("create_tables")
 def create_tables() -> dict:
     result = create_tables_if_they_dont_already_exist(app)
+    app.logger.info(result)
+    return {"status": result}
+
+@jsonrpc.method("clear_tables")
+def clear_tables() -> dict:
+    result = clear_db_tables()
     app.logger.info(result)
     return {"status": result}
 
