@@ -13,6 +13,13 @@ def get_ollama_url(endpoint:str) -> str:
 def base_node_json(provider:str, model:str) -> dict:
     return {'provider': provider, 'model': model, 'config':{}}
 
+def get_node_defaults():
+    cwd = os.path.abspath(os.getcwd())
+    nodes_dir = '/consensus/nodes'
+    file = open(cwd + nodes_dir + '/defaults.json', 'r')
+    contents = json.load(file)[0]
+    return contents['defaults']
+
 def get_random_provider_using_weights(defaults):
     # remove providers if no api key
     provider_weights = defaults['provider_weights']
@@ -72,11 +79,7 @@ def num_decimal_places(number:float) -> int:
     return decimal_places
 
 def random_validator_config():
-    cwd = os.path.abspath(os.getcwd())
-    nodes_dir = '/consensus/nodes'
-    file = open(cwd + nodes_dir + '/defaults.json', 'r')
-    contents = json.load(file)[0]
-    defaults = contents['defaults']
+    defaults = get_node_defaults()
 
     ollama_models = get_provider_models(defaults, 'ollama')
 
