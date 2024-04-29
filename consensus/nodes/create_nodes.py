@@ -20,7 +20,7 @@ def get_random_provider_using_weights(defaults):
     if 'GENVMOPENAIKEY' not in os.environ or os.environ['GENVMOPENAIKEY'] == default_value:
         provider_weights.pop('openai')
     if 'HEURISTAIAPIKEY' not in os.environ or os.environ['HEURISTAIAPIKEY'] == default_value:
-        provider_weights.pop('heurist')
+        provider_weights.pop('heuristai')
 
     total_weight = sum(provider_weights.values())
     random_num = uniform(0, total_weight)
@@ -30,6 +30,28 @@ def get_random_provider_using_weights(defaults):
         cumulative_weight += weight
         if random_num <= cumulative_weight:
             return key
+
+def get_provider_models(defaults:str, provider:str) -> list:
+
+    if provider == 'ollama':
+        ollama_models_result = requests.get(get_ollama_url('tags')).json()
+        ollama_models = []
+        for ollama_model in ollama_models_result['models']:
+            # "llama2:latest" => "llama2"
+            ollama_models.append(ollama_model['name'].split(':')[0])
+        return ollama_models
+
+    elif provider == 'openai':
+        return defaults['openai_models'].split(',')
+
+    elif provider == 'heuristai':
+        return defaults['heuristai_models'].split(',')
+
+    else:
+        raise Exception('Provider ('+provider+') not found')
+
+def get_providers() -> list:
+    return ['openai', 'ollama', 'heuristai']
 
 def get_options(provider, contents):
     options = None
@@ -51,41 +73,31 @@ def num_decimal_places(number:float) -> int:
 
 def random_validator_config():
     cwd = os.path.abspath(os.getcwd())
-
     nodes_dir = '/consensus/nodes'
+    file = open(cwd + nodes_dir + '/defaults.json', 'r')
+    contents = json.load(file)[0]
+    defaults = contents['defaults']
 
-    # make sure the models are avaliable
-    ollama_models_result = requests.get(get_ollama_url('tags')).json()
-    if not len(ollama_models_result['models']) and \
+    ollama_models = get_provider_models(defaults, 'ollama')
+
+    if not len(ollama_models) and \
         os.environ['GENVMOPENAIKEY'] == '<add_your_open_ai_key_here>' and \
         os.environ['HEURISTAIAPIKEY'] == '<add_your_heurist_api_key_here>':
         raise Exception('No models avaliable.')
 
-    # Ollama models
-    ollama_models = []
-    for ollama_model in ollama_models_result['models']:
-        # "llama2:latest" => "llama2"
-        ollama_models.append(ollama_model['name'].split(':')[0])
-
     # See if they have an OpenAPI key
     
-    heuristic_models_result = requests.get(os.environ['HEURISTAIMODELSURL']).json()
-    heuristic_models = []
-    for entry in heuristic_models_result:
-        heuristic_models.append(entry['name'])
-
-    # Get all the model defaults
-    file = open(cwd + nodes_dir + '/defaults.json', 'r')
-    contents = json.load(file)[0]
-
-    defaults = contents['defaults']
+    #heuristic_models_result = requests.get(os.environ['HEURISTAIMODELSURL']).json()
+    #heuristic_models = []
+    #for entry in heuristic_models_result:
+    #    heuristic_models.append(entry['name'])
 
     provider = get_random_provider_using_weights(defaults)
 
     options = get_options(provider, contents)
 
     if provider == 'openai':
-        openai_model = choice(defaults['openai_models'].split(','))
+        openai_model = choice(get_provider_models(defaults, 'openai'))
         node_config = base_node_json('openai', openai_model)
 
     elif provider == 'ollama':
@@ -120,7 +132,8 @@ def random_validator_config():
                 raise Exception('Option is not a dict or str ('+option+')')
 
     elif provider == 'heuristai':
-        node_config = base_node_json('heuristai', choice(heuristic_models))
+        heuristic_model = choice(get_provider_models(defaults, 'heuristai'))
+        node_config = base_node_json('heuristai', heuristic_model)
         for option, option_config in options.items():
             if random() > defaults['chance_of_default_value']:
                 random_value = choice(
