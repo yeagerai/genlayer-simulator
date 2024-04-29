@@ -31,7 +31,7 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
   context.store.$onAction(({ store, name, args, after }) => {
     console.log(`Called Action "${name}" with params [${JSON.stringify(args)}].`)
     after(async (result) => {
-      if (store.$id === 'contractsFiles') {
+      if (store.$id === 'mainStore') {
         switch (name) {
           case 'addContractFile':
             await db.contractFiles.add(args[0] as ContractFile)

@@ -87,7 +87,6 @@ export const useMainStore = defineStore('mainStore', {
           params: []
         })
         if (result) {
-          console.log('result', result)
           this.accounts = [...this.accounts, result.address]
           this.currentUserAddress = result.address
           return result.address

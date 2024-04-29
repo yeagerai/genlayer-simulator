@@ -51,12 +51,12 @@ onMounted(async () => {
   }
 })
 
-const openDeleteValidatorModal = (validator) => {
+const openDeleteValidatorModal = (validator: ValidatorModel) => {
   selectedValidator.value = validator
   deleteValidatorModalOpen.value = true
 }
 
-const openUpdateValidatorModal = (validator) => {
+const openUpdateValidatorModal = (validator: ValidatorModel) => {
   selectedValidator.value = validator
   const { model,
     provider,
