@@ -55,6 +55,7 @@ def build_icontract(
 async def main():
     current_contract = {class_name}(**{contract_state})
     current_contract.mode = "{run_by}"
+    current_contract.method_name = "{function_name}"
     await current_contract.{function_name}({args_str})
 
 if __name__=="__main__":

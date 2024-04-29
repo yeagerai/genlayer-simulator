@@ -5,7 +5,7 @@ import json
 import inspect
 from flask import Flask
 from flask_jsonrpc import JSONRPC
-from genvm.utils import debug_output, transaction_files, save_files
+from genvm.utils import debug_output, transaction_files, save_files, remove_files
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -52,7 +52,7 @@ def leader_executes_transaction(icontract:str, node_config:dict) -> dict:
     # TODO: Leader needs to be the name of the VM
     debug_output('leader_executes_transaction(response)', contents)
 
-    #os.remove(recipt_file)
+    remove_files()
 
     return_data['status'] = 'success'
     return_data['data'] = contents
@@ -96,7 +96,7 @@ def validator_executes_transaction(icontract:str, node_config:dict, leader_recip
 
     debug_output('validator_executes_transaction(response)', contents)
 
-    #os.remove(leader_recipt_file)
+    remove_files()
 
     return_data['status'] = 'success'
     return_data['data'] = contents

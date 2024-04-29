@@ -164,6 +164,7 @@ def icontract(cls):
                 self.non_det_outputs[self.non_det_counter] = final_response
             
             elif self.node_config['type'] == 'validator' and consensus_eq and leader_recipt:
+                self.mode = 'validator'
                 validator_response = await llm_function(self.node_config, prompt, None, None)
                 self.non_det_outputs[self.non_det_counter] = validator_response
 
@@ -234,7 +235,8 @@ def icontract(cls):
             if name == 'get_webpage' or name == 'call_llm':
                 new_name = '_' + name
             orig_attr = super().__getattribute__(new_name)
-            if new_name == '_get_webpage' or new_name == '_call_llm':
+            method_name_obj = object.__getattribute__(self, 'method_name')
+            if new_name == '_get_webpage' or new_name == '_call_llm' or method_name_obj == new_name:
                 @functools.wraps(orig_attr)
                 async def wrapped_function(*args, **kwargs):
                     self.gas_used = gas_model_logic()
@@ -243,8 +245,10 @@ def icontract(cls):
                         output = await orig_attr(*args, **kwargs)
                     else:
                         output = orig_attr(*args, **kwargs)
-                    
-                    self._write_receipt(new_name, args)
+
+                    if method_name_obj == new_name:
+                        self._write_receipt(new_name, args)
+
                     print("Execution Finished!")
 
                     return output

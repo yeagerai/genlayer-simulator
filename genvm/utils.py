@@ -49,6 +49,15 @@ def save_files(icontract:str, node_config:str, node_type:str, leader_recipt:str 
         file.close()
 
 
+def remove_files():
+    files = transaction_files()
+    for file in files:
+        if os.path.exists(file):
+            os.remove(file)
+    if os.path.exists('/tmp/error.json'):
+        os.remove(file)
+
+
 def get_webpage_content(url:str) -> str:
 
     payload = {
