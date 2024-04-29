@@ -288,7 +288,7 @@ def delete_validator(validator_address: str) -> dict:
 
 
 @jsonrpc.method("delete_all_validators")
-def delete_all_validator() -> dict:
+def delete_all_validators() -> dict:
     all_validators = get_all_validators()
     data = all_validators["data"]
     addresses = []
@@ -299,6 +299,15 @@ def delete_all_validator() -> dict:
         dbf.close()
     return get_all_validators()
 
+@jsonrpc.method("create_random_validators")
+def create_random_validator(count:int, min_stake:float, max_stake:float) -> list:
+    responses = []
+    for _ in range(count):
+        stake = random.uniform(min_stake, max_stake)
+        details = random_validator_config()
+        new_validator = create_validator(stake, details["provider"], details["model"], details["config"])
+        responses.append(new_validator)
+    return responses
 
 @jsonrpc.method("create_random_validator")
 def create_random_validator(stake: float) -> dict:
