@@ -28,7 +28,7 @@ class EquivalencePrinciple:
         principle: Optional[str],
         comparative: bool = True,
     ):
-        if len(result) > 0:
+        if result != {}:
             raise Exception("result must be empty")
         self.result = result
         self.icontract_inst = icontract_inst
