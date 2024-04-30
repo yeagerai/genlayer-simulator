@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useMainStore } from "@/stores"
 import { DocumentCheckIcon, ArrowUpTrayIcon, PlusIcon, TrashIcon, PencilIcon } from '@heroicons/vue/24/solid'
-import { nextTick, ref, watch, watchEffect } from "vue";
+import { nextTick, ref, watchEffect } from "vue";
 import { v4 as uuidv4 } from 'uuid'
 const store = useMainStore()
 const showFileOptionsId = ref('')

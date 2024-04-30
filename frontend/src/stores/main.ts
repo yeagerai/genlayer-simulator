@@ -10,10 +10,10 @@ const getInitialOPenedFiles = (): string[] => {
 
 const valdiateFileName = (name: string) => {
   const tokens = name.split('.')
-      if (tokens.length < 2) {
+      if (tokens.length > 0) {
         return `${tokens[0]}.gpy`
-      }
-  return name
+      } 
+      return `${name}.gpy`
 }
 export const useMainStore = defineStore('mainStore', {
   state: (): MainStoreState => {
