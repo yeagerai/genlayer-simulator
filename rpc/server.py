@@ -307,7 +307,7 @@ def delete_all_validators() -> dict:
     return get_all_validators()
 
 @jsonrpc.method("create_random_validators")
-def create_random_validator(count:int, min_stake:float, max_stake:float) -> list:
+def create_random_validators(count:int, min_stake:float, max_stake:float) -> list:
     responses = []
     for _ in range(count):
         stake = random.uniform(min_stake, max_stake)

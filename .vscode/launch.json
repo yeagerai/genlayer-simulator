@@ -2,52 +2,42 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "GenVM: Remote Attach",
+      "name": "JsonRPC: Remote Attach",
       "type": "debugpy",
       "request": "attach",
-      "port": 6678,
-      "host": "localhost",
       "pathMappings": [
         {
           "localRoot": "${workspaceFolder}",
           "remoteRoot": "/app"
         }
       ],
-      "preLaunchTask": "docker-compose-up"
+      "connect": {
+        "port": 4678,
+        "host": "localhost"
+      },
+      "justMyCode": true
     },
     {
-      "name": "Python: Flask (Docker)",
+      "name": "GenVM: Remote Attach",
       "type": "debugpy",
-      "request": "launch",
-      "python": "/usr/bin/python",
-      "cwd": "${workspaceFolder}",
-      "env": {
-        "PYTHONPATH": "${workspaceRoot}",
-        "FLASK_APP": "server.py",
-        "FLASK_ENV": "development",
-        "DOCKER_HOST": "unix:///var/run/docker.sock"
-      },
-      "args": [
-        "run",
-        "--no-debugger",
-        "--no-reload"
+      "request": "attach",
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}",
+          "remoteRoot": "/app"
+        }
       ],
-      "stopOnEntry": false,
-      "module": "flask"
+      "connect": {
+        "port": 6678,
+        "host": "localhost"
+      },
+      "justMyCode": true
     }
   ],
   "compounds": [
     {
       "name": "Debug All",
-      "configurations": ["Python: Debug Server", "Python: Debug Launch Prototype"]
-    }
-  ],
-  "tasks": [
-    {
-      "label": "docker-compose-up",
-      "type": "shell",
-      "command": "docker-compose up",
-      "problemMatcher": []
+      "configurations": ["JsonRPC: Remote Attach", "GenVM: Remote Attach"]
     }
   ]
 }
