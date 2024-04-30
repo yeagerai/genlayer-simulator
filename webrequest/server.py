@@ -15,23 +15,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 from dotenv import load_dotenv
 load_dotenv()
 
-'''
-def create_app():
-   app = Flask('webrequest')
-   app.config.from_object(Config)
-   app.config['BASE_DIR'] = str(BASE_DIR)
-   register_extensions(app)
-   register_blueprints(app)
-   return app
-
-def register_extensions(app):
-   return None
-
-def register_blueprints(app):
-   return None
-
-app = create_app()
-'''
 app = Flask('genvm_api')
 jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
 
@@ -52,6 +35,8 @@ def is_valid_url(url):
     parsed_url = urlparse(url)
     return all([parsed_url.scheme, parsed_url.netloc])
 
+def execution_time(start_time, end_time):
+    print(f"Execution time: {end_time-start_time:.2f}s")
 
 @jsonrpc.method("get_webpage")
 def get_webpage(url:str) -> dict:
@@ -62,7 +47,7 @@ def get_webpage(url:str) -> dict:
         start_time = time()
         webpage_text = get_text(driver, url)
         end_time = time()
-        print('Execution time: '+str(end_time - start_time)+'s')
+        execution_time(start_time, end_time)
     except Exception as e:
         if 'ERR_NAME_NOT_RESOLVED' in str(e):
             return return_error('URL does not exist')
@@ -93,7 +78,7 @@ def get_webpage_chunks(url:str, chunk_sizes: int, overlap:float) -> dict:
                 end_chunck += overlap_num
             chunks.append(' '.join(webpage_text_words[start_chunck:end_chunck]))
         end_time = time()
-        print('Execution time: '+str(end_time - start_time)+'s')
+        execution_time(start_time, end_time)
     except Exception as e:
         if 'ERR_NAME_NOT_RESOLVED' in str(e):
             return return_error('URL does not exist')
@@ -117,7 +102,7 @@ def get_webpage_xpaths(url:str, xpaths:list) -> dict:
         for xpath in xpaths:
             segments.append(driver.find_element('xpath', xpath).text)
         end_time = time()
-        print('Execution time: '+str(end_time - start_time)+'s')
+        execution_time(start_time, end_time)
     except Exception as e:
         if 'ERR_NAME_NOT_RESOLVED' in str(e):
             return return_error('URL does not exist')
@@ -136,7 +121,7 @@ def get_webpage_regex(url:str, regex:str) -> dict:
         start_time = time()
         webpage_html = get_html(driver, url)
         end_time = time()
-        print('Execution time: '+str(end_time - start_time)+'s')
+        execution_time(start_time, end_time)
     except Exception as e:
         if 'ERR_NAME_NOT_RESOLVED' in str(e):
             return return_error('URL does not exist')
