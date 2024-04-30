@@ -42,21 +42,21 @@ def serialize(obj):
 def icontract(cls):
     class WrappedClass(cls):
         def __init__(self, *args, **kwargs):
-            self.node_config = json.load(
-                open(os.environ.get("GENVMCONLOC") + "/node-config.json")
-            )
+            self.node_config = None
             self.mode = None
             self.gas_used = 0
-            self.non_det_counter = 0
+            self.eqs_num = 0
             self.non_det_inputs = {}
             self.non_det_outputs = {}
             self.eq_principles_outs = {}
             super(WrappedClass, self).__init__(*args, **kwargs)
 
-        # This will get excuited under the following TWO conditiions:
-        # 1. When the method on the icontract has finished (i.e. ask_for_coin)
-        # 2. When a validator disagrees with the leaders outcome
-        def _write_receipt(self, method_name, args):
+        async def async_init(self):
+            self.node_config = json.load(
+                open(os.environ.get("GENVMCONLOC") + "/node-config.json")
+            )
+
+        async def _write_receipt(self, method_name, args):
             receipt = {
                 # You can't get the name of the inherited class here
                 "class": self.__class__.__name__,
@@ -89,7 +89,7 @@ def icontract(cls):
                     output = orig_attr(*args, **kwargs)
 
                 # hardcore comparison
-                self._write_receipt(new_name, args)
+                await self._write_receipt(new_name, args)
                 print("Execution Finished!")
 
                 return output

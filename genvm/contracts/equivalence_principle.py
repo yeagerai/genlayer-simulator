@@ -53,7 +53,7 @@ class EquivalencePrinciple:
 
             # check eq principle
             if self.icontract_inst.mode == "validator" and self.comparative == True:
-                llm_function = self._get_llm_function()
+                llm_function = self.__get_llm_function()
                 eq_prompt = f"""Given the equivalence principle '{self.principle}', 
                 decide whether the following two outputs can be considered equivalent.
                 
@@ -77,7 +77,7 @@ class EquivalencePrinciple:
         return final_response
 
     async def call_llm(self, prompt: str):
-        llm_function = self._get_llm_function()
+        llm_function = self.__get_llm_function()
         final_response = await llm_function(
             self.icontract_inst.node_config, prompt, None, None
         )
@@ -96,8 +96,19 @@ class EquivalencePrinciple:
             ]
         self.icontract_inst.eqs_num += 1
 
-    def _get_llm_function(self):
+    def __get_llm_function(self):
         llm_function = getattr(llms, "call_ollama")
+        with open("/tmp/error.txt", "w") as f:
+            f.write(
+                str(
+                    [
+                        self.icontract_inst.gas_used,
+                    ]
+                )
+            )
+        print(type(self.icontract_inst.node_config))
         if self.icontract_inst.node_config["provider"] == "openai":
+            print("EEEEEPA")
             llm_function = getattr(llms, "call_openai")
+            print("EEEEEPA2222")
         return llm_function

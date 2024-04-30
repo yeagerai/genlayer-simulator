@@ -38,7 +38,7 @@ The output format of your response is:
             principle="The result['give_coin'] has to be exactly the same",
             comparative=True,
         ) as eq:
-            _ = await eq.get_webpage("https://www.example.com/")
+            _ = await eq.call_llm("Say hello!")
             result = await eq.call_llm(prompt)
             result_clean = result.replace("True", "true").replace("False", "false")
             result_json = json.loads(result_clean)
