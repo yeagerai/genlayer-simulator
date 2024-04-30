@@ -47,8 +47,8 @@ class IContract:
         self.eq_outputs["leader"] = {}
 
     def load_leader_eq_outputs(self):
-        with open(os.environ.get("GENVMCONLOC") + "/receipt_leader.json", "r") as file:
-            self.eq_outputs = json.loads(file.read())["eq_outputs"]
+        with open(os.environ.get("GENVMCONLOC") + "/leader-recipt.json", "r") as file:
+            self.eq_outputs = json.loads(file.read())["result"]["eq_outputs"]
 
     def _write_receipt(self, method_name, args):
         receipt = {
@@ -64,6 +64,6 @@ class IContract:
         }
 
         with open(
-            os.environ.get("GENVMCONLOC") + f"/receipt_{self.mode}.json", "w"
+            os.environ.get("GENVMCONLOC") + "/receipt.json", "w"
         ) as file:
             json.dump(receipt, file, indent=4)

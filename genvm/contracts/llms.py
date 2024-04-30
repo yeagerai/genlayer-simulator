@@ -57,11 +57,19 @@ async def call_openai(model_config:str, prompt:str, regex: Optional[str], return
     return await get_openai_output(stream, regex, return_streaming_channel)
 
 async def call_heuristai(model_config:str, prompt:str, regex: Optional[str], return_streaming_channel:Optional[asyncio.Queue]) -> str:
-    client = get_openai_client(os.environ.get("HEURISTAIAPIKEY"), os.environ.get("GENVMOPENAIURL"))
-    # TODO: OpenAI exceptions need to be caught here
+    client = get_openai_client(os.environ.get("HEURISTAIAPIKEY"), os.environ.get("HEURISTAIURL"))
     stream = get_openai_stream(client, prompt, model_config)
-
-    return await get_openai_output(stream, regex, return_streaming_channel)
+    # TODO: Get the line below working
+    #return await get_openai_output(stream, regex, return_streaming_channel)
+    output = ''
+    for chunk in stream:
+        #raise Exception(chunk.json(), dir(chunk), chunk.choices[0].delta.content)
+        try:
+            output += chunk.choices[0].delta.content
+        except Exception as e:
+            raise Exception(chunk.json(), dir(chunk))
+    #return stream.choices[0].message.content
+    return output
 
 
 def get_openai_client(api_key:str, url:str=None):
@@ -73,13 +81,14 @@ def get_openai_client(api_key:str, url:str=None):
     return openai_client
 
 def get_openai_stream(client, prompt, model_config):
-    if 'temperature' in model_config and 'max_tokens' in model_config:
+    config = model_config['config']
+    if 'temperature' in config and 'max_tokens' in config:
         return client.chat.completions.create(
             model=model_config['model'],
             messages=[{"role": "user", "content": prompt}],
             stream=True,
-            temperature=model_config['temperature'],
-            max_tokens=model_config['max_tokens']
+            temperature=config['temperature'],
+            max_tokens=config['max_tokens']
         )
     else:
         return client.chat.completions.create(

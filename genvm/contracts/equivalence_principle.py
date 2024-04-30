@@ -93,7 +93,6 @@ class EquivalencePrinciple:
         self.icontract_inst.eq_num += 1
 
     def __get_llm_function(self):
-        llm_function = getattr(llms, "call_ollama")
-        if self.icontract_inst.node_config["provider"] == "openai":
-            llm_function = getattr(llms, "call_openai")
+        function_name = "call_" + self.icontract_inst.node_config["provider"]
+        llm_function = getattr(llms, function_name)
         return llm_function

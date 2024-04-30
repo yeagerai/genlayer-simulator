@@ -148,7 +148,7 @@ async def exec_transaction(transaction_input, logger=None):
     data = json.dumps({"new_contract_state" : leader_receipt['result']['contract_state']})
     transaction_type = 2
     final = False
-    consensus_data = ConsensusData(final=final, votes=votes, leader=leader_receipt, validators=valudators_results).model_dump_json()
+    consensus_data = ConsensusData(final=final, votes=votes, leader=leader_receipt, validators=valudators_results)
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
     cursor.execute(
@@ -157,7 +157,7 @@ async def exec_transaction(transaction_input, logger=None):
             from_address,
             to_address,
             data,
-            consensus_data,
+            consensus_data.json(),
             transaction_type,
         ),
     )
@@ -172,5 +172,5 @@ async def exec_transaction(transaction_input, logger=None):
 
     execution_output = {}
     execution_output["leader_data"] = leader_receipt
-    execution_output["consensus_data"] = consensus_data
+    execution_output["consensus_data"] = consensus_data.dict()
     return execution_output
