@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { ContractFile, MainStoreState, DefaultContractState, DeployedContract } from '@/types'
+import type { ContractFile, MainStoreState, DeployedContract } from '@/types'
 import { rpcClient } from '@/utils'
 
 const getInitialOPenedFiles = (): string[] => {
@@ -8,33 +8,42 @@ const getInitialOPenedFiles = (): string[] => {
   return []
 }
 
-export const useMainStore = defineStore('contractsFiles', {
+const valdiateFileName = (name: string) => {
+  const tokens = name.split('.')
+      if (tokens.length > 0) {
+        return `${tokens[0]}.gpy`
+      } 
+      return `${name}.gpy`
+}
+export const useMainStore = defineStore('mainStore', {
   state: (): MainStoreState => {
     return {
+      contractsModified: localStorage.getItem('mainStore.contractsModified') || '',
       contracts: [],
       openedFiles: getInitialOPenedFiles(),
       currentContractId: localStorage.getItem('mainStore.currentContractId') || '',
       deployedContracts: [],
-      defaultContractStates: [],
-      currentUserAddress: localStorage.getItem('mainStore.currentUserAddress') || ''
+      currentUserAddress: localStorage.getItem('mainStore.currentUserAddress') || '',
+      nodeLogs: [],
+      accounts: localStorage.getItem('mainStore.accounts')
+        ? (localStorage.getItem('mainStore.accounts') || '').split(',')
+        : []
     }
   },
   actions: {
     addContractFile(contract: ContractFile): void {
-      this.contracts.push(contract)
+      const name = valdiateFileName(contract.name)
+      this.contracts.push({ ...contract, name })
     },
     removeContractFile(id: string): void {
       this.contracts = [...this.contracts.filter((c) => c.id !== id)]
       this.deployedContracts = [...this.deployedContracts.filter((c) => c.contractId !== id)]
-      this.defaultContractStates = [
-        ...this.defaultContractStates.filter((c) => c.contractId !== id)
-      ]
     },
     updateContractFile(id: string, { name, content }: { name?: string; content?: string }) {
       this.contracts = [
         ...this.contracts.map((c) => {
           if (c.id === id) {
-            const _name = name || c.name
+            const _name = valdiateFileName(name || c.name)
             const _content = content || c.content
             return { ...c, name: _name, content: _content }
           }
@@ -59,21 +68,13 @@ export const useMainStore = defineStore('contractsFiles', {
         this.currentContractId = undefined
       }
     },
-    addDeployedContract({ contractId, address }: DeployedContract): void {
+    addDeployedContract({ contractId, address, defaultState }: DeployedContract): void {
       const index = this.deployedContracts.findIndex((c) => c.contractId === contractId)
       if (index === -1)
-        this.$patch((state) => state.deployedContracts.push({ contractId, address }))
-      else this.$patch((state) => (state.deployedContracts[index] = { contractId, address }))
-    },
-    addDefaultContractState({ contractId, address, defaultState }: DefaultContractState): void {
-      const index = this.defaultContractStates.findIndex((c) => c.contractId === contractId)
-      if (index === -1)
-        this.$patch((state) =>
-          state.defaultContractStates.push({ contractId, address, defaultState })
-        )
+        this.$patch((state) => state.deployedContracts.push({ contractId, address, defaultState }))
       else
         this.$patch(
-          (state) => (state.defaultContractStates[index] = { contractId, address, defaultState })
+          (state) => (state.deployedContracts[index] = { contractId, address, defaultState })
         )
     },
     setCurrentContractId(id?: string) {
@@ -86,6 +87,7 @@ export const useMainStore = defineStore('contractsFiles', {
           params: []
         })
         if (result) {
+          this.accounts = [...this.accounts, result.address]
           this.currentUserAddress = result.address
           return result.address
         }

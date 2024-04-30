@@ -2,7 +2,6 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api'
 import { ref, shallowRef, watch, computed } from 'vue'
 import { pythonSyntaxDefinition } from '@/utils'
-import { PlayIcon } from '@heroicons/vue/24/solid';
 import { useMainStore, useUIStore } from '@/stores';
 import { type ContractFile } from '@/types';
 
