@@ -60,6 +60,9 @@ async def main():
     
     current_contract.mode = "{run_by}"
     
+    if current_contract.mode == "validator":
+        current_contract.load_leader_eq_outputs()
+
     if asyncio.iscoroutinefunction(current_contract.{function_name}):
         await current_contract.{function_name}({args_str})
     else:

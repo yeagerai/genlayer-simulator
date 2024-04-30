@@ -46,6 +46,10 @@ class IContract:
         self.eq_outputs = {}
         self.eq_outputs["leader"] = {}
 
+    def load_leader_eq_outputs(self):
+        with open(os.environ.get("GENVMCONLOC") + "/receipt_leader.json", "r") as file:
+            self.eq_outputs = json.loads(file.read())["eq_outputs"]
+
     def _write_receipt(self, method_name, args):
         receipt = {
             # You can't get the name of the inherited class here
@@ -59,5 +63,7 @@ class IContract:
             "eq_outputs": self.eq_outputs,
         }
 
-        with open(os.environ.get("GENVMCONLOC") + "/receipt.json", "w") as file:
+        with open(
+            os.environ.get("GENVMCONLOC") + f"/receipt_{self.mode}.json", "w"
+        ) as file:
             json.dump(receipt, file, indent=4)
