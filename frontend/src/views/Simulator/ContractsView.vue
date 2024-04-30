@@ -3,6 +3,9 @@ import { useMainStore } from "@/stores"
 import { DocumentCheckIcon, ArrowUpTrayIcon, PlusIcon, TrashIcon, PencilIcon } from '@heroicons/vue/24/solid'
 import { nextTick, ref, watchEffect } from "vue";
 import { v4 as uuidv4 } from 'uuid'
+import type { ContractFile } from "@/types";
+import Modal from '@/components/ModalComponent.vue'
+
 const store = useMainStore()
 const showFileOptionsId = ref('')
 const editingFileId = ref('')
@@ -10,6 +13,8 @@ const newFileName = ref('.gpy')
 const showNewFileInput = ref(false)
 const editingFileName = ref('')
 const newFileNameInputRef = ref<HTMLInputElement | null>(null)
+const deleteFileModalIsOpen = ref(false)
+const fileToDelete = ref<ContractFile | null>(null)
 /**
  * Loads content from a file and adds it to the contract file store.
  *
@@ -43,11 +48,10 @@ const handleAddNewFile = () => {
 
 watchEffect(() => {
   if (showNewFileInput.value && newFileNameInputRef.value) {
-    nextTick(() => 
-  {
-    newFileNameInputRef?.value?.focus()
-    newFileNameInputRef?.value?.setSelectionRange(0, 0)
-  })
+    nextTick(() => {
+      newFileNameInputRef?.value?.focus()
+      newFileNameInputRef?.value?.setSelectionRange(0, 0)
+    })
   }
 })
 
@@ -62,11 +66,15 @@ const handleSaveNewFile = () => {
   newFileName.value = '.gpy'
 }
 
-const handleRemoveFile = (id?: string) => {
-  store.removeContractFile(id || '')
-  if (store.currentContractId === id) {
-    store.setCurrentContractId('')
+const handleRemoveFile = () => {
+  if (fileToDelete.value) {
+    store.removeContractFile(fileToDelete.value.id)
+    if (store.currentContractId === fileToDelete.value.id) {
+      store.setCurrentContractId('')
+    }
   }
+
+  deleteFileModalIsOpen.value = false
 }
 
 const handleEditFile = ({ id, name }: { id: string, name: string }) => {
@@ -87,6 +95,16 @@ const showFileOptions = (id?: string) => {
 
 const openContract = (id?: string) => {
   store.openFile(id || '')
+}
+
+const openDeleteFileModal = (contract: ContractFile) => {
+  fileToDelete.value = contract
+  deleteFileModalIsOpen.value = true
+}
+
+const closeDeleteFileModal = () => {
+  deleteFileModalIsOpen.value = false
+  fileToDelete.value = null
 }
 </script>
 <template>
@@ -125,7 +143,7 @@ const openContract = (id?: string) => {
               <ToolTip text="Edit Name" :options="{ placement: 'bottom' }" />
               <PencilIcon class="h-3 w-4 mr-1" />
             </button>
-            <button @click="handleRemoveFile(contract.id)">
+            <button @click="openDeleteFileModal(contract)">
               <ToolTip text="Delete file" :options="{ placement: 'bottom' }" />
               <TrashIcon class="h-4 w-4 mr-1" />
             </button>
@@ -141,6 +159,25 @@ const openContract = (id?: string) => {
         @keydown.escape="handleSaveNewFile">
     </div>
   </div>
+  <Modal :open="deleteFileModalIsOpen" @close="closeDeleteFileModal">
+    <div class="flex flex-col">
+      <div class="flex justify-between">
+        <div class="text-xl">Delete Contract</div>
+      </div>
+      <div class="flex justify-between p-2 mt-4">
+        Are you sure you want to delete this contract?
+      </div>
+      <div class="flex flex-col p-2">
+        <div class="py-2 w-full text-center font-bold bg-slate-100">
+          {{ fileToDelete?.name }}
+        </div>
+      </div>
+    </div>
+    <div class="flex flex-col mt-4 w-full">
+      <button @click="handleRemoveFile"
+        class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">Delete</button>
+    </div>
+  </Modal>
 </template>
 
 <style scoped>
