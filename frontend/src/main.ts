@@ -2,11 +2,9 @@ import './assets/main.css'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import Notifications from '@kyvg/vue3-notification'
-import VueTour from "v3-tour";
-import "v3-tour/dist/vue-tour.css";
 import App from './App.vue'
 import router from './router'
-import { persistStorePlugin, createToolTipPlugin } from '@/plugins'
+import { persistStorePlugin, createToolTipPlugin, tutorialPlugin } from '@/plugins'
 import { setupStores } from '@/utils'
 
 const app = createApp(App)
@@ -22,6 +20,7 @@ app.use(
   })
 )
 app.use(Notifications)
-app.use(VueTour)
+app.use(tutorialPlugin)
+
 app.mount('#app')
 setupStores()

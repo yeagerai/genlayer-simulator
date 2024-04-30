@@ -1,18 +1,13 @@
 import VTour from '@/components/Tutorial/TutorialComponent.vue'
 import VStep from '@/components/Tutorial/TutorialStep.vue'
+import type { App } from 'vue'
 
-const VueTour = {
-  install (Vue) {
-    Vue.component(VTour.name, VTour)
-    Vue.component(VStep.name, VStep)
+export const tutorialPlugin = {
+  install (app: App<Element>) {
+    app.component(VTour.name!, VTour)
+    app.component(VStep.name!, VStep)
 
     // Object containing Tour objects (see VTour.vue) where the tour name is used as key
-    Vue.prototype.$tours = {}
+    app.config.globalProperties.$tours = {}
   }
-}
-
-export default VueTour
-
-if (typeof window !== 'undefined' && window.Vue) {
-  window.Vue.use(VueTour)
 }
