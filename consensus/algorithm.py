@@ -128,7 +128,9 @@ async def exec_transaction(transaction_input, logger=None):
         votes[validator['address']] = validator_receipt['vote']
         valudators_results.append(validator_receipt)
 
-    # TODO: check if all validators agree with the leader or run it again with a different leader
+    # TODO: check if half of the validators agree with the leader or raise an exception
+    if len([vote for vote in votes.values() if vote == 'agree']) < num_validators // 2:
+        raise Exception("Consensus not reached")
 
     # Validators execute transaction
     # loop = asyncio.get_running_loop()
