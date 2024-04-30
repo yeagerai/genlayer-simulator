@@ -111,7 +111,7 @@ def get_icontract_schema(icontract: str) -> dict:
     namespace = {}
     exec(icontract, globals(), namespace)
     for class_name_in_contract, class_type_in_contract in namespace.items():
-        if "WrappedClass" in str(class_type_in_contract):
+        if "genvm.contracts.base.IContract" in str(class_type_in_contract):
             class_name = class_name_in_contract
 
     if not class_name:
