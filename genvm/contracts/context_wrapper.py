@@ -1,5 +1,6 @@
 from functools import wraps
 
+
 def enforce_with_context(cls):
     original_new = cls.__new__
     original_aenter = cls.__aenter__
@@ -25,14 +26,17 @@ def enforce_with_context(cls):
         @wraps(method)
         def wrapper(self, *args, **kwargs):
             if not self._is_within_with_block:
-                raise RuntimeError(f"Methods of {cls.__name__} must be called inside a 'with' block.")
+                raise RuntimeError(
+                    f"Methods of {cls.__name__} must be called inside a 'with' block."
+                )
             return method(self, *args, **kwargs)
+
         return wrapper
 
     # Wrap all methods to enforce the check
     for attr_name in dir(cls):
         attr = getattr(cls, attr_name)
-        if callable(attr) and not attr_name.startswith('__'):
+        if callable(attr) and not attr_name.startswith("_"):
             setattr(cls, attr_name, method_wrapper(attr))
 
     cls.__new__ = new_wrapper
