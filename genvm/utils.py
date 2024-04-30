@@ -1,7 +1,6 @@
 import os
 import json
 import requests
-from genvm.contracts.equivalence_principle import EquivalencePrinciple
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -18,9 +17,9 @@ def transaction_files() -> list:
     file_path = os.environ.get("GENVMCONLOC")
 
     icontract_file = file_path + "/icontract.py"
-    recipt_file = file_path + "/receipt.json"
+    recipt_file = file_path + "/receipt_validator.json"
     node_config_file = file_path + "/node-config.json"
-    leader_recipt_file = file_path + "/leader-recipt.json"
+    leader_recipt_file = file_path + "/receipt_leader.json"
 
     return icontract_file, recipt_file, node_config_file, leader_recipt_file
 
@@ -77,31 +76,3 @@ def webrequest_url():
         + ":"
         + os.environ["WEBREQUESTPORT"]
     )
-
-
-async def call_llm_with_principle(icontract_inst, prompt, eq_principle, comparative):
-    final_result = {}
-    async with EquivalencePrinciple(
-        icontract_inst=icontract_inst,
-        result=final_result,
-        principle=eq_principle,
-        comparative=comparative,
-    ) as eq:
-        result = await eq.call_llm(prompt)
-        eq.set(result)
-
-    return final_result["output"]
-
-
-async def get_webpage_with_principle(icontract_inst, url, eq_principle, comparative):
-    final_result = {}
-    async with EquivalencePrinciple(
-        icontract_inst=icontract_inst,
-        result=final_result,
-        principle=eq_principle,
-        comparative=comparative,
-    ) as eq:
-        result = await eq.get_webpage(url)
-        eq.set(result)
-
-    return final_result["output"]
