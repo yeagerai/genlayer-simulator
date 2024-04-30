@@ -24,7 +24,7 @@ def leader_executes_transaction(icontract: str, node_config: dict) -> dict:
 
     return_data = {"status": "error", "data": None}
 
-    icontract_file, recipt_file, _, _ = transaction_files()
+    icontract_file, _, _, leader_recipt_file = transaction_files()
 
     save_files(icontract, node_config, "leader")
 
@@ -46,14 +46,14 @@ def leader_executes_transaction(icontract: str, node_config: dict) -> dict:
         return return_data
 
     # Access the output of the subprocess.run command
-    file = open(recipt_file, "r")
+    file = open(leader_recipt_file, "r")
     contents = json.load(file)
     file.close()
 
     # TODO: Leader needs to be the name of the VM
     debug_output("leader_executes_transaction(response)", contents)
 
-    # os.remove(recipt_file)
+    # os.remove(leader_recipt_file)
 
     return_data["status"] = "success"
     return_data["data"] = contents
