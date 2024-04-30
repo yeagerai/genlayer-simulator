@@ -65,6 +65,9 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
             localStorage.setItem('mainStore.accounts', store.accounts.join(','))
             localStorage.setItem('mainStore.currentUserAddress', store.currentUserAddress)
             break
+            case 'removeDeployedContract':  
+            await db.deployedContracts.where('contractId').equals(args[0] as string).delete()
+            break
           default:
             break
         }
