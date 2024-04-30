@@ -4,7 +4,10 @@ import { v4 as uuidv4 } from 'uuid'
 
 export const setupStores = async () => {
   const mainStore = useMainStore()
-  if ((await db.contractFiles.count()) === 0) {
+  if (
+    (await db.contractFiles.count()) === 0 &&
+    !localStorage.getItem('mainStore.contractsModified')
+  ) {
     const contractsBlob = import.meta.glob('@/assets/examples/contracts/*.py', {
       query: '?raw',
       import: 'default'
@@ -15,7 +18,7 @@ export const setupStores = async () => {
       const contract = {
         id: uuidv4(),
         name,
-        content: (raw as string || '').trim()
+        content: ((raw as string) || '').trim()
       }
       mainStore.addContractFile(contract)
     }
@@ -24,10 +27,10 @@ export const setupStores = async () => {
   }
 
   mainStore.deployedContracts = await db.deployedContracts.toArray()
-  mainStore.defaultContractStates = await db.defaultContractStates.toArray()
-
-  if(!mainStore.currentUserAddress) {
-    const address = await mainStore.generateNewAccount()
-    mainStore.currentUserAddress = address || ''
+  console.log(  mainStore.accounts, "mainStore.accounts")
+  if ( mainStore.accounts.length < 1) {
+    await mainStore.generateNewAccount()
+  } else {
+    mainStore.accounts = localStorage.getItem('mainStore.accounts') ?  (localStorage.getItem('mainStore.accounts') || '').split(',') : []
   }
 }

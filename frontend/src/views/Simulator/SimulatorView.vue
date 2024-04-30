@@ -47,11 +47,11 @@ const handleToogleTerminal = () => {
         @resize="handlePanelWidthResize">
         <Pane min-size="18" size="18" max-size="60" class="flex w-full">
           <div class="overflow-y-auto flex w-full">
-            <router-view v-slot="{ Component }">
-            <keep-alive>
+            <RouterView v-slot="{ Component }">
+            <KeepAlive>
               <component :is="Component" />
-            </keep-alive>
-          </router-view>
+            </KeepAlive>
+          </RouterView>
           </div>
         </Pane>
         <Pane>
