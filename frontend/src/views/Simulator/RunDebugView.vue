@@ -18,11 +18,11 @@ const contractTransactions = ref<any[]>([])
 
 const getContractState = async (contractAddress: string) => {
   const { result } = await rpcClient.call({
-    method: 'get_contract_state',
-    params: [contractAddress]
-  })
-
-  contractState.value = result.data.state
+      method: 'get_contract_state',
+      params: [contractAddress]
+    })
+  
+    contractState.value = result.data.state
 }
 
 const handleCallContractMethod = async ({ method, params }: { method: string; params: any[] }) => {
@@ -71,16 +71,21 @@ const handleDeployContract = async () => {
 }
 
 
-const setDefaultState = async (contracct: DeployedContract) => {
-  defaultContractState.value = contracct.defaultState
-  await getContractState(contracct.address)
-
-  const { result } = await rpcClient.call({
-    method: 'get_icontract_schema',
-    params: [contracct.address]
-  })
-
-  abi.value = result
+const setDefaultState = async (contract: DeployedContract) => {
+  try {
+    defaultContractState.value = contract.defaultState
+    await getContractState(contract.address)
+  
+    const { result } = await rpcClient.call({
+      method: 'get_icontract_schema',
+      params: [contract.address]
+    })
+  
+    abi.value = result
+  } catch (error) {
+    console.error(error)
+    store.removeDeployedContract(contract.contractId) 
+  }
 
 }
 

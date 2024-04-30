@@ -13,6 +13,7 @@ from flask_cors import CORS
 from database.init_db import (
     create_db_if_it_doesnt_already_exists,
     create_tables_if_they_dont_already_exist,
+    clear_db_tables,
 )
 from database.credentials import get_genlayer_db_connection
 from database.functions import DatabaseFunctions
@@ -68,6 +69,12 @@ def create_db() -> dict:
 @jsonrpc.method("create_tables")
 def create_tables() -> dict:
     result = create_tables_if_they_dont_already_exist(app)
+    app.logger.info(result)
+    return {"status": result}
+
+@jsonrpc.method("clear_tables")
+def clear_tables() -> dict:
+    result = clear_db_tables()
     app.logger.info(result)
     return {"status": result}
 
@@ -288,7 +295,7 @@ def delete_validator(validator_address: str) -> dict:
 
 
 @jsonrpc.method("delete_all_validators")
-def delete_all_validator() -> dict:
+def delete_all_validators() -> dict:
     all_validators = get_all_validators()
     data = all_validators["data"]
     addresses = []
@@ -299,6 +306,15 @@ def delete_all_validator() -> dict:
         dbf.close()
     return get_all_validators()
 
+@jsonrpc.method("create_random_validators")
+def create_random_validator(count:int, min_stake:float, max_stake:float) -> list:
+    responses = []
+    for _ in range(count):
+        stake = random.uniform(min_stake, max_stake)
+        details = random_validator_config()
+        new_validator = create_validator(stake, details["provider"], details["model"], details["config"])
+        responses.append(new_validator)
+    return responses
 
 @jsonrpc.method("create_random_validator")
 def create_random_validator(stake: float) -> dict:

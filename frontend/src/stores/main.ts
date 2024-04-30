@@ -10,10 +10,10 @@ const getInitialOPenedFiles = (): string[] => {
 
 const valdiateFileName = (name: string) => {
   const tokens = name.split('.')
-      if (tokens.length < 2) {
-        return `${tokens[0]}.gpy`
-      }
-  return name
+  if (tokens.length > 0) {
+    return `${tokens[0]}.gpy`
+  }
+  return `${name}.gpy`
 }
 export const useMainStore = defineStore('mainStore', {
   state: (): MainStoreState => {
@@ -76,6 +76,11 @@ export const useMainStore = defineStore('mainStore', {
         this.$patch(
           (state) => (state.deployedContracts[index] = { contractId, address, defaultState })
         )
+    },
+    removeDeployedContract(contractId: string): void {
+      this.deployedContracts = [
+        ...this.deployedContracts.filter((c) => c.contractId !== contractId)
+      ]
     },
     setCurrentContractId(id?: string) {
       this.currentContractId = id

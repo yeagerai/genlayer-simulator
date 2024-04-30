@@ -44,11 +44,6 @@ import DiscordIcon from '@/assets/icons/DiscordIcon.vue'
                 <HandThumbUpIcon class="h-5 w-5 fill-primary" />
                 <ToolTip text="Feedback form" :options="{ placement: 'right' }" />
             </a>
-            <a href="https://t.me/genlayer" target="_blank"
-                class="p-3 border-r-4 border-transparent opacity-75 hover:border-r-primary hover:opacity-100">
-                <TelegramIcon class="h-5 w-5 fill-primary" />
-                <ToolTip text="GenLayer Telegram" :options="{ placement: 'right' }" />
-            </a>
             <RouterLink :to="{ name: 'profile' }"
                 class="p-3 border-r-4 border-transparent opacity-75 hover:border-r-primary hover:opacity-100">
                 <UserCircleIcon class="h-6 w-6 fill-primary" />

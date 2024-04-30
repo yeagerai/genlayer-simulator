@@ -100,17 +100,13 @@ def count_validators_logic() -> list:
     return requests.post(json_rpc_url, json=payload).json()
 
 def create_random_validators_logic(count:int, min_stake:float, max_stake:float) -> list:
-    responses = []
-    for _ in range(count):
-        stake = random.uniform(min_stake, max_stake)
-
-        payload = {
-            "jsonrpc": "2.0",
-            "method": "create_random_validator",
-            "params": [stake],
-            "id": 4,
-        }
-        responses.append(requests.post(json_rpc_url, json=payload).json())
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "create_random_validators",
+        "params": [count, min_stake, max_stake],
+        "id": 4,
+    }
+    responses = requests.post(json_rpc_url, json=payload).json()
     return responses
 
 def last_contracts_logic(number:int) -> dict:
@@ -232,7 +228,7 @@ def count_validators(count, min_stake, max_stake):
 def create_random_validators(count, min_stake, max_stake):
     responses = create_random_validators_logic(count, min_stake, max_stake)
     click.echo(
-        f"Registered {len(responses)} validators with stakes ranging from {min_stake} to {max_stake}."
+        f"Registered {len(responses['result'])} validator(s) with stakes ranging from {min_stake} to {max_stake}."
     )
 
 @click.command(help="Retrieve the last N deployed contracts.")
