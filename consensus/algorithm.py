@@ -8,18 +8,14 @@ from consensus.utils import (
     vrf,
     get_contract_state,
     genvm_url,
-    build_icontract,
-    get_nodes_config,
-    get_validators
+    build_icontract
 )
 
 from dotenv import load_dotenv
 load_dotenv()
 
 
-def leader_executes_transaction(transaction_input:dict, leader_config:dict) -> dict:
-    current_contract_state = get_contract_state(transaction_input["contract_address"])
-
+def leader_executes_transaction(current_contract_state, transaction_input:dict, leader_config:dict) -> dict:
     args_str = ", ".join(f"{json.dumps(arg)}" for arg in transaction_input["args"])
 
     class_name = transaction_input["function_name"].split('.')[0]
@@ -56,9 +52,7 @@ def leader_executes_transaction(transaction_input:dict, leader_config:dict) -> d
     }
 
 
-def validator_executes_transaction(transaction_input:dict , validator_config:dict, leader_receipt:dict) -> dict:
-    current_contract_state = get_contract_state(transaction_input["contract_address"])
-
+def validator_executes_transaction(current_contract_state, transaction_input:dict , validator_config:dict, leader_receipt:dict) -> dict:
     args_str = ", ".join(f"{json.dumps(arg)}" for arg in transaction_input["args"])
 
     class_name = transaction_input["function_name"].split('.')[0]
@@ -117,8 +111,11 @@ async def exec_transaction(transaction_input, logger=None):
         logger(f"Selected Validators: {remaining_validators}...")
         logger(f"Leader {leader} starts contract execution...")
 
+    # Get current contract state to pass it to leader and validators
+    current_contract_state = get_contract_state(transaction_input["contract_address"])
+
     # Leader executes transaction
-    leader_receipt = leader_executes_transaction(transaction_input, leader)
+    leader_receipt = leader_executes_transaction(current_contract_state, transaction_input, leader)
 
     votes = {leader['address']: leader_receipt['vote']}
 
@@ -127,9 +124,11 @@ async def exec_transaction(transaction_input, logger=None):
     
     valudators_results = []
     for validator in remaining_validators:
-        validator_receipt = validator_executes_transaction(transaction_input, validator, leader_receipt)
+        validator_receipt = validator_executes_transaction(current_contract_state, transaction_input, validator, leader_receipt)
         votes[validator['address']] = validator_receipt['vote']
         valudators_results.append(validator_receipt)
+
+    # TODO: check if all validators agree with the leader or run it again with a different leader
 
     # Validators execute transaction
     # loop = asyncio.get_running_loop()
@@ -159,6 +158,17 @@ async def exec_transaction(transaction_input, logger=None):
             data,
             consensus_data,
             transaction_type,
+        ),
+    )
+    # Update current state
+    new_contract_data = {}
+    new_contract_data['code'] = current_contract_state['code']
+    new_contract_data['state'] = leader_receipt['result']['contract_state']
+    cursor.execute(
+        "UPDATE current_state SET data = %s WHERE id = %s;",
+        (
+            json.dumps(new_contract_data),
+            to_address,
         ),
     )
 

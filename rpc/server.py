@@ -360,19 +360,12 @@ async def call_contract_function(
     if not address_is_in_correct_format(contract_address):
         return {"status": "contract_address not in ethereum address format"}
 
-    connection = get_genlayer_db_connection()
-    cursor = connection.cursor()
 
     function_call_data = CallContractInputData(
         contract_address=contract_address, function_name=function_name, args=args
     ).model_dump_json()
 
-    cursor.execute(
-        "INSERT INTO transactions (from_address, to_address, input_data, type, created_at) VALUES (%s, %s, %s, 2, CURRENT_TIMESTAMP);",
-        (from_account, contract_address, function_call_data),
-    )
 
-    connection.commit()
     log_status(f"Transaction sent from {from_account} to {contract_address}...")
 
     # call consensus
@@ -380,8 +373,6 @@ async def call_contract_function(
         json.loads(function_call_data), logger=log_status
     )
 
-    cursor.close()
-    connection.close()
     return {
         "status": "success",
         "message": f"Function '{function_name}' called on contract at {contract_address} with args {args}.",
