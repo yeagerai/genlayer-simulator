@@ -17,9 +17,9 @@ def transaction_files() -> list:
     file_path = os.environ.get("GENVMCONLOC")
 
     icontract_file = file_path + "/icontract.py"
-    recipt_file = file_path + "/receipt.json"
+    recipt_file = file_path + "/receipt_validator.json"
     node_config_file = file_path + "/node-config.json"
-    leader_recipt_file = file_path + "/leader-recipt.json"
+    leader_recipt_file = file_path + "/receipt_leader.json"
 
     return icontract_file, recipt_file, node_config_file, leader_recipt_file
 

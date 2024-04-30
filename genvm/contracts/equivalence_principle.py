@@ -44,7 +44,7 @@ class EquivalencePrinciple:
         # skip the block
         return self
 
-    async def __aexit__(self):
+    async def __aexit__(self, exc_type, exc_value, traceback):
 
         caller_frame = inspect.currentframe().f_back
         locals_in_caller = caller_frame.f_locals
@@ -96,3 +96,31 @@ class EquivalencePrinciple:
         function_name = "call_" + self.icontract_inst.node_config["provider"]
         llm_function = getattr(llms, function_name)
         return llm_function
+
+
+async def call_llm_with_principle(icontract_inst, prompt, eq_principle, comparative):
+    final_result = {}
+    async with EquivalencePrinciple(
+        icontract_inst=icontract_inst,
+        result=final_result,
+        principle=eq_principle,
+        comparative=comparative,
+    ) as eq:
+        result = await eq.call_llm(prompt)
+        eq.set(result)
+
+    return final_result["output"]
+
+
+async def get_webpage_with_principle(icontract_inst, url, eq_principle, comparative):
+    final_result = {}
+    async with EquivalencePrinciple(
+        icontract_inst=icontract_inst,
+        result=final_result,
+        principle=eq_principle,
+        comparative=comparative,
+    ) as eq:
+        result = await eq.get_webpage(url)
+        eq.set(result)
+
+    return final_result["output"]
