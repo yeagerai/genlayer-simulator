@@ -1,7 +1,5 @@
 import os
-import asyncio
 import json
-import functools
 
 from dotenv import load_dotenv
 
@@ -16,10 +14,8 @@ def serialize(obj):
     exclude_attrs = [
         "mode",
         "gas_used",
-        "non_det_counter",
-        "non_det_inputs",
-        "non_det_outputs",
-        "eq_principles_outs",
+        "eq_num",
+        "eq_outputs",
         "node_config",
     ]
 
@@ -39,61 +35,29 @@ def serialize(obj):
         raise TypeError(f"Type {type(obj)} not serializable")
 
 
-def icontract(cls):
-    class WrappedClass(cls):
-        def __init__(self, *args, **kwargs):
-            self.node_config = None
-            self.mode = None
-            self.gas_used = 0
-            self.eqs_num = 0
-            self.non_det_inputs = {}
-            self.non_det_outputs = {}
-            self.eq_principles_outs = {}
-            super(WrappedClass, self).__init__(*args, **kwargs)
+class IContract:
+    def __init__(self):
+        self.node_config = json.load(
+            open(os.environ.get("GENVMCONLOC") + "/node-config.json")
+        )
+        self.mode = None
+        self.gas_used = 0
+        self.eq_num = 0
+        self.eq_outputs = {}
+        self.eq_outputs["leader"] = {}
 
-        async def async_init(self):
-            self.node_config = json.load(
-                open(os.environ.get("GENVMCONLOC") + "/node-config.json")
-            )
+    def _write_receipt(self, method_name, args):
+        receipt = {
+            # You can't get the name of the inherited class here
+            "class": self.__class__.__name__,
+            "method": method_name,
+            "args": args,
+            "gas_used": self.gas_used,
+            "mode": self.mode,
+            "contract_state": serialize(self),
+            "node_config": self.node_config,
+            "eq_outputs": self.eq_outputs,
+        }
 
-        async def _write_receipt(self, method_name, args):
-            receipt = {
-                # You can't get the name of the inherited class here
-                "class": self.__class__.__name__,
-                "method": method_name,
-                "args": args,
-                "gas_used": self.gas_used,
-                "mode": self.mode,
-                "contract_state": serialize(self),
-                "node_config": self.node_config,
-                "non_det_inputs": self.non_det_inputs,
-                "non_det_outputs": self.non_det_outputs,
-                "eq_principles_outs": self.eq_principles_outs,
-            }
-
-            with open(os.environ.get("GENVMCONLOC") + "/receipt.json", "w") as file:
-                json.dump(receipt, file, indent=4)
-
-        def __getattribute__(self, name):
-            new_name = name
-
-            orig_attr = super().__getattribute__(new_name)
-
-            @functools.wraps(orig_attr)
-            async def wrapped_function(*args, **kwargs):
-                self.gas_used = gas_model_logic()
-
-                if asyncio.iscoroutinefunction(orig_attr):
-                    output = await orig_attr(*args, **kwargs)
-                else:
-                    output = orig_attr(*args, **kwargs)
-
-                # hardcore comparison
-                await self._write_receipt(new_name, args)
-                print("Execution Finished!")
-
-                return output
-
-            return wrapped_function
-
-    return WrappedClass
+        with open(os.environ.get("GENVMCONLOC") + "/receipt.json", "w") as file:
+            json.dump(receipt, file, indent=4)

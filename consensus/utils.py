@@ -57,9 +57,15 @@ def build_icontract(
 
 async def main():
     current_contract = {class_name}(**{contract_state})
-    await current_contract.async_init()
+    
     current_contract.mode = "{run_by}"
-    await current_contract.{function_name}({args_str})
+    
+    if asyncio.iscoroutinefunction(current_contract.{function_name}):
+        await current_contract.{function_name}({args_str})
+    else:
+        current_contract.{function_name}({args_str})
+    
+    current_contract._write_receipt('{function_name}', [{args_str}])
 
 if __name__=="__main__":
     import asyncio    

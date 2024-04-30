@@ -2,7 +2,7 @@ from typing import Optional
 import inspect
 from contracts.context_wrapper import enforce_with_context
 from genvm.contracts import llms
-from genvm.utils import transaction_files, get_webpage_content
+from genvm.utils import get_webpage_content
 
 
 def clear_locals(scope):
@@ -57,7 +57,7 @@ class EquivalencePrinciple:
                 eq_prompt = f"""Given the equivalence principle '{self.principle}', 
                 decide whether the following two outputs can be considered equivalent.
                 
-                Leader's Output: {self.icontract_inst.non_det_outputs[self.icontract_inst.eqs_num]}
+                Leader's Output: {self.icontract_inst.eq_outputs[self.icontract_inst.eq_num]}
                 
                 Validator's Output: {self.result['output']}
                 
@@ -86,29 +86,16 @@ class EquivalencePrinciple:
     def set(self, value):
         if self.icontract_inst.mode == "leader":
             self.result["output"] = value
-            self.icontract_inst.non_det_outputs["leader"] = {}
-            self.icontract_inst.non_det_outputs["leader"][
-                self.icontract_inst.eqs_num
-            ] = value
+            self.icontract_inst.eq_outputs["leader"] = {}
+            self.icontract_inst.eq_outputs["leader"][self.icontract_inst.eq_num] = value
         else:
-            self.result["output"] = self.icontract_inst.non_det_outputs["leader"][
-                self.icontract_inst.eqs_num
+            self.result["output"] = self.icontract_inst.eq_outputs["leader"][
+                self.icontract_inst.eq_num
             ]
-        self.icontract_inst.eqs_num += 1
+        self.icontract_inst.eq_num += 1
 
     def __get_llm_function(self):
         llm_function = getattr(llms, "call_ollama")
-        with open("/tmp/error.txt", "w") as f:
-            f.write(
-                str(
-                    [
-                        self.icontract_inst.gas_used,
-                    ]
-                )
-            )
-        print(type(self.icontract_inst.node_config))
         if self.icontract_inst.node_config["provider"] == "openai":
-            print("EEEEEPA")
             llm_function = getattr(llms, "call_openai")
-            print("EEEEEPA2222")
         return llm_function
