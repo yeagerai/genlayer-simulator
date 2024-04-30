@@ -29,7 +29,6 @@ const contracts = computed(() => {
     return store.contracts.filter(contract => store.openedFiles.includes(contract.id || ''))
 })
 const showHome = computed(() => store.currentContractId === '')
-console.log('store.currentContractId', showHome.value)
 
 </script>
 

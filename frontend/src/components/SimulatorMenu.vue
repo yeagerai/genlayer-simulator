@@ -10,7 +10,7 @@ import DiscordIcon from '@/assets/icons/DiscordIcon.vue'
         class="flex flex-col h-full items-center w-12 justify-between border-r border-r-slate-300 dark:border-r-white/60 dark:bg-zinc-800 dark:text-white">
         <div class="flex flex-col items-center">
             <RouterLink :to="{ name: 'simulator.contracts' }"
-                class="p-3 border-r-4 border-transparent opacity-75 hover:border-r-primary hover:opacity-100">
+                class="link-contracts p-3 border-r-4 border-transparent opacity-75 hover:border-r-primary hover:opacity-100">
                 <DocumentIcon class="h-6 w-6 fill-primary" />
                 <ToolTip text="Contracts" :options="{ placement: 'right' }" />
             </RouterLink>
@@ -28,7 +28,7 @@ import DiscordIcon from '@/assets/icons/DiscordIcon.vue'
         <div class="flex flex-col items-center">
             <a href="https://genlayer-docs.netlify.app/"
                 target="_blank"
-                class="p-3 border-r-4 border-transparent opacity-75 hover:border-r-primary hover:opacity-100">
+                class="link-docs p-3 border-r-4 border-transparent opacity-75 hover:border-r-primary hover:opacity-100">
                 <DocumentTextIcon class="h-5 w-5 fill-primary" />
                 <ToolTip text="GenLayer Docs" :options="{ placement: 'right' }" />
             </a>
