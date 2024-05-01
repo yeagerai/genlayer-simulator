@@ -23,7 +23,7 @@ const contractTransactions = ref<any[]>([])
 const getContractState = async (contractAddress: string) => {
   const { result } = await rpcClient.call({
     method: 'get_contract_state',
-    params: [contractAddress, 'get_storage']
+    params: [contractAddress, 'get_have_coin']
   })
 
   contractState.value = result.data

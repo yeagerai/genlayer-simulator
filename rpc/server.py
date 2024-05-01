@@ -5,8 +5,6 @@ import psycopg2
 import random
 import string
 import requests
-import pickle
-import base64
 from flask import Flask
 from flask_jsonrpc import JSONRPC
 from flask_socketio import SocketIO
@@ -211,9 +209,9 @@ def deploy_intelligent_contract(
         "id": 3,
     }
     response = requests.post(genvm_url() + "/api", json=payload).json()
-    if (response["result"]["status"] != "success"):
+    if response["result"]["status"] != "success":
         return {"status": "fail", "message": response["result"]["data"]}
-    
+
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
     contract_id = create_new_address()
@@ -443,14 +441,15 @@ def get_contract_state(contract_address: str, method_name: str) -> dict:
     if not row:
         raise Exception(contract_address + " contract does not exist")
 
-    namespace = {}
-    exec(row[0][1]['code'], namespace)
-    globals().update(namespace)
-    decoded_pickled_object = base64.b64decode(row[0][1]['state'])
-    contract_state = pickle.loads(decoded_pickled_object)
-    method_to_call = getattr(contract_state, method_name)
-    result = method_to_call()
-
+    code = row[0][1]["code"]
+    state = row[0][1]["state"]
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "get_contract_data",
+        "params": [code, state, method_name],
+        "id": 4,
+    }
+    result = requests.post(genvm_url() + "/api", json=payload).json()["result"]
     return {"id": row[0][0], "data": result}
 
 

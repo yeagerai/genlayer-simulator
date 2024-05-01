@@ -97,7 +97,7 @@ async def main():
     contract_runner._write_receipt(pickled_object, '__init__', [{constructor_args}])
 
 if __name__=="__main__":
-    import asyncio    
+    import asyncio
     asyncio.run(main())
     """
 
