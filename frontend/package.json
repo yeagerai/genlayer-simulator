@@ -28,6 +28,7 @@
     "splitpanes": "^3.1.5",
     "tippy.js": "^6.3.7",
     "uuid": "^9.0.1",
+    "vite-svg-loader": "^5.1.0",
     "vue": "^3.4.21",
     "vue-router": "^4.0.13",
     "vue3-tour": "^0.3.4"

@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { useMainStore } from "@/stores"
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { rpcClient } from '@/utils';
 import { notify } from "@kyvg/vue3-notification";
 import ContractState from '@/components/Simulator/ContractState.vue'
 import ExecuteTransactions from "@/components/Simulator/ExecuteTransactions.vue";
 import TransactionsList from "@/components/Simulator/TransactionsList.vue";
+import type { DeployedContract } from "@/types";
 
 const store = useMainStore()
 const defaultContractState = ref('{}')
@@ -14,17 +15,14 @@ const contractState = ref<any>({})
 const contract = computed(() => store.contracts.find(contract => contract.id === store.currentContractId))
 const deployedContract = computed(() => store.deployedContracts.find(contract => contract.contractId === store.currentContractId))
 const contractTransactions = ref<any[]>([])
-const storeContractState = computed(() => {
-  return store.defaultContractStates.find(c => c.contractId === store.currentContractId)?.defaultState
-})
 
 const getContractState = async (contractAddress: string) => {
   const { result } = await rpcClient.call({
-    method: 'get_contract_state',
-    params: [contractAddress]
-  })
-
-  contractState.value = result.data.state
+      method: 'get_contract_state',
+      params: [contractAddress]
+    })
+  
+    contractState.value = result.data.state
 }
 
 const handleCallContractMethod = async ({ method, params }: { method: string; params: any[] }) => {
@@ -32,7 +30,7 @@ const handleCallContractMethod = async ({ method, params }: { method: string; pa
   const result = await rpcClient.call({
     method: 'call_contract_function',
     params: [
-      deployedContract.value?.address, // TODO: replace with a current account
+      store.currentUserAddress, 
       deployedContract.value?.address,
       `${abi.value.class}.${method}`,
       params
@@ -61,8 +59,7 @@ const handleDeployContract = async () => {
         params: [store.currentUserAddress, contract.content, defaultStateContent]
       })
 
-      store.addDeployedContract({ address: result.contract_id, contractId: contract.id })
-      store.addDefaultContractState({ address: result.contract_id, contractId: contract.id, defaultState: defaultStateContent })
+      store.addDeployedContract({ address: result.contract_id, contractId: contract.id, defaultState: defaultStateContent })
       notify({
         title: 'OK',
         text: 'Contract deployed',
@@ -73,32 +70,34 @@ const handleDeployContract = async () => {
 
 }
 
-watch(
-  () => deployedContract.value,
-  async (newValue: any): Promise<void> => {
-    if (newValue) {
-      await getContractState(newValue.address)
 
-      const { result } = await rpcClient.call({
-        method: 'get_icontract_schema',
-        params: [newValue.address]
-      })
-
-      abi.value = result
-
-    }
+const setDefaultState = async (contract: DeployedContract) => {
+  try {
+    defaultContractState.value = contract.defaultState
+    await getContractState(contract.address)
+  
+    const { result } = await rpcClient.call({
+      method: 'get_icontract_schema',
+      params: [contract.address]
+    })
+  
+    abi.value = result
+  } catch (error) {
+    console.error(error)
+    store.removeDeployedContract(contract.contractId) 
   }
-)
-watch(
-  () => storeContractState.value,
-  async (newValue: any): Promise<void> => {
-    if (newValue) {
 
-      defaultContractState.value = newValue
+}
 
-    }
+watch(deployedContract, (newValue) => {
+  if (newValue) {
+    setDefaultState(newValue)
   }
-)
+})
+
+onMounted(() => {
+  if (deployedContract.value) setDefaultState(deployedContract.value)
+})
 </script>
 
 <template>
@@ -116,8 +115,8 @@ watch(
         </div>
         <div class="flex flex-col p-2 my-4">
           <div class="flex flex-col text-xs">
-            <h2>Set the default contrat state</h2>
-            <p>Please provide a json object with the default contract state.</p>
+            <h2>Constructor Parameters </h2>
+            <p>Please provide a json object with the constructor parameters.</p>
           </div>
           <div class="flex mt-2">
             <textarea rows="5" class="w-full bg-slate-100 dark:dark:bg-zinc-700 p-2" v-model="defaultContractState"

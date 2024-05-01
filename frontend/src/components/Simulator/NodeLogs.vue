@@ -1,20 +1,20 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { webSocketClient } from '@/utils'
+import { useMainStore } from '@/stores';
 
-const logs = ref<{ message: string; date: string }[]>([])
 const scrollContainer = ref<Element>()
 
 
-
+const mainStore = useMainStore()
 onMounted(() => {
   webSocketClient.on('status_update', (event) => {
     console.log('webSocketClient.details', event)
-    logs.value.push({ date: new Date().toISOString(), message: event.message })
+    mainStore.nodeLogs.push({ date: new Date().toISOString(), message: event.message })
   })
 })
 
-watch(logs.value, () => {
+watch(mainStore.nodeLogs, () => {
   const scrollTo = scrollContainer.value?.clientHeight || 400
   scrollContainer.value?.scrollTo({ top: scrollTo, behavior: 'smooth' })
 })
@@ -31,9 +31,9 @@ onUnmounted(() => {
     <div class="flex bg-slate-100 p-1 dark:bg-zinc-700 h-6">
     </div>
     <div class="flex flex-col w-full overflow-y-auto h-full p-1 bg-white dark:bg-zinc-800 dark:text-white cursor-text">
-      <div v-if="logs.length > 0"
+      <div v-if="mainStore.nodeLogs.length > 0"
         class="flex flex-col scroll-smooth overscroll-contain snap-y  snap-start p-0" ref="scrollContainer">
-        <div v-for="(item, index) in logs" :key="index" class="flex items-center">
+        <div v-for="(item, index) in mainStore.nodeLogs" :key="index" class="flex items-center">
           <div class="flex items-start">
             <div class="flex logs-small-text font-light"><span  class="flex flex-col items-center w-8">{{ index + 1 }}</span> {{ item.date }} :: </div>
             <div class="flex text-xs ml-1 flex-1">{{ item.message }}</div>
