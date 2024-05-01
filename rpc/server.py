@@ -5,6 +5,8 @@ import psycopg2
 import random
 import string
 import requests
+import pickle
+import base64
 from flask import Flask
 from flask_jsonrpc import JSONRPC
 from flask_socketio import SocketIO
@@ -426,7 +428,7 @@ def get_last_contracts(number_of_contracts: int) -> list:
 
 
 @jsonrpc.method("get_contract_state")
-def get_contract_state(contract_address: str) -> dict:
+def get_contract_state(contract_address: str, method_name: str) -> dict:
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
 
@@ -441,7 +443,15 @@ def get_contract_state(contract_address: str) -> dict:
     if not row:
         raise Exception(contract_address + " contract does not exist")
 
-    return {"id": row[0][0], "data": json.loads(row[0][1]['state'])}
+    namespace = {}
+    exec(row[0][1]['code'], namespace)
+    globals().update(namespace)
+    decoded_pickled_object = base64.b64decode(row[0][1]['state'])
+    contract_state = pickle.loads(decoded_pickled_object)
+    method_to_call = getattr(contract_state, method_name)
+    result = method_to_call()
+
+    return {"id": row[0][0], "data": result}
 
 
 @jsonrpc.method("get_icontract_schema")
