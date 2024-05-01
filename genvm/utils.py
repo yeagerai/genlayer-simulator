@@ -25,9 +25,9 @@ def transaction_files() -> list:
 
 
 def save_files(
-    icontract: str, node_config: str, node_type: str, leader_recipt: str = None
+    contract_code: str, node_config: str, node_type: str, leader_recipt: str = None
 ):
-    icontract_file, _, node_config_file, leader_recipt_file = transaction_files()
+    contract_code_file, _, node_config_file, leader_recipt_file = transaction_files()
 
     debug_output("llm_config", node_config)
 
@@ -36,10 +36,10 @@ def save_files(
         json.dump(node_config, file, indent=4)
     file.close()
 
-    debug_output("icontract", icontract)
+    debug_output("contract_code", contract_code)
 
-    with open(icontract_file, "w+") as file:
-        file.write(icontract)
+    with open(contract_code_file, "w+") as file:
+        file.write(contract_code)
     file.close()
 
     if leader_recipt:
@@ -87,6 +87,9 @@ def generate_deploy_contract(
 {contract_code}
 
 async def main():
+    from genvm.base.contract_runner import ContractRunner
+    contract_runner = ContractRunner()
+    contract_runner._set_mode("leader")
     import pickle
     current_contract = {class_name}(**{constructor_args})
     

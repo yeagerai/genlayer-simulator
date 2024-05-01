@@ -26,13 +26,13 @@ def execute_transaction() -> dict:
 
 
 @jsonrpc.method("leader_executes_transaction")
-def leader_executes_transaction(icontract: str, node_config: dict) -> dict:
+def leader_executes_transaction(contract_code: str, node_config: dict) -> dict:
 
     return_data = {"status": "error", "data": None}
 
     icontract_file, _, _, leader_recipt_file = transaction_files()
 
-    save_files(icontract, node_config, "leader")
+    save_files(contract_code, node_config, "leader")
 
     try:
         result = subprocess.run(
@@ -162,12 +162,16 @@ def get_icontract_schema(icontract: str) -> dict:
 
 
 @jsonrpc.method("deploy_contract")
-def deploy_contract(contract_code: str, constructor_args: str, class_name: str) -> dict:
-    file_source = generate_deploy_contract(contract_code, constructor_args, class_name)
+def deploy_contract(contract_code: str, constructor_args: str, class_name: str, leader_config: dict) -> dict:
+    deploy_contract_code = generate_deploy_contract(contract_code, constructor_args, class_name)
     return_data = {"status": "error", "data": None}
+    
+    contract_file, _, _, _ = transaction_files()
+    save_files(deploy_contract_code, leader_config, "leader")
+
     try:
         result = subprocess.run(
-            ["python", file_source],
+            ["python", contract_file],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             universal_newlines=True,
@@ -176,7 +180,7 @@ def deploy_contract(contract_code: str, constructor_args: str, class_name: str) 
         return_data["data"] = str(e)
         return return_data
 
-    debug_output("LLM Result", result)
+    debug_output("RUN Deploy Result", result)
 
     if result.returncode != 0:
         return_data["data"] = str(result.returncode) + ": " + str(result.stderr)
@@ -187,7 +191,7 @@ def deploy_contract(contract_code: str, constructor_args: str, class_name: str) 
     contents = json.load(file)
     file.close()
 
-    debug_output("validator_executes_transaction(response)", contents)
+    debug_output("Deployed contract receipt", contents)
 
     # os.remove(leader_recipt_file)
 

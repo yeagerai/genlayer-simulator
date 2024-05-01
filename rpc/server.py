@@ -19,7 +19,7 @@ from database.credentials import get_genlayer_db_connection
 from database.functions import DatabaseFunctions
 from database.types import ContractData, CallContractInputData
 from consensus.algorithm import exec_transaction
-from consensus.utils import genvm_url
+from consensus.utils import vrf, genvm_url
 from consensus.nodes.create_nodes import random_validator_config
 
 from dotenv import load_dotenv
@@ -190,23 +190,33 @@ def send_transaction(from_account: str, to_account: str, amount: float) -> dict:
 def deploy_intelligent_contract(
     from_account: str, class_name: str, contract_code: str, constructor_args: str
 ) -> dict:
-
-    payload = {
-        "jsonrpc": "2.0",
-        "method": "leader_executes_transaction",
-        "params": [contract_code, constructor_args, class_name],
-        "id": 3,
-    }
-    response = requests.post(genvm_url() + "/api", json=payload).json()
-
     if not address_is_in_correct_format(from_account):
         return {"status": "from_account not in ethereum address format"}
 
+    with DatabaseFunctions() as dbf:
+        all_validators = dbf.all_validators()
+        dbf.close()
+
+    # Select validators using VRF
+    selected_validators = vrf(all_validators, 5)
+
+    leader_config = selected_validators[0]
+
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "deploy_contract",
+        "params": [contract_code, constructor_args, class_name, leader_config],
+        "id": 3,
+    }
+    response = requests.post(genvm_url() + "/api", json=payload).json()
+    if (response["result"]["status"] != "success"):
+        return {"status": "fail", "message": response["result"]["data"]}
+    
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
     contract_id = create_new_address()
     contract_data = ContractData(
-        code=contract_code, state=json.loads(initial_state)
+        code=contract_code, state=response["result"]["data"]["contract_state"]
     ).model_dump_json()
     try:
         cursor.execute(
