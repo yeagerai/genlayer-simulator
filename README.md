@@ -29,7 +29,7 @@ $ docker compose up
 #### Step 1: Get some LLM models
 
 ```
-$ docker exec -it ollama ollama run llama2
+$ docker exec -it ollama ollama run llama3
 ...
 $ docker exec -it ollama ollama run ...
 ...
@@ -41,7 +41,7 @@ $ vim .env
 GENVMOPENAIKEY     = '<add_your_open_ai_key_here>'
 ...
 ```
-*(NOTE: If you want add additional openai models there is a list (here)(https://github.com/yeagerai/genlayer-simulator/blob/main/consensus/nodes/defaults.json#L5))*
+*(NOTE: If you want add additional openai models there is a list [here](https://github.com/yeagerai/genlayer-simulator/blob/main/consensus/nodes/defaults.json#L5))*
 
 #### Step 2: Setup your Environment
 
@@ -87,6 +87,12 @@ Use the following commands to run through the demo step-by-step.
 
 *(NOTE: You can find the full list of CLI commands [here](https://github.com/yeagerai/genlayer-simulator/blob/main/cli/genlayer.py))*
 
+## Documentation
+
+Additional documentation
+
+ - https://genlayer-docs.netlify.app/
+
 ## Setting up your Environment
 
 ### Linux / MacOS
@@ -112,9 +118,3 @@ $  .\.venv\Scripts\activate
 (.venv) $ pip install -r requirements.txt
 (.venv) $ $env:PYTHONPATH = (Get-Location).Path
 ```
-
-## Documentation
-
-Additional documentation
-
- - https://genlayer-docs.netlify.app/
