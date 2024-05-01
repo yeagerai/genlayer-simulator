@@ -21,9 +21,8 @@ def leader_executes_transaction(
 
     exec_file_for_genvm = run_contract(
         contract_code=current_contract_state["code"],
-        contract_state=str(current_contract_state["state"]),
+        encoded_state=str(current_contract_state["state"]),
         run_by="leader",
-        class_name=class_name,
         function_name=function_name,
         args_str=args_str,
     )
@@ -60,9 +59,8 @@ def validator_executes_transaction(
 
     exec_file_for_genvm = run_contract(
         contract_code=current_contract_state["code"],
-        contract_state=str(current_contract_state["state"]),
+        encoded_state=str(current_contract_state["state"]),
         run_by="validator",
-        class_name=class_name,
         function_name=function_name,
         args_str=args_str,
     )

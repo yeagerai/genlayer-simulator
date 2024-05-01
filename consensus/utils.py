@@ -55,17 +55,17 @@ def run_contract(
 {contract_code}
 
 async def main():
-    from genvm.contracts.contract_runner import ContractRunner
+    from genvm.base.contract_runner import ContractRunner
     contract_runner = ContractRunner()
     try:
         EquivalencePrinciple.contract_runner = contract_runner
-    except ImportError:
-        from genvm.contracts.equivalence_principle import EquivalencePrinciple
+    except (ImportError, UnboundLocalError):
+        from genvm.base.equivalence_principle import EquivalencePrinciple
         EquivalencePrinciple.contract_runner = contract_runner
 
     import pickle
     import base64
-    decoded_pickled_object = base64.b64decode({encoded_state})
+    decoded_pickled_object = base64.b64decode("{encoded_state}")
     current_contract = pickle.loads(decoded_pickled_object)
     
     contract_runner.mode = "{run_by}"
