@@ -11,10 +11,10 @@ ADD genvm $path/genvm
 
 WORKDIR $path/genvm
 
-RUN ln contracts/base.py /tmp/base.py
-RUN ln contracts/llms.py /tmp/llms.py
-RUN ln contracts/context_wrapper.py /tmp/context_wrapper.py
-RUN ln contracts/equivalence_principle.py /tmp/equivalence_principle.py
+RUN ln base/contract_runner.py /tmp/contract_runner.py
+RUN ln base/llms.py /tmp/llms.py
+RUN ln base/context_wrapper.py /tmp/context_wrapper.py
+RUN ln base/equivalence_principle.py /tmp/equivalence_principle.py
 
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install Flask
