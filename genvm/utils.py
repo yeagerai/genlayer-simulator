@@ -90,11 +90,10 @@ async def main():
     from genvm.base.contract_runner import ContractRunner
     contract_runner = ContractRunner()
     contract_runner._set_mode("leader")
-    import pickle
+    import json
     current_contract = {class_name}(**{constructor_args})
-    
-    pickled_object = pickle.dumps(current_contract)
-    contract_runner._write_receipt(pickled_object, '__init__', [{constructor_args}])
+    current_contract_serialized = json.dumps(current_contract.__dict__)
+    contract_runner._write_receipt(current_contract_serialized, '__init__', [{constructor_args}])
 
 if __name__=="__main__":
     import asyncio    

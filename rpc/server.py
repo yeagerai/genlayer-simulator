@@ -441,7 +441,7 @@ def get_contract_state(contract_address: str) -> dict:
     if not row:
         raise Exception(contract_address + " contract does not exist")
 
-    return {"id": row[0][0], "data": row[0][1]}
+    return {"id": row[0][0], "data": json.loads(row[0][1]['state'])}
 
 
 @jsonrpc.method("get_icontract_schema")

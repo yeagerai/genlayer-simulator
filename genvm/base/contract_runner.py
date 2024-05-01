@@ -28,8 +28,7 @@ class ContractRunner:
         with open(os.environ.get("GENVMCONLOC") + "/receipt_leader.json", "r") as file:
             self.eq_outputs = json.loads(file.read())["result"]["eq_outputs"]
 
-    def _write_receipt(self, pickled_object, method_name, args):
-        encoded_pickled_object = base64.b64encode(pickled_object).decode("utf-8")
+    def _write_receipt(self, contract_state, method_name, args):
         receipt = {
             # You can't get the name of the inherited class here
             "class": self.__class__.__name__,
@@ -37,7 +36,7 @@ class ContractRunner:
             "args": args,
             "gas_used": self.gas_used,
             "mode": self.mode,
-            "contract_state": encoded_pickled_object,
+            "contract_state": contract_state,
             "node_config": self.node_config,
             "eq_outputs": self.eq_outputs,
         }

@@ -26,7 +26,8 @@ const getContractState = async (contractAddress: string) => {
     params: [contractAddress]
   })
 
-  contractState.value = result.data.state
+  console.log('🚀 ~ getContractState ~ result:', result)
+  contractState.value = result.data
 }
 
 const handleCallContractMethod = async ({ method, params }: { method: string; params: any[] }) => {
