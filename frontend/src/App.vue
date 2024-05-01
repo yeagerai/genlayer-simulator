@@ -13,7 +13,7 @@ onBeforeMount(() => {
 
 </script>
 <template>
-  <TutorialSteps />
+  
   <main :data-mode="uiStore.mode" class="h-screen w-full bg-white dark:bg-zinc-800 dark:text-white flex flex-col">
     <Header />
     <div class="flex h-full">
