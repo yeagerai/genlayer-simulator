@@ -93,9 +93,9 @@ Additional documentation
 
  - https://genlayer-docs.netlify.app/
 
-## Setting up your Environment
+### Setting up your Environment
 
-### Linux / MacOS
+#### Linux / MacOS
 ```
 $ virtualenv .venv
 $ source .venv/bin/activate
@@ -103,7 +103,7 @@ $ source .venv/bin/activate
 (.venv) $ export PYTHONPATH="$(pwd)"
 ```
 
-### Windows (cmd)
+#### Windows (cmd)
 ```
 $ virtualenv .venv
 $  .\.venv\Scripts\activate
@@ -111,7 +111,7 @@ $  .\.venv\Scripts\activate
 (.venv) $ set PYTHONPATH=%cd%
 ```
 
-### Windows (PowerShell)
+#### Windows (PowerShell)
 ```
 $ virtualenv .venv
 $  .\.venv\Scripts\activate
