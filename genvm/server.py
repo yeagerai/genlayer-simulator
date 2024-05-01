@@ -24,7 +24,7 @@ def leader_executes_transaction(icontract: str, node_config: dict) -> dict:
 
     return_data = {"status": "error", "data": None}
 
-    icontract_file, recipt_file, _, _ = transaction_files()
+    icontract_file, _, _, leader_recipt_file = transaction_files()
 
     save_files(icontract, node_config, "leader")
 
@@ -46,14 +46,14 @@ def leader_executes_transaction(icontract: str, node_config: dict) -> dict:
         return return_data
 
     # Access the output of the subprocess.run command
-    file = open(recipt_file, "r")
+    file = open(leader_recipt_file, "r")
     contents = json.load(file)
     file.close()
 
     # TODO: Leader needs to be the name of the VM
     debug_output("leader_executes_transaction(response)", contents)
 
-    # os.remove(recipt_file)
+    # os.remove(leader_recipt_file)
 
     return_data["status"] = "success"
     return_data["data"] = contents
@@ -111,7 +111,7 @@ def get_icontract_schema(icontract: str) -> dict:
     namespace = {}
     exec(icontract, globals(), namespace)
     for class_name_in_contract, class_type_in_contract in namespace.items():
-        if "WrappedClass" in str(class_type_in_contract):
+        if "__main__" in str(class_type_in_contract):
             class_name = class_name_in_contract
 
     if not class_name:
@@ -127,21 +127,20 @@ def get_icontract_schema(icontract: str) -> dict:
         m for m in members if inspect.isfunction(m[1]) or inspect.ismethod(m[1])
     ]
     for name, member in functions_and_methods:
-        if not name.startswith("_"):
-            signature = inspect.signature(member)
+        signature = inspect.signature(member)
 
-            inputs = {}
-            for method_variable_name, method_variable in signature.parameters.items():
-                if method_variable_name != "self":
-                    annotation = str(method_variable.annotation)[8:-2]
-                    inputs[method_variable_name] = str(annotation)
+        inputs = {}
+        for method_variable_name, method_variable in signature.parameters.items():
+            if method_variable_name != "self":
+                annotation = str(method_variable.annotation)[8:-2]
+                inputs[method_variable_name] = str(annotation)
 
-            return_annotation = str(signature.return_annotation)[8:-2]
+        return_annotation = str(signature.return_annotation)[8:-2]
 
-            if return_annotation == "inspect._empty":
-                return_annotation = "None"
+        if return_annotation == "inspect._empty":
+            return_annotation = "None"
 
-            methods[name] = {"inputs": inputs, "output": return_annotation}
+        methods[name] = {"inputs": inputs, "output": return_annotation}
 
     # Find all class variables
     variables = {}
