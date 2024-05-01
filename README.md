@@ -1,8 +1,11 @@
 # GenLayer Prototype
+
 ## Introduction
+
 Welcome to the GenLayer prototype, the first step towards a decentralized platform that combines the ease of using Python to write contracts, the access to the internet, the intelligence of the LLMs, and the security and efficiency of a blockchain.
 
 ## Prototype Components
+
 The GenLayer prototype consists of the following main components:
 
 * **State Storage (PostgreSQL):** We use a SQL database to maintain the blockchain's updated and persistent state.
@@ -16,23 +19,77 @@ The GenLayer prototype consists of the following main components:
 ### Window One
 
 ```
+$ cd genlayer-simulator
 $ cp .env.example .env
-$ docker compose build
 $ docker compose up
 ```
 
 ### Window Two
 
-#### 1. Installing the Ollama model
+#### Step 1: Get some LLM models
 
 ```
 $ docker exec -it ollama ollama run llama2
 ...
+$ docker exec -it ollama ollama run ...
+...
+```
+*(NOTE: More models are avliable [here](https://github.com/ollama/ollama?tab=readme-ov-file#model-library))*
+
+```
+$ vim .env
+GENVMOPENAIKEY     = '<add_your_open_ai_key_here>'
+...
+```
+*(NOTE: If you want to add additional openai models please add the (here)[https://github.com/yeagerai/genlayer-simulator/blob/main/consensus/nodes/defaults.json#L5])*
+
+#### Step 2: Setup your Environment
+
+Next setup your [environment](#setting-up-your-environment).
+
+#### Step 3: Visit the Frontend
+
+```
+(.venv) $ python cli/genlayer.py create-db
+...
+(.venv) $ python cli/genlayer.py create-tables
+...
 ```
 
-#### 2. Set up the environment
+Then visit [localhost:8080](http://localhost:8080/)
 
-##### Linux / MacOS
+From here you will be able to create validators and intellegent contracts.
+
+## Executing the Demo
+
+```
+(.venv) $ python scripts/debug_simulator.py
+```
+
+## CLI commands
+
+If you'd rather run through the demo step-by-step use the following commands.
+
+```
+(.venv) $ python cli/genlayer.py create-db
+...
+(.venv) $ python cli/genlayer.py create-tables
+...
+(.venv) # python cli/genlayer.py register-validators --count 10 --min-stake 1 --max-stake 10
+...
+(.venv) # python cli/genlayer.py create-eoa --balance 10
+...<your-new-address>...
+(.venv) # python cli/genlayer.py deploy --from-account <your-new-address> --initial-state {"have_coin": True} examples/contracts/wizzard_of_coin.py
+...<contract-address>...
+(.venv) # python cli/genlayer.py contract --from-account <your-new-address> --contract-address <contract-address> --function WizzardOfCoin.ask_for_coin --args {"request": "Can I have the coin please?"}
+...
+```
+
+*(NOTE: You can find the full list of CLI commands [here](https://github.com/yeagerai/genlayer-simulator/blob/main/cli/genlayer.py))
+
+## Setting up your Environment
+
+### Linux / MacOS
 ```
 $ virtualenv .venv
 $ source .venv/bin/activate
@@ -40,7 +97,7 @@ $ source .venv/bin/activate
 (.venv) $ export PYTHONPATH="$(pwd)"
 ```
 
-##### Windows (cmd)
+### Windows (cmd)
 ```
 $ virtualenv .venv
 $  .\.venv\Scripts\activate
@@ -48,52 +105,10 @@ $  .\.venv\Scripts\activate
 (.venv) $ set PYTHONPATH=%cd%
 ```
 
-##### Windows (PowerShell)
+### Windows (PowerShell)
 ```
 $ virtualenv .venv
 $  .\.venv\Scripts\activate
 (.venv) $ pip install -r requirements.txt
 (.venv) $ $env:PYTHONPATH = (Get-Location).Path
 ```
-
-#### Execute the Demo
-
-```
-(.venv) $ python scripts/debug_simulator.py
-```
-
-#### Seperate Steps
-
-```
-(.venv) $ python cli/genlayer.py create-db
-...
-(.venv) $ python cli/genlayer.py create-tables
-...
-(.venv) # python cli/genlayer.py create-account
-{'id': 1, 'jsonrpc': '2.0', 'result': {'address': '0x...', 'balance': 0, 'status': 'account created'}}
-(.venv) # python cli/genlayer.py fund-account --address 0x...
-...
-```
-
-## Nodes
-
-* Run `rpc/server.py` to launch the server on port `4000`.
-* Run some CLI commands to create an initial state with validators, and deployed contracts:
-    ```
-    (.venv) # python cli/genlayer.py register-validators --count 10 --min-stake 1 --max-stake 10
-    Registered 10 validators with stakes ranging from 1.0 to 10.0.
-    (.venv) # python cli/genlayer.py create-eoa --balance 10
-    {'id': 1, 'jsonrpc': '2.0', 'result': {'balance': 10.0, 'id': '95594942-17e5-4f91-8862-c3a4eae5b58c', 'status': 'EOA created'}}
-    (.venv) # python cli/genlayer.py deploy --from-account 95594942-17e5-4f91-8862-c3a4eae5b58c genvm/contracts/wizzard_of_coin.py
-    {{'30a079b5-4615-4b4f-a7c8-807f1f9d1577', 'status': 'deployed'}}
-    (.venv) # python cli/genlayer.py contract --from-account <from_address> --contract-address 30a079b5-4615-4b4f-a7c8-807f1f9d1577 --function WizzardOfCoin.ask_for_coin --args <from_address> --args Dave
-    {'id': 3, 'jsonrpc': '2.0', 'result': {'message': "Function 'WizzardOfCoin.ask_for_coin' called on contract at 30a079b5-4615-4b4f-a7c8-807f1f9d1577 with args ['<from_address>', 'Dave'].", 'status': 'success'}}
-    ```
-
-    *(NOTE: <from_address> can be '95594942-17e5-4f91-8862-c3a4eae5b58c' or another address)*
-
-    That will create an initial state that enables the user to start sending transactions to the network. You can check all the changes on DB with a viewer such as `dbeaver`.
-
-* Execute a transaction. You can use the `scripts/debug_contract.py` there you would see the execution syntax, and you can start creating and debugging intelligent contracts.
-
-From now on you can create new intelligent contracts and test them by executing transactions with this prototype.
