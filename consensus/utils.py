@@ -44,11 +44,30 @@ def get_contract_state(
         connection.close()
 
 
-def build_icontract(
+def deploy_contract(
     contract_code: str,
-    contract_state: str,
-    run_by: str,
+    constructor_args: str,
     class_name: str,
+) -> str:
+    return f"""
+{contract_code}
+
+async def main():
+    import pickle
+    current_contract = {class_name}(**{constructor_args})
+    
+    pickled_object = pickle.dumps(current_contract)
+    contract_runner._write_receipt(pickled_object, '__init__', [{constructor_args}])
+
+if __name__=="__main__":
+    import asyncio    
+    asyncio.run(main())
+    """
+
+
+def get_contract_data(
+    contract_code: str,
+    encoded_state: str,
     function_name: str,
     args_str: str,
 ) -> str:
@@ -56,19 +75,55 @@ def build_icontract(
 {contract_code}
 
 async def main():
-    current_contract = {class_name}(**{contract_state})
+    import pickle
+    import base64
+    decoded_pickled_object = base64.b64decode({encoded_state})
+    current_contract = pickle.loads(decoded_pickled_object)
+    return current_contract.{function_name}({args_str})
+
     
-    current_contract.mode = "{run_by}"
+if __name__=="__main__":
+    import asyncio    
+    asyncio.run(main())
+    """
+
+
+def run_contract(
+    contract_code: str,
+    encoded_state: str,
+    run_by: str,
+    function_name: str,
+    args_str: str,
+) -> str:
+    return f"""
+{contract_code}
+
+async def main():
+    from genvm.contracts.contract_runner import ContractRunner
+    contract_runner = ContractRunner()
+    try:
+        EquivalencePrinciple.contract_runner = contract_runner
+    except ImportError:
+        from genvm.contracts.equivalence_principle import EquivalencePrinciple
+        EquivalencePrinciple.contract_runner = contract_runner
+
+    import pickle
+    import base64
+    decoded_pickled_object = base64.b64decode({encoded_state})
+    current_contract = pickle.loads(decoded_pickled_object)
     
-    if current_contract.mode == "validator":
-        current_contract._load_leader_eq_outputs()
+    contract_runner.mode = "{run_by}"
+    
+    if contract_runner.mode == "validator":
+        contract_runner._load_leader_eq_outputs()
 
     if asyncio.iscoroutinefunction(current_contract.{function_name}):
         await current_contract.{function_name}({args_str})
     else:
         current_contract.{function_name}({args_str})
-    
-    current_contract._write_receipt('{function_name}', [{args_str}])
+
+    pickled_object = pickle.dumps(current_contract)
+    contract_runner._write_receipt(pickled_object, '{function_name}', [{args_str}])
 
 if __name__=="__main__":
     import asyncio    

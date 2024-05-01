@@ -1,6 +1,6 @@
 import os
 import json
-
+import base64
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -10,32 +10,7 @@ def gas_model_logic():
     return 1
 
 
-def serialize(obj):
-    exclude_attrs = [
-        "mode",
-        "gas_used",
-        "eq_num",
-        "eq_outputs",
-        "node_config",
-    ]
-
-    if isinstance(obj, (str, int, float, bool)) or obj is None:
-        return obj
-    elif isinstance(obj, dict):
-        return {k: serialize(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
-        return [serialize(item) for item in obj]
-    elif hasattr(obj, "__dict__"):
-        return {
-            k: serialize(v)
-            for k, v in obj.__dict__.items()
-            if not k.startswith("_") and k not in exclude_attrs
-        }
-    else:
-        raise TypeError(f"Type {type(obj)} not serializable")
-
-
-class IContract:
+class ContractRunner:
     def __init__(self):
         self.node_config = json.load(
             open(os.environ.get("GENVMCONLOC") + "/node-config.json")
@@ -50,7 +25,8 @@ class IContract:
         with open(os.environ.get("GENVMCONLOC") + "/receipt_leader.json", "r") as file:
             self.eq_outputs = json.loads(file.read())["result"]["eq_outputs"]
 
-    def _write_receipt(self, method_name, args):
+    def _write_receipt(self, pickled_object, method_name, args):
+        encoded_pickled_object = base64.b64encode(pickled_object).decode("utf-8")
         receipt = {
             # You can't get the name of the inherited class here
             "class": self.__class__.__name__,
@@ -58,7 +34,7 @@ class IContract:
             "args": args,
             "gas_used": self.gas_used,
             "mode": self.mode,
-            "contract_state": serialize(self),
+            "contract_state": encoded_pickled_object,
             "node_config": self.node_config,
             "eq_outputs": self.eq_outputs,
         }
