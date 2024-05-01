@@ -26,7 +26,7 @@ const emit = defineEmits(['callMethod'])
 
 const methodList = computed<ContractMethod[]>(() => {
   const list = Object.entries(props.abi?.methods || {})
-    .filter((m) => !m[0].startsWith('_'))
+    .filter((m) => !m[0].startsWith('_') && !m[0].startsWith('get_'))
     .map((m) => ({
       name: m[0],
       inputs: m[1].inputs
