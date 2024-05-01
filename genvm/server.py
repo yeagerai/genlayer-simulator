@@ -5,7 +5,13 @@ import json
 import inspect
 from flask import Flask
 from flask_jsonrpc import JSONRPC
-from genvm.utils import debug_output, transaction_files, save_files
+from genvm.utils import (
+    debug_output,
+    transaction_files,
+    save_files,
+    generate_deploy_contract,
+    generate_get_contract_data,
+)
 
 from dotenv import load_dotenv
 
@@ -153,6 +159,46 @@ def get_icontract_schema(icontract: str) -> dict:
                         variables[stmt.target.id] = stmt.annotation.id
 
     return {"class": class_name, "methods": methods, "variables": variables}
+
+
+@jsonrpc.method("deploy_contract")
+def deploy_contract(contract_code: str, constructor_args: str, class_name: str) -> dict:
+    file_source = generate_deploy_contract(contract_code, constructor_args, class_name)
+    return_data = {"status": "error", "data": None}
+    try:
+        result = subprocess.run(
+            ["python", file_source],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+        )
+    except Exception as e:
+        return_data["data"] = str(e)
+        return return_data
+
+    debug_output("LLM Result", result)
+
+    if result.returncode != 0:
+        return_data["data"] = str(result.returncode) + ": " + str(result.stderr)
+        return return_data
+
+    # Access the output of the subprocess.run command
+    file = open(os.environ.get("GENVMCONLOC") + "/receipt_leader.json", "r")
+    contents = json.load(file)
+    file.close()
+
+    debug_output("validator_executes_transaction(response)", contents)
+
+    # os.remove(leader_recipt_file)
+
+    return_data["status"] = "success"
+    return_data["data"] = contents
+    return return_data
+
+
+@jsonrpc.method("get_contract_data")
+def get_contract_data(icontract: str) -> dict:
+    pass
 
 
 if __name__ == "__main__":

@@ -44,50 +44,6 @@ def get_contract_state(
         connection.close()
 
 
-def deploy_contract(
-    contract_code: str,
-    constructor_args: str,
-    class_name: str,
-) -> str:
-    return f"""
-{contract_code}
-
-async def main():
-    import pickle
-    current_contract = {class_name}(**{constructor_args})
-    
-    pickled_object = pickle.dumps(current_contract)
-    contract_runner._write_receipt(pickled_object, '__init__', [{constructor_args}])
-
-if __name__=="__main__":
-    import asyncio    
-    asyncio.run(main())
-    """
-
-
-def get_contract_data(
-    contract_code: str,
-    encoded_state: str,
-    function_name: str,
-    args_str: str,
-) -> str:
-    return f"""
-{contract_code}
-
-async def main():
-    import pickle
-    import base64
-    decoded_pickled_object = base64.b64decode({encoded_state})
-    current_contract = pickle.loads(decoded_pickled_object)
-    return current_contract.{function_name}({args_str})
-
-    
-if __name__=="__main__":
-    import asyncio    
-    asyncio.run(main())
-    """
-
-
 def run_contract(
     contract_code: str,
     encoded_state: str,

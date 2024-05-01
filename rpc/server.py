@@ -72,6 +72,7 @@ def create_tables() -> dict:
     app.logger.info(result)
     return {"status": result}
 
+
 @jsonrpc.method("clear_tables")
 def clear_tables() -> dict:
     result = clear_db_tables()
@@ -187,8 +188,16 @@ def send_transaction(from_account: str, to_account: str, amount: float) -> dict:
 
 @jsonrpc.method("deploy_intelligent_contract")
 def deploy_intelligent_contract(
-    from_account: str, contract_code: str, initial_state: str
+    from_account: str, class_name: str, contract_code: str, constructor_args: str
 ) -> dict:
+
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "leader_executes_transaction",
+        "params": [contract_code, constructor_args, class_name],
+        "id": 3,
+    }
+    response = requests.post(genvm_url() + "/api", json=payload).json()
 
     if not address_is_in_correct_format(from_account):
         return {"status": "from_account not in ethereum address format"}
@@ -306,15 +315,19 @@ def delete_all_validators() -> dict:
         dbf.close()
     return get_all_validators()
 
+
 @jsonrpc.method("create_random_validators")
-def create_random_validator(count:int, min_stake:float, max_stake:float) -> list:
+def create_random_validator(count: int, min_stake: float, max_stake: float) -> list:
     responses = []
     for _ in range(count):
         stake = random.uniform(min_stake, max_stake)
         details = random_validator_config()
-        new_validator = create_validator(stake, details["provider"], details["model"], details["config"])
+        new_validator = create_validator(
+            stake, details["provider"], details["model"], details["config"]
+        )
         responses.append(new_validator)
     return responses
+
 
 @jsonrpc.method("create_random_validator")
 def create_random_validator(stake: float) -> dict:
@@ -360,11 +373,9 @@ async def call_contract_function(
     if not address_is_in_correct_format(contract_address):
         return {"status": "contract_address not in ethereum address format"}
 
-
     function_call_data = CallContractInputData(
         contract_address=contract_address, function_name=function_name, args=args
     ).model_dump_json()
-
 
     log_status(f"Transaction sent from {from_account} to {contract_address}...")
 
