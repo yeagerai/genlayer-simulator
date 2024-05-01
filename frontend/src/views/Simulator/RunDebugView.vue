@@ -18,11 +18,11 @@ const contractTransactions = ref<any[]>([])
 
 const getContractState = async (contractAddress: string) => {
   const { result } = await rpcClient.call({
-      method: 'get_contract_state',
-      params: [contractAddress]
-    })
-  
-    contractState.value = result.data.state
+    method: 'get_contract_state',
+    params: [contractAddress]
+  })
+
+  contractState.value = result.data.state
 }
 
 const handleCallContractMethod = async ({ method, params }: { method: string; params: any[] }) => {
@@ -30,7 +30,7 @@ const handleCallContractMethod = async ({ method, params }: { method: string; pa
   const result = await rpcClient.call({
     method: 'call_contract_function',
     params: [
-      store.currentUserAddress, 
+      store.currentUserAddress,
       deployedContract.value?.address,
       `${abi.value.class}.${method}`,
       params
@@ -75,16 +75,16 @@ const setDefaultState = async (contract: DeployedContract) => {
   try {
     defaultContractState.value = contract.defaultState
     await getContractState(contract.address)
-  
+
     const { result } = await rpcClient.call({
       method: 'get_icontract_schema',
       params: [contract.address]
     })
-  
+
     abi.value = result
   } catch (error) {
     console.error(error)
-    store.removeDeployedContract(contract.contractId) 
+    store.removeDeployedContract(contract.contractId)
   }
 
 }
@@ -126,8 +126,7 @@ onMounted(() => {
         <div class="flex flex-col p-2 w-full justify-center">
           <ToolTip text="Deploy" :options="{ placement: 'top' }" />
           <button @click="handleDeployContract"
-            class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">Deploy Intelligent
-            Contract</button>
+            class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">Deploy</button>
         </div>
       </div>
       <div class="flex flex-col" v-if="deployedContract">

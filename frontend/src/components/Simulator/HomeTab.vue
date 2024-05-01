@@ -33,7 +33,7 @@
                             GenLayer
                         </a>
                         <a href="#" class="flex bg-slate-300 p-6 rounded-md">
-                            getPy
+                            genPy
                         </a>
                         <a href="#" class="flex bg-slate-300 p-6 rounded-md">
                             Intelligent Contracts
