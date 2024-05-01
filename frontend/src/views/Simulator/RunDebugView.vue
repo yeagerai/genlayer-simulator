@@ -1,29 +1,28 @@
 <script setup lang="ts">
-import { useContractsFilesStore } from "@/stores"
-import { computed, ref, watch } from "vue";
+import { useMainStore } from "@/stores"
+import { computed, onMounted, ref, watch } from "vue";
 import { rpcClient } from '@/utils';
 import { notify } from "@kyvg/vue3-notification";
 import ContractState from '@/components/Simulator/ContractState.vue'
 import ExecuteTransactions from "@/components/Simulator/ExecuteTransactions.vue";
 import TransactionsList from "@/components/Simulator/TransactionsList.vue";
+import type { DeployedContract } from "@/types";
 
-const store = useContractsFilesStore()
+const store = useMainStore()
 const defaultContractState = ref('{}')
 const abi = ref<any>()
 const contractState = ref<any>({})
 const contract = computed(() => store.contracts.find(contract => contract.id === store.currentContractId))
 const deployedContract = computed(() => store.deployedContracts.find(contract => contract.contractId === store.currentContractId))
 const contractTransactions = ref<any[]>([])
-const storeContractState = computed(() => {
-  return store.defaultContractStates.find(c => c.contractId === store.currentContractId)?.defaultState
-})
+
 const getContractState = async (contractAddress: string) => {
   const { result } = await rpcClient.call({
-    method: 'get_contract_state',
-    params: [contractAddress]
-  })
-
-  contractState.value = result.data.state
+      method: 'get_contract_state',
+      params: [contractAddress]
+    })
+  
+    contractState.value = result.data.state
 }
 
 const handleCallContractMethod = async ({ method, params }: { method: string; params: any[] }) => {
@@ -31,7 +30,7 @@ const handleCallContractMethod = async ({ method, params }: { method: string; pa
   const result = await rpcClient.call({
     method: 'call_contract_function',
     params: [
-      deployedContract.value?.address, // TODO: replace with a current account
+      store.currentUserAddress, 
       deployedContract.value?.address,
       `${abi.value.class}.${method}`,
       params
@@ -57,11 +56,10 @@ const handleDeployContract = async () => {
       const defaultStateContent = JSON.stringify(defaultState, null, 2)
       const { result } = await rpcClient.call({
         method: 'deploy_intelligent_contract',
-        params: ['0xcAE1bEb0daABFc1eF1f4A1C17be7E7b4cc12B33A', contract.content, defaultStateContent]
+        params: [store.currentUserAddress, contract.content, defaultStateContent]
       })
 
-      store.addDeployedContract({ address: result.contract_id, contractId: contract.id })
-      store.addDefaultContractState({ address: result.contract_id, contractId: contract.id, defaultState: defaultStateContent })
+      store.addDeployedContract({ address: result.contract_id, contractId: contract.id, defaultState: defaultStateContent })
       notify({
         title: 'OK',
         text: 'Contract deployed',
@@ -72,37 +70,38 @@ const handleDeployContract = async () => {
 
 }
 
-watch(
-  () => deployedContract.value,
-  async (newValue: any): Promise<void> => {
-    if (newValue) {
-      await getContractState(newValue.address)
 
-      const { result } = await rpcClient.call({
-        method: 'get_icontract_schema',
-        params: [newValue.address]
-      })
-
-      abi.value = result
-
-    }
+const setDefaultState = async (contract: DeployedContract) => {
+  try {
+    defaultContractState.value = contract.defaultState
+    await getContractState(contract.address)
+  
+    const { result } = await rpcClient.call({
+      method: 'get_icontract_schema',
+      params: [contract.address]
+    })
+  
+    abi.value = result
+  } catch (error) {
+    console.error(error)
+    store.removeDeployedContract(contract.contractId) 
   }
-)
-watch(
-  () => storeContractState.value,
-  async (newValue: any): Promise<void> => {
-    if (newValue) {
 
-      defaultContractState.value = newValue
+}
 
-    }
+watch(deployedContract, (newValue) => {
+  if (newValue) {
+    setDefaultState(newValue)
   }
-)
+})
 
+onMounted(() => {
+  if (deployedContract.value) setDefaultState(deployedContract.value)
+})
 </script>
 
 <template>
-  <div class="flex flex-col overflow-y-auto max-h-[93vh]">
+  <div class="flex flex-col w-full overflow-y-auto max-h-[93vh]">
     <div class="flex flex-col p-2 w-full">
       <h3 class="text-xl">Run and Debug</h3>
     </div>
@@ -111,13 +110,13 @@ watch(
         <div class="flex flex-col px-2 py-2 w-full bg-slate-100">
           <div class="text-sm">Intelligent Contract:</div>
           <div class="text-xs text-neutral-800">
-            {{ contract?.name }}.gpy
+            {{ contract?.name }}
           </div>
         </div>
         <div class="flex flex-col p-2 my-4">
           <div class="flex flex-col text-xs">
-            <h2>Set the default contrat state</h2>
-            <p>Please provide a json object with the default contract state.</p>
+            <h2>Constructor Parameters </h2>
+            <p>Please provide a json object with the constructor parameters.</p>
           </div>
           <div class="flex mt-2">
             <textarea rows="5" class="w-full bg-slate-100 dark:dark:bg-zinc-700 p-2" v-model="defaultContractState"

@@ -12,10 +12,15 @@ def iContract_stub(cls):
         def __init__(self, *args, **kwargs):
             super(WrappedClass, self).__init__(*args, **kwargs)
             #del self.__class__.__getattribute__
+            self.all_calls = []
 
         async def _get_webpage(self, url:str, equivalence_criteria:str = None):
             # To ensure the method is not called directly
             stack_trace = traceback.extract_stack()
+            current_stack = []
+            for x in stack_trace:
+                current_stack.append(x.filename+'(' +str(x.lineno)+'): ['+x.name+'] '+x.line)
+            self.all_calls.append(current_stack)
             corectly_called = False
             if stack_trace[-2].name in ['get_webpage', '__aexit__']:
                 corectly_called = True
@@ -28,6 +33,10 @@ def iContract_stub(cls):
         async def _call_llm(self, prompt:str, consensus_eq:str=None):
             # To ensure the method is not called directly
             stack_trace = traceback.extract_stack()
+            current_stack = []
+            for x in stack_trace:
+                current_stack.append(x.filename+'(' +str(x.lineno)+'): ['+x.name+'] '+x.line)
+            self.all_calls.append(current_stack)
             corectly_called = False
             if stack_trace[-2].name in ['call_llm', '__aexit__']:
                 corectly_called = True

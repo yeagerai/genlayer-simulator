@@ -13,13 +13,20 @@ from flask_jsonrpc import JSONRPC
 from flask_socketio import SocketIO
 from flask_cors import CORS
 
-from database.init_db import create_db_if_it_doesnt_already_exists, create_tables_if_they_dont_already_exist
+from database.init_db import (
+    create_db_if_it_doesnt_already_exists,
+    create_tables_if_they_dont_already_exist,
+    clear_db_tables,
+)
 from database.credentials import get_genlayer_db_connection
+from database.functions import DatabaseFunctions
 from database.types import ContractData, CallContractInputData
 from consensus.algorithm import exec_transaction
 from consensus.utils import genvm_url
+from consensus.nodes.create_nodes import random_validator_config
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 
@@ -64,16 +71,19 @@ jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 
-@socketio.on('connect')
+@socketio.on("connect")
 def handle_connect():
-    print('Client connected')
+    print("Client connected")
 
-@socketio.on('disconnect')
+
+@socketio.on("disconnect")
 def handle_disconnect():
-    print('Client disconnected')
+    print("Client disconnected")
+
 
 def log_status(message):
-    socketio.emit('status_update', {'message': message})
+    socketio.emit("status_update", {"message": message})
+
 
 @jsonrpc.method("create_db")
 def create_db() -> dict:
@@ -81,11 +91,20 @@ def create_db() -> dict:
     logger.info(result)
     return success_response(result)
 
+
 @jsonrpc.method("create_tables")
 def create_tables() -> dict:
     result = create_tables_if_they_dont_already_exist(app)
     logger.info(result)
     return success_response(result)
+
+
+@jsonrpc.method("clear_tables")
+def clear_tables() -> dict:
+    result = clear_db_tables()
+    app.logger.info(result)
+    return {"status": result}
+
 
 @jsonrpc.method("create_account")
 def create_account() -> dict:
@@ -105,6 +124,7 @@ def create_account() -> dict:
         logger.error(e)
         return error_response('failed to create account')
     return success_response({"address": new_address, "balance": balance})
+
 
 @jsonrpc.method("fund_account")
 def fund_account(account: string, balance: float) -> dict:
@@ -210,7 +230,9 @@ def send_transaction(from_account: str, to_account: str, amount: float) -> dict:
 
 
 @jsonrpc.method("deploy_intelligent_contract")
-def deploy_intelligent_contract(from_account: str, contract_code: str, initial_state: str) -> dict:
+def deploy_intelligent_contract(
+    from_account: str, contract_code: str, initial_state: str
+) -> dict:
 
     if not address_is_in_correct_format(from_account):
         return {"status": "from_account not in ethereum address format"}
@@ -267,6 +289,94 @@ def count_validators() -> dict:
     return success_response({"count": row[0]})
 
 
+@jsonrpc.method("get_validator")
+def get_validator(validator_address: str) -> dict:
+    with DatabaseFunctions() as dbf:
+        validator = dbf.get_validator(validator_address)
+        dbf.close()
+
+    if len(validator) > 0:
+        return {"status": "success", "message": "", "data": validator}
+    else:
+        return {"status": "error", "message": "validator not found", "data": {}}
+
+
+@jsonrpc.method("get_all_validators")
+def get_all_validators() -> dict:
+    with DatabaseFunctions() as dbf:
+        validators = dbf.all_validators()
+        dbf.close()
+
+    return {"status": "success", "message": "", "data": validators}
+
+
+@jsonrpc.method("create_validator")
+def create_validator(stake: float, provider: str, model: str, config: json) -> dict:
+    new_address = create_new_address()
+    config_json = json.dumps(config)
+    with DatabaseFunctions() as dbf:
+        dbf.create_validator(new_address, stake, provider, model, config_json)
+        dbf.close()
+    return get_validator(new_address)
+
+
+@jsonrpc.method("update_validator")
+def update_validator(
+    validator_address: str, stake: float, provider: str, model: str, config: json
+) -> dict:
+    validator = get_validator(validator_address)
+    if validator["status"] == "error":
+        return validator
+    config_json = json.dumps(config)
+    with DatabaseFunctions() as dbf:
+        dbf.update_validator(validator_address, stake, provider, model, config_json)
+        dbf.close()
+    return get_validator(validator_address)
+
+
+@jsonrpc.method("delete_validator")
+def delete_validator(validator_address: str) -> dict:
+    validator = get_validator(validator_address)
+    if validator["status"] == "error":
+        return validator
+    with DatabaseFunctions() as dbf:
+        dbf.delete_validator(validator_address)
+        dbf.close()
+
+    return {"status": "success", "message": "", "data": {"address": validator_address}}
+
+
+@jsonrpc.method("delete_all_validators")
+def delete_all_validators() -> dict:
+    all_validators = get_all_validators()
+    data = all_validators["data"]
+    addresses = []
+    with DatabaseFunctions() as dbf:
+        for validator in data:
+            addresses.append(validator["address"])
+            dbf.delete_validator(validator["address"])
+        dbf.close()
+    return get_all_validators()
+
+@jsonrpc.method("create_random_validators")
+def create_random_validators(count:int, min_stake:float, max_stake:float) -> list:
+    responses = []
+    for _ in range(count):
+        stake = random.uniform(min_stake, max_stake)
+        details = random_validator_config()
+        new_validator = create_validator(stake, details["provider"], details["model"], details["config"])
+        responses.append(new_validator)
+    return responses
+
+@jsonrpc.method("create_random_validator")
+def create_random_validator(stake: float) -> dict:
+    details = random_validator_config()
+    return create_validator(
+        stake, details["provider"], details["model"], details["config"]
+    )
+
+
+# TODO: DEPRECIATED
 @jsonrpc.method("register_validator")
 def register_validator(stake: float) -> dict:
 
@@ -313,7 +423,9 @@ async def call_contract_function(
         connection = get_genlayer_db_connection()
         cursor = connection.cursor()
 
-        function_call_data = CallContractInputData(contract_address=contract_address, function_name=function_name, args=args).model_dump_json()
+        function_call_data = CallContractInputData(
+            contract_address=contract_address, function_name=function_name, args=args
+        ).model_dump_json()
 
         cursor.execute(
             "INSERT INTO transactions (from_address, to_address, input_data, type, created_at) VALUES (%s, %s, %s, 2, CURRENT_TIMESTAMP);",
@@ -323,7 +435,7 @@ async def call_contract_function(
         connection.commit()
         log_status(f"Transaction sent from {from_account} to {contract_address}...")
 
-        # call consensus
+    # call consensus
         execution_output = await exec_transaction(json.loads(function_call_data), logger=log_status)
 
         cursor.close()
@@ -334,6 +446,8 @@ async def call_contract_function(
         return error_response('failed to query validators')
     
     return success_response({"execution_output": execution_output})
+
+
 
 @jsonrpc.method("get_last_contracts")
 def get_last_contracts(number_of_contracts: int) -> dict:
@@ -349,22 +463,23 @@ def get_last_contracts(number_of_contracts: int) -> dict:
         )
         contracts = cursor.fetchall()
 
+
         # Format the result
         contracts_info = []
         for contract in contracts:
-            contract_info = {
-                "contract_id": contract[0]
-            }
+            contract_info = {"contract_id": contract[0]}
             contracts_info.append(contract_info)
 
-        cursor.close()
-        connection.close()
+            cursor.close()
+            connection.close()
 
     except Exception as e:
         logger.error(e)
         return error_response('failed to query validators')
     
     return success_response(contract_info)
+
+
 
 @jsonrpc.method("get_contract_state")
 def get_contract_state(contract_address: str) -> dict:
@@ -401,7 +516,7 @@ def get_icontract_schema(contract_address: str) -> dict:
         # Query the database for the current state of a deployed contract
         cursor.execute(
             "SELECT * FROM transactions WHERE to_address = %s AND type = 1;",
-            (contract_address,)
+            (contract_address,),
         )
         tx = cursor.fetchone()
 
@@ -439,5 +554,12 @@ def get_icontract_schema(contract_address: str) -> dict:
 def ping() -> dict:
     return {"status": "OK"}
 
+
 if __name__ == "__main__":
-    socketio.run(app, debug=True, port=os.environ.get('RPCPORT'), host='0.0.0.0', allow_unsafe_werkzeug=True)
+    socketio.run(
+        app,
+        debug=True,
+        port=os.environ.get("RPCPORT"),
+        host="0.0.0.0",
+        allow_unsafe_werkzeug=True,
+    )

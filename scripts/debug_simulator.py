@@ -23,9 +23,8 @@ if 'PYTHONPATH' not in os.environ:
     sys.exit()
 
 
-from consensus.nodes.create_nodes import create_nodes
 from cli.genlayer import (
-    register_validators_logic,
+    create_random_validators_logic,
     count_validators_logic,
     create_db_logic,
     create_tables_logic,
@@ -47,15 +46,11 @@ response = count_validators_logic()
 if 'result' in response and 'count' in response['result']['data']:
     if response['result']['data']['count'] == 0:
         print('Creating validators...')
-        register_validators_logic(int(os.environ['TOTALVALIDATORS']), 1, 10)
+        create_random_validators_logic(int(os.environ['TOTALVALIDATORS']), 1, 10)
     else:
         print('Validators already created.')
 else:
     raise Exception('The count_validators rpc function failed!')
-
-# Create a config file for the nodes
-if not os.path.exists(cwd + 'consensus/nodes/nodes.json'):
-    create_nodes()
 
 # Create a new account
 create_account_result = create_account_logic()
