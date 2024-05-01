@@ -140,7 +140,7 @@ def get_icontract_schema(icontract: str) -> dict:
         if return_annotation == "inspect._empty":
             return_annotation = "None"
 
-        methods[name] = {"inputs": inputs, "output": return_annotation}
+        methods[name] = {"inputs": list(inputs.items()), "output": return_annotation}
 
     # Find all class variables
     variables = {}
@@ -152,7 +152,8 @@ def get_icontract_schema(icontract: str) -> dict:
                     if hasattr(stmt.annotation, "id") and hasattr(stmt.target, "id"):
                         variables[stmt.target.id] = stmt.annotation.id
 
-    return {"class": class_name, "methods": methods, "variables": variables}
+    return {"class": class_name, "methods": methods, "variables": list(variables.items())}
+
 
 
 if __name__ == "__main__":
