@@ -41,7 +41,7 @@ $ vim .env
 GENVMOPENAIKEY     = '<add_your_open_ai_key_here>'
 ...
 ```
-*(NOTE: If you want add additional openai models there is a list (here)[https://github.com/yeagerai/genlayer-simulator/blob/main/consensus/nodes/defaults.json#L5))*
+*(NOTE: If you want add additional openai models there is a list (here)(https://github.com/yeagerai/genlayer-simulator/blob/main/consensus/nodes/defaults.json#L5))*
 
 #### Step 2: Setup your Environment
 
@@ -75,7 +75,7 @@ Use the following commands to run through the demo step-by-step.
 ...
 (.venv) $ python cli/genlayer.py create-tables
 ...
-(.venv) # python cli/genlayer.py register-validators --count 10 --min-stake 1 --max-stake 10
+(.venv) # python cli/genlayer.py create-random-validators --count 10 --min-stake 1 --max-stake 10
 ...
 (.venv) # python cli/genlayer.py create-eoa --balance 10
 ...<your-new-address>...
@@ -112,3 +112,9 @@ $  .\.venv\Scripts\activate
 (.venv) $ pip install -r requirements.txt
 (.venv) $ $env:PYTHONPATH = (Get-Location).Path
 ```
+
+## Documentation
+
+Additional documentation
+
+ - https://genlayer-docs.netlify.app/
