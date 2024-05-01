@@ -26,7 +26,6 @@ const getContractState = async (contractAddress: string) => {
     params: [contractAddress]
   })
 
-  console.log('🚀 ~ getContractState ~ result:', result)
   contractState.value = result.data
 }
 
