@@ -127,11 +127,11 @@ const closeDeleteFileModal = () => {
     </div>
     <div v-for="(contract) in store.contracts" :key="contract.id" class="flex flex-col w-full">
       <div @mouseover="showFileOptions(contract.id)" @mouseout="showFileOptions()"
-        :class="['flex items-center text-xs text-neutral-500 py-1 px-2 font-semibold hover:text-primary hover:underline', (contract.id === store.currentContractId ? 'text-primary underline' : '')]">
+        :class="['flex items-center text-xs dark:text-neutral-100 text-neutral-500 py-1 px-2 font-semibold hover:text-primary hover:underline', (contract.id === store.currentContractId ? 'text-primary underline' : '')]">
         <DocumentCheckIcon class="h-4 w-4 dark:fill-white fill-primary mr-1" />
 
         <div class="flex items-center justify-between w-full" v-if="editingFileId === contract.id">
-          <input type="text" class="bg-slate-100 dark:dark:bg-zinc-700 w-full" v-model="editingFileName"
+          <input type="text" class="bg-slate-100 dark:bg-zinc-700 w-full" v-model="editingFileName"
             @blur="handleSaveFile" @keyup.enter="handleSaveFile">
         </div>
         <div class="flex items-center justify-between w-full" v-else>
