@@ -44,11 +44,10 @@ def get_contract_state(
         connection.close()
 
 
-def build_icontract(
+def run_contract(
     contract_code: str,
-    contract_state: str,
+    encoded_state: str,
     run_by: str,
-    class_name: str,
     function_name: str,
     args_str: str,
 ) -> str:
@@ -56,19 +55,31 @@ def build_icontract(
 {contract_code}
 
 async def main():
-    current_contract = {class_name}(**{contract_state})
+    from genvm.base.contract_runner import ContractRunner
+    contract_runner = ContractRunner()
+    try:
+        EquivalencePrinciple.contract_runner = contract_runner
+    except (ImportError, UnboundLocalError):
+        from genvm.base.equivalence_principle import EquivalencePrinciple
+        EquivalencePrinciple.contract_runner = contract_runner
+
+    import pickle
+    import base64
+    decoded_pickled_object = base64.b64decode("{encoded_state}")
+    current_contract = pickle.loads(decoded_pickled_object)
     
-    current_contract.mode = "{run_by}"
+    contract_runner.mode = "{run_by}"
     
-    if current_contract.mode == "validator":
-        current_contract._load_leader_eq_outputs()
+    if contract_runner.mode == "validator":
+        contract_runner._load_leader_eq_outputs()
 
     if asyncio.iscoroutinefunction(current_contract.{function_name}):
         await current_contract.{function_name}({args_str})
     else:
         current_contract.{function_name}({args_str})
-    
-    current_contract._write_receipt('{function_name}', [{args_str}])
+
+    pickled_object = pickle.dumps(current_contract)
+    contract_runner._write_receipt(pickled_object, '{function_name}', [{args_str}])
 
 if __name__=="__main__":
     import asyncio    
