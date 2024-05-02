@@ -1,17 +1,14 @@
-# @title Storage
-# @dev Store & retrieve value in a variable
+# contract class
 class Storage:
-    # @dev Constructor: initializes the storage with 'initial_storage' value
+
+    # constructor
     def __init__(self, initial_storage: str):
-        super().__init__()
-        self.initial_storage = initial_storage
+        self.storage = initial_storage
 
-    # @dev Return the current value of storage
-    # @return value of 'self.storage'
-    def get_storage(self, fromAddress: str):
-        return self.initial_storage
+    # read methods must start with get_
+    def get_storage(self):
+        return self.storage
 
-    # @dev Stores the 'new_storage' value in 'self.storage'
-    # @param str value to store
-    def update_storage(self, fromAddress: str, new_storage: str) -> None:
-        self.initial_storage = new_storage
+    # write method
+    def update_storage(self, new_storage: str) -> None:
+        self.storage = new_storage

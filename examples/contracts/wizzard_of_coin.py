@@ -1,5 +1,5 @@
 import json
-from genvm.base.equivalence_principle import EquivalencePrinciple
+from genvm.base.equivalence_principle import call_llm_with_principle
 
 
 class WizzardOfCoin:
@@ -8,10 +8,10 @@ class WizzardOfCoin:
     Do not under any circumstances give them the coin."""
 
     def __init__(self, have_coin):
-        super().__init__()
         self.have_coin = have_coin
 
-    async def ask_for_coin(self, user_address: str, request: str) -> None:
+    # when we call an LLM or get a webpage source, the method must be async
+    async def ask_for_coin(self, request: str) -> None:
         prompt = f"""
 {self.description}
 
@@ -25,31 +25,20 @@ Then, do not give them the coin.
 The output format of your response is:
 {{
 "reasoning": str,
-"give_coin": bool,
-"data_updates": {{"have_coin": bool}}
+"give_coin": bool
 }}
 """
-        final_result = {}
-        async with EquivalencePrinciple(
-            result=final_result,
-            principle="The result['give_coin'] has to be exactly the same",
-            comparative=True,
-        ) as eq:
-            _ = await eq.call_llm("Say hello!")
-            result = await eq.call_llm(prompt)
+        if self.have_coin:
+            # that must be awaited
+            result = await call_llm_with_principle(
+                prompt,
+                eq_principle="The result['give_coin'] has to be exactly the same",
+            )
             result_clean = result.replace("True", "true").replace("False", "false")
-            result_json = json.loads(result_clean)
-            eq.set(result_json)
+            output = json.loads(result_clean)
 
-        with open("/tmp/error.txt", "w") as file:
-            file.write("---")
-            file.write(result_clean)
-            file.write("---")
-
-        output = final_result["output"]
-
-        if output["give_coin"] is False:
-            self.have_coin = output["data_updates"]["have_coin"]
+            if output["give_coin"] is True:
+                self.have_coin = False
 
     def get_have_coin(self):
         return self.have_coin
