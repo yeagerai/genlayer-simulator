@@ -34,14 +34,14 @@ const methodList = computed<string[]>(() => {
       <span class="text-xs  dark:text-white text-primary">{{ deployedContract?.address }}</span>
     </div>
     <div v-if="deployedContract" class="flex flex-col w-full px-1 mt-2">
-      <div class="flex justify-between" v-for="method in methodList" :key="method">
+      <div class="flex justify-between mt-2" v-for="method in methodList" :key="method">
         <button
           @click="getContractState(deployedContract.address, method)"
-          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded"
+          class="bg-primary m-w-[50%] hover:opacity-80 text-white font-semibold px-4 py-2 rounded"
         >
           {{ method }}
         </button>
-        <div class="flex">{{ contractState[method] }}</div>
+        <div class="flex ml-2 flex-1 justify-end">{{ contractState[method] }}</div>
       </div>
     </div>
   </div>
