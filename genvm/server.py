@@ -11,8 +11,8 @@ from genvm.utils import (
     debug_output,
     transaction_files,
     save_files,
+    delete_recipts,
     generate_deploy_contract,
-    generate_get_contract_data,
 )
 
 from dotenv import load_dotenv
@@ -29,6 +29,8 @@ def execute_transaction() -> dict:
 
 @jsonrpc.method("leader_executes_transaction")
 def leader_executes_transaction(contract_code: str, node_config: dict) -> dict:
+
+    delete_recipts()
 
     return_data = {"status": "error", "data": None}
 
@@ -61,7 +63,7 @@ def leader_executes_transaction(contract_code: str, node_config: dict) -> dict:
     # TODO: Leader needs to be the name of the VM
     debug_output("leader_executes_transaction(response)", contents)
 
-    # os.remove(leader_recipt_file)
+    delete_recipts()
 
     return_data["status"] = "success"
     return_data["data"] = contents
@@ -73,9 +75,11 @@ def validator_executes_transaction(
     icontract: str, node_config: dict, leader_recipt: dict
 ) -> dict:
 
+    delete_recipts()
+
     return_data = {"status": "error", "data": None}
 
-    icontract_file, recipt_file, _, leader_recipt_file = transaction_files()
+    icontract_file, recipt_file, _, _ = transaction_files()
 
     save_files(icontract, node_config, "validator", leader_recipt)
 
@@ -103,7 +107,7 @@ def validator_executes_transaction(
 
     debug_output("validator_executes_transaction(response)", contents)
 
-    # os.remove(leader_recipt_file)
+    delete_recipts()
 
     return_data["status"] = "success"
     return_data["data"] = contents

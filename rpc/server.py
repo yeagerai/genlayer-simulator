@@ -19,6 +19,12 @@ from database.credentials import get_genlayer_db_connection
 from database.functions import DatabaseFunctions
 from database.types import ContractData, CallContractInputData
 from consensus.algorithm import exec_transaction
+from consensus.nodes.create_nodes import (
+    random_validator_config,
+    get_config_for_providers_and_nodes,
+    get_providers,
+    get_provider_models,
+)
 from consensus.utils import vrf, genvm_url
 from consensus.nodes.create_nodes import random_validator_config
 
@@ -495,6 +501,18 @@ def get_icontract_schema_for_code(code: str) -> dict:
     }
 
     return requests.post(genvm_url() + "/api", json=payload).json()["result"]
+
+
+@jsonrpc.method("get_providers_and_models")
+def get_providers_and_models() -> dict:
+    config = get_config_for_providers_and_nodes()
+    providers = get_providers()
+    providers_and_models = {}
+    for provider in providers:
+        providers_and_models[provider] = get_provider_models(
+            config["providers"], provider
+        )
+    return providers_and_models
 
 
 @jsonrpc.method("ping")

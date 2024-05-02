@@ -51,6 +51,14 @@ def save_files(
         file.close()
 
 
+def delete_recipts():
+    _, recipt_file, _, leader_recipt_file = transaction_files()
+
+    for rf in [recipt_file, leader_recipt_file]:
+        if os.path.exists(rf):
+            os.remove(rf)
+
+
 def get_webpage_content(url: str) -> str:
 
     payload = {

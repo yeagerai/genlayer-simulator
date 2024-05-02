@@ -1,3 +1,5 @@
+import json
+
 from database.credentials import get_genlayer_db_connection
 
 
@@ -24,6 +26,9 @@ class DatabaseFunctions:
 
 
     def create_validator(self, address:str, stake:int, provider:str, model:str, config:str):
+        self.cursor.execute(
+            "INSERT INTO current_state (id, data) VALUES (%s, %s);", (address, json.dumps({'stake':stake}))
+        )
         self.cursor.execute(
             "INSERT INTO validators (address, stake, provider, model, config, created_at) VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP);",
             (address, stake, provider, model, config),
