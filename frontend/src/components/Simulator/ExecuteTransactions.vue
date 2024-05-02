@@ -2,11 +2,8 @@
 import { computed, ref, watch } from 'vue'
 import { InputTypesMap } from '@/utils'
 import { useMainStore } from '@/stores'
+import type { ContractMethod } from '@/types'
 
-interface ContractMethod {
-  name: string
-  inputs: { [k: string]: string }
-}
 interface Abi {
   methods: {
     [k: string]: {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DeployedContract } from '@/types'
+import type { DeployedContract, ContractMethod } from '@/types'
 import { computed } from 'vue'
 
 interface Abi {
@@ -18,13 +18,12 @@ const props = defineProps<{
   getContractState: (contractAddress: string, method: string) => void
 }>()
 
-const methodList = computed<ContractMethod[]>(() => {
+const methodList = computed<string[]>(() => {
   const list = Object.entries(props.abi?.methods || {})
     .filter((m) => m[0].startsWith('get_'))
     .map((m) => m[0])
   return list
 })
-console.log('🚀 ~ deployedContract ~ deployedContract:', props.deployedContract.value)
 </script>
 <template>
   <div class="flex flex-col px-2 mt-6 py-2 w-full bg-slate-100">
@@ -34,10 +33,10 @@ console.log('🚀 ~ deployedContract ~ deployedContract:', props.deployedContrac
     <div class="flex justify-start w-full px-1">
       <span class="text-xs text-primary">{{ deployedContract?.address }}</span>
     </div>
-    <div class="flex flex-col w-full px-1 mt-2">
+    <div v-if="deployedContract" class="flex flex-col w-full px-1 mt-2">
       <div class="flex justify-between" v-for="method in methodList" :key="method">
         <button
-          @click="getContractState(deployedContract?.value?.address, method)"
+          @click="getContractState(deployedContract.address, method)"
           class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded"
         >
           {{ method }}
