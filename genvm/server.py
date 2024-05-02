@@ -24,17 +24,6 @@ app = Flask("genvm_api")
 jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
 
 
-def add_async_to_all_class_methods(code:str) -> str:
-    pattern = r'\b(?:async\s+)?def\s+([a-zA-Z][a-zA-Z_0-9]*)\s*\(self'
-    return re.sub(pattern, re_replace_method, code)
-
-
-def re_replace_method(match):
-    method_name = match.group(1)
-    prefix = 'async ' if 'async' in match.group(0) else ''
-    return f'{prefix}def {method_name}(self'
-
-
 @jsonrpc.method("leader_executes_transaction")
 def leader_executes_transaction(contract_code: str, node_config: dict) -> dict:
 
@@ -171,20 +160,6 @@ def get_icontract_schema(icontract: str) -> dict:
                 if isinstance(stmt, ast.AnnAssign):
                     if hasattr(stmt.annotation, "id") and hasattr(stmt.target, "id"):
                         variables[stmt.target.id] = stmt.annotation.id
-
-    tree = ast.parse(icontract)
-
-    for node in tree.body:
-        if isinstance(node, ast.ClassDef) and node.name == class_name:
-            for class_body_item in node.body:
-                if isinstance(class_body_item, ast.FunctionDef) and class_body_item.name == '__init__':
-                    inputs = {}
-                    for arg in class_body_item.args.args[1:]:
-                        arg_name = arg.arg
-                        arg_type = arg.annotation.id if isinstance(arg.annotation, ast.Name) else None
-                        inputs[arg_name] = arg_type
-
-                    methods['__init__'] = {'inputs': inputs, 'output': ''}
 
     return {"class":class_name, "methods": methods, "variables": variables}
 
