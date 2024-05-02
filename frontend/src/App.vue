@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
 import Header from '@/components/HeaderComponent.vue'
-import TutorialSteps from '@/components/TutorialSteps.vue'
+import TutorialContainer from '@/components/Tutorial/TutorialContainer.vue'
 import { useUIStore } from '@/stores/ui'
 import { onBeforeMount } from 'vue'
 
@@ -13,7 +13,7 @@ onBeforeMount(() => {
 
 </script>
 <template>
-  <TutorialSteps />
+  <TutorialContainer />
   <main :data-mode="uiStore.mode" class="h-screen w-full bg-white dark:bg-zinc-800 dark:text-white text-primary flex flex-col">
     <Header />
     <div class="flex h-full">

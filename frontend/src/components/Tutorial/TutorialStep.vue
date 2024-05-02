@@ -39,7 +39,7 @@ import sum from 'hash-sum'
 import { DEFAULT_STEP_OPTIONS, HIGHLIGHT } from './constants'
 
 export default {
-    name: 'v-step',
+    name: 'TutorialSte',
     props: {
         step: {
             type: Object

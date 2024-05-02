@@ -1,96 +1,50 @@
-<template>
-    <div class="v-tour">
-      <slot
-        :current-step="currentStep"
-        :steps="steps"
-        :previous-step="previousStep"
-        :next-step="nextStep"
-        :stop="stop"
-        :skip="skip"
-        :finish="finish"
-        :is-first="isFirst"
-        :is-last="isLast"
-        :labels="customOptions.labels"
-        :enabled-buttons="customOptions.enabledButtons"
-        :highlight="customOptions.highlight"
-        :debug="customOptions.debug"
-      >
-        <!--Default slot {{ currentStep }}-->
-        <v-step
-          v-if="steps[currentStep]"
-          :step="steps[currentStep]"
-          :key="currentStep"
-          :previous-step="previousStep"
-          :next-step="nextStep"
-          :stop="stop"
-          :skip="skip"
-          :finish="finish"
-          :is-first="isFirst"
-          :is-last="isLast"
-          :labels="customOptions.labels"
-          :enabled-buttons="customOptions.enabledButtons"
-          :highlight="customOptions.highlight"
-          :stop-on-fail="customOptions.stopOnTargetNotFound"
-          :debug="customOptions.debug"
-          @targetNotFound="$emit('targetNotFound', $event)"
-        >
-          <!--<div v-if="index === 2" slot="actions">
-            <a @click="nextStep">Next step</a>
-          </div>-->
-        </v-step>
-      </slot>
-    </div>
-  </template>
-  
   <script>
   import { DEFAULT_CALLBACKS, DEFAULT_OPTIONS, KEYS } from './constants'
-  
+  import TutorialStep from './TutorialStep.vue'
+  const steps = [
+  {
+    target: '.link-contracts',
+    header: {
+      title: 'This is the title',
+    },
+    content: 'This is the first step',
+  },
+  {
+    target: '.link-docs',
+    content: 'This is the second step, placed on the bottom of the target',
+  }
+];
+
   export default {
-    name: 'v-tour',
-    props: {
-      steps: {
-        type: Array,
-        default: () => []
-      },
-      name: {
-        type: String
-      },
-      options: {
-        type: Object,
-        default: () => { return DEFAULT_OPTIONS }
-      },
-      callbacks: {
-        type: Object,
-        default: () => { return DEFAULT_CALLBACKS }
-      }
+    components: {
+      TutorialStep
     },
     data () {
       return {
-        currentStep: -1
+        currentStep: -1,
+        steps
       }
     },
     mounted () {
-      this.$tours[this.name] = this
+      this.start()
     },
     beforeUnmount () {
       // Remove the keyup listener if it has been defined
-      if (this.customOptions.useKeyboardNavigation) {
+      if (this.options.useKeyboardNavigation) {
         window.removeEventListener('keyup', this.handleKeyup)
       }
     },
     computed: {
       // Allow us to define custom options and merge them with the default options.
       // Since options is a computed property, it is reactive and can be updated during runtime.
-      customOptions () {
+      options () {
         return {
-          ...DEFAULT_OPTIONS,
-          ...this.options
+          ...DEFAULT_OPTIONS
         }
       },
-      customCallbacks () {
+      callbacks () {
         return {
-          ...DEFAULT_CALLBACKS,
-          ...this.callbacks
+          ...DEFAULT_CALLBACKS
         }
       },
       // Return true if the tour is active, which means that there's a VStep displayed
@@ -113,7 +67,7 @@
     methods: {
       async start (startStep) {
         // Register keyup listeners for this tour
-        if (this.customOptions.useKeyboardNavigation) {
+        if (this.options.useKeyboardNavigation) {
           window.addEventListener('keyup', this.handleKeyup)
         }
   
@@ -123,10 +77,10 @@
   
         let process = () => new Promise((resolve, reject) => {
           setTimeout(() => {
-            this.customCallbacks.onStart()
+            this.callbacks.onStart()
             this.currentStep = startStep
             resolve()
-          }, this.customOptions.startTimeout)
+          }, this.options.startTimeout)
         })
   
         if (typeof step.before !== 'undefined') {
@@ -144,7 +98,7 @@
         let futureStep = this.currentStep - 1
   
         let process = () => new Promise((resolve, reject) => {
-          this.customCallbacks.onPreviousStep(this.currentStep)
+          this.callbacks.onPreviousStep(this.currentStep)
           this.currentStep = futureStep
           resolve()
         })
@@ -167,7 +121,7 @@
         let futureStep = this.currentStep + 1
   
         let process = () => new Promise((resolve, reject) => {
-          this.customCallbacks.onNextStep(this.currentStep)
+          this.callbacks.onNextStep(this.currentStep)
           this.currentStep = futureStep
           resolve()
         })
@@ -187,21 +141,21 @@
         return Promise.resolve()
       },
       stop () {
-        this.customCallbacks.onStop()
+        this.callbacks.onStop()
         document.body.classList.remove('v-tour--active')
         this.currentStep = -1
       },
       skip () {
-        this.customCallbacks.onSkip()
+        this.callbacks.onSkip()
         this.stop()
       },
       finish () {
-        this.customCallbacks.onFinish()
+        this.callbacks.onFinish()
         this.stop()
       },
   
       handleKeyup (e) {
-        if (this.customOptions.debug) {
+        if (this.options.debug) {
           console.log('[Vue Tour] A keyup event occured:', e)
         }
         switch (e.keyCode) {
@@ -217,12 +171,55 @@
         }
       },
       isKeyEnabled (key) {
-        const { enabledNavigationKeys } = this.customOptions
+        const { enabledNavigationKeys } = this.options
         return enabledNavigationKeys[key] ? enabledNavigationKeys[key] : true
       }
     }
   }
   </script>
+  <template>
+    <div class="v-tour">
+      <slot
+        :current-step="currentStep"
+        :steps="steps"
+        :previous-step="previousStep"
+        :next-step="nextStep"
+        :stop="stop"
+        :skip="skip"
+        :finish="finish"
+        :is-first="isFirst"
+        :is-last="isLast"
+        :labels="options.labels"
+        :enabled-buttons="options.enabledButtons"
+        :highlight="options.highlight"
+        :debug="options.debug"
+      >
+        <!--Default slot {{ currentStep }}-->
+        <TutorialStep
+          v-if="steps[currentStep]"
+          :step="steps[currentStep]"
+          :key="currentStep"
+          :previous-step="previousStep"
+          :next-step="nextStep"
+          :stop="stop"
+          :skip="skip"
+          :finish="finish"
+          :is-first="isFirst"
+          :is-last="isLast"
+          :labels="options.labels"
+          :enabled-buttons="options.enabledButtons"
+          :highlight="options.highlight"
+          :stop-on-fail="options.stopOnTargetNotFound"
+          :debug="options.debug"
+          @targetNotFound="$emit('targetNotFound', $event)"
+        >
+          <!--<div v-if="index === 2" slot="actions">
+            <a @click="nextStep">Next step</a>
+          </div>-->
+        </TutorialStep>
+      </slot>
+    </div>
+  </template>
   
   <style>
     body.v-tour--active {
