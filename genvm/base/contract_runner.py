@@ -43,6 +43,6 @@ class ContractRunner:
         }
 
         with open(
-            os.environ.get("GENVMCONLOC") + "/receipt.json", "w"
+            os.environ.get("GENVMCONLOC") + f"/receipt_{self.mode}.json", "w"
         ) as file:
             json.dump(receipt, file, indent=4)
