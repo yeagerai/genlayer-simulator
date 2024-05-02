@@ -4,9 +4,17 @@ import ast
 import subprocess
 import json
 import inspect
+import pickle
+import base64
 from flask import Flask
 from flask_jsonrpc import JSONRPC
-from genvm.utils import debug_output, transaction_files, save_files, remove_files
+from genvm.utils import (
+    debug_output,
+    transaction_files,
+    save_files,
+    delete_recipts,
+    generate_deploy_contract,
+)
 
 from dotenv import load_dotenv
 
@@ -28,13 +36,15 @@ def re_replace_method(match):
 
 
 @jsonrpc.method("leader_executes_transaction")
-def leader_executes_transaction(icontract: str, node_config: dict) -> dict:
+def leader_executes_transaction(contract_code: str, node_config: dict) -> dict:
+
+    delete_recipts()
 
     return_data = {"status": "error", "data": None}
 
     icontract_file, _, _, leader_recipt_file = transaction_files()
 
-    save_files(icontract, node_config, "leader")
+    save_files(contract_code, node_config, "leader")
 
     try:
         result = subprocess.run(
@@ -61,7 +71,7 @@ def leader_executes_transaction(icontract: str, node_config: dict) -> dict:
     # TODO: Leader needs to be the name of the VM
     debug_output("leader_executes_transaction(response)", contents)
 
-    remove_files()
+    delete_recipts()
 
     return_data["status"] = "success"
     return_data["data"] = contents
@@ -73,9 +83,11 @@ def validator_executes_transaction(
     icontract: str, node_config: dict, leader_recipt: dict
 ) -> dict:
 
+    delete_recipts()
+
     return_data = {"status": "error", "data": None}
 
-    icontract_file, recipt_file, _, leader_recipt_file = transaction_files()
+    icontract_file, recipt_file, _, _ = transaction_files()
 
     save_files(icontract, node_config, "validator", leader_recipt)
 
@@ -103,7 +115,7 @@ def validator_executes_transaction(
 
     debug_output("validator_executes_transaction(response)", contents)
 
-    remove_files()
+    delete_recipts()
 
     return_data["status"] = "success"
     return_data["data"] = contents
@@ -175,6 +187,120 @@ def get_icontract_schema(icontract: str) -> dict:
                     methods['__init__'] = {'inputs': inputs, 'output': ''}
 
     return {"class":class_name, "methods": methods, "variables": variables}
+
+
+@jsonrpc.method("deploy_contract")
+def deploy_contract(
+    contract_code: str, constructor_args: str, class_name: str, leader_config: dict
+) -> dict:
+    deploy_contract_code = generate_deploy_contract(
+        contract_code, constructor_args, class_name
+    )
+    return_data = {"status": "error", "data": None}
+
+    contract_file, _, _, _ = transaction_files()
+    save_files(deploy_contract_code, leader_config, "leader")
+
+    try:
+        result = subprocess.run(
+            ["python", contract_file],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+        )
+    except Exception as e:
+        return_data["data"] = str(e)
+        return return_data
+
+    debug_output("RUN Deploy Result", result)
+
+    if result.returncode != 0:
+        return_data["data"] = str(result.returncode) + ": " + str(result.stderr)
+        return return_data
+
+    # Access the output of the subprocess.run command
+    file = open(os.environ.get("GENVMCONLOC") + "/receipt_leader.json", "r")
+    contents = json.load(file)
+    file.close()
+
+    debug_output("Deployed contract receipt", contents)
+
+    # os.remove(leader_recipt_file)
+
+    return_data["status"] = "success"
+    return_data["data"] = contents
+    return return_data
+
+
+@jsonrpc.method("get_contract_data")
+def get_contract_data(code: str, state: str, method_name: str) -> dict:
+    namespace = {}
+    exec(code, namespace)
+    globals().update(namespace)
+    decoded_pickled_object = base64.b64decode(state)
+    contract_state = pickle.loads(decoded_pickled_object)
+    method_to_call = getattr(contract_state, method_name)
+    return_data = {}
+    return_data["status"] = "success"
+    return_data["result"] = method_to_call()
+    return return_data
+
+
+@jsonrpc.method("deploy_contract")
+def deploy_contract(
+    contract_code: str, constructor_args: str, class_name: str, leader_config: dict
+) -> dict:
+    deploy_contract_code = generate_deploy_contract(
+        contract_code, constructor_args, class_name
+    )
+    return_data = {"status": "error", "data": None}
+
+    contract_file, _, _, _ = transaction_files()
+    save_files(deploy_contract_code, leader_config, "leader")
+
+    try:
+        result = subprocess.run(
+            ["python", contract_file],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+        )
+    except Exception as e:
+        return_data["data"] = str(e)
+        return return_data
+
+    debug_output("RUN Deploy Result", result)
+
+    if result.returncode != 0:
+        return_data["data"] = str(result.returncode) + ": " + str(result.stderr)
+        return return_data
+
+    # Access the output of the subprocess.run command
+    file = open(os.environ.get("GENVMCONLOC") + "/receipt_leader.json", "r")
+    contents = json.load(file)
+    file.close()
+
+    debug_output("Deployed contract receipt", contents)
+
+    # os.remove(leader_recipt_file)
+
+    return_data["status"] = "success"
+    return_data["data"] = contents
+    return return_data
+
+
+@jsonrpc.method("get_contract_data")
+def get_contract_data(code: str, state: str, method_name: str) -> dict:
+    namespace = {}
+    exec(code, namespace)
+    globals().update(namespace)
+    decoded_pickled_object = base64.b64decode(state)
+    contract_state = pickle.loads(decoded_pickled_object)
+    method_to_call = getattr(contract_state, method_name)
+    return_data = {}
+    return_data["status"] = "success"
+    return_data["result"] = method_to_call()
+    return return_data
 
 
 if __name__ == "__main__":

@@ -51,3 +51,8 @@ export interface UpdateValidatorModel {
   provider: string
   stake: number
 }
+
+export interface ContractMethod {
+  name: string
+  inputs: { [k: string]: string }
+}

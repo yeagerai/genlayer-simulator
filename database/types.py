@@ -19,7 +19,7 @@ class ConsensusData(BaseModel):
 
 class ContractData(BaseModel):
     code: str
-    state: Dict
+    state: str
 
 class CallContractInputData(BaseModel):
     from_address: str

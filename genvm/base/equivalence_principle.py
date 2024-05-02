@@ -1,7 +1,8 @@
 from typing import Optional
 import inspect
-from contracts.context_wrapper import enforce_with_context
-from genvm.contracts import llms
+from base.context_wrapper import enforce_with_context
+from genvm.base import llms
+from genvm.base.contract_runner import ContractRunner
 from genvm.utils import get_webpage_content
 
 
@@ -20,10 +21,10 @@ def clear_locals(scope):
 
 @enforce_with_context
 class EquivalencePrinciple:
+    contract_runner: ContractRunner
 
     def __init__(
         self,
-        icontract_inst: object,
         result: dict,
         principle: Optional[str],
         comparative: bool = True,
@@ -31,7 +32,6 @@ class EquivalencePrinciple:
         if result != {}:
             raise Exception("result must be empty")
         self.result = result
-        self.icontract_inst = icontract_inst
         self.principle = principle
         self.comparative = comparative
         self.last_method = None
@@ -44,7 +44,7 @@ class EquivalencePrinciple:
         # skip the block
         return self
 
-    async def __aexit__(self, exc_type, exc_value, traceback):
+    async def __aexit__(self):
 
         caller_frame = inspect.currentframe().f_back
         locals_in_caller = caller_frame.f_locals
@@ -54,18 +54,18 @@ class EquivalencePrinciple:
         if self.principle == None:
             return
 
-        if self.icontract_inst.mode == "validator" and self.comparative == True:
+        if self.contract_runner.mode == "validator" and self.comparative == True:
             llm_function = self.__get_llm_function()
             eq_prompt = f"""Given the equivalence principle '{self.principle}', 
             decide whether the following two outputs can be considered equivalent.
             
-            Leader's Output: {self.icontract_inst.eq_outputs['leader'][str(self.icontract_inst.eq_num - 1)]}
+            Leader's Output: {self.contract_runner.eq_outputs['leader'][str(self.contract_runner.eq_num - 1)]}
             
             Validator's Output: {self.result['validator_value']}
             
             Respond with: TRUE or FALSE"""
             validation_response = await llm_function(
-                self.icontract_inst.node_config, eq_prompt, None, None
+                self.contract_runner.node_config, eq_prompt, None, None
             )
             # if TRUE => nothing, FALSE => fuera todo y un state de disagree
 
@@ -77,32 +77,32 @@ class EquivalencePrinciple:
     async def call_llm(self, prompt: str):
         llm_function = self.__get_llm_function()
         final_response = await llm_function(
-            self.icontract_inst.node_config, prompt, None, None
+            self.contract_runner.node_config, prompt, None, None
         )
         return final_response
 
     def set(self, value):
-        if self.icontract_inst.mode == "leader":
+        if self.contract_runner.mode == "leader":
             self.result["output"] = value
-            self.icontract_inst.eq_outputs["leader"][self.icontract_inst.eq_num] = value
+            self.contract_runner.eq_outputs["leader"][
+                self.contract_runner.eq_num
+            ] = value
         else:
             self.result["validator_value"] = value
-            self.result["output"] = self.icontract_inst.eq_outputs["leader"][
-                str(self.icontract_inst.eq_num)
+            self.result["output"] = self.contract_runner.eq_outputs["leader"][
+                str(self.contract_runner.eq_num)
             ]
-        self.icontract_inst.eq_num += 1
+        self.contract_runner.eq_num += 1
 
     def __get_llm_function(self):
-        llm_function = getattr(llms, "call_ollama")
-        if self.icontract_inst.node_config["provider"] == "openai":
-            llm_function = getattr(llms, "call_openai")
+        function_name = "call_" + self.contract_runner.node_config["provider"]
+        llm_function = getattr(llms, function_name)
         return llm_function
 
 
-async def call_llm_with_principle(icontract_inst, prompt, eq_principle, comparative):
+async def call_llm_with_principle(prompt, eq_principle, comparative=True):
     final_result = {}
     async with EquivalencePrinciple(
-        icontract_inst=icontract_inst,
         result=final_result,
         principle=eq_principle,
         comparative=comparative,
@@ -113,10 +113,9 @@ async def call_llm_with_principle(icontract_inst, prompt, eq_principle, comparat
     return final_result["output"]
 
 
-async def get_webpage_with_principle(icontract_inst, url, eq_principle, comparative):
+async def get_webpage_with_principle(url, eq_principle, comparative=True):
     final_result = {}
     async with EquivalencePrinciple(
-        icontract_inst=icontract_inst,
         result=final_result,
         principle=eq_principle,
         comparative=comparative,
