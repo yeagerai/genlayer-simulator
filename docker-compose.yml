@@ -29,6 +29,7 @@ services:
       - ./rpc:/app/rpc
       - ./database:/app/database
       - ./consensus:/app/consensus
+      - ./common:/app/common
     depends_on:
       - ollama
       - postgres
@@ -62,6 +63,7 @@ services:
       - "${GENVMPORT}"
     volumes:
       - ./genvm:/app/genvm
+      - ./common:/app/common
 
   ollama:
     image: ollama/ollama:latest

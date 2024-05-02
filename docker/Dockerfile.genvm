@@ -9,6 +9,7 @@ COPY ../.env .
 COPY ../logging_config.json .
 
 ADD genvm $path/genvm
+ADD common $path/common
 
 WORKDIR $path/genvm
 

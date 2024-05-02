@@ -10,15 +10,15 @@ cwd = os.path.abspath(os.getcwd())
 
 
 # Make sure the file is being run from the project folder (not the scipts folder)
-if "debug_prototype.py" in os.listdir(cwd):
+if not os.path.exists("scripts/debug_simulator.py"):
     print(cwd)
     print('Run this script from the project root')
     sys.exit()
 
 # make sure the PYTHONPATH is set
 # (export PYTHONPATH="/home/personal/Projects/Genlayer/genlayer-prototype")
-if 'PYTHONPATH' not in os.environ:
-    print('Run the following command:')
+if "PYTHONPATH" not in os.environ:
+    print("Run the following command:")
     print(('$ export PYTHONPATH="'+os.getcwd()+'"').format(42))
     sys.exit()
 

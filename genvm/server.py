@@ -6,6 +6,7 @@ import inspect
 from flask import Flask
 from flask_jsonrpc import JSONRPC
 from genvm.utils import debug_output, transaction_files, save_files
+from common.messages import MessageHandler
 
 from dotenv import load_dotenv
 

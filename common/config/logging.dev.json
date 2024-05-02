@@ -4,16 +4,19 @@
         "default": {
             "format": "[%(asctime)s] %(levelname)s | %(module)s >>> %(message)s",
             "datefmt": "%B %d, %Y %H:%M:%S %Z"
+        },
+        "simple": {
+            "format": "%(levelname)s | %(module)s >>> %(message)s"
         }
     },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            "formatter": "default"
+            "formatter": "simple"
         },
         "wsgi": {
             "class": "logging.StreamHandler",
-            "formatter": "default",
+            "formatter": "simple",
             "stream": "ext://flask.logging.wsgi_errors_stream"
         },
         "file": {
@@ -29,7 +32,7 @@
             "interval": 1,
             "backupCount": 30
         },
-        "size-rotate": {
+        "size_rotate": {
             "class": "logging.handlers.RotatingFileHandler",
             "filename": "flask.log",
             "maxBytes": 1000000,
@@ -38,15 +41,7 @@
         }
     },
     "root": {
-        "level": "DEBUG",
-        "handlers": ["console"]
-    },
-    "development": {
         "level": "INFO",
-        "handlers": ["wsgi", "file", "console"]
-    },
-    "production": {
-        "level": "ERROR",
-        "handlers": ["file_rotate"]
+        "handlers": ["console_simple", "wsgi_simple", "file"]
     }
 }
