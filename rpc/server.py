@@ -19,7 +19,7 @@ from database.credentials import get_genlayer_db_connection
 from database.functions import DatabaseFunctions
 from database.types import ContractData, CallContractInputData
 from consensus.algorithm import exec_transaction
-from consensus.utils import genvm_url
+from consensus.utils import vrf, genvm_url
 from consensus.nodes.create_nodes import random_validator_config
 
 from dotenv import load_dotenv
@@ -71,6 +71,7 @@ def create_tables() -> dict:
     result = create_tables_if_they_dont_already_exist(app)
     app.logger.info(result)
     return {"status": result}
+
 
 @jsonrpc.method("clear_tables")
 def clear_tables() -> dict:
@@ -187,17 +188,35 @@ def send_transaction(from_account: str, to_account: str, amount: float) -> dict:
 
 @jsonrpc.method("deploy_intelligent_contract")
 def deploy_intelligent_contract(
-    from_account: str, contract_code: str, initial_state: str
+    from_account: str, class_name: str, contract_code: str, constructor_args: str
 ) -> dict:
-
     if not address_is_in_correct_format(from_account):
         return {"status": "from_account not in ethereum address format"}
+
+    with DatabaseFunctions() as dbf:
+        all_validators = dbf.all_validators()
+        dbf.close()
+
+    # Select validators using VRF
+    selected_validators = vrf(all_validators, 5)
+
+    leader_config = selected_validators[0]
+
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "deploy_contract",
+        "params": [contract_code, constructor_args, class_name, leader_config],
+        "id": 3,
+    }
+    response = requests.post(genvm_url() + "/api", json=payload).json()
+    if response["result"]["status"] != "success":
+        return {"status": "fail", "message": response["result"]["data"]}
 
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
     contract_id = create_new_address()
     contract_data = ContractData(
-        code=contract_code, state=json.loads(initial_state)
+        code=contract_code, state=response["result"]["data"]["contract_state"]
     ).model_dump_json()
     try:
         cursor.execute(
@@ -306,15 +325,19 @@ def delete_all_validators() -> dict:
         dbf.close()
     return get_all_validators()
 
+
 @jsonrpc.method("create_random_validators")
-def create_random_validator(count:int, min_stake:float, max_stake:float) -> list:
+def create_random_validator(count: int, min_stake: float, max_stake: float) -> list:
     responses = []
     for _ in range(count):
         stake = random.uniform(min_stake, max_stake)
         details = random_validator_config()
-        new_validator = create_validator(stake, details["provider"], details["model"], details["config"])
+        new_validator = create_validator(
+            stake, details["provider"], details["model"], details["config"]
+        )
         responses.append(new_validator)
     return responses
+
 
 @jsonrpc.method("create_random_validator")
 def create_random_validator(stake: float) -> dict:
@@ -360,19 +383,10 @@ async def call_contract_function(
     if not address_is_in_correct_format(contract_address):
         return {"status": "contract_address not in ethereum address format"}
 
-    connection = get_genlayer_db_connection()
-    cursor = connection.cursor()
-
     function_call_data = CallContractInputData(
         contract_address=contract_address, function_name=function_name, args=args
     ).model_dump_json()
 
-    cursor.execute(
-        "INSERT INTO transactions (from_address, to_address, input_data, type, created_at) VALUES (%s, %s, %s, 2, CURRENT_TIMESTAMP);",
-        (from_account, contract_address, function_call_data),
-    )
-
-    connection.commit()
     log_status(f"Transaction sent from {from_account} to {contract_address}...")
 
     # call consensus
@@ -380,8 +394,6 @@ async def call_contract_function(
         json.loads(function_call_data), logger=log_status
     )
 
-    cursor.close()
-    connection.close()
     return {
         "status": "success",
         "message": f"Function '{function_name}' called on contract at {contract_address} with args {args}.",
@@ -414,7 +426,7 @@ def get_last_contracts(number_of_contracts: int) -> list:
 
 
 @jsonrpc.method("get_contract_state")
-def get_contract_state(contract_address: str) -> dict:
+def get_contract_state(contract_address: str, method_name: str) -> dict:
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
 
@@ -429,7 +441,16 @@ def get_contract_state(contract_address: str) -> dict:
     if not row:
         raise Exception(contract_address + " contract does not exist")
 
-    return {"id": row[0][0], "data": row[0][1]}
+    code = row[0][1]["code"]
+    state = row[0][1]["state"]
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "get_contract_data",
+        "params": [code, state, method_name],
+        "id": 4,
+    }
+    result = requests.post(genvm_url() + "/api", json=payload).json()["result"]
+    return {"id": row[0][0], "data": result}
 
 
 @jsonrpc.method("get_icontract_schema")

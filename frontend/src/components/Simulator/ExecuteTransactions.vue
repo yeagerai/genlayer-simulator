@@ -2,11 +2,8 @@
 import { computed, ref, watch } from 'vue'
 import { InputTypesMap } from '@/utils'
 import { useMainStore } from '@/stores'
+import type { ContractMethod } from '@/types'
 
-interface ContractMethod {
-  name: string
-  inputs: { [k: string]: string }
-}
 interface Abi {
   methods: {
     [k: string]: {
@@ -26,7 +23,7 @@ const emit = defineEmits(['callMethod'])
 
 const methodList = computed<ContractMethod[]>(() => {
   const list = Object.entries(props.abi?.methods || {})
-    .filter((m) => !m[0].startsWith('_'))
+    .filter((m) => !m[0].startsWith('_') && !m[0].startsWith('get_'))
     .map((m) => ({
       name: m[0],
       inputs: m[1].inputs

@@ -1,22 +1,29 @@
 <script setup lang="ts">
-import type { DeployedContract } from '@/types';
-import { ref, watch } from 'vue'
+import type { DeployedContract } from '@/types'
+import { computed } from 'vue'
 
-const props = defineProps<{
-  contractState: any,
-  deployedContract?: DeployedContract
-}>()
-
-const stateItems = ref<{ name: string; value: any }[]>([])
-
-watch(
-  () => props.contractState,
-  (newValue) => {
-    if (newValue && Object.keys(newValue).length > 0) {
-      stateItems.value = Object.entries(newValue).map((item) => ({ name: item[0], value: item[1] }))
+interface Abi {
+  methods: {
+    [k: string]: {
+      inputs: { [k: string]: string }
     }
   }
-)
+  class: string
+}
+
+const props = defineProps<{
+  abi?: Abi
+  contractState: any
+  deployedContract?: DeployedContract
+  getContractState: (contractAddress: string, method: string) => void
+}>()
+
+const methodList = computed<string[]>(() => {
+  const list = Object.entries(props.abi?.methods || {})
+    .filter((m) => m[0].startsWith('get_'))
+    .map((m) => m[0])
+  return list
+})
 </script>
 <template>
   <div class="flex flex-col px-2 mt-6 py-2 w-full bg-slate-100">
@@ -26,13 +33,17 @@ watch(
     <div class="flex justify-start w-full px-1">
       <span class="text-xs  dark:text-white text-primary">{{ deployedContract?.address }}</span>
     </div>
-    <div class="flex flex-col w-full px-1 mt-2">
-      <div class="flex justify-between" v-for="item in stateItems" :key="item.name">
-        <div class="flex">{{ item.name }}: </div>
-        <div class="flex">{{ item.value }}</div>
+    <div v-if="deployedContract" class="flex flex-col w-full px-1 mt-2">
+      <div class="flex justify-between" v-for="method in methodList" :key="method">
+        <button
+          @click="getContractState(deployedContract.address, method)"
+          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded"
+        >
+          {{ method }}
+        </button>
+        <div class="flex">{{ contractState[method] }}</div>
       </div>
     </div>
   </div>
-
 </template>
 <style></style>
