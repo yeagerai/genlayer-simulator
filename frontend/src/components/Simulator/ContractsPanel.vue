@@ -36,18 +36,18 @@ const showHome = computed(() => store.currentContractId === '')
     <div class="flex flex-col w-full h-full">
         <nav class="border-b text-sm flex justify-between items-center">
             <div class="flex justify-start items-center">
-                <div class="font-semibold flex justify-between px-2 py-2 text-neutral-500 hover:border-primary hover:text-primary"
-                    :class="{ 'border-b-2 border-primary text-primary': showHome }">
+                <div class="font-semibold flex justify-between px-2 py-2 text-neutral-500 hover:border-primary hover: dark:text-white text-primary"
+                    :class="{ 'border-b-2 border-primary  dark:text-white text-primary': showHome }">
                     <button class="bg-transparent mr-2 flex" @click="setCurrentContractTab('')">
-                        <HomeIcon class="mx-2 h-4 w-4" :class="{ 'fill-primary': showHome }" />
+                        <HomeIcon class="mx-2 h-4 w-4" :class="{ 'dark:fill-white fill-primary': showHome }" />
                     </button>
                 </div>
                 <div v-for="contract in contracts" :key="contract.id"
-                    class="font-semibold flex justify-between px-2 py-2 text-neutral-500 hover:border-primary hover:text-primary"
-                    :class="{ 'border-b-2 border-primary text-primary': contract.id === store.currentContractId }">
+                    class="font-semibold flex justify-between px-2 py-2 text-neutral-500 hover:border-primary hover: dark:text-white text-primary"
+                    :class="{ 'border-b-2 border-primary  dark:text-white text-primary': contract.id === store.currentContractId }">
                     <button class="bg-transparent flex" @click="setCurrentContractTab(contract.id)">
                         <DocumentCheckIcon class="h-4 w-4 mr-2"
-                            :class="{ 'fill-primary': contract.id === store.currentContractId }" />
+                            :class="{ 'dark:fill-white fill-primary': contract.id === store.currentContractId }" />
                         {{ contract.name }}
                     </button>
                     <button class="bg-transparent" @click="handleCloseContract(contract.id)">
@@ -57,7 +57,7 @@ const showHome = computed(() => store.currentContractId === '')
             </div>
             <div class="flex p-2 mr-3">
                 <button class="flex ml-3" @click="handleRunDebug">
-                    <PlayIcon class="h-5 w-5 fill-primary" />
+                    <PlayIcon class="h-5 w-5 dark:fill-white fill-primary" />
                     <ToolTip text="Run and Debug" :options="{ placement: 'bottom' }" />
                 </button>
             </div>

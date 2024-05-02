@@ -20,7 +20,7 @@ const toogleMode = () => {
             <img v-else alt="GenLayer Logo" class="logo" src="@/assets/images/logo_white.png" width="125" height="125"/>
         </a>
         <div class="flex items-center">
-            <RouterLink :to="{ name: 'profile' }" class="text-sm text-primary">
+            <RouterLink :to="{ name: 'profile' }" class="text-sm  dark:text-white text-primary dark:text-white text-primary">
                 {{ shortenAddress(mainStore.currentUserAddress || '') }}
                 <ToolTip :text="mainStore.currentUserAddress" :options="{ placement: 'bottom' }" />
             </RouterLink>

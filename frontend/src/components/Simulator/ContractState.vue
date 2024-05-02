@@ -24,7 +24,7 @@ watch(
   </div>
   <div class="flex flex-col p-2 overflow-y-auto">
     <div class="flex justify-start w-full px-1">
-      <span class="text-xs text-primary">{{ deployedContract?.address }}</span>
+      <span class="text-xs  dark:text-white text-primary">{{ deployedContract?.address }}</span>
     </div>
     <div class="flex flex-col w-full px-1 mt-2">
       <div class="flex justify-between" v-for="item in stateItems" :key="item.name">

@@ -114,12 +114,12 @@ const closeDeleteFileModal = () => {
     </div>
     <div class="flex px-1 py-2 w-full">
       <button class="flex ml-3" @click="handleAddNewFile">
-        <PlusIcon class="h-5 w-5 fill-primary" />
+        <PlusIcon class="h-5 w-5 dark:fill-white fill-primary" />
         <ToolTip text="Add New Contract" :options="{ placement: 'bottom' }" />
       </button>
       <label class="input-label ml-3">
         <div class="flex">
-          <ArrowUpTrayIcon class="h-5 w-5 fill-primary" />
+          <ArrowUpTrayIcon class="h-5 w-5 dark:fill-white fill-primary" />
           <ToolTip text="Upload File" :options="{ placement: 'bottom' }" />
           <input type="file" @change="loadContentFromFile" accept=".gpy,.py">
         </div>
@@ -128,7 +128,7 @@ const closeDeleteFileModal = () => {
     <div v-for="(contract, index) in store.contracts" :key="contract.id" class="flex flex-col w-full">
       <div @mouseover="showFileOptions(contract.id)" @mouseout="showFileOptions()"
         :class="[index > 0 ? 'border-x border-y' : 'border', 'flex items-center text-xs text-neutral-500 py-1 px-2 font-semibold hover:border-green-500', (contract.id === store.currentContractId ? 'border-green-500' : '')]">
-        <DocumentCheckIcon class="h-4 w-4 fill-primary mr-1" />
+        <DocumentCheckIcon class="h-4 w-4 dark:fill-white fill-primary mr-1" />
 
         <div class="flex items-center justify-between w-full" v-if="editingFileId === contract.id">
           <input type="text" class="bg-slate-100 dark:dark:bg-zinc-700 w-full" v-model="editingFileName"

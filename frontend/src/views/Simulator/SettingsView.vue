@@ -229,7 +229,7 @@ const handleCreateNewValidator = async () => {
       <div class="flex items-center">
         Number of validators:
       </div>
-      <div class="flex items-center text-xl font-semibold text-primary">
+      <div class="flex items-center text-xl font-semibold  dark:text-white text-primary">
         {{ validators.length }}
       </div>
     </div>
@@ -241,18 +241,18 @@ const handleCreateNewValidator = async () => {
         <div class="flex px-2 justify-between items-center hover:bg-slate-100 p-1" v-for="validator in validators"
           :key="validator.id">
           <div class="flex items-center cursor-pointer" @click="openUpdateValidatorModal(validator)">
-            <div class="flex text-primary">{{ validator.id }} - </div>
+            <div class="flex  dark:text-white text-primary">{{ validator.id }} - </div>
             <div class="flex flex-col items-start ml-2">
-              <div class="flex"><span class="font-semibold mr-1">Model: </span> <span class="text-primary">{{
+              <div class="flex"><span class="font-semibold mr-1">Model: </span> <span class=" dark:text-white text-primary">{{
           validator.model }}</span></div>
               <div class="flex"><span class="font-semibold mr-1">Provider: </span> <span>{{ validator.provider }}</span>
               </div>
             </div>
-            <div class="flex text-primary pl-4 pr-2">
+            <div class="flex  dark:text-white text-primary pl-4 pr-2">
               {{ shortenAddress(validator.address) }}
             </div>
           </div>
-          <div class="flex text-primary">
+          <div class="flex  dark:text-white text-primary">
             <button @click="openDeleteValidatorModal(validator)">
               <ToolTip text="Delete Validator" :options="{ placement: 'bottom' }" />
               <TrashIcon class="h-4 w-4 mr-1" />
@@ -269,7 +269,7 @@ const handleCreateNewValidator = async () => {
       <div class="flex flex-col">
         <div class="flex justify-between">
           <div class="text-xl">Validator Details</div>
-          <div class="text-primary">ID: {{ selectedValidator?.id }}</div>
+          <div class=" dark:text-white text-primary">ID: {{ selectedValidator?.id }}</div>
         </div>
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Address:</p>
@@ -333,7 +333,7 @@ const handleCreateNewValidator = async () => {
       <div class="flex flex-col">
         <div class="flex justify-between">
           <div class="text-xl">Delete Validator</div>
-          <div class="text-primary">ID: {{ selectedValidator?.id }}</div>
+          <div class=" dark:text-white text-primary">ID: {{ selectedValidator?.id }}</div>
         </div>
         <div class="flex justify-between font-bold bg-slate-100 p-2 mt-4">
           Are you sure you want to delete this validator?
