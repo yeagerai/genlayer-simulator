@@ -11,7 +11,7 @@ export const DEFAULT_CALLBACKS = {
   export const DEFAULT_OPTIONS = {
     highlight: false,
     labels: {
-      buttonSkip: 'Skip tour',
+      buttonSkip: 'Skip tutorial',
       buttonPrevious: 'Previous',
       buttonNext: 'Next',
       buttonStop: 'Finish'

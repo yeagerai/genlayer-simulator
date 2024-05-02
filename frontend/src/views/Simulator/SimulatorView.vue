@@ -81,6 +81,12 @@ const handleToogleTerminal = () => {
 }
 
 .splitpanes.default-theme .splitpanes__splitter {
+  background-color: transparent !important;
+  
+}
+
+.splitpanes.default-theme .splitpanes__splitter:hover,
+.splitpanes.default-theme .splitpanes__splitter:active {
   background-color: #cbd5e1 !important;
 }
 </style>

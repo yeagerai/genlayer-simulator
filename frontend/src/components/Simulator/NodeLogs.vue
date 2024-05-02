@@ -28,8 +28,6 @@ onUnmounted(() => {
 
 <template>
   <div class="z-20 flex flex-col h-full w-full absolute bottom-0 left-0">
-    <div class="flex bg-slate-100 p-1 dark:bg-zinc-700 h-6">
-    </div>
     <div class="flex flex-col w-full overflow-y-auto h-full p-1 bg-white dark:bg-zinc-800 dark:text-white text-primary cursor-text">
       <div v-if="mainStore.nodeLogs.length > 0"
         class="flex flex-col scroll-smooth overscroll-contain snap-y  snap-start p-0" ref="scrollContainer">
