@@ -68,18 +68,12 @@ const setCurentUserAddress = (event: Event) => {
 
 <template>
   <div class="flex flex-col px-2 mt-6 py-2 w-full bg-slate-100">
-    <h5 class="text-sm">Execute transactions</h5>
+    <h5 class="text-sm" id="tutorial-how-to-create-transaction">Execute transactions</h5>
   </div>
   <div class="flex flex-col p-2 overflow-y-auto">
     <div class="flex flex-col items-start w-full">
       <p>Current Account:</p>
-      <select
-        name=""
-        id=""
-        @change="setCurentUserAddress"
-        class="text-xs w-full"
-        :value="store.currentUserAddress"
-      >
+      <select name="" id="" @change="setCurentUserAddress" class="text-xs w-full" :value="store.currentUserAddress">
         <option v-for="account in store.accounts" :key="account" :value="account">
           {{ account }}
         </option>
@@ -95,28 +89,16 @@ const setCurentUserAddress = (event: Event) => {
     </div>
     <template v-if="method">
       <div class="flex flex-col mt-4 w-full">
-        <div
-          class="flex items-center py-2 justify-between"
-          v-for="(inputType, input) in method.inputs"
-          :key="input"
-        >
+        <div class="flex items-center py-2 justify-between" v-for="(inputType, input) in method.inputs" :key="input">
           <label :for="`${input}`" class="text-xs mr-2">{{ input }}</label>
-          <input
-            v-model="inputs[method.name][input]"
-            :name="`${input}`"
-            :type="InputTypesMap[inputType]"
-            :placeholder="`${input}`"
-            class="bg-slate-100 dark:dark:bg-zinc-700 p-2"
-            label="Input"
-          />
+          <input v-model="inputs[method.name][input]" :name="`${input}`" :type="InputTypesMap[inputType]"
+            :placeholder="`${input}`" class="bg-slate-100 dark:dark:bg-zinc-700 p-2" label="Input" />
         </div>
       </div>
       <div class="flex flex-col mt-4 w-full">
         <ToolTip :text="`Excute ${method.name}()`" :options="{ placement: 'top' }" />
-        <button
-          @click="handleMethodCall"
-          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded"
-        >
+        <button @click="handleMethodCall"
+          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
           Excute {{ ` ${method.name}` }}()
         </button>
       </div>

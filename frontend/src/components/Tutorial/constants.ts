@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 export const DEFAULT_CALLBACKS = {
-    onStart: () => {},
+    onStart: () => {
+      
+    },
     onPreviousStep: (_currentStep: number) => {},
     onNextStep: (_currentStep: number) => {},
     onStop: () => {},
@@ -9,7 +11,7 @@ export const DEFAULT_CALLBACKS = {
   }
   
   export const DEFAULT_OPTIONS = {
-    highlight: false,
+    highlight: true,
     labels: {
       buttonSkip: 'Skip tutorial',
       buttonPrevious: 'Previous',
@@ -22,13 +24,13 @@ export const DEFAULT_CALLBACKS = {
       buttonNext: true,
       buttonStop: true
     },
-    startTimeout: 0,
-    stopOnTargetNotFound: true,
+    startTimeout: 1000,
+    stopOnTargetNotFound: false,
     useKeyboardNavigation: true,
     enabledNavigationKeys: {
-      escape: true,
-      arrowRight: true,
-      arrowLeft: true
+      "escape": true,
+      "arrowRight": true,
+      "arrowLeft": true
     },
     debug: false
   }

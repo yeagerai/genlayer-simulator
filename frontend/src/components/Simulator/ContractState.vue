@@ -26,7 +26,7 @@ const methodList = computed<string[]>(() => {
 })
 </script>
 <template>
-  <div class="flex flex-col px-2 mt-6 py-2 w-full bg-slate-100">
+  <div class="flex flex-col px-2 mt-6 py-2 w-full bg-slate-100" id="tutorial-contract-state">
     <h5 class="text-sm">Current Intelligent Contract State</h5>
   </div>
   <div class="flex flex-col p-2 overflow-y-auto">

@@ -18,7 +18,7 @@ const handleCloseModal = () => {
 
 </script>
 <template>
-  <div class="flex flex-col px-2 mt-6 py-2 w-full bg-slate-100">
+  <div class="flex flex-col px-2 mt-6 py-2 w-full bg-slate-100" id="tutorial-tx-response">
     <h5 class="text-sm">Latest Transactions</h5>
   </div>
   <div class="flex flex-col p-2">

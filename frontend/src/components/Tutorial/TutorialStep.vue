@@ -209,7 +209,7 @@ export default {
 
 <style scoped>
 .v-step {
-    background: #50596c;
+    background: #1a3851;
     /* #ffc107, #35495e */
     color: white;
     max-width: 320px;
@@ -240,19 +240,14 @@ export default {
 
 .v-step__arrow {
     visibility: hidden;
-
-    &--dark {
-        &:before {
-            background: #454d5d;
-        }
-    }
 }
 
 .v-step__arrow--dark::before {
-    background: #454d5d;
+    background: #1a3851;
 }
 
 .v-step__arrow::before {
+    background: #1a3851;
     visibility: visible;
     content: '';
     transform: rotate(45deg);
@@ -280,13 +275,14 @@ export default {
 .v-step__header {
     margin: -1rem -1rem 0.5rem;
     padding: 0.5rem;
-    background-color: #454d5d;
+    background-color: #1a3851;
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
 }
 
 .v-step__content {
     margin: 0 0 1rem 0;
+    background-color: #1a3851;
 }
 
 .v-step__button {
@@ -312,6 +308,6 @@ export default {
 .v-step__button:hover {
 
     background-color: rgba(white, 0.95);
-        color: #50596c;
+    color: #1a3851;
 }
 </style>

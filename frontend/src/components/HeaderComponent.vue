@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { SunIcon } from '@heroicons/vue/24/solid'
+import { SunIcon, PresentationChartLineIcon } from '@heroicons/vue/24/solid'
 import { useUIStore, useMainStore } from '@/stores'
 import { shortenAddress } from '@/utils'
 import { RouterLink } from 'vue-router'
@@ -9,6 +9,9 @@ const uiStore = useUIStore()
 const mainStore = useMainStore()
 const toogleMode = () => {
     uiStore.toogleMode()
+}
+const showTutorial = () => {
+    uiStore.runTutorial()
 }
 </script>
 
@@ -29,6 +32,11 @@ const toogleMode = () => {
                 <SunIcon class="h-5 w-5 fill-gray-700" v-if="uiStore.mode === 'light'" />
                 <SunIcon class="h-5 w-5 fill-gray-200" v-else />
                 <ToolTip text="Swtitch Theme" :options="{ placement: 'bottom' }" />
+            </button>
+            <button class="mx-3" @click="showTutorial">
+                <PresentationChartLineIcon class="h-5 w-5 fill-gray-700" v-if="uiStore.mode === 'light'" />
+                <PresentationChartLineIcon class="h-5 w-5 fill-gray-200" v-else />
+                <ToolTip text="Show Tutorial" :options="{ placement: 'bottom' }" />
             </button>
         </div>
     </header>
