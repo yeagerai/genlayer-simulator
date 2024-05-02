@@ -44,7 +44,7 @@ class EquivalencePrinciple:
         # skip the block
         return self
 
-    async def __aexit__(self, exc_type, exc_value, traceback):
+    async def __aexit__(self):
 
         caller_frame = inspect.currentframe().f_back
         locals_in_caller = caller_frame.f_locals
