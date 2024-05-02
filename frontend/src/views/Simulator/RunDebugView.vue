@@ -20,13 +20,16 @@ const deployedContract = computed(() =>
 )
 const contractTransactions = ref<any[]>([])
 
-const getContractState = async (contractAddress: string) => {
+const handleGetContractState = async (contractAddress: string, method: string) => {
   const { result } = await rpcClient.call({
     method: 'get_contract_state',
-    params: [contractAddress, 'get_have_coin']
+    params: [deployedContract.value.address, method]
   })
 
-  contractState.value = result.data
+  contractState.value = {
+    ...contractState.value,
+    [method]: result.data.result
+  }
 }
 
 const handleCallContractMethod = async ({ method, params }: { method: string; params: any[] }) => {
@@ -42,7 +45,6 @@ const handleCallContractMethod = async ({ method, params }: { method: string; pa
   })
 
   contractTransactions.value.push(result)
-  if (deployedContract.value?.address) getContractState(deployedContract.value?.address)
 }
 
 const handleDeployContract = async () => {
@@ -61,7 +63,6 @@ const handleDeployContract = async () => {
         method: 'get_icontract_schema_for_code',
         params: [contract.content]
       })
-      console.log('🚀 ~ handleDeployContract ~ contractSchema:', contractSchema)
 
       // Deploy the contract
       const constructorParamsAsString = JSON.stringify(constructorParams, null, 2)
@@ -92,7 +93,6 @@ const handleDeployContract = async () => {
 const setDefaultState = async (contract: DeployedContract) => {
   try {
     contractContructorParams.value = contract.defaultState
-    await getContractState(contract.address)
 
     const { result } = await rpcClient.call({
       method: 'get_icontract_schema',
@@ -157,7 +157,12 @@ onMounted(() => {
       </div>
       <div class="flex flex-col" v-if="deployedContract">
         <div class="flex flex-col">
-          <ContractState :contract-state="contractState" :deployed-contract="deployedContract" />
+          <ContractState
+            :abi="abi"
+            :contract-state="contractState"
+            :deployed-contract="deployedContract"
+            :get-contract-state="handleGetContractState"
+          />
         </div>
 
         <div class="flex flex-col">
