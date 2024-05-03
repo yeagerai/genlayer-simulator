@@ -7,7 +7,7 @@ import json
 def vrf(items, k):
     weights = []
     for i in items:
-        weights.append(float(i['stake']))
+        weights.append(float(i["stake"]))
     weighted_indices = random.choices(range(len(items)), weights=weights, k=k * 10)
     unique_indices = set()
     random.shuffle(weighted_indices)
@@ -20,12 +20,14 @@ def vrf(items, k):
     return [items[i] for i in unique_indices]
 
 
-def get_contract_state(contract_address: str) -> dict: # that should be on the rpc and cli maybe
+def get_contract_state(
+    contract_address: str,
+) -> dict:  # that should be on the rpc and cli maybe
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
 
     try:
-        #TODO: This needs to be better
+        # TODO: This needs to be better
         cursor.execute(
             "SELECT data FROM current_state WHERE id = (%s);", (contract_address,)
         )
@@ -41,38 +43,61 @@ def get_contract_state(contract_address: str) -> dict: # that should be on the r
         cursor.close()
         connection.close()
 
-def build_icontract(
-        contract_code:str,
-        contract_state:str,
-        run_by:str,
-        class_name:str,
-        function_name:str,
-        args_str:str
+
+def run_contract(
+    contract_code: str,
+    encoded_state: str,
+    run_by: str,
+    function_name: str,
+    args_str: str,
 ) -> str:
     return f"""
 {contract_code}
 
 async def main():
-    current_contract = {class_name}(**{contract_state})
-    current_contract.mode = "{run_by}"
-    await current_contract.{function_name}({args_str})
+    from genvm.base.contract_runner import ContractRunner
+    contract_runner = ContractRunner()
+    try:
+        EquivalencePrinciple.contract_runner = contract_runner
+    except (ImportError, UnboundLocalError):
+        from genvm.base.equivalence_principle import EquivalencePrinciple
+        EquivalencePrinciple.contract_runner = contract_runner
+
+    import pickle
+    import base64
+    decoded_pickled_object = base64.b64decode("{encoded_state}")
+    current_contract = pickle.loads(decoded_pickled_object)
+    
+    contract_runner.mode = "{run_by}"
+    
+    if contract_runner.mode == "validator":
+        contract_runner._load_leader_eq_outputs()
+
+    if asyncio.iscoroutinefunction(current_contract.{function_name}):
+        await current_contract.{function_name}({args_str})
+    else:
+        current_contract.{function_name}({args_str})
+
+    pickled_object = pickle.dumps(current_contract)
+    contract_runner._write_receipt(pickled_object, '{function_name}', [{args_str}])
 
 if __name__=="__main__":
     import asyncio    
     asyncio.run(main())
     """
 
+
 def get_nodes_config(logger=None) -> str:
     if logger:
         logger("Checking the nodes.json config file has been created...")
     cwd = os.path.abspath(os.getcwd())
-    nodes_file = cwd + '/consensus/nodes/nodes.json'
+    nodes_file = cwd + "/consensus/nodes/nodes.json"
     if not os.path.exists(nodes_file):
-        raise Exception('Create a configuratrion file for the nodes')
+        raise Exception("Create a configuratrion file for the nodes")
     return json.load(open(nodes_file))
 
 
-def get_validators(nodes_config:dict, logger=None) -> list:
+def get_validators(nodes_config: dict, logger=None) -> list:
     if logger:
         logger("Selecting validators with VRF...")
     # Select validators
@@ -84,7 +109,13 @@ def get_validators(nodes_config:dict, logger=None) -> list:
     connection.close()
 
     if len(nodes_config) < len(validator_data):
-        raise Exception('Nodes in database ('+str(len(validator_data))+'). Nodes configured ('+str(len(nodes_config))+')')
+        raise Exception(
+            "Nodes in database ("
+            + str(len(validator_data))
+            + "). Nodes configured ("
+            + str(len(nodes_config))
+            + ")"
+        )
 
     # Prepare validators and their stakes
     all_validators = [row[0] for row in validator_data]
@@ -92,5 +123,12 @@ def get_validators(nodes_config:dict, logger=None) -> list:
 
     return all_validators, validators_stakes
 
+
 def genvm_url():
-    return os.environ['GENVMPROTOCOL']+'://'+os.environ['GENVMHOST']+':'+os.environ['GENVMPORT']
+    return (
+        os.environ["GENVMPROTOCOL"]
+        + "://"
+        + os.environ["GENVMHOST"]
+        + ":"
+        + os.environ["GENVMPORT"]
+    )

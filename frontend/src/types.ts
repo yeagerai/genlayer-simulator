@@ -12,20 +12,18 @@ export interface OpenedFile {
 export interface DeployedContract {
   contractId: string
   address: string
-}
-export interface DefaultContractState {
-  contractId: string
-  address: string
   defaultState: string
 }
 
 export interface MainStoreState {
+  contractsModified: string
   contracts: ContractFile[]
   openedFiles: string[]
   currentContractId?: string
   deployedContracts: DeployedContract[]
-  defaultContractStates: DefaultContractState[]
   currentUserAddress?: string
+  nodeLogs: { message: string; date: string }[]
+  accounts: string[]
 }
 
 export type UIMode = 'light' | 'dark'
@@ -52,4 +50,9 @@ export interface UpdateValidatorModel {
   model: string
   provider: string
   stake: number
+}
+
+export interface ContractMethod {
+  name: string
+  inputs: { [k: string]: string }
 }

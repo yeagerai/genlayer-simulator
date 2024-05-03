@@ -1,8 +1,8 @@
 import inspect
 import asyncio
 import traceback
-from contracts.equivalence_principle import EquivalencePrinciple
-from contracts.base import icontract
+from base.equivalence_principle import EquivalencePrinciple
+from genvm.base.contract_runner import icontract
 
 
 def iContract_stub(cls):
@@ -11,30 +11,46 @@ def iContract_stub(cls):
 
         def __init__(self, *args, **kwargs):
             super(WrappedClass, self).__init__(*args, **kwargs)
-            #del self.__class__.__getattribute__
+            # del self.__class__.__getattribute__
+            self.all_calls = []
 
-        async def _get_webpage(self, url:str, equivalence_criteria:str = None):
+        async def _get_webpage(self, url: str, equivalence_criteria: str = None):
             # To ensure the method is not called directly
             stack_trace = traceback.extract_stack()
+            current_stack = []
+            for x in stack_trace:
+                current_stack.append(
+                    x.filename + "(" + str(x.lineno) + "): [" + x.name + "] " + x.line
+                )
+            self.all_calls.append(current_stack)
             corectly_called = False
-            if stack_trace[-2].name in ['get_webpage', '__aexit__']:
+            if stack_trace[-2].name in ["get_webpage", "__aexit__"]:
                 corectly_called = True
             if not corectly_called:
-                raise Exception('This method can not be called directly. Call it from within an EquivalencePrinciple with block')
+                raise Exception(
+                    "This method can not be called directly. Call it from within an EquivalencePrinciple with block"
+                )
             await asyncio.sleep(1)
-            return 'icontract._get_webpage('+str(equivalence_criteria)+')'
+            return "icontract._get_webpage(" + str(equivalence_criteria) + ")"
 
-
-        async def _call_llm(self, prompt:str, consensus_eq:str=None):
+        async def _call_llm(self, prompt: str, consensus_eq: str = None):
             # To ensure the method is not called directly
             stack_trace = traceback.extract_stack()
+            current_stack = []
+            for x in stack_trace:
+                current_stack.append(
+                    x.filename + "(" + str(x.lineno) + "): [" + x.name + "] " + x.line
+                )
+            self.all_calls.append(current_stack)
             corectly_called = False
-            if stack_trace[-2].name in ['call_llm', '__aexit__']:
+            if stack_trace[-2].name in ["call_llm", "__aexit__"]:
                 corectly_called = True
             if not corectly_called:
-                raise Exception('This method can not be called directly. Call it from within an EquivalencePrinciple with block')
+                raise Exception(
+                    "This method can not be called directly. Call it from within an EquivalencePrinciple with block"
+                )
             await asyncio.sleep(1)
-            return 'icontract._call_llm('+str(consensus_eq)+')'
+            return "icontract._call_llm(" + str(consensus_eq) + ")"
 
     return WrappedClass
 
@@ -43,12 +59,13 @@ def iContract_stub(cls):
 class TestContract:
 
     def get_test_attributes(self):
-        return 'https://python.org/', \
-            'simple prompt', \
-            'simple eq principle', \
-            'simple consensus eq', \
-            'simple principle'
-
+        return (
+            "https://python.org/",
+            "simple prompt",
+            "simple eq principle",
+            "simple consensus eq",
+            "simple principle",
+        )
 
     def unittest_method_self_get_webpage(self):
         url, prompt, eq_principle, _, _ = self.get_test_attributes()
@@ -57,8 +74,6 @@ class TestContract:
     def unittest_method_self_call_llm(self):
         _, prompt, _, consensus_eq, _ = self.get_test_attributes()
         self.call_llm(prompt, consensus_eq)
-
-
 
     def unittest_method_eq_principle_get_webpage(self):
         url, prompt, eq_principle, _, principle = self.get_test_attributes()
@@ -70,8 +85,6 @@ class TestContract:
         eq_principle = EquivalencePrinciple(self, principle)
         eq_principle.call_llm(prompt, consensus_eq)
 
-
-
     async def unittest_method_self__get_webpage(self):
         url, _, _, _, principle = self.get_test_attributes()
         return await self._get_webpage(url, principle)
@@ -79,8 +92,6 @@ class TestContract:
     async def unittest_method_self__call_llm(self):
         _, prompt, _, _, principle = self.get_test_attributes()
         return await self._call_llm(prompt, principle)
-
-
 
     async def unittest_method_with_eq_principle_get_webpage(self):
         url, _, _, _, principle = self.get_test_attributes()
@@ -92,8 +103,6 @@ class TestContract:
         async with EquivalencePrinciple(self, principle) as eq:
             return await eq.call_llm(prompt)
 
-
-
     async def unittest_method_with_eq_principle_self__get_webpage(self):
         url, _, _, _, principle = self.get_test_attributes()
         async with EquivalencePrinciple(self, principle) as eq:
@@ -103,8 +112,6 @@ class TestContract:
         _, prompt, _, _, principle = self.get_test_attributes()
         async with EquivalencePrinciple(self, principle) as eq:
             return await self._call_llm(prompt)
-
-
 
     async def unittest_method_with_eq_principle_self__get_webpage_with_principle(self):
         url, _, _, _, principle = self.get_test_attributes()

@@ -29,6 +29,7 @@ services:
       - "${RPCPORT}:${RPCPORT}"
       - "${RPCDEBUGPORT}:${RPCDEBUGPORT}"
     volumes:
+      - ./.env:/app/.env
       - ./rpc:/app/rpc
       - ./database:/app/database
       - ./consensus:/app/consensus
