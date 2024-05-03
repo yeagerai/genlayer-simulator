@@ -11,18 +11,16 @@ ADD rpc $path/rpc
 ADD database $path/database
 ADD consensus $path/consensus
 
-WORKDIR $path/rpc
-
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r rpc/requirements.txt
 
 ENV PYTHONPATH "${PYTHONPATH}:/${path}"
-ENV FLASK_APP=server.py
+ENV FLASK_APP=rpc/server.py
 
 ###########START NEW IMAGE : DEBUGGER ###################
 FROM base as debug
 RUN pip install debugpy
 
-CMD python -m debugpy --listen 0.0.0.0:${RPCDEBUGPORT} --wait-for-client -m flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}
+CMD python -m debugpy --listen 0.0.0.0:${RPCDEBUGPORT} -m flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}
 
 ###########START NEW IMAGE: PRODUCTION ###################
 FROM base as prod

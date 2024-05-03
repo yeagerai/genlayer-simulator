@@ -59,7 +59,6 @@ services:
       context: ./
       dockerfile: ./docker/Dockerfile.genvm
       target: debug
-    container_name: genvm
     environment:
       - FLASK_SERVER_PORT=${GENVMPORT}
       - DEBUG=${GENVMDEBUG}

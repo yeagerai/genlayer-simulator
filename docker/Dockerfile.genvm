@@ -9,18 +9,16 @@ COPY ../.env .
 
 ADD genvm $path/genvm
 
-WORKDIR $path/genvm
+RUN ln genvm/base/contract_runner.py /tmp/contract_runner.py
+RUN ln genvm/base/llms.py /tmp/llms.py
+RUN ln genvm/base/context_wrapper.py /tmp/context_wrapper.py
+RUN ln genvm/base/equivalence_principle.py /tmp/equivalence_principle.py
 
-RUN ln base/contract_runner.py /tmp/contract_runner.py
-RUN ln base/llms.py /tmp/llms.py
-RUN ln base/context_wrapper.py /tmp/context_wrapper.py
-RUN ln base/equivalence_principle.py /tmp/equivalence_principle.py
-
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r genvm/requirements.txt
 RUN pip install Flask
 
 ENV PYTHONPATH "${PYTHONPATH}:/${path}"
-ENV FLASK_APP=server.py
+ENV FLASK_APP=genvm/server.py
 
 ###########START NEW IMAGE : DEBUGGER ###################
 FROM base as debug
