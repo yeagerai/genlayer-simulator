@@ -20,7 +20,13 @@ from database.credentials import get_genlayer_db_connection
 from database.functions import DatabaseFunctions
 from database.types import ContractData, CallContractInputData
 from consensus.algorithm import exec_transaction
-from consensus.utils import genvm_url
+from consensus.nodes.create_nodes import (
+    random_validator_config,
+    get_config_for_providers_and_nodes,
+    get_providers,
+    get_provider_models,
+)
+from consensus.utils import vrf, genvm_url
 from consensus.nodes.create_nodes import random_validator_config
 from common.messages import MessageHandler
 from common.logging import setup_logging_config
@@ -83,6 +89,7 @@ def create_tables() -> dict:
     except Exception as e:
         return msg.error_response(exception=e)
     return msg.success_response(result)
+
 
 
 @jsonrpc.method("clear_tables")
@@ -221,18 +228,37 @@ def send_transaction(from_account: str, to_account: str, amount: float) -> dict:
 
 @jsonrpc.method("deploy_intelligent_contract")
 def deploy_intelligent_contract(
-    from_account: str, contract_code: str, initial_state: str
+    from_account: str, class_name: str, contract_code: str, constructor_args: str
 ) -> dict:
     msg = MessageHandler(app, socketio)
 
     if not address_is_in_correct_format(from_account):
         return msg.error_response(message="from_account not in ethereum address format")
     
+    with DatabaseFunctions() as dbf:
+        all_validators = dbf.all_validators()
+        dbf.close()
+
+    # Select validators using VRF
+    selected_validators = vrf(all_validators, 5)
+
+    leader_config = selected_validators[0]
+
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "deploy_contract",
+        "params": [contract_code, constructor_args, class_name, leader_config],
+        "id": 3,
+    }
+    response = requests.post(genvm_url() + "/api", json=payload).json()
+    if response["result"]["status"] != "success":
+        return {"status": "fail", "message": response["result"]["data"]}
+
     try:
         connection = get_genlayer_db_connection()
         cursor = connection.cursor()
         contract_id = create_new_address()
-        contract_data = ContractData(code=contract_code, state=json.loads(initial_state)).model_dump_json()
+        contract_data = ContractData(code=contract_code, state=response["result"]["data"]["contract_state"]).model_dump_json()
         try:
             cursor.execute(
                 "INSERT INTO current_state (id, data) VALUES (%s, %s);",
@@ -369,6 +395,7 @@ def delete_all_validators() -> dict:
     response = get_all_validators()
     return msg.response_format(**response)
 
+
 @jsonrpc.method("create_random_validators")
 def create_random_validators(count:int, min_stake:float, max_stake:float) -> dict:
     msg = MessageHandler(app, socketio)
@@ -385,6 +412,7 @@ def create_random_validators(count:int, min_stake:float, max_stake:float) -> dic
         return msg.error_response(exception=e)
     response = get_all_validators()
     return msg.response_format(**response)
+
 
 @jsonrpc.method("create_random_validator")
 def create_random_validator(stake: float) -> dict:
@@ -421,12 +449,6 @@ async def call_contract_function(
         ).model_dump_json()
         msg.info_response('Data formatted')
 
-        cursor.execute(
-            "INSERT INTO transactions (from_address, to_address, input_data, type, created_at) VALUES (%s, %s, %s, 2, CURRENT_TIMESTAMP);",
-            (from_account, contract_address, function_call_data),
-        )
-
-        connection.commit()
         msg.info_response(f"Transaction sent from {from_account} to {contract_address}...")
 
         # TODO: More logging needs to be done inside the consensus functionallity
@@ -471,12 +493,12 @@ def get_last_contracts(number_of_contracts: int) -> dict:
     except Exception as e:
         return msg.error_response(exception=e)
     
-    return msg.success_response(contract_info)
+    return msg.success_response(contracts_info)
 
 
 
 @jsonrpc.method("get_contract_state")
-def get_contract_state(contract_address: str) -> dict:
+def get_contract_state(contract_address: str, method_name: str) -> dict:
     msg = MessageHandler(app, socketio)
 
     try:
@@ -495,10 +517,25 @@ def get_contract_state(contract_address: str) -> dict:
         if not row:
             return msg.error_response(message=contract_address + ' contract does not exist')
 
+        code = row[0][1]["code"]
+        state = row[0][1]["state"]
+        payload = {
+            "jsonrpc": "2.0",
+            "method": "get_contract_data",
+            "params": [code, state, method_name],
+            "id": 4,
+        }
+        result = requests.post(genvm_url() + "/api", json=payload).json()["result"]
+        response = {"id": row[0][0], "data": result}
+
+        if result['result']['status'] == 'error':
+            return msg.error_response(result['result'])
+
     except Exception as e:
         return msg.error_response(exception=e)
-    
-    return msg.success_response({"id": row[0][0], "data": row[0][1]})
+
+    return msg.success_response(response)
+
 
 @jsonrpc.method("get_icontract_schema")
 def get_icontract_schema(contract_address: str) -> dict:
@@ -548,6 +585,19 @@ def get_icontract_schema(contract_address: str) -> dict:
     data = requests.post(genvm_url()+'/api', json=payload).json()['result']
 
     return msg.response_format(**data)
+
+
+@jsonrpc.method("get_providers_and_models")
+def get_providers_and_models() -> dict:
+    msg = MessageHandler(app, socketio)
+    config = get_config_for_providers_and_nodes()
+    providers = get_providers()
+    providers_and_models = {}
+    for provider in providers:
+        providers_and_models[provider] = get_provider_models(
+            config["providers"], provider
+        )
+    return msg.success_response(providers_and_models)
 
 
 @jsonrpc.method("ping")

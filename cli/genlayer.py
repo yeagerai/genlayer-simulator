@@ -61,7 +61,7 @@ def send_logic(from_account:str, to_account:str, amount:float) -> dict:
     response = requests.post(json_rpc_url, json=payload).json()
     return response
 
-def deploy_logic(from_account:str, contract_code_file:IO[bytes], initial_state:str) -> dict:
+def deploy_logic(from_account:str, class_name:str, contract_code_file:IO[bytes], initial_state:str) -> dict:
     contract_code = contract_code_file.read()
     
     try:
@@ -73,7 +73,7 @@ def deploy_logic(from_account:str, contract_code_file:IO[bytes], initial_state:s
     payload = {
         "jsonrpc": "2.0",
         "method": "deploy_intelligent_contract",
-        "params": [from_account, contract_code.decode("utf-8"), initial_state],
+        "params": [from_account, class_name, contract_code.decode("utf-8"), initial_state],
         "id": 2,
     }
     response = requests.post(json_rpc_url, json=payload).json()

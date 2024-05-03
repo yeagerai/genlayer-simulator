@@ -3,12 +3,14 @@ import ast
 import subprocess
 import json
 import inspect
+import pickle
+import base64
 from flask import Flask
 from flask_jsonrpc import JSONRPC
 from flask_socketio import SocketIO
 from flask_cors import CORS
 
-from genvm.utils import transaction_files, save_files
+from genvm.utils import transaction_files, save_files, delete_recipts, generate_deploy_contract
 from common.messages import MessageHandler
 from common.logging import setup_logging_config
 
@@ -21,26 +23,24 @@ setup_logging_config()
 app = Flask("genvm_api")
 
 
+CORS(app, resources={r"/api/*": {"origins": "*"}}, intercept_exceptions=False)
 jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 
-def execute_transaction() -> dict:
-    pass
-
-
-CORS(app, resources={r"/api/*": {"origins": "*"}}, intercept_exceptions=False)
 @jsonrpc.method("leader_executes_transaction")
-def leader_executes_transaction(icontract: str, node_config: dict) -> dict:
+def leader_executes_transaction(contract_code: str, node_config: dict) -> dict:
+
+    delete_recipts()
 
     msg = MessageHandler(app, socketio)
 
     icontract_file, _, _, leader_recipt_file = transaction_files()
 
-    msg.debug_response("icontract", icontract)
+    msg.debug_response("icontract", contract_code)
     msg.debug_response("node config", node_config)
 
-    save_files(icontract, node_config, "leader")
+    save_files(contract_code, node_config, "leader")
 
     try:
         result = subprocess.run(
@@ -69,7 +69,7 @@ def leader_executes_transaction(icontract: str, node_config: dict) -> dict:
     # TODO: Leader needs to be the name of the VM
     msg.debug_response("leader_executes_transaction (response)", contents)
 
-    # os.remove(leader_recipt_file)
+    delete_recipts()
 
     return msg.success_response(contents)
 
@@ -78,12 +78,14 @@ def leader_executes_transaction(icontract: str, node_config: dict) -> dict:
 def validator_executes_transaction(
     icontract: str, node_config: dict, leader_recipt: dict
 ) -> dict:
+
+    delete_recipts()
     
     msg = MessageHandler(app, socketio)
 
     return_data = {"status": "error", "data": None}
 
-    icontract_file, recipt_file, _, leader_recipt_file = transaction_files()
+    icontract_file, recipt_file, _, _ = transaction_files()
 
     msg.debug_response("icontract", icontract)
     msg.debug_response("node config", node_config)
@@ -114,7 +116,7 @@ def validator_executes_transaction(
 
     msg.debug_response("validator_executes_transaction (response)", contents)
 
-    # os.remove(leader_recipt_file)
+    delete_recipts()
 
     return msg.success_response(contents)
 
@@ -181,6 +183,59 @@ def get_icontract_schema(icontract: str) -> dict:
     response = {"class": class_name, "methods": methods, "variables": variables}
 
     return msg.success_response(response)
+
+
+@jsonrpc.method("deploy_contract")
+def deploy_contract(
+    contract_code: str, constructor_args: str, class_name: str, leader_config: dict
+) -> dict:
+    
+    msg = MessageHandler(app, socketio)
+
+    deploy_contract_code = generate_deploy_contract(
+        contract_code, constructor_args, class_name
+    )
+
+    contract_file, _, _, _ = transaction_files()
+    save_files(deploy_contract_code, leader_config, "leader")
+
+    try:
+        result = subprocess.run(
+            ["python", contract_file],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+        )
+    except Exception as e:
+        return msg.error_response(exception=e)
+
+    msg.debug_response("RUN Deploy Result", result)
+
+    if result.returncode != 0:
+        return msg.error_response(message=str(result.returncode) + ": " + str(result.stderr))
+
+    # Access the output of the subprocess.run command
+    file = open(os.environ.get("GENVMCONLOC") + "/receipt_leader.json", "r")
+    contents = json.load(file)
+    file.close()
+
+    msg.debug_response("Deployed contract receipt", contents)
+
+    # os.remove(leader_recipt_file)
+
+    return msg.success_response(contents)
+
+
+@jsonrpc.method("get_contract_data")
+def get_contract_data(code: str, state: str, method_name: str) -> dict:
+    msg = MessageHandler(app, socketio)
+    namespace = {}
+    exec(code, namespace)
+    globals().update(namespace)
+    decoded_pickled_object = base64.b64decode(state)
+    contract_state = pickle.loads(decoded_pickled_object)
+    method_to_call = getattr(contract_state, method_name)
+    return msg.success_response(method_to_call())
 
 
 if __name__ == "__main__":

@@ -1,8 +1,13 @@
 [
     {
-        "defaults": {
-            "ollama_openai_split": 0.0,
-            "openai_models": "gpt-4",
+        "providers": {
+            "provider_weights": {
+                "ollama": 0.5,
+                "openai": 0.5,
+                "heuristai": 0.5
+            },
+            "openai_models": "gpt-3.5-turbo,gpt-4",
+            "heuristai_models": "BrainDance,BlazingDrive,BluePencilRealistic,YamersCartoonArcadia,HelloWorldFilmGrain,ArthemyComics,ArthemyReal,Aurora,SDXLUnstableDiffusersV11,AnimagineXL,CyberRealisticXL,DreamShaperXL,AAMXLAnimeMix,mistralai/mixtral-8x7b-instruct,meta-llama/llama-2-70b-chat,mistralai/mistral-7b-instruct,openhermes-2.5-mistral-7b-gptq,openhermes-2-pro-mistral-7b,dolphin-2.9-llama3-8b,openhermes-mixtral-8x7b-gptq,openhermes-2-yi-34b-gptq",
             "chance_of_default_value": 0.5
         },
         "node_defaults": [
@@ -26,6 +31,17 @@
                     "top_k": {"default": 40, "min": 2, "max": 100, "step": 1},
                     "top_p": {"default": 0.9, "min": 0.5, "max": 0.99, "step": 0.01}
                 }
+            },
+            {
+                "provider": "heuristai",
+                "options": {
+                    "temperature": {"default": 0.75, "min": 0.0, "max": 1.0, "step": 0.05},
+                    "max_tokens": {"default": 500, "min": 100, "max": 2000, "step": 10}
+                }
+            },
+            {
+                "provider": "openai",
+                "options": "<empty>"
             }
         ],
         "node_custom": [

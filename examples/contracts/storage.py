@@ -1,20 +1,14 @@
-from genvm.contracts.base import icontract
-
-# @title Storage
-# @dev Store & retrieve value in a variable
-@icontract
+# contract class
 class Storage:
-    
-    # @dev Constructor: initializes the storage with 'initial_storage' value
+
+    # constructor
     def __init__(self, initial_storage: str):
         self.storage = initial_storage
 
-    # @dev Return the current value of storage
-    # @return value of 'self.storage'
+    # read methods must start with get_
     def get_storage(self):
         return self.storage
 
-    # @dev Stores the 'new_storage' value in 'self.storage'
-    # @param str value to store
+    # write method
     def update_storage(self, new_storage: str) -> None:
-        self.storage = new_storage  
+        self.storage = new_storage

@@ -26,6 +26,7 @@ services:
     ports:
       - "${RPCPORT}:${RPCPORT}"
     volumes:
+      - ./.env:/app/.env
       - ./rpc:/app/rpc
       - ./database:/app/database
       - ./consensus:/app/consensus

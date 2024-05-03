@@ -10,10 +10,10 @@ COPY ../.env .
 ADD genvm $path/genvm
 ADD common $path/common
 
-RUN ln genvm/contracts/base.py /tmp/base.py
-RUN ln genvm/contracts/llms.py /tmp/llms.py
-RUN ln genvm/contracts/context_wrapper.py /tmp/context_wrapper.py
-RUN ln genvm/contracts/equivalence_principle.py /tmp/equivalence_principle.py
+RUN ln genvm/base/llms.py /tmp/llms.py
+RUN ln genvm/base/context_wrapper.py /tmp/context_wrapper.py
+RUN ln genvm/base/contract_runner.py /tmp/contract_runner.py
+RUN ln genvm/base/equivalence_principle.py /tmp/equivalence_principle.py
 
 RUN pip install --no-cache-dir -r genvm/requirements.txt
 RUN pip install Flask

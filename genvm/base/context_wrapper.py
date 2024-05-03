@@ -20,7 +20,7 @@ def enforce_with_context(cls):
     @wraps(original_aexit)
     def aexit_wrapper(self, exc_type, exc_value, traceback):
         self._is_within_with_block = True
-        return original_aexit(self, exc_type, exc_value, traceback)
+        return original_aexit(self)
 
     def method_wrapper(method):
         @wraps(method)
