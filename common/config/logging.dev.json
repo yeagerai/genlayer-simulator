@@ -6,7 +6,7 @@
             "datefmt": "%B %d, %Y %H:%M:%S %Z"
         },
         "simple": {
-            "format": "%(levelname)s | %(module)s >>> %(message)s"
+            "format": "%(levelname)s | %(message)s"
         }
     },
     "handlers": {
@@ -42,6 +42,6 @@
     },
     "root": {
         "level": "INFO",
-        "handlers": ["console_simple", "wsgi_simple", "file"]
+        "handlers": ["console"]
     }
 }

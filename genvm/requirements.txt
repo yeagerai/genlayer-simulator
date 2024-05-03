@@ -1,5 +1,7 @@
 Flask-JSONRPC==3.0.1
 Flask[async]==3.0.2
+flask-socketio==5.3.6
+Flask-Cors==4.0.0
 aiohttp==3.9.3
 requests==2.31.0
 python-dotenv==1.0.1

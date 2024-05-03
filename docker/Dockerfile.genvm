@@ -6,21 +6,18 @@ RUN mkdir $path
 WORKDIR $path
 
 COPY ../.env .
-COPY ../logging_config.json .
 
 ADD genvm $path/genvm
 ADD common $path/common
 
-WORKDIR $path/genvm
+RUN ln genvm/contracts/base.py /tmp/base.py
+RUN ln genvm/contracts/llms.py /tmp/llms.py
+RUN ln genvm/contracts/context_wrapper.py /tmp/context_wrapper.py
+RUN ln genvm/contracts/equivalence_principle.py /tmp/equivalence_principle.py
 
-RUN ln contracts/base.py /tmp/base.py
-RUN ln contracts/llms.py /tmp/llms.py
-RUN ln contracts/context_wrapper.py /tmp/context_wrapper.py
-RUN ln contracts/equivalence_principle.py /tmp/equivalence_principle.py
-
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r genvm/requirements.txt
 RUN pip install Flask
 
 ENV PYTHONPATH "${PYTHONPATH}:/${path}"
 
-CMD ["python", "server.py"]
+CMD ["python", "genvm/server.py"]

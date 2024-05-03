@@ -1,7 +1,23 @@
+import os
+import json
 import logging
+from logging.config import dictConfig
 from colorama import init, Fore
 
 init(autoreset=True)
+
+
+def setup_logging_config():
+    logging_env = os.environ['LOGCONFIG']
+    if logging_env == 'production':
+        with open('common/config/logging.prod.json', 'r') as file:
+            logging_config = json.load(file)
+            dictConfig(logging_config)
+    if logging_env == 'development':
+        with open('common/config/logging.dev.json', 'r') as file:
+            logging_config = json.load(file)
+            dictConfig(logging_config)
+
 
 class ColoredFormatter(logging.Formatter):
     COLORS = {

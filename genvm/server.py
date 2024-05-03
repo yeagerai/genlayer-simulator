@@ -5,27 +5,40 @@ import json
 import inspect
 from flask import Flask
 from flask_jsonrpc import JSONRPC
-from genvm.utils import debug_output, transaction_files, save_files
+from flask_socketio import SocketIO
+from flask_cors import CORS
+
+from genvm.utils import transaction_files, save_files
 from common.messages import MessageHandler
+from common.logging import setup_logging_config
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
+setup_logging_config()
+
 app = Flask("genvm_api")
+
+
 jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 
 def execute_transaction() -> dict:
     pass
 
 
+CORS(app, resources={r"/api/*": {"origins": "*"}}, intercept_exceptions=False)
 @jsonrpc.method("leader_executes_transaction")
 def leader_executes_transaction(icontract: str, node_config: dict) -> dict:
 
-    return_data = {'status': 'error', 'message': '', 'data': None}
+    msg = MessageHandler(app, socketio)
 
     icontract_file, _, _, leader_recipt_file = transaction_files()
+
+    msg.debug_response("icontract", icontract)
+    msg.debug_response("node config", node_config)
 
     save_files(icontract, node_config, "leader")
 
@@ -37,16 +50,16 @@ def leader_executes_transaction(icontract: str, node_config: dict) -> dict:
             universal_newlines=True,
         )
     except Exception as e:
-        return_data['message'] = str(e)
-        return_data['data'] = str(e.with_traceback)
-        return return_data
+        return msg.error_response(exception=e)
 
-    debug_output("LLM Result", result)
+    msg.debug_response("LLM Result", result)
 
     if result.returncode != 0:
-        return_data['data'] = str(result.stderr)
-        return_data['message'] = result.stderr.split('\n')[-2]
-        return return_data
+        return msg.response_format(
+            status="error",
+            message=result.stderr.split('\n')[-2],
+            data=str(result.stderr)
+        )
 
     # Access the output of the subprocess.run command
     file = open(leader_recipt_file, "r")
@@ -54,23 +67,27 @@ def leader_executes_transaction(icontract: str, node_config: dict) -> dict:
     file.close()
 
     # TODO: Leader needs to be the name of the VM
-    debug_output("leader_executes_transaction(response)", contents)
+    msg.debug_response("leader_executes_transaction (response)", contents)
 
     # os.remove(leader_recipt_file)
 
-    return_data["status"] = "success"
-    return_data["data"] = contents
-    return return_data
+    return msg.success_response(contents)
 
 
 @jsonrpc.method("validator_executes_transaction")
 def validator_executes_transaction(
     icontract: str, node_config: dict, leader_recipt: dict
 ) -> dict:
+    
+    msg = MessageHandler(app, socketio)
 
     return_data = {"status": "error", "data": None}
 
     icontract_file, recipt_file, _, leader_recipt_file = transaction_files()
+
+    msg.debug_response("icontract", icontract)
+    msg.debug_response("node config", node_config)
+    msg.debug_response("leader recipt", leader_recipt)
 
     save_files(icontract, node_config, "validator", leader_recipt)
 
@@ -82,10 +99,9 @@ def validator_executes_transaction(
             universal_newlines=True,
         )
     except Exception as e:
-        return_data["data"] = str(e)
-        return return_data
+        return msg.error_response(exception=e)
 
-    debug_output("LLM Result", result)
+    msg.debug_response("LLM Result", result)
 
     if result.returncode != 0:
         return_data["data"] = str(result.returncode) + ": " + str(result.stderr)
@@ -96,19 +112,19 @@ def validator_executes_transaction(
     contents = json.load(file)
     file.close()
 
-    debug_output("validator_executes_transaction(response)", contents)
+    msg.debug_response("validator_executes_transaction (response)", contents)
 
     # os.remove(leader_recipt_file)
 
-    return_data["status"] = "success"
-    return_data["data"] = contents
-    return return_data
+    return msg.success_response(contents)
 
 
 @jsonrpc.method("get_icontract_schema")
 def get_icontract_schema(icontract: str) -> dict:
 
-    debug_output("icontract", icontract)
+    msg = MessageHandler(app, socketio)
+
+    msg.debug_response("icontract", icontract)
 
     class_name = None
     namespace = {}
@@ -117,8 +133,10 @@ def get_icontract_schema(icontract: str) -> dict:
         if "__main__" in str(class_type_in_contract):
             class_name = class_name_in_contract
 
+    msg.debug_response("class name", class_name)
+
     if not class_name:
-        raise Exception("This contract does not have a class declaration")
+        return msg.error_response(message="This contract does not have a class declaration")
 
     iclass = namespace[class_name]
 
@@ -143,7 +161,11 @@ def get_icontract_schema(icontract: str) -> dict:
         if return_annotation == "inspect._empty":
             return_annotation = "None"
 
-        methods[name] = {"inputs": inputs, "output": return_annotation}
+        result = {"inputs": inputs, "output": return_annotation}
+
+        msg.debug_response("Class method ("+class_name+"."+name+")", result)
+
+        methods[name] = result
 
     # Find all class variables
     variables = {}
@@ -153,9 +175,12 @@ def get_icontract_schema(icontract: str) -> dict:
             for stmt in node.body:
                 if isinstance(stmt, ast.AnnAssign):
                     if hasattr(stmt.annotation, "id") and hasattr(stmt.target, "id"):
+                        msg.debug_response("Class variables ("+class_name+"."+stmt.target.id+")", stmt.annotation.id)
                         variables[stmt.target.id] = stmt.annotation.id
 
-    return {"class": class_name, "methods": methods, "variables": variables}
+    response = {"class": class_name, "methods": methods, "variables": variables}
+
+    return msg.success_response(response)
 
 
 if __name__ == "__main__":

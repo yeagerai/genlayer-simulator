@@ -4,7 +4,6 @@ import json
 import psycopg2
 import string
 import requests
-import logging
 import random
 from logging.config import dictConfig
 from flask import Flask
@@ -24,28 +23,15 @@ from consensus.algorithm import exec_transaction
 from consensus.utils import genvm_url
 from consensus.nodes.create_nodes import random_validator_config
 from common.messages import MessageHandler
+from common.logging import setup_logging_config
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
-logging_env = os.environ['LOGCONFIG']
-if logging_env == 'production':
-    with open('common/config/logging_config.prod.json', 'r') as file:
-        logging_config = json.load(file)
-        dictConfig(logging_config)
-if logging_env == 'development':
-    with open('common/config/logging_config.dev.json', 'r') as file:
-        logging_config = json.load(file)
-        dictConfig(logging_config)
-else:
-    raise Exception(logging_env + ' not recognised!')
-
-#logger = logging.getLogger(os.environ['LOGCONFIG'])
-#logger = logging.getLogger('development')
+setup_logging_config()
 
 app = Flask('jsonrpc_api')
-#app.logger.parent = logger
 
 CORS(app, resources={r"/api/*": {"origins": "*"}}, intercept_exceptions=False)
 jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
@@ -384,7 +370,7 @@ def delete_all_validators() -> dict:
     return msg.response_format(**response)
 
 @jsonrpc.method("create_random_validators")
-def create_random_validators(count:int, min_stake:float, max_stake:float) -> list:
+def create_random_validators(count:int, min_stake:float, max_stake:float) -> dict:
     msg = MessageHandler(app, socketio)
     try:
         for _ in range(count):
@@ -428,7 +414,7 @@ async def call_contract_function(
     try:
         connection = get_genlayer_db_connection()
         cursor = connection.cursor()
-        msg.info("db connection created")
+        msg.info_response("db connection created")
 
         function_call_data = CallContractInputData(
             contract_address=contract_address, function_name=function_name, args=args
@@ -449,7 +435,7 @@ async def call_contract_function(
 
         cursor.close()
         connection.close()
-        msg.info("db closed")
+        msg.info_response("db closed")
 
     except Exception as e:
         return msg.error_response(exception=e)

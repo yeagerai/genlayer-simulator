@@ -1,6 +1,6 @@
 from typing import Optional
 import inspect
-from contracts.context_wrapper import enforce_with_context
+from genvm.contracts.context_wrapper import enforce_with_context
 from genvm.contracts import llms
 from genvm.utils import get_webpage_content
 

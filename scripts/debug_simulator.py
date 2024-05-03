@@ -83,7 +83,7 @@ with open(contract_file_path, 'rb') as contract_file:
 # Retrieve the last contract ID (you should parse the actual ID from the output)
 last_contract_output = last_contracts_logic(1)
 print("Last contract command output:", last_contract_output)
-last_contract_id = last_contract_output['result']['data']['contract_id']  # Example parsing
+last_contract_id = last_contract_output['result']['data']['address']  # Example parsing
 
 
 # Call the contract

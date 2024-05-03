@@ -1,16 +1,11 @@
 import os
 import json
 import requests
+
+
 from dotenv import load_dotenv
 
 load_dotenv()
-
-
-def debug_output(title: str, content: str):
-    if int(os.environ.get("DEBUG")) == 1:
-        print("--- START: " + title + " ---")
-        print(f"""{content}""")
-        print("--- END: " + title + " ---")
 
 
 def transaction_files() -> list:
@@ -29,22 +24,16 @@ def save_files(
 ):
     icontract_file, _, node_config_file, leader_recipt_file = transaction_files()
 
-    debug_output("llm_config", node_config)
-
     with open(node_config_file, "w") as file:
         node_config["type"] = node_type
         json.dump(node_config, file, indent=4)
     file.close()
-
-    debug_output("icontract", icontract)
 
     with open(icontract_file, "w+") as file:
         file.write(icontract)
     file.close()
 
     if leader_recipt:
-
-        debug_output("Leader Recipt", leader_recipt)
 
         with open(leader_recipt_file, "w") as file:
             json.dump(leader_recipt, file, indent=4)

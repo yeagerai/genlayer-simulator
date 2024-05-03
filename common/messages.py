@@ -1,49 +1,53 @@
 import inspect
 import traceback
+import logging
 
 class MessageHandler:
 
     status_mappings = {
-        'info': 'info',
-        'success': 'info',
-        'error': 'error',
+        "data": "info",
+        "info": "info",
+        "success": "info",
+        "error": "error",
     }
 
     def __init__(self, app, socketio):
         self.app = app
         self.socketio = socketio
-        self.function_start()
-
-    def function_start(self) -> dict:
-        self.info_response("Starting ...")
+        self.function = inspect.stack()[1].function
+        self.previous_log_level = self.app.logger.level
+        self.response_format("info", message="Starting...")
+    
+    def debug_response(self, info_message, data) -> dict:
+        self.response_format("info", message=info_message, data=data)
 
     def info_response(self, info_message) -> dict:
-        return self.response_format('info', message=info_message)
+        self.response_format("info", message=info_message)
 
-    def error_response(self, message:str='', exception=None) -> dict:
+    def error_response(self, message:str="", exception=None) -> dict:
         if exception:
             return self.response_format(
-                'error',
+                "error",
                 str(exception),
-                {'traceback':traceback.format_exc()}
+                {"traceback":traceback.format_exc()}
             )
-        return self.response_format('error', message=message)
+        return self.response_format("error", message=message)
 
     def success_response(self, data) -> dict:
-        return self.response_format('success', data=data)
+        return self.response_format("success", data=data)
 
-    def response_format(self, status:str, message:str='', data={}) -> dict:
+    def response_format(self, status:str, message:str="", data={}) -> dict:
         result = {
-            'status': status,
-            'message': message,
-            'data': data
+            "status": status,
+            "message": message,
+            "data": data
         }
-        logger_result = {'function': inspect.stack()[3].function, 'response': result}
-        # Will log the message at level = 'status'
+        logger_result = {"function": self.function, "response": result}
+        # Will log the message at level = "status"
         logging_status = self.status_mappings[status]
         if hasattr(self.app.logger, logging_status):
             log_method = getattr(self.app.logger, logging_status)
-            log_method(logger_result)
+            log_method(self.function+": "+str(result))
         else:
             raise Exception(f"Logger does not have the method {status}")
         self.socketio_log(logger_result)

@@ -17,9 +17,10 @@ RUN mkdir $base
 WORKDIR $base
 
 COPY ../.env .
-COPY ../logging_config.json .
+# TODO: Logging loaded here
 
 ADD $path $base/$path
+#ADD common $path/common
 
 RUN pip install --no-cache-dir -r $path/requirements.txt
 
