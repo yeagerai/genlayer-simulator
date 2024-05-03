@@ -8,7 +8,7 @@ class LlmErc20:
         self.balances = {}
         self.balances[initial_owner] = total_supply
 
-    async def send(self, amount: int, from_address: str, to_address: str) -> None:
+    async def transfer(self, amount: int, from_address: str, to_address: str) -> None:
         prompt = f"""
 You keep track of transactions between users and their balance in coins. 
 The current balance for all users in JSON format is:
