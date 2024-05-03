@@ -404,7 +404,7 @@ async def call_contract_function(
 
     return_data['message'] = f"Function '{function_name}' called on contract at {contract_address} with args {args}."
 
-    return_data['data'] = execution_output
+    return_data['execution_output'] = execution_output
 
     return return_data
 
