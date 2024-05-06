@@ -587,6 +587,22 @@ def get_icontract_schema(contract_address: str) -> dict:
     return msg.response_format(**data)
 
 
+@jsonrpc.method("get_icontract_schema_for_code")
+def get_icontract_schema_for_code(contract_code: str) -> dict:
+    msg = MessageHandler(app, socketio)
+
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "get_icontract_schema",
+        "params": [contract_code],
+        "id": 2,
+    }
+    
+    data = requests.post(genvm_url()+'/api', json=payload).json()['result']
+
+    return msg.response_format(**data)
+
+
 @jsonrpc.method("get_providers_and_models")
 def get_providers_and_models() -> dict:
     msg = MessageHandler(app, socketio)
