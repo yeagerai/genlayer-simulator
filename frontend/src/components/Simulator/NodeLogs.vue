@@ -42,11 +42,13 @@ onUnmounted(() => {
       <div v-if="mainStore.nodeLogs.length > 0"
         class="flex flex-col scroll-smooth overscroll-contain snap-y  snap-start p-0" ref="scrollContainer">
         <div v-for="({ message }, index) in mainStore.nodeLogs" :key="index" class="flex items-center">
-          <div class="flex items-start" :class="colorMap[message.response.status] || 'text-black-500'">
+          <div class="flex items-start" :class="colorMap[message?.response?.status] || 'text-black-500'">
+            
             <div class="flex text-xs font-light"><span class="flex flex-col items-center w-8">{{ index + 1 }}</span> {{
         message.trace_id }} :: </div>
-            <div class="flex text-xs ml-1 flex-1">
-              {{ message.function }} {{ message.response.message ? ` ===> ${message.response.message}` : '' }}
+        <div v-if="typeof message === 'string'" class="flex text-xs ml-1 flex-1">"{{ message }}</div>
+            <div v-else class="flex text-xs ml-1 flex-1">
+              {{ message.function }} {{ message?.response?.message ? ` ===> ${message.response.message}` : '' }}
               || {{ getDataText(message.response?.data || '') }}
             </div>
           </div>
