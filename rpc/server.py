@@ -240,7 +240,8 @@ def deploy_intelligent_contract(
         dbf.close()
 
     # Select validators using VRF
-    selected_validators = vrf(all_validators, 5)
+    num_validators = int(os.environ["NUMVALIDATORS"])
+    selected_validators = vrf(all_validators, num_validators)
 
     leader_config = selected_validators[0]
 
