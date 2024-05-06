@@ -37,7 +37,7 @@ def leader_executes_transaction(contract_code: str, node_config: dict) -> dict:
 
     icontract_file, _, _, leader_recipt_file = transaction_files()
 
-    msg.debug_response("icontract", contract_code)
+    msg.debug_response("Contract Code", contract_code)
     msg.debug_response("node config", node_config)
 
     save_files(contract_code, node_config, "leader")
