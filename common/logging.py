@@ -9,6 +9,10 @@ init(autoreset=True)
 
 def setup_logging_config():
     logging_env = os.environ['LOGCONFIG']
+    file_path = f'common/config/logging.{logging_env}.json'
+    with open(file_path, 'r') as file:
+        logging_config = json.load(file)
+        dictConfig(logging_config)
     if logging_env == 'production':
         with open('common/config/logging.prod.json', 'r') as file:
             logging_config = json.load(file)
