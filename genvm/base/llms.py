@@ -50,16 +50,54 @@ async def call_ollama(model_config:str, prompt:str, regex: Optional[str], return
                 return result['match']
 
 async def call_openai(model_config:str, prompt:str, regex: Optional[str], return_streaming_channel:Optional[asyncio.Queue]) -> str:
-    client = OpenAI(
-        api_key=os.environ.get("GENVMOPENAIKEY"),
-    )
+    client = get_openai_client(os.environ.get("GENVMOPENAIKEY"))
     # TODO: OpenAI exceptions need to be caught here
-    stream = client.chat.completions.create(
-        model=model_config['model'],
-        messages=[{"role": "user", "content": prompt}],
-        stream=True,
-    )
+    stream = get_openai_stream(client, prompt, model_config)
 
+    return await get_openai_output(stream, regex, return_streaming_channel)
+
+async def call_heuristai(model_config:str, prompt:str, regex: Optional[str], return_streaming_channel:Optional[asyncio.Queue]) -> str:
+    client = get_openai_client(os.environ.get("HEURISTAIAPIKEY"), os.environ.get("HEURISTAIURL"))
+    stream = get_openai_stream(client, prompt, model_config)
+    # TODO: Get the line below working
+    #return await get_openai_output(stream, regex, return_streaming_channel)
+    output = ''
+    for chunk in stream:
+        #raise Exception(chunk.json(), dir(chunk), chunk.choices[0].delta.content)
+        try:
+            output += chunk.choices[0].delta.content
+        except Exception as e:
+            raise Exception(chunk.json(), dir(chunk))
+    #return stream.choices[0].message.content
+    return output
+
+
+def get_openai_client(api_key:str, url:str=None):
+    openai_client = None
+    if url:
+        openai_client = OpenAI(api_key=api_key, base_url=url)
+    else:
+        openai_client = OpenAI(api_key=api_key)
+    return openai_client
+
+def get_openai_stream(client, prompt, model_config):
+    config = model_config['config']
+    if 'temperature' in config and 'max_tokens' in config:
+        return client.chat.completions.create(
+            model=model_config['model'],
+            messages=[{"role": "user", "content": prompt}],
+            stream=True,
+            temperature=config['temperature'],
+            max_tokens=config['max_tokens']
+        )
+    else:
+        return client.chat.completions.create(
+            model=model_config['model'],
+            messages=[{"role": "user", "content": prompt}],
+            stream=True,
+        )
+
+async def get_openai_output(stream, regex, return_streaming_channel):
     buffer = ""
     for chunk in stream:
         chunk_str = chunk.choices[0].delta.content
@@ -78,6 +116,7 @@ async def call_openai(model_config:str, prompt:str, regex: Optional[str], return
                     return buffer
         else:
             return buffer
+
 
 def get_ollama_url(endpoint:str) -> str:
     return f"{os.environ['OLAMAPROTOCOL']}://{os.environ['OLAMAHOST']}:{os.environ['OLAMAPORT']}/api/{endpoint}"
