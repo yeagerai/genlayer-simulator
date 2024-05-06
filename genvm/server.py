@@ -38,7 +38,7 @@ def leader_executes_transaction(contract_code: str, node_config: dict) -> dict:
     icontract_file, _, _, leader_recipt_file = transaction_files()
 
     msg.debug_response("Contract Code", contract_code)
-    msg.debug_response("node config", node_config)
+    msg.debug_response("Node Config", node_config)
 
     save_files(contract_code, node_config, "leader")
 
@@ -87,9 +87,9 @@ def validator_executes_transaction(
 
     icontract_file, recipt_file, _, _ = transaction_files()
 
-    msg.debug_response("icontract", icontract)
-    msg.debug_response("node config", node_config)
-    msg.debug_response("leader recipt", leader_recipt)
+    msg.debug_response("Contract Code", icontract)
+    msg.debug_response("Node Config", node_config)
+    msg.debug_response("Leader Recipt", leader_recipt)
 
     save_files(icontract, node_config, "validator", leader_recipt)
 
@@ -126,7 +126,7 @@ def get_icontract_schema(icontract: str) -> dict:
 
     msg = MessageHandler(app, socketio)
 
-    msg.debug_response("icontract", icontract)
+    msg.debug_response("Contract Code", icontract)
 
     class_name = None
     namespace = {}

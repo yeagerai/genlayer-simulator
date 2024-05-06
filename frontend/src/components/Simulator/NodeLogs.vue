@@ -12,7 +12,7 @@ const colorMap: Record<string, string> = {
 }
 
 const getDataText = (data: any) => {
-  if (typeof data !== 'string') return JSON.stringify(data)
+  if (typeof data !== 'string') return JSON.stringify(data, null, 2)
   return data
 }
 const mainStore = useMainStore()
