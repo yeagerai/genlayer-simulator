@@ -50,7 +50,7 @@ async def call_ollama(model_config:str, prompt:str, regex: Optional[str], return
                 return result['match']
 
 async def call_openai(model_config:str, prompt:str, regex: Optional[str], return_streaming_channel:Optional[asyncio.Queue]) -> str:
-    client = get_openai_client(os.environ.get("GENVMOPENAIKEY"))
+    client = get_openai_client(os.environ.get("OPENAIKEY"))
     # TODO: OpenAI exceptions need to be caught here
     stream = get_openai_stream(client, prompt, model_config)
 

@@ -100,7 +100,7 @@ async def exec_transaction(transaction_input, logger=None):
 
     # Select validators using VRF
     num_validators = int(os.environ["NUMVALIDATORS"])
-    selected_validators = vrf(all_validators, 5)
+    selected_validators = vrf(all_validators, num_validators)
 
     leader = selected_validators[0]
     remaining_validators = selected_validators[1 : num_validators + 1]
