@@ -29,7 +29,7 @@ const handleGetContractState = async (contractAddress: string, method: string) =
 
   contractState.value = {
     ...contractState.value,
-    [method]: result.data.result
+    [method]: result.data[method]
   }
 }
 
@@ -60,7 +60,9 @@ const handleDeployContract = async () => {
       })
     } else {
       // Getting the ABI to check the class name
-      const { result: { data: contractSchema } } = await rpcClient.call({
+      const {
+        result: { data: contractSchema }
+      } = await rpcClient.call({
         method: 'get_icontract_schema_for_code',
         params: [contract.content]
       })
@@ -91,7 +93,8 @@ const handleDeployContract = async () => {
       } else {
         notify({
           title: 'Error',
-          text: typeof result.message === 'string' ? result.message : 'Error Deploying the contract',
+          text:
+            typeof result.message === 'string' ? result.message : 'Error Deploying the contract',
           type: 'error'
         })
       }
@@ -145,22 +148,33 @@ onMounted(() => {
             <p>Please provide a json object with the constructor parameters.</p>
           </div>
           <div class="flex mt-2">
-            <textarea rows="5" class="w-full bg-slate-100 dark:dark:bg-zinc-700 p-2" v-model="contractContructorParams"
-              clear-icon="ri-close-circle" label="State" />
+            <textarea
+              rows="5"
+              class="w-full bg-slate-100 dark:dark:bg-zinc-700 p-2"
+              v-model="contractContructorParams"
+              clear-icon="ri-close-circle"
+              label="State"
+            />
           </div>
         </div>
         <div class="flex flex-col p-2 w-full justify-center">
           <ToolTip text="Deploy" :options="{ placement: 'top' }" />
-          <button @click="handleDeployContract"
-            class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
+          <button
+            @click="handleDeployContract"
+            class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded"
+          >
             Deploy
           </button>
         </div>
       </div>
       <div class="flex flex-col" v-if="deployedContract">
         <div class="flex flex-col">
-          <ContractState :abi="abi" :contract-state="contractState" :deployed-contract="deployedContract"
-            :get-contract-state="handleGetContractState" />
+          <ContractState
+            :abi="abi"
+            :contract-state="contractState"
+            :deployed-contract="deployedContract"
+            :get-contract-state="handleGetContractState"
+          />
         </div>
 
         <div class="flex flex-col">

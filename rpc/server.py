@@ -527,10 +527,12 @@ def get_contract_state(contract_address: str, method_name: str) -> dict:
             "id": 4,
         }
         result = requests.post(genvm_url() + "/api", json=payload).json()["result"]
-        response = {"id": row[0][0], "data": result}
 
-        if result['result']['status'] == 'error':
-            return msg.error_response(result['result'])
+        if result['status'] == 'error':
+            return msg.error_response(result['message'])
+        
+        response = {"id": row[0][0]}
+        response[method_name] = result['data']
 
     except Exception as e:
         return msg.error_response(exception=e)
