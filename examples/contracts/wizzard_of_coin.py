@@ -35,6 +35,11 @@ The output should be valid JSON ONLY in the following format:
                 eq_principle="The result['give_coin'] has to be exactly the same",
             )
 
+            try:
+                result = json.loads(result)
+            except json.JSONDecodeError:
+                raise Exception("The validator did not return valid JSON")
+
             if result["give_coin"] is True:
                 self.have_coin = False
 

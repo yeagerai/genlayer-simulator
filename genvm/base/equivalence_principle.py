@@ -95,16 +95,15 @@ class EquivalencePrinciple:
 
     def set(self, value):
         if self.contract_runner.mode == "leader":
-            self.result["output"] = jsonify(value)
+            self.result["output"] = value
             self.contract_runner.eq_outputs["leader"][
                 self.contract_runner.eq_num
             ] = value
         else:
-            leaders_output = self.contract_runner.eq_outputs["leader"][
+            self.result["validator_value"] = value
+            self.result["output"] = self.contract_runner.eq_outputs["leader"][
                 str(self.contract_runner.eq_num)
             ]
-            self.result["validator_value"] = jsonify(value)
-            self.result["output"] = jsonify(leaders_output)
         self.contract_runner.eq_num += 1
 
     def __get_llm_function(self):
@@ -136,12 +135,6 @@ async def get_webpage_with_principle(url, eq_principle, comparative=True):
         result = await eq.get_webpage(url)
         eq.set(result)
 
-
-def jsonify(input_string:str) -> str:
-    try:
-        return json.loads(input_string)
-    except Exception:
-        raise Exception("The response from the llm was not valid JSON")
 
 def get_code_in_eq_block(caller_frame):
     caller_source_lines, start_line_number = inspect.getsourcelines(caller_frame)

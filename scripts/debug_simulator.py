@@ -73,7 +73,7 @@ if 'result' in fund_account_result and 'address' in fund_account_result['result'
 contract_file_path = 'examples/contracts/wizzard_of_coin.py'
 function_to_execute = 'WizzardOfCoin.ask_for_coin'
 class_name = 'WizzardOfCoin'
-initial_contract_state = '{"have_coin": true}'
+initial_contract_state = '{"have_coin": True}'
 
 # Deploy the contract
 with open(contract_file_path, 'rb') as contract_file:
@@ -82,7 +82,6 @@ with open(contract_file_path, 'rb') as contract_file:
 
 # Retrieve the last contract ID (you should parse the actual ID from the output)
 last_contract_output = last_contracts_logic(1)
-print("Last contract command output:", last_contract_output)
 last_contract_id = last_contract_output['result'][0]['contract_id']  # Example parsing
 
 
