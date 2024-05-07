@@ -16,8 +16,8 @@ def base_node_json(provider:str, model:str) -> dict:
 def get_random_provider_using_weights(defaults):
     # remove providers if no api key
     provider_weights = defaults['provider_weights']
-    default_value = '<add_your_open_ai_key_here>'
-    if 'GENVMOPENAIKEY' not in os.environ or os.environ['GENVMOPENAIKEY'] == default_value:
+    default_value = '<add_your_api_key_here>'
+    if 'OPENAIKEY' not in os.environ or os.environ['OPENAIKEY'] == default_value:
         provider_weights.pop('openai')
     if 'HEURISTAIAPIKEY' not in os.environ or os.environ['HEURISTAIAPIKEY'] == default_value:
         provider_weights.pop('heuristai')
@@ -83,7 +83,7 @@ def random_validator_config():
     ollama_models = get_provider_models({}, 'ollama')
 
     if not len(ollama_models) and \
-        os.environ['GENVMOPENAIKEY'] == '<add_your_open_ai_key_here>' and \
+        os.environ['OPENAIKEY'] == '<add_your_open_ai_key_here>' and \
         os.environ['HEURISTAIAPIKEY'] == '<add_your_heurist_api_key_here>':
         raise Exception('No models avaliable.')
 
