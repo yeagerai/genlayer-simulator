@@ -1,7 +1,7 @@
 import json
 from typing import Optional
 import inspect
-from base.context_wrapper import enforce_with_context
+from genvm.base.context_wrapper import enforce_with_context
 from genvm.base import llms
 from genvm.base.contract_runner import ContractRunner
 from genvm.utils import get_webpage_content
