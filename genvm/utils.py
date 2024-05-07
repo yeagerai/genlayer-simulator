@@ -97,26 +97,3 @@ if __name__=="__main__":
     import asyncio
     asyncio.run(main())
     """
-
-
-def generate_get_contract_data(
-    contract_code: str,
-    encoded_state: str,
-    function_name: str,
-    args_str: str,
-) -> str:
-    return f"""
-{contract_code}
-
-async def main():
-    import pickle
-    import base64
-    decoded_pickled_object = base64.b64decode({encoded_state})
-    current_contract = pickle.loads(decoded_pickled_object)
-    return current_contract.{function_name}({args_str})
-
-    
-if __name__=="__main__":
-    import asyncio    
-    asyncio.run(main())
-    """
