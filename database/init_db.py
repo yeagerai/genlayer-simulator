@@ -105,14 +105,16 @@ def create_tables_if_they_dont_already_exist(app:flask.app.Flask) -> str:
 
     return result
 
-def clear_db_tables() -> str:
-    new_dbname = environ.get('DBNAME')
+def clear_db_tables(tables: list) -> str:
     result = "Tables cleared successfully!"
 
+    tables_str = ', '.join(tables)
+
+    connection = None
     try:
         connection = db_cursor('genlayer_state')
         cursor = connection.cursor()
-        cursor.execute(f"TRUNCATE TABLE transactions, current_state, validators RESTART IDENTITY")
+        cursor.execute(f"TRUNCATE TABLE {tables_str} RESTART IDENTITY")
         cursor.close()
         connection.commit()
     except (Exception, psycopg2.DatabaseError) as error:
