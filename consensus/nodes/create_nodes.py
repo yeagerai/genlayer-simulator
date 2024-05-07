@@ -16,7 +16,7 @@ def base_node_json(provider:str, model:str) -> dict:
 def get_random_provider_using_weights(defaults):
     # remove providers if no api key
     provider_weights = defaults['provider_weights']
-    default_value = '<add_your_open_ai_key_here>'
+    default_value = '<add_your_api_key_here>'
     if 'OPENAIKEY' not in os.environ or os.environ['OPENAIKEY'] == default_value:
         provider_weights.pop('openai')
     if 'HEURISTAIAPIKEY' not in os.environ or os.environ['HEURISTAIAPIKEY'] == default_value:
