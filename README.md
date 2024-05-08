@@ -14,7 +14,7 @@ The GenLayer simulator consists of the following main components:
 * **The Consensus Algorithm:** A python routine that launches execution processes into the GenVM, following the approach defined in the whitepaper.
 * **Gen Virtual Machine (GenVM):** A Dockerized environment prepared to run intelligent contracts safely.
 
-## Installation
+## Quick Install
 
 ```
 $ npm install -g genlayer
@@ -32,6 +32,34 @@ $ genlayer up
 Then visit [localhost:8080](http://localhost:8080/)
 
 From here you will be able to create validators and intellegent contracts.
+
+## Installing Manually
+
+### Window One
+
+```
+$ cp .env.example .env
+$ docker compose up
+```
+
+### Window Two
+
+#### 1. Installing the Ollama model
+
+```
+$ docker exec -it ollama ollama run llama3
+...
+```
+
+#### 2. Setup your environment
+
+Setup your environment [here](#-set-up-an-environment)
+
+#### 3. Execute the Demo
+
+```
+(.venv) $ python scripts/debug_simulator.py
+```
 
 ## CLI commands
 
@@ -53,6 +81,32 @@ Use the following commands to run through a demo step-by-step.
 ```
 
 *(NOTE: You can find the full list of CLI commands [here](https://github.com/yeagerai/genlayer-simulator/blob/main/cli/genlayer.py))*
+
+## Set up an environment {#-set-up-an-environment}
+
+### Linux / MacOS
+```
+$ virtualenv .venv
+$ source .venv/bin/activate
+(.venv) $ pip install -r requirements.txt
+(.venv) $ export PYTHONPATH="$(pwd)"
+```
+
+### Windows (cmd)
+```
+$ virtualenv .venv
+$  .\.venv\Scripts\activate
+(.venv) $ pip install -r requirements.txt
+(.venv) $ set PYTHONPATH=%cd%
+```
+
+### Windows (PowerShell)
+```
+$ virtualenv .venv
+$  .\.venv\Scripts\activate
+(.venv) $ pip install -r requirements.txt
+(.venv) $ $env:PYTHONPATH = (Get-Location).Path
+```
 
 ## Documentation
 
