@@ -25,4 +25,9 @@ ENV FLASK_APP=genvm/server.py
 FROM base as debug
 RUN pip install debugpy
 
-CMD ["python", "server.py"]
+CMD python -m debugpy --listen 0.0.0.0:${GENVMDEBUGPORT} -m flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}
+
+###########START NEW IMAGE: PRODUCTION ###################
+FROM base as prod
+
+CMD flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}
