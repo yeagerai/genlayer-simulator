@@ -6,7 +6,7 @@ We're thrilled that you're interested in working on the GenLayer Simulator! This
 
 The GenLayer Simulator is an interactive sandbox designed for developers to explore the potential of GenLayer's Intelligent Contracts. It replicates the GenLayer network's execution environment and consensus algorithm, providing a controlled and local environment to test different ideas and behaviors.
 
-## How Can I Contribute?
+## How Can You Contribute?
 
 Contributions to the GenLayer Simulator are welcome in several forms:
 
