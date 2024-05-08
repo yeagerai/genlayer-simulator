@@ -53,7 +53,7 @@ $ docker exec -it ollama ollama run llama3
 
 #### 2. Setup your environment
 
-Setup your environment [here](#-set-up-an-environment)
+Setup your environment [here](#set-up-an-environment)
 
 #### 3. Execute the Demo
 
@@ -82,7 +82,8 @@ Use the following commands to run through a demo step-by-step.
 
 *(NOTE: You can find the full list of CLI commands [here](https://github.com/yeagerai/genlayer-simulator/blob/main/cli/genlayer.py))*
 
-## Set up an environment {#-set-up-an-environment}
+<a name="set-up-an-environment"></a>
+## Set up an environment
 
 ### Linux / MacOS
 ```
