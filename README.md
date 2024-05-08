@@ -1,12 +1,12 @@
-# GenLayer Prototype
+# GenLayer Simulator
 
 ## Introduction
 
-Welcome to the GenLayer prototype, the first step towards a decentralized platform that combines the ease of using Python to write contracts, the access to the internet, the intelligence of the LLMs, and the security and efficiency of a blockchain.
+This Simulator is an interactive sandbox designed for developers to explore the potential of GenLayer's Intelligent Contracts. It replicates the GenLayer network's execution environment and consensus algorithm, but offers a controlled and local environment to test different ideas and behaviors.
 
-## Prototype Components
+## Simulator Components
 
-The GenLayer prototype consists of the following main components:
+The GenLayer simulator consists of the following main components:
 
 * **State Storage (PostgreSQL):** We use a SQL database to maintain the blockchain's updated and persistent state.
 * **State Manager (JSON-RPC Server):** A backend that processes requests, either to read the state of the blockchain or to execute transactions involving intelligent contracts.
@@ -19,7 +19,10 @@ The GenLayer prototype consists of the following main components:
 ```
 $ npm install -g genlayer
 $ genlayer init
+$ genlayer up
 ```
+
+*(Additional installation instructions can be found [here](https://docs.genlayer.com/simulator/installation))*
 
 Then visit [localhost:8080](http://localhost:8080/)
 
@@ -50,4 +53,4 @@ Use the following commands to run through a demo step-by-step.
 
 Additional documentation
 
- - https://genlayer-docs.netlify.app/
+ - https://docs.genlayer.com/
