@@ -100,11 +100,11 @@ From now on you can create new intelligent contracts and test them by executing 
 
 ## VSCode Debugger
 
-3. Ensure docker is running first
-4. In VSCode on the left hand side click on Run and Debug.
-5. At the top of the panel in the debug pull down select Debug All
-6. In the terminal in VSCode *(at the bottom of the screen)* go to Debug
-7. You should see all the debug information here and in the lefthand column
-8. Add a breakpoint to the rpc or genvm code
-9. Run a request against an rpc endpoint
-10. See results in the debugger and lefthand panel
+1. Ensure docker is running first
+2. In VSCode on the left hand side click on Run and Debug.
+3. At the top of the panel in the debug pull down select Debug All
+4. In the terminal in VSCode *(at the bottom of the screen)* go to Debug
+5. You should see all the debug information here and in the lefthand column
+6. Add a breakpoint to the rpc or genvm code
+7. Run a request against an rpc endpoint
+8. See results in the debugger and lefthand panel
