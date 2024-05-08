@@ -91,10 +91,10 @@ export const useMainStore = defineStore('mainStore', {
           method: 'create_account',
           params: []
         })
-        if (result) {
-          this.accounts = [...this.accounts, result.address]
-          this.currentUserAddress = result.address
-          return result.address
+        if (result && result.status === 'success') {
+          this.accounts = [...this.accounts, result.data.address]
+          this.currentUserAddress = result.data.address
+          return result.data.address
         }
         return null
       } catch (error) {
