@@ -97,3 +97,14 @@ $  .\.venv\Scripts\activate
 * Execute a transaction. You can use the `scripts/debug_contract.py` there you would see the execution syntax, and you can start creating and debugging intelligent contracts.
 
 From now on you can create new intelligent contracts and test them by executing transactions with this prototype.
+
+## VSCode Debugger
+
+1. Ensure docker is running first
+2. In VSCode on the left hand side click on Run and Debug.
+3. At the top of the panel in the debug pull down select Debug All
+4. In the terminal in VSCode *(at the bottom of the screen)* go to Debug
+5. You should see all the debug information here and in the lefthand column
+6. Add a breakpoint to the rpc or genvm code
+7. Run a request against an rpc endpoint
+8. See results in the debugger and lefthand panel
