@@ -22,7 +22,17 @@ export interface MainStoreState {
   currentContractId?: string
   deployedContracts: DeployedContract[]
   currentUserAddress?: string
-  nodeLogs: { message: string; date: string }[]
+  nodeLogs: {
+    message: {
+      function: string
+      trace_id: string
+      response: {
+        status: string
+        message: string
+        data: any
+      }
+    }
+  }[]
   accounts: string[]
 }
 
