@@ -19,6 +19,11 @@ The GenLayer simulator consists of the following main components:
 ```
 $ npm install -g genlayer
 $ genlayer init
+```
+
+To run genlayer again just run:
+
+```
 $ genlayer up
 ```
 
