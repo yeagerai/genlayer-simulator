@@ -1,4 +1,4 @@
-import json
+import re
 from typing import Optional
 import inspect
 from genvm.base.context_wrapper import enforce_with_context
@@ -50,8 +50,9 @@ class EquivalencePrinciple:
 
         caller_frame = inspect.currentframe().f_back
         code_in_eq_bloc = get_code_in_eq_block(caller_frame)
+        modifying_self_patten = r'self.[_0-9a-zA-Z]+[ ]*='
         for code in code_in_eq_bloc:
-            if 'self.' in code:
+            if bool(re.match(modifying_self_patten, code)):
                 raise Exception('You cannot modify self inside an equivalence block')
 
         return self

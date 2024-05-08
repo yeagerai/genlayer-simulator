@@ -2,9 +2,6 @@ import pytest
 
 from icontract_for_testing import TestContract
 
-from dotenv import load_dotenv
-load_dotenv()
-
 initial_value = "something"
 
 
