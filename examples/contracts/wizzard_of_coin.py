@@ -38,7 +38,7 @@ The output should be valid JSON ONLY in the following format:
             try:
                 result = json.loads(result)
             except json.JSONDecodeError:
-                raise Exception("The validator did not return valid JSON")
+                raise Exception("The validator did not return valid JSON", result)
 
             if result["give_coin"] is True:
                 self.have_coin = False
