@@ -8,10 +8,11 @@ WORKDIR $path
 COPY ../.env .
 
 ADD genvm $path/genvm
+ADD common $path/common
 
-RUN ln genvm/base/contract_runner.py /tmp/contract_runner.py
 RUN ln genvm/base/llms.py /tmp/llms.py
 RUN ln genvm/base/context_wrapper.py /tmp/context_wrapper.py
+RUN ln genvm/base/contract_runner.py /tmp/contract_runner.py
 RUN ln genvm/base/equivalence_principle.py /tmp/equivalence_principle.py
 
 RUN pip install --no-cache-dir -r genvm/requirements.txt
@@ -24,9 +25,4 @@ ENV FLASK_APP=genvm/server.py
 FROM base as debug
 RUN pip install debugpy
 
-CMD python -m debugpy --listen 0.0.0.0:${GENVMDEBUGPORT} -m flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}
-
-###########START NEW IMAGE: PRODUCTION ###################
-FROM base as prod
-
-CMD flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}
+CMD ["python", "server.py"]

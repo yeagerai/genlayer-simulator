@@ -7,6 +7,7 @@ import ContractState from '@/components/Simulator/ContractState.vue'
 import ExecuteTransactions from '@/components/Simulator/ExecuteTransactions.vue'
 import TransactionsList from '@/components/Simulator/TransactionsList.vue'
 import type { DeployedContract } from '@/types'
+import { type } from 'os'
 
 const store = useMainStore()
 const contractContructorParams = ref('{}')
@@ -28,13 +29,13 @@ const handleGetContractState = async (contractAddress: string, method: string) =
 
   contractState.value = {
     ...contractState.value,
-    [method]: result.data.result
+    [method]: result.data[method]
   }
 }
 
 const handleCallContractMethod = async ({ method, params }: { method: string; params: any[] }) => {
   console.log('handleCallContractMethod', method, params, abi.value.class)
-  const result = await rpcClient.call({
+  const { result } = await rpcClient.call({
     method: 'call_contract_function',
     params: [
       store.currentUserAddress,
@@ -59,7 +60,9 @@ const handleDeployContract = async () => {
       })
     } else {
       // Getting the ABI to check the class name
-      const { result: contractSchema } = await rpcClient.call({
+      const {
+        result: { data: contractSchema }
+      } = await rpcClient.call({
         method: 'get_icontract_schema_for_code',
         params: [contract.content]
       })
@@ -76,16 +79,25 @@ const handleDeployContract = async () => {
         ]
       })
 
-      store.addDeployedContract({
-        address: result.contract_id,
-        contractId: contract.id,
-        defaultState: constructorParamsAsString
-      })
-      notify({
-        title: 'OK',
-        text: 'Contract deployed',
-        type: 'success'
-      })
+      if (result?.status === 'success') {
+        store.addDeployedContract({
+          address: result?.data.contract_id,
+          contractId: contract.id,
+          defaultState: constructorParamsAsString
+        })
+        notify({
+          title: 'OK',
+          text: 'Contract deployed',
+          type: 'success'
+        })
+      } else {
+        notify({
+          title: 'Error',
+          text:
+            typeof result.message === 'string' ? result.message : 'Error Deploying the contract',
+          type: 'error'
+        })
+      }
     }
   }
 }
@@ -99,7 +111,7 @@ const setDefaultState = async (contract: DeployedContract) => {
       params: [contract.address]
     })
 
-    abi.value = result
+    abi.value = result.data
   } catch (error) {
     console.error(error)
     store.removeDeployedContract(contract.contractId)
