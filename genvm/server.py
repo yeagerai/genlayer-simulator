@@ -187,13 +187,13 @@ def get_icontract_schema(icontract: str) -> dict:
 
 @jsonrpc.method("deploy_contract")
 def deploy_contract(
-    contract_code: str, constructor_args: str, class_name: str, leader_config: dict
+    from_address:str, contract_code: str, constructor_args: str, class_name: str, leader_config: dict
 ) -> dict:
     
     msg = MessageHandler(app, socketio)
 
     deploy_contract_code = generate_deploy_contract(
-        contract_code, constructor_args, class_name
+        from_address, contract_code, constructor_args, class_name
     )
 
     contract_file, _, _, _ = transaction_files()

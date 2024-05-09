@@ -76,6 +76,7 @@ def webrequest_url():
 
 
 def generate_deploy_contract(
+    from_address: str,
     contract_code: str,
     constructor_args: str,
     class_name: str,
@@ -85,7 +86,7 @@ def generate_deploy_contract(
 
 async def main():
     from genvm.base.contract_runner import ContractRunner
-    contract_runner = ContractRunner()
+    contract_runner = ContractRunner(from_address="{from_address}")
     contract_runner._set_mode("leader")
     import pickle
     current_contract = {class_name}(**{constructor_args})
