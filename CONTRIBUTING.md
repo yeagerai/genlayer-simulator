@@ -11,26 +11,20 @@ The GenLayer Simulator is an interactive sandbox designed for developers to expl
 Contributions to the GenLayer Simulator are welcome in several forms:
 
 ### Testing the Simulator and Providing Feedback
-
+Help us understand how we can make the Simulator more user-friendly.
 - **Report Bugs**: Use our [GitHub issues](https://github.com/yeagerai/genlayer-simulator/issues) page to submit bugs you find.
-- **Feature Testing**: Provide feedback on newly developed features via our [Discord suggestion channel](https://discord.gg/5Gq4nCxe).
-- **User Experience Feedback**: Help us understand how we can make the Simulator more user-friendly.
+- **Feature Testing**: Provide feedback on features via our [Discord channel](https://discord.gg/5Gq4nCxe).
 
 ### Sharing New Ideas and Use Cases
-
-- **Idea Submission**: Share your innovative ideas in our [Discord suggestion channel](https://discord.gg/5Gq4nCxe).
-- **Use Case Development**: Propose new use cases for Intelligent Contracts.
+Propose new use cases for Intelligent Contracts.
+- **Idea Submission**: Share your innovative ideas in our [Discord channel](https://discord.gg/5Gq4nCxe).
 
 ### Writing Code
-
-- **Bug Fixes**: Check our issue tracker for reported bugs needing attention.
-- **Feature Development**: Implement new features that improve the Simulator.
+Implement features/bug fixes that improve the Simulator.
 - **How to Start**: View our [issue tracker](https://github.com/yeagerai/genlayer-simulator/issues) for tasks labeled `help wanted`.
 
 ### Improving Documentation
-
-- **Update Guides**: Refine our tutorials and setup documentation.
-- **Enhance API Descriptions**: Help us keep our API documentation thorough and up-to-date.
+Suggest areas of improvement/feedback 
 - **Start Here**: Visit our [Documentation Repository](https://github.com/yeagerai/genlayer-docs).
 
 ## Review Process
