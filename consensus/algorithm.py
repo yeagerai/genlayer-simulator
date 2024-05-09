@@ -149,7 +149,6 @@ async def exec_transaction(from_address, transaction_input, logger=None):
     #     votes[f"{validation_results[i]['validator']}"] = validation_results[i]["vote"]
 
     # Write transaction into DB
-    from_address = from_address
     to_address = transaction_input["contract_address"]
     data = json.dumps(
         {"new_contract_state": leader_receipt["result"]["contract_state"]}
