@@ -6,11 +6,12 @@ import { notify } from '@kyvg/vue3-notification'
 import ContractState from '@/components/Simulator/ContractState.vue'
 import ExecuteTransactions from '@/components/Simulator/ExecuteTransactions.vue'
 import TransactionsList from '@/components/Simulator/TransactionsList.vue'
+import ConstructorParameters from '@/components/Simulator/ConstructorParameters.vue'
 import type { DeployedContract } from '@/types'
-import { type } from 'os'
 
 const store = useMainStore()
-const contractContructorParams = ref('{}')
+
+const constructorInputs = ref<{ [k: string]: string }>({})
 const abi = ref<any>()
 const contractState = ref<any>({})
 const contract = computed(() =>
@@ -48,8 +49,7 @@ const handleCallContractMethod = async ({ method, params }: { method: string; pa
   contractTransactions.value.push(result)
 }
 
-const handleDeployContract = async () => {
-  const constructorParams = JSON.parse(contractContructorParams.value || '{}')
+const handleDeployContract = async ({ params: constructorParams }: { params: { [k: string]: string } }) => {
   const contract = store.contracts.find((c) => c.id === store.currentContractId)
   if (contract) {
     if (Object.keys(constructorParams).length < 1) {
@@ -68,7 +68,7 @@ const handleDeployContract = async () => {
       })
 
       // Deploy the contract
-      const constructorParamsAsString = JSON.stringify(constructorParams, null, 2)
+      const constructorParamsAsString = JSON.stringify(constructorParams)
       const { result } = await rpcClient.call({
         method: 'deploy_intelligent_contract',
         params: [
@@ -104,7 +104,9 @@ const handleDeployContract = async () => {
 
 const setDefaultState = async (contract: DeployedContract) => {
   try {
-    contractContructorParams.value = contract.defaultState
+    // constructorInputs.value = JSON.parse(contract.defaultState || '{}')
+    // TODO: check if we need to update again also we have an issue with conversion 
+    // between `bool` in Python with value `True` vs JSON boolean with value `true`
 
     const { result } = await rpcClient.call({
       method: 'get_icontract_schema',
@@ -118,14 +120,35 @@ const setDefaultState = async (contract: DeployedContract) => {
   }
 }
 
+const getConstructorInputs = async () => {
+
+  if (contract.value) {
+    const { result } = await rpcClient.call({
+      method: 'get_icontract_schema_for_code',
+      params: [contract.value.content]
+    })
+    constructorInputs.value = result.data?.methods['__init__']?.inputs
+  }
+}
+
 watch(deployedContract, (newValue) => {
   if (newValue) {
     setDefaultState(newValue)
   }
 })
 
+watch(contract, (newValue) => {
+  if (newValue) {
+    getConstructorInputs()
+  }
+})
+
 onMounted(() => {
-  if (deployedContract.value) setDefaultState(deployedContract.value)
+  getConstructorInputs()
+
+  if (deployedContract.value) {
+    setDefaultState(deployedContract.value)
+  }
 })
 </script>
 
@@ -142,39 +165,12 @@ onMounted(() => {
             {{ contract?.name }}
           </div>
         </div>
-        <div class="flex flex-col p-2 my-4">
-          <div class="flex flex-col text-xs">
-            <h2>Constructor Parameters</h2>
-            <p>Please provide a json object with the constructor parameters.</p>
-          </div>
-          <div class="flex mt-2">
-            <textarea
-              rows="5"
-              class="w-full bg-slate-100 dark:dark:bg-zinc-700 p-2"
-              v-model="contractContructorParams"
-              clear-icon="ri-close-circle"
-              label="State"
-            />
-          </div>
-        </div>
-        <div class="flex flex-col p-2 w-full justify-center">
-          <ToolTip text="Deploy" :options="{ placement: 'top' }" />
-          <button
-            @click="handleDeployContract"
-            class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded"
-          >
-            Deploy
-          </button>
-        </div>
+        <ConstructorParameters :inputs="constructorInputs" @deploy-contract="handleDeployContract" />
       </div>
       <div class="flex flex-col" v-if="deployedContract">
         <div class="flex flex-col">
-          <ContractState
-            :abi="abi"
-            :contract-state="contractState"
-            :deployed-contract="deployedContract"
-            :get-contract-state="handleGetContractState"
-          />
+          <ContractState :abi="abi" :contract-state="contractState" :deployed-contract="deployedContract"
+            :get-contract-state="handleGetContractState" />
         </div>
 
         <div class="flex flex-col">
