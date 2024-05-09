@@ -12,7 +12,7 @@ load_dotenv()
 
 
 def leader_executes_transaction(
-    current_contract_state, transaction_input: dict, leader_config: dict
+    current_contract_state, transaction_input: dict, leader_config: dict, from_address: str,
 ) -> dict:
     args_str = ", ".join(f"{json.dumps(arg)}" for arg in transaction_input["args"])
 
@@ -20,6 +20,7 @@ def leader_executes_transaction(
     function_name = transaction_input["function_name"].split(".")[1]
 
     exec_file_for_genvm = run_contract(
+        from_address=from_address,
         contract_code=current_contract_state["code"],
         encoded_state=str(current_contract_state["state"]),
         run_by="leader",
@@ -50,6 +51,7 @@ def validator_executes_transaction(
     current_contract_state,
     transaction_input: dict,
     validator_config: dict,
+    from_address: str,
     leader_receipt: dict,
 ) -> dict:
     args_str = ", ".join(f"{json.dumps(arg)}" for arg in transaction_input["args"])
@@ -58,6 +60,7 @@ def validator_executes_transaction(
     function_name = transaction_input["function_name"].split(".")[1]
 
     exec_file_for_genvm = run_contract(
+        from_address=from_address,
         contract_code=current_contract_state["code"],
         encoded_state=str(current_contract_state["state"]),
         run_by="validator",
@@ -92,7 +95,7 @@ def validator_executes_transaction(
     return return_value
 
 
-async def exec_transaction(from_account, transaction_input, logger=None):
+async def exec_transaction(from_address, transaction_input, logger=None):
 
     with DatabaseFunctions() as dbf:
         all_validators = dbf.all_validators()
@@ -114,7 +117,7 @@ async def exec_transaction(from_account, transaction_input, logger=None):
 
     # Leader executes transaction
     leader_receipt = leader_executes_transaction(
-        current_contract_state, transaction_input, leader
+        current_contract_state, transaction_input, leader, from_address
     )
 
     votes = {leader["address"]: leader_receipt["vote"]}
@@ -125,7 +128,7 @@ async def exec_transaction(from_account, transaction_input, logger=None):
     valudators_results = []
     for validator in remaining_validators:
         validator_receipt = validator_executes_transaction(
-            current_contract_state, transaction_input, validator, leader_receipt
+            current_contract_state, transaction_input, validator, from_address, leader_receipt
         )
         votes[validator["address"]] = validator_receipt["vote"]
         valudators_results.append(validator_receipt)
@@ -146,7 +149,7 @@ async def exec_transaction(from_account, transaction_input, logger=None):
     #     votes[f"{validation_results[i]['validator']}"] = validation_results[i]["vote"]
 
     # Write transaction into DB
-    from_address = from_account
+    from_address = from_address
     to_address = transaction_input["contract_address"]
     data = json.dumps(
         {"new_contract_state": leader_receipt["result"]["contract_state"]}
