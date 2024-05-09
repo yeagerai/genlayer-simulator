@@ -1,6 +1,6 @@
 from typing import Optional
 import inspect
-from base.context_wrapper import enforce_with_context
+from genvm.base.context_wrapper import enforce_with_context
 from genvm.base import llms
 from genvm.base.contract_runner import ContractRunner
 from genvm.utils import get_webpage_content
@@ -44,7 +44,7 @@ class EquivalencePrinciple:
         # skip the block
         return self
 
-    async def __aexit__(self, exc_type, exc_value, traceback):
+    async def __aexit__(self):
 
         caller_frame = inspect.currentframe().f_back
         locals_in_caller = caller_frame.f_locals
@@ -95,9 +95,8 @@ class EquivalencePrinciple:
         self.contract_runner.eq_num += 1
 
     def __get_llm_function(self):
-        llm_function = getattr(llms, "call_ollama")
-        if self.contract_runner.node_config["provider"] == "openai":
-            llm_function = getattr(llms, "call_openai")
+        function_name = "call_" + self.contract_runner.node_config["provider"]
+        llm_function = getattr(llms, function_name)
         return llm_function
 
 

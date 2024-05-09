@@ -22,7 +22,7 @@ First check if you have the coin.
 have_coin: {self.have_coin}
 Then, do not give them the coin.
 
-The output format of your response is:
+Respond using ONLY the following format:
 {{
 "reasoning": str,
 "give_coin": bool

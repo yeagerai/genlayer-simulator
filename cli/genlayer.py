@@ -61,7 +61,7 @@ def send_logic(from_account:str, to_account:str, amount:float) -> dict:
     response = requests.post(json_rpc_url, json=payload).json()
     return response
 
-def deploy_logic(from_account:str, contract_code_file:IO[bytes], initial_state:str) -> dict:
+def deploy_logic(from_account:str, class_name:str, contract_code_file:IO[bytes], initial_state:str) -> dict:
     contract_code = contract_code_file.read()
     
     try:
@@ -73,7 +73,7 @@ def deploy_logic(from_account:str, contract_code_file:IO[bytes], initial_state:s
     payload = {
         "jsonrpc": "2.0",
         "method": "deploy_intelligent_contract",
-        "params": [from_account, contract_code.decode("utf-8"), initial_state],
+        "params": [from_account, class_name, contract_code.decode("utf-8"), initial_state],
         "id": 2,
     }
     response = requests.post(json_rpc_url, json=payload).json()
@@ -104,6 +104,16 @@ def create_random_validators_logic(count:int, min_stake:float, max_stake:float) 
         "jsonrpc": "2.0",
         "method": "create_random_validators",
         "params": [count, min_stake, max_stake],
+        "id": 4,
+    }
+    responses = requests.post(json_rpc_url, json=payload).json()
+    return responses
+
+def delete_all_validators_logic() -> list:
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "delete_all_validators",
+        "params": [],
         "id": 4,
     }
     responses = requests.post(json_rpc_url, json=payload).json()
@@ -231,6 +241,14 @@ def create_random_validators(count, min_stake, max_stake):
         f"Registered {len(responses['result'])} validator(s) with stakes ranging from {min_stake} to {max_stake}."
     )
 
+
+@click.command(help="Delete all the validators.")
+def delete_all_validators():
+    responses = delete_all_validators_logic()
+    click.echo(
+        f"Validators deleted {responses['result']}."
+    )
+
 @click.command(help="Retrieve the last N deployed contracts.")
 @click.option(
     "--number", type=int, required=True, help="Number of last deployed contracts to retrieve."
@@ -251,6 +269,7 @@ cli.add_command(last_contracts)
 cli.add_command(create_account)
 cli.add_command(fund_account)
 cli.add_command(create_random_validators)
+cli.add_command(delete_all_validators)
 cli.add_command(send)
 
 cli.add_command(deploy)
