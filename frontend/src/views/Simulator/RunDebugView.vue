@@ -52,10 +52,10 @@ const handleCallContractMethod = async ({ method, params }: { method: string; pa
 const handleDeployContract = async ({ params: constructorParams }: { params: { [k: string]: string } }) => {
   const contract = store.contracts.find((c) => c.id === store.currentContractId)
   if (contract) {
-    if (Object.keys(constructorParams).length < 1) {
+    if (Object.keys({...constructorInputs.value}).length !== Object.keys(constructorParams).length) {
       notify({
         title: 'Error',
-        text: 'You should provide a valid json object as a default state',
+        text: 'You should provide a valid default state',
         type: 'error'
       })
     } else {

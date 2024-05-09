@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, defineEmits, watch, onMounted } from 'vue'
 import { InputTypesMap } from '@/utils'
+import { notify } from '@kyvg/vue3-notification';
 interface Props {
   inputs: { [k: string]: string }
 }
@@ -44,6 +45,8 @@ const setInputParams = (inputs: { [k: string]: string }) => {
     }
     return prev
   }, {})
+
+  jsonParams.value = JSON.stringify(inputParams.value || {}, null, 2)
 }
 const jsonParams = ref('{}')
 const inputParams = ref<{ [k: string]: any }>({})
@@ -53,8 +56,19 @@ const mode = ref<'json' | 'form'>('form')
 
 const handleDeployContract = () => {
   if (mode.value === 'json') {
-    const params = mapInputs(JSON.parse(jsonParams.value || '{}'))
-    emit('deployContract', { params })
+    try {
+      const json = JSON.parse(jsonParams.value || '{}')
+      const params = mapInputs(json)
+      emit('deployContract', { params })
+    } catch (error) {
+      console.error(error)
+      notify({
+        title: 'Error',
+        text: 'You should provide a valid json',
+        type: 'error'
+      })
+    }
+
   } else {
     const params = mapInputs(inputParams.value || {})
     emit('deployContract', { params })
@@ -64,14 +78,14 @@ const toogleMode = () => {
   mode.value = mode.value === 'json' ? 'form' : 'json'
   if (mode.value === 'json') {
     jsonParams.value = JSON.stringify(inputParams.value || {}, null, 2)
+  } else {
+    inputParams.value = JSON.parse(jsonParams.value || '{}')
   }
 }
 
 
 watch((() => props.inputs), (newValue) => {
-  if (Object.keys(newValue || {}).length > 0) {
-    setInputParams(newValue)
-  }
+  setInputParams(newValue || {})
 })
 
 onMounted(() => {
