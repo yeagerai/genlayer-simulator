@@ -48,3 +48,5 @@ Connect with the GenLayer community to discuss, collaborate, and share insights:
 
 - **[Discord Channel](https://discord.gg/5Gq4nCxe)**: Our primary hub for discussions, support, and announcements.
 - **[Telegram Group](https://t.me/genlayer)**: For more informal chats and quick updates.
+
+Your continuous feedback drives better product development. Engage with us regularly to test, discuss, and improve the GenLayer Simulator.
