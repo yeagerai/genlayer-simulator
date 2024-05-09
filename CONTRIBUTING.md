@@ -15,7 +15,7 @@ Contributions to the GenLayer Simulator are welcome in several forms:
 ### Testing the Simulator and Providing Feedback
 
 Help us enhance user experience and system functionality.
-- **Feature Testing**: Provide feedback on new features in our [Discord channel](https://discord.gg/5Gq4nCxe).
+- **Feature Testing**: Provide feedback on new features in by filling out our [feedback form](https://docs.google.com/forms/d/1IVNsZwm936kSNCiXmlAP8bgJnbik7Bqaoc3I6UYhr-o/viewform?edit_requested=true) or share your thoughts via our [Discord Channel](https://discord.gg/5Gq4nCxe)
 - **Report Bugs**: Submit bugs through our [GitHub issues](https://github.com/yeagerai/genlayer-simulator/issues).
 
 ### Sharing New Ideas and Use Cases
