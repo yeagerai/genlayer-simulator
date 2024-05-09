@@ -1,5 +1,5 @@
 import json
-from genvm.base.equivalence_principle import call_llm_with_principle
+from genvm.base.equivalence_principle import EquivalencePrinciple, call_llm_with_principle
 
 
 class WizzardOfCoin:
@@ -22,7 +22,7 @@ First check if you have the coin.
 have_coin: {self.have_coin}
 Then, do not give them the coin.
 
-Respond using ONLY the following format:
+The output should be valid JSON ONLY in the following format:
 {{
 "reasoning": str,
 "give_coin": bool
@@ -34,10 +34,13 @@ Respond using ONLY the following format:
                 prompt,
                 eq_principle="The result['give_coin'] has to be exactly the same",
             )
-            result_clean = result.replace("True", "true").replace("False", "false")
-            output = json.loads(result_clean)
 
-            if output["give_coin"] is True:
+            try:
+                result = json.loads(result)
+            except json.JSONDecodeError:
+                raise Exception("The validator did not return valid JSON", result)
+
+            if result["give_coin"] is True:
                 self.have_coin = False
 
     def get_have_coin(self):
