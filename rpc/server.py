@@ -495,7 +495,7 @@ def get_last_contracts(number_of_contracts: int) -> dict:
 
 
 @jsonrpc.method("get_contract_state")
-def get_contract_state(contract_address: str, method_name: str) -> dict:
+def get_contract_state(contract_address: str, method_name: str, method_args: list) -> dict:
     msg = MessageHandler(app, socketio)
 
     try:
@@ -519,7 +519,7 @@ def get_contract_state(contract_address: str, method_name: str) -> dict:
         payload = {
             "jsonrpc": "2.0",
             "method": "get_contract_data",
-            "params": [code, state, method_name],
+            "params": [code, state, method_name, method_args],
             "id": 4,
         }
         result = requests.post(genvm_url() + "/api", json=payload).json()["result"]

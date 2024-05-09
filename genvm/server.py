@@ -227,7 +227,7 @@ def deploy_contract(
 
 
 @jsonrpc.method("get_contract_data")
-def get_contract_data(code: str, state: str, method_name: str) -> dict:
+def get_contract_data(code: str, state: str, method_name: str, method_args: list) -> dict:
     msg = MessageHandler(app, socketio)
     namespace = {}
     exec(code, namespace)
@@ -235,7 +235,7 @@ def get_contract_data(code: str, state: str, method_name: str) -> dict:
     decoded_pickled_object = base64.b64decode(state)
     contract_state = pickle.loads(decoded_pickled_object)
     method_to_call = getattr(contract_state, method_name)
-    return msg.success_response(method_to_call())
+    return msg.success_response(method_to_call(*method_args))
 
 
 if __name__ == "__main__":
