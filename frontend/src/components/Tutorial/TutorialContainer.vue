@@ -1,7 +1,24 @@
 <script lang="ts">
+import { rpcClient } from '@/utils';
 import { DEFAULT_CALLBACKS, DEFAULT_OPTIONS, KEYS } from './constants'
 import TutorialStep from './TutorialStep.vue'
 import { useMainStore, useUIStore } from '@/stores';
+import { notify } from '@kyvg/vue3-notification';
+
+const loadExample = async (mainStore: any) => {
+  if (mainStore.contracts.find((c: any) => c.id === 'tutorial-example')) return
+  const contractsBlob = import.meta.glob('./wizzard_of_coin.py', {
+    query: '?raw',
+    import: 'default'
+  })
+  const raw = await contractsBlob['./wizzard_of_coin.py']()
+  const contract = {
+    id: 'tutorial-example',
+    name: 'ExampleContract.py',
+    content: ((raw as string) || '').trim()
+  }
+  mainStore.addContractFile(contract)
+}
 
 const steps = [
   {
@@ -10,25 +27,51 @@ const steps = [
       title: '',
     },
     content: 'Welcome to the genlayer prototype',
-    onNextStep: (store: any, router: any) => {
-      const file = store.contracts[0]
-      if (file) {
-        store.openFile(file.id)
-      }
+    onNextStep: async (store: any) => {
+      store.openFile('tutorial-example')
     },
   },
   {
-    target: '#tutorial-contract-0',
+    target: '#tutorial-contract-example',
     content: 'Here is the code editor',
-    onNextStep: (store: any, router: any) => {
-      router.push({ name: 'simulator.run-debug', query: { deployCurrent: true } })
+    onNextStep: async (store: any, router: any) => {
+      router.push({ name: 'simulator.run-debug', query: { tutorial: true } })
     },
   },
   {
     target: '#tutorial-how-to-deploy',
     content: 'Here\'s how to deploy',
-    onNextStep: (store: any, router: any) => {
-      router.push({ name: 'simulator.run-debug', query: { deployCurrent: true } })
+    onNextStep: async (store: any, router: any) => {
+      const contract = store.contracts.find((c: any) => c.id === 'tutorial-example')
+      const { result } = await rpcClient.call({
+        method: 'deploy_intelligent_contract',
+        params: [
+          store.currentUserAddress,
+          'WizzardOfCoin',
+          contract.content,
+          `{ "have_coin": "True" }`
+        ]
+      })
+
+      if (result?.status === 'success') {
+        store.addDeployedContract({
+          address: result?.data.contract_id,
+          contractId: contract.id,
+          defaultState: `{ "have_coin": "True" }`
+        })
+        notify({
+          title: 'OK',
+          text: 'Contract deployed',
+          type: 'success'
+        })
+      } else {
+        notify({
+          title: 'Error',
+          text:
+            typeof result.message === 'string' ? result.message : 'Error Deploying the contract',
+          type: 'error'
+        })
+      }
     },
   },
   {
@@ -47,7 +90,7 @@ const steps = [
   {
     target: '#tutorial-tx-response',
     content: 'Here is the tx response',
-    onNextStep: (store: any, router: any) => {
+    onNextStep: async (store: any, router: any) => {
       router.push({ name: 'simulator.contracts' })
     },
   },
@@ -67,8 +110,10 @@ export default {
       steps
     }
   },
-  mounted() {
+  async mounted() {
+    const store = useMainStore()
     if (!localStorage.getItem('genlayer.tutorial')) {
+      await loadExample(store)
       localStorage.setItem('genlayer.tutorial', new Date().getTime().toString())
       this.start()
     }
@@ -116,6 +161,7 @@ export default {
   methods: {
     async start(startStep?: number) {
       const store = useMainStore()
+      store.openFile('tutorial-example')
       store.setCurrentContractId('')
       // Register keyup listeners for this tour
       if (this.options.useKeyboardNavigation) {
@@ -152,10 +198,16 @@ export default {
         this.callbacks.onPreviousStep(this.currentStep)
         const cb = this.steps[futureStep].onNextStep
         if (cb) {
-          cb(useMainStore(), this.$router)
+          cb(useMainStore(), this.$router).then(() => {
+
+            this.currentStep = futureStep
+            resolve(0)
+          })
+        } else {
+
+          this.currentStep = futureStep
+          resolve(0)
         }
-        this.currentStep = futureStep
-        resolve(0)
       })
 
       if (futureStep > -1) {
@@ -179,10 +231,15 @@ export default {
         this.callbacks.onNextStep(this.currentStep)
         const cb = this.steps[this.currentStep].onNextStep
         if (cb) {
-          cb(useMainStore(), this.$router)
+          cb(useMainStore(), this.$router).then(() => {
+            this.currentStep = futureStep
+            resolve(0)
+          })
+        } else {
+
+          this.currentStep = futureStep
+          resolve(0)
         }
-        this.currentStep = futureStep
-        resolve(0)
       })
 
       if (futureStep < this.numberOfSteps && this.currentStep !== -1) {

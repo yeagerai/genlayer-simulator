@@ -167,7 +167,7 @@ onMounted(() => {
           </button>
         </div>
       </div>
-      <div class="flex flex-col" v-if="deployedContract">
+      <div class="flex flex-col" v-show="deployedContract">
         <div class="flex flex-col">
           <ContractState
             :abi="abi"
