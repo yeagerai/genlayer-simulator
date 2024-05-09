@@ -450,7 +450,7 @@ async def call_contract_function(
 
         # TODO: More logging needs to be done inside the consensus functionallity
         # call consensus
-        execution_output = await exec_transaction(json.loads(function_call_data), logger=log_status)
+        execution_output = await exec_transaction(from_account, json.loads(function_call_data), logger=log_status)
 
         cursor.close()
         connection.close()
