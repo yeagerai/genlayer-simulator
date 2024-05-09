@@ -1,4 +1,4 @@
-FROM python:3.12.2-slim
+FROM python:3.12.2-slim as base
 
 ARG path=/app
 
@@ -19,5 +19,15 @@ RUN pip install --no-cache-dir -r genvm/requirements.txt
 RUN pip install Flask
 
 ENV PYTHONPATH "${PYTHONPATH}:/${path}"
+ENV FLASK_APP=genvm/server.py
 
-CMD ["python", "genvm/server.py"]
+###########START NEW IMAGE : DEBUGGER ###################
+FROM base as debug
+RUN pip install debugpy
+
+CMD python -m debugpy --listen 0.0.0.0:${GENVMDEBUGPORT} -m flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}
+
+###########START NEW IMAGE: PRODUCTION ###################
+FROM base as prod
+
+CMD flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}

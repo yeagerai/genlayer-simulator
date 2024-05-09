@@ -2,70 +2,42 @@
   "version": "0.2.0",
   "configurations": [
     {
-        "name": "Python: Debug Server",
-        "type": "debugpy",
-        "request": "launch",
-        "program": "${workspaceFolder}/rpc/server.py",
-        "console": "integratedTerminal",
-        "env": {
-          "PYTHONPATH": "${workspaceRoot}",
-          "DOCKER_HOST": "unix:///var/run/docker.sock"
-        },
-        "args": []
-      },
-      {
-        "name": "Python: Debug Launch Prototype",
-        "type": "debugpy",
-        "request": "launch",
-        "program": "${workspaceFolder}/scripts/debug_prototype.py",
-        "console": "integratedTerminal",
-        "env": {
-          "PYTHONPATH": "${workspaceRoot}",
-          "DOCKER_HOST": "unix:///var/run/docker.sock"
-        },
-        "args": []
-      },
-      {
-        "name": "Python: Run wizzard_of_coin",
-        "type": "debugpy",
-        "request": "launch",
-        "program": "${workspaceFolder}/genvm/contracts/wizzard_of_coin.py",
-        "console": "integratedTerminal",
-        "env": {
-          "PYTHONPATH": "${workspaceRoot}",
-          "FLASK_APP": "json_rpc_server.py",
-          "FLASK_ENV": "development",
-          "DOCKER_HOST": "unix:///var/run/docker.sock"
-        },
-        "args": []
-      },
-      // TODO: Need to get this working for debugging
-      {
-        "name": "Docker: RPC-endpoint",
-        "type": "docker",
-        "request": "launch",
-        "program": "${workspaceFolder}/script/debug_prototype.py",
-        "console": "integratedTerminal",
-        "env": {
-          "PYTHONPATH": "${workspaceRoot}"
-        },
-        "preLaunchTask": "docker-compose",
-        "python": {
-          "pathMappings": [
-            {
-              "localRoot": "${workspaceFolder}",
-              "remoteRoot": "/app"
-            }
-          ],
-          "projectType": "docker"
-        }
-      }
-    ],
-    "compounds": [
+      "name": "JsonRPC: Remote Attach",
+      "type": "debugpy",
+      "request": "attach",
+      "pathMappings": [
         {
-        "name": "Debug All",
-        "configurations": ["Python: Debug Server", "Python: Debug Launch Prototype"]
+          "localRoot": "${workspaceFolder}",
+          "remoteRoot": "/app"
         }
-    ]
-  }
-  
+      ],
+      "connect": {
+        "port": 4678,
+        "host": "localhost"
+      },
+      "justMyCode": true
+    },
+    {
+      "name": "GenVM: Remote Attach",
+      "type": "debugpy",
+      "request": "attach",
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}",
+          "remoteRoot": "/app"
+        }
+      ],
+      "connect": {
+        "port": 6678,
+        "host": "localhost"
+      },
+      "justMyCode": true
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug All",
+      "configurations": ["JsonRPC: Remote Attach", "GenVM: Remote Attach"]
+    }
+  ]
+}
