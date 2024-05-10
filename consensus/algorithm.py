@@ -92,7 +92,7 @@ def validator_executes_transaction(
     return return_value
 
 
-async def exec_transaction(transaction_input, logger=None):
+async def exec_transaction(from_account, transaction_input, logger=None):
 
     with DatabaseFunctions() as dbf:
         all_validators = dbf.all_validators()
@@ -146,7 +146,7 @@ async def exec_transaction(transaction_input, logger=None):
     #     votes[f"{validation_results[i]['validator']}"] = validation_results[i]["vote"]
 
     # Write transaction into DB
-    from_address = transaction_input["args"][0]
+    from_address = from_account
     to_address = transaction_input["contract_address"]
     data = json.dumps(
         {"new_contract_state": leader_receipt["result"]["contract_state"]}
