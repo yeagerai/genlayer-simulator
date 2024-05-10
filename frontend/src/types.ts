@@ -39,6 +39,7 @@ export interface MainStoreState {
 export type UIMode = 'light' | 'dark'
 export interface UIState {
   mode: UIMode
+  showTutorial: boolean
 }
 
 export interface ValidatorModel {

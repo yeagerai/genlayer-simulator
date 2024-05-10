@@ -43,7 +43,7 @@ const handleToogleTerminal = () => {
   <div class="flex w-full">
     <SimulatorMenu />
     <div class="flex w-full relative">
-      <Splitpanes class="default-theme relative w-full bg-white dark:bg-zinc-800 dark:text-white "
+      <Splitpanes class="default-theme relative w-full bg-white dark:bg-zinc-800 dark:text-white text-primary "
         @resize="handlePanelWidthResize">
         <Pane min-size="18" size="18" max-size="60" class="flex w-full">
           <div class="overflow-y-auto flex w-full">
@@ -81,6 +81,18 @@ const handleToogleTerminal = () => {
 }
 
 .splitpanes.default-theme .splitpanes__splitter {
+  background-color: transparent !important;
+  
+}
+
+.splitpanes.default-theme .splitpanes__splitter:hover,
+.splitpanes.default-theme .splitpanes__splitter:active {
   background-color: #cbd5e1 !important;
+}
+
+.splitpanes--vertical>.splitpanes__splitter, .default-theme .splitpanes--vertical>.splitpanes__splitter {
+  border-left: none !important;
+    border-right: 1px solid #eee;
+    
 }
 </style>
