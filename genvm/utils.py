@@ -1,7 +1,7 @@
 import os
 import json
 import requests
-
+import re
 
 from dotenv import load_dotenv
 
@@ -84,6 +84,8 @@ def generate_deploy_contract(
     return f"""
 {contract_code}
 
+current_contract = None
+
 async def main():
     from genvm.base.contract_runner import ContractRunner
     contract_runner = ContractRunner(from_address="{from_address}")
@@ -98,3 +100,10 @@ if __name__=="__main__":
     import asyncio
     asyncio.run(main())
     """
+
+def get_contract_class_name(contract_code: str) -> str:
+    pattern = r"class (\w+)\(IContract\):"
+    matches = re.findall(pattern, contract_code)
+    if len(matches) == 0:
+        raise Exception("No class name found")
+    return matches[0]

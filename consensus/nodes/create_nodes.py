@@ -37,7 +37,7 @@ def get_provider_models(defaults:str, provider:str) -> list:
         ollama_models_result = requests.get(get_ollama_url('tags')).json()
         ollama_models = []
         for ollama_model in ollama_models_result['models']:
-            # "llama2:latest" => "llama2"
+            # "llama3:latest" => "llama3"
             ollama_models.append(ollama_model['name'].split(':')[0])
         return ollama_models
 
