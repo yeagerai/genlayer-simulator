@@ -59,12 +59,13 @@ const setCurentUserAddress = (address: string) => {
             </div>
             <div class="flex flex-col">
               <div class="flex flex-col text-xs w-full overflow-y-auto max-h-56">
-                <div class="flex justify-between items-center hover:bg-slate-100 p-1" v-for="account in store.accounts"
-                  :key="account">
+                <div
+                  class="flex justify-between items-center hover:bg-slate-100 p-1 dark:bg-zinc-800 dark:hover:bg-zinc-700"
+                  v-for="account in store.accounts" :key="account">
                   <template v-if="account === store.currentUserAddress">
                     <div class="flex items-center">
                       <ToolTip text="Your Current Account" :options="{ placement: 'right' }" />
-                      <div class="flex  dark:text-white text-primary pl-4 pr-2">
+                      <div class="flex  dark:text-white text-primary pl-4 pr-2 ">
                         {{ account }}
                       </div>
                     </div>

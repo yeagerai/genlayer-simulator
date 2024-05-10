@@ -67,20 +67,20 @@ const setCurentUserAddress = (event: Event) => {
 </script>
 
 <template>
-  <div class="flex flex-col px-2 mt-6 py-2 w-full bg-slate-100">
+  <div class="flex flex-col px-2 mt-6 py-2 w-full bg-slate-100 dark:bg-zinc-700">
     <h5 class="text-sm" id="tutorial-how-to-create-transaction">Execute transactions</h5>
   </div>
   <div class="flex flex-col p-2 overflow-y-auto">
     <div class="flex flex-col items-start w-full">
       <p>Current Account:</p>
-      <select name="" id="" @change="setCurentUserAddress" class="text-xs w-full" :value="store.currentUserAddress">
+      <select name="" id="" @change="setCurentUserAddress" class="text-xs w-full dark:bg-zinc-700" :value="store.currentUserAddress">
         <option v-for="account in store.accounts" :key="account" :value="account">
           {{ account }}
         </option>
       </select>
     </div>
     <div class="flex justify-start w-full mt-4">
-      <select name="" id="" @change="onMethodChange" class="w-full">
+      <select name="" id="" @change="onMethodChange" class="w-full dark:bg-zinc-700">
         <option value="">Select a method</option>
         <option v-for="method in methodList" :key="method.name" :value="method.name">
           {{ method.name }}()
