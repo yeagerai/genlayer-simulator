@@ -248,9 +248,6 @@ const handleCreateNewValidator = async () => {
               <div class="flex"><span class="font-semibold mr-1">Provider: </span> <span>{{ validator.provider }}</span>
               </div>
             </div>
-            <div class="flex text-primary pl-4 pr-2">
-              {{ shortenAddress(validator.address) }}
-            </div>
           </div>
           <div class="flex text-primary">
             <button @click="openDeleteValidatorModal(validator)">
