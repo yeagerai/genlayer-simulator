@@ -4,7 +4,8 @@ import type { UIMode, UIState } from '@/types'
 export const useUIStore = defineStore('ui', {
   state: (): UIState => {
     return {
-      mode: (localStorage.getItem('ui-mode') as UIMode) || 'light'
+      mode: (localStorage.getItem('genLayer.ui-mode') as UIMode) || 'light',
+      showTutorial: false
     }
   },
   actions: {
@@ -18,7 +19,10 @@ export const useUIStore = defineStore('ui', {
       this.initialize()
     },
     initialize() {
-      localStorage.setItem('ui-mode', this.mode)
+      localStorage.setItem('genLayer.ui-mode', this.mode)
+    },
+    runTutorial() {
+      this.showTutorial = true
     }
   }
 })

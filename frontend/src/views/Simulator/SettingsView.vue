@@ -227,7 +227,7 @@ const handleCreateNewValidator = async () => {
     </div>
     <div class="flex justify-between items-center p-2 w-full">
       <div class="flex items-center">Number of validators:</div>
-      <div class="flex items-center text-xl font-semibold text-primary">
+      <div class="flex items-center text-xl font-semibold dark:text-white text-primary">
         {{ validators.length }}
       </div>
     </div>
@@ -237,7 +237,7 @@ const handleCreateNewValidator = async () => {
     <div class="flex flex-col">
       <div class="flex flex-col text-xs w-full">
         <div
-          class="flex px-2 justify-between items-center hover:bg-slate-100 p-1"
+          class="flex px-2 justify-between items-center hover:bg-slate-100 p-1 dark:hover:bg-zinc-700"
           v-for="validator in validators"
           :key="validator.id"
         >
@@ -245,22 +245,22 @@ const handleCreateNewValidator = async () => {
             class="flex items-center cursor-pointer"
             @click="openUpdateValidatorModal(validator)"
           >
-            <div class="flex text-primary">{{ validator.id }} -</div>
+            <div class="flex dark:text-white text-primary">{{ validator.id }} -</div>
             <div class="flex flex-col items-start ml-2">
               <div class="flex">
                 <span class="font-semibold mr-1">Model: </span>
-                <span class="text-primary">{{ validator.model }}</span>
+                <span class="dark:text-white text-primary">{{ validator.model }}</span>
               </div>
               <div class="flex">
                 <span class="font-semibold mr-1">Provider: </span>
                 <span>{{ validator.provider }}</span>
               </div>
             </div>
-            <div class="flex text-primary pl-4 pr-2">
+            <div class="flex dark:text-white text-primary pl-4 pr-2">
               {{ shortenAddress(validator.address) }}
             </div>
           </div>
-          <div class="flex text-primary">
+          <div class="flex dark:text-white text-primary">
             <button @click="openDeleteValidatorModal(validator)">
               <ToolTip text="Delete Validator" :options="{ placement: 'bottom' }" />
               <TrashIcon class="h-4 w-4 mr-1" />
@@ -281,7 +281,7 @@ const handleCreateNewValidator = async () => {
       <div class="flex flex-col">
         <div class="flex justify-between">
           <div class="text-xl">Validator Details</div>
-          <div class="text-primary">ID: {{ selectedValidator?.id }}</div>
+          <div class="dark:text-white text-primary">ID: {{ selectedValidator?.id }}</div>
         </div>
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Address:</p>
@@ -293,7 +293,7 @@ const handleCreateNewValidator = async () => {
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Provider:</p>
           <select
-            class="p-2 w-full bg-slate-100 overflow-y-auto"
+            class="p-2 w-full bg-slate-100 dark:bg-zinc-700 overflow-y-auto"
             name=""
             id=""
             v-model="validatorToUpdate.provider"
@@ -311,7 +311,7 @@ const handleCreateNewValidator = async () => {
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Model:</p>
           <select
-            class="p-2 w-full bg-slate-100 overflow-y-auto"
+            class="p-2 w-full bg-slate-100 overflow-y-auto dark:bg-zinc-700"
             name=""
             id=""
             v-model="validatorToUpdate.model"
@@ -332,7 +332,7 @@ const handleCreateNewValidator = async () => {
             type="number"
             min="0.01"
             v-model="validatorToUpdate.stake"
-            class="p-2 w-full bg-slate-100"
+            class="p-2 w-full bg-slate-100 dark:bg-zinc-700"
             required
           />
         </div>
@@ -344,7 +344,7 @@ const handleCreateNewValidator = async () => {
             id=""
             rows="5"
             cols="60"
-            class="p-2 max-h-64 w-full bg-slate-100"
+            class="p-2 max-h-64 w-full bg-slate-100 dark:bg-zinc-700"
             v-model="validatorToUpdate.config"
           >
           </textarea>
@@ -388,7 +388,7 @@ const handleCreateNewValidator = async () => {
       <div class="flex flex-col">
         <div class="flex justify-between">
           <div class="text-xl">Delete Validator</div>
-          <div class="text-primary">ID: {{ selectedValidator?.id }}</div>
+          <div class="dark:text-white text-primary">ID: {{ selectedValidator?.id }}</div>
         </div>
         <div class="flex justify-between font-bold bg-slate-100 p-2 mt-4">
           Are you sure you want to delete this validator?
