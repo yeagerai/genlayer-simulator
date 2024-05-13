@@ -1,10 +1,10 @@
 import json
+from genvm.base.icontract import IContract
 from genvm.base.equivalence_principle import EquivalencePrinciple
 
 
-class LlmErc20:
+class LlmErc20(IContract):
     def __init__(self, initial_owner: str, total_supply: int):
-        super().__init__()
         self.balances = {}
         self.balances[initial_owner] = total_supply
 
