@@ -4,7 +4,6 @@ import { rpcClient } from '@/utils';
 import { onMounted, ref } from 'vue';
 import { notify } from "@kyvg/vue3-notification";
 import Modal from '@/components/ModalComponent.vue'
-import { shortenAddress } from '@/utils'
 import { TrashIcon } from '@heroicons/vue/24/solid'
 
 const nodeProviders: Record<string, string[]> = { 'openai': ['gpt-3.5-turbo', 'gpt-4'], 'ollama': ['llama2', 'gemma', 'mistral', 'mixtral', 'gpt-4'] }
@@ -248,9 +247,6 @@ const handleCreateNewValidator = async () => {
           validator.model }}</span></div>
               <div class="flex"><span class="font-semibold mr-1">Provider: </span> <span>{{ validator.provider }}</span>
               </div>
-            </div>
-            <div class="flex  dark:text-white text-primary pl-4 pr-2">
-              {{ shortenAddress(validator.address) }}
             </div>
           </div>
           <div class="flex  dark:text-white text-primary">
