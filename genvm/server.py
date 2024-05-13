@@ -233,7 +233,6 @@ def get_contract_data(code: str, state: str, method_name: str, method_args: list
     for name, value in namespace.items():
         setattr(target_module, name, value)
     
-    print("namespace", namespace)
     decoded_pickled_object = base64.b64decode(state)
     contract_state = pickle.loads(decoded_pickled_object)
     method_to_call = getattr(contract_state, method_name)
