@@ -45,6 +45,7 @@ def get_contract_state(
 
 
 def run_contract(
+    from_address: str,
     contract_code: str,
     encoded_state: str,
     run_by: str,
@@ -55,8 +56,9 @@ def run_contract(
 {contract_code}
 
 async def main():
+    global contract_runner 
     from genvm.base.contract_runner import ContractRunner
-    contract_runner = ContractRunner()
+    contract_runner = ContractRunner(from_address="{from_address}")
     try:
         EquivalencePrinciple.contract_runner = contract_runner
     except (ImportError, UnboundLocalError):

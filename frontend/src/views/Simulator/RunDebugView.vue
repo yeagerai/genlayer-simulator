@@ -22,10 +22,14 @@ const deployedContract = computed(() =>
 )
 const contractTransactions = ref<any[]>([])
 
-const handleGetContractState = async (contractAddress: string, method: string) => {
+const handleGetContractState = async (
+  contractAddress: string,
+  method: string,
+  methodArguments: string[]
+) => {
   const { result } = await rpcClient.call({
     method: 'get_contract_state',
-    params: [contractAddress, method]
+    params: [contractAddress, method, methodArguments]
   })
 
   contractState.value = {

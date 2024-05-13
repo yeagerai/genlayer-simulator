@@ -1,7 +1,7 @@
 import os
 import json
 import requests
-
+import re
 
 from dotenv import load_dotenv
 
@@ -76,6 +76,7 @@ def webrequest_url():
 
 
 def generate_deploy_contract(
+    from_address: str,
     contract_code: str,
     constructor_args: str,
     class_name: str,
@@ -83,9 +84,11 @@ def generate_deploy_contract(
     return f"""
 {contract_code}
 
+current_contract = None
+
 async def main():
     from genvm.base.contract_runner import ContractRunner
-    contract_runner = ContractRunner()
+    contract_runner = ContractRunner(from_address="{from_address}")
     contract_runner._set_mode("leader")
     import pickle
     current_contract = {class_name}(**{constructor_args})
@@ -97,3 +100,10 @@ if __name__=="__main__":
     import asyncio
     asyncio.run(main())
     """
+
+def get_contract_class_name(contract_code: str) -> str:
+    pattern = r"class (\w+)\(IContract\):"
+    matches = re.findall(pattern, contract_code)
+    if len(matches) == 0:
+        raise Exception("No class name found")
+    return matches[0]
