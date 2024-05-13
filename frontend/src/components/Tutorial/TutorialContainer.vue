@@ -1,17 +1,17 @@
 <script lang="ts">
-import { rpcClient } from '@/utils';
+import { rpcClient } from '@/utils'
 import { DEFAULT_CALLBACKS, DEFAULT_OPTIONS, KEYS } from './constants'
 import TutorialStep from './TutorialStep.vue'
-import { useMainStore, useUIStore } from '@/stores';
-import { notify } from '@kyvg/vue3-notification';
+import { useMainStore, useUIStore } from '@/stores'
+import { notify } from '@kyvg/vue3-notification'
 
 const loadExample = async (mainStore: any) => {
   if (mainStore.contracts.find((c: any) => c.id === 'tutorial-example')) return
-  const contractsBlob = import.meta.glob('./wizzard_of_coin.py', {
+  const contractsBlob = import.meta.glob('./wizard_of_coin.py', {
     query: '?raw',
     import: 'default'
   })
-  const raw = await contractsBlob['./wizzard_of_coin.py']()
+  const raw = await contractsBlob['./wizard_of_coin.py']()
   const contract = {
     id: 'tutorial-example',
     name: 'ExampleContract.py',
@@ -24,30 +24,30 @@ const steps = [
   {
     target: '#tutorial-welcome',
     header: {
-      title: '',
+      title: ''
     },
     content: 'Welcome to the genlayer prototype',
     onNextStep: async (store: any) => {
       store.openFile('tutorial-example')
-    },
+    }
   },
   {
     target: '#tutorial-contract-example',
     content: 'Here is the code editor',
     onNextStep: async (store: any, router: any) => {
       router.push({ name: 'simulator.run-debug', query: { tutorial: true } })
-    },
+    }
   },
   {
     target: '#tutorial-how-to-deploy',
-    content: 'Here\'s how to deploy',
+    content: "Here's how to deploy",
     onNextStep: async (store: any, router: any) => {
       const contract = store.contracts.find((c: any) => c.id === 'tutorial-example')
       const { result } = await rpcClient.call({
         method: 'deploy_intelligent_contract',
         params: [
           store.currentUserAddress,
-          'WizzardOfCoin',
+          'WizardOfCoin',
           contract.content,
           `{ "have_coin": "True" }`
         ]
@@ -72,33 +72,33 @@ const steps = [
           type: 'error'
         })
       }
-    },
+    }
   },
   {
     target: '#tutorial-how-to-create-transaction',
-    content: 'Here\'s how to create a transaction',
+    content: "Here's how to create a transaction"
   },
   {
     target: '#tutorial-node-output',
-    content: 'Here is the node output as it\'s executing the tx',
+    content: "Here is the node output as it's executing the tx"
   },
 
   {
     target: '#tutorial-contract-state',
-    content: 'Here is the the contract state',
+    content: 'Here is the contract state'
   },
   {
     target: '#tutorial-tx-response',
     content: 'Here is the tx response',
     onNextStep: async (store: any, router: any) => {
       router.push({ name: 'simulator.contracts' })
-    },
+    }
   },
   {
     target: '#tutorial-how-to-change-example',
-    content: 'Here\'s how to change to another example',
+    content: "Here's how to change to another example"
   }
-];
+]
 
 export default {
   components: {
@@ -172,13 +172,14 @@ export default {
       startStep = startStep ? parseInt(`${startStep}`, 10) : 0
       let step = this.steps[startStep]
 
-      let process = () => new Promise((resolve, _reject) => {
-        setTimeout(() => {
-          this.callbacks.onStart()
-          this.currentStep = startStep
-          resolve(0)
-        }, this.options.startTimeout)
-      })
+      let process = () =>
+        new Promise((resolve, _reject) => {
+          setTimeout(() => {
+            this.callbacks.onStart()
+            this.currentStep = startStep
+            resolve(0)
+          }, this.options.startTimeout)
+        })
 
       if ((step as any).before) {
         try {
@@ -194,21 +195,20 @@ export default {
     async previousStep() {
       let futureStep = this.currentStep - 1
 
-      let process = () => new Promise((resolve, reject) => {
-        this.callbacks.onPreviousStep(this.currentStep)
-        const cb = this.steps[futureStep].onNextStep
-        if (cb) {
-          cb(useMainStore(), this.$router).then(() => {
-
+      let process = () =>
+        new Promise((resolve, reject) => {
+          this.callbacks.onPreviousStep(this.currentStep)
+          const cb = this.steps[futureStep].onNextStep
+          if (cb) {
+            cb(useMainStore(), this.$router).then(() => {
+              this.currentStep = futureStep
+              resolve(0)
+            })
+          } else {
             this.currentStep = futureStep
             resolve(0)
-          })
-        } else {
-
-          this.currentStep = futureStep
-          resolve(0)
-        }
-      })
+          }
+        })
 
       if (futureStep > -1) {
         let step = this.steps[futureStep]
@@ -227,20 +227,20 @@ export default {
     async nextStep() {
       let futureStep = this.currentStep + 1
 
-      let process = () => new Promise((resolve, _reject) => {
-        this.callbacks.onNextStep(this.currentStep)
-        const cb = this.steps[this.currentStep].onNextStep
-        if (cb) {
-          cb(useMainStore(), this.$router).then(() => {
+      let process = () =>
+        new Promise((resolve, _reject) => {
+          this.callbacks.onNextStep(this.currentStep)
+          const cb = this.steps[this.currentStep].onNextStep
+          if (cb) {
+            cb(useMainStore(), this.$router).then(() => {
+              this.currentStep = futureStep
+              resolve(0)
+            })
+          } else {
             this.currentStep = futureStep
             resolve(0)
-          })
-        } else {
-
-          this.currentStep = futureStep
-          resolve(0)
-        }
-      })
+          }
+        })
 
       if (futureStep < this.numberOfSteps && this.currentStep !== -1) {
         let step = this.steps[futureStep]
@@ -306,15 +306,40 @@ export default {
 </script>
 <template>
   <div class="v-tour">
-    <slot :current-step="currentStep" :steps="steps" :previous-step="previousStep" :next-step="nextStep" :stop="stop"
-      :skip="skip" :finish="finish" :is-first="isFirst" :is-last="isLast" :labels="options.labels"
-      :enabled-buttons="options.enabledButtons" :highlight="options.highlight" :debug="options.debug">
+    <slot
+      :current-step="currentStep"
+      :steps="steps"
+      :previous-step="previousStep"
+      :next-step="nextStep"
+      :stop="stop"
+      :skip="skip"
+      :finish="finish"
+      :is-first="isFirst"
+      :is-last="isLast"
+      :labels="options.labels"
+      :enabled-buttons="options.enabledButtons"
+      :highlight="options.highlight"
+      :debug="options.debug"
+    >
       <!--Default slot {{ currentStep }}-->
-      <TutorialStep v-if="steps[currentStep]" :step="steps[currentStep]" :key="currentStep"
-        :previous-step="previousStep" :next-step="nextStep" :stop="stop" :skip="skip" :finish="finish"
-        :is-first="isFirst" :is-last="isLast" :labels="options.labels" :enabled-buttons="options.enabledButtons"
-        :highlight="options.highlight" :stop-on-fail="options.stopOnTargetNotFound" :debug="options.debug"
-        @targetNotFound="$emit('targetNotFound', $event)">
+      <TutorialStep
+        v-if="steps[currentStep]"
+        :step="steps[currentStep]"
+        :key="currentStep"
+        :previous-step="previousStep"
+        :next-step="nextStep"
+        :stop="stop"
+        :skip="skip"
+        :finish="finish"
+        :is-first="isFirst"
+        :is-last="isLast"
+        :labels="options.labels"
+        :enabled-buttons="options.enabledButtons"
+        :highlight="options.highlight"
+        :stop-on-fail="options.stopOnTargetNotFound"
+        :debug="options.debug"
+        @targetNotFound="$emit('targetNotFound', $event)"
+      >
         <!--<div v-if="index === 2" slot="actions">
             <a @click="nextStep">Next step</a>
           </div>-->
@@ -333,7 +358,7 @@ body.v-tour--active {
 }
 
 .v-tour__target--highlighted {
-  box-shadow: 0 0 0 4px rgba(0, 0, 0, .4);
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.4);
   pointer-events: auto;
   z-index: 9999;
 }
