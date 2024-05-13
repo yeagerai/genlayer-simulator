@@ -7,7 +7,6 @@ import ContractState from '@/components/Simulator/ContractState.vue'
 import ExecuteTransactions from '@/components/Simulator/ExecuteTransactions.vue'
 import TransactionsList from '@/components/Simulator/TransactionsList.vue'
 import type { DeployedContract } from '@/types'
-import { type } from 'os'
 
 const store = useMainStore()
 const contractContructorParams = ref('{}')
@@ -21,10 +20,14 @@ const deployedContract = computed(() =>
 )
 const contractTransactions = ref<any[]>([])
 
-const handleGetContractState = async (contractAddress: string, method: string) => {
+const handleGetContractState = async (
+  contractAddress: string,
+  method: string,
+  methodArguments: string[]
+) => {
   const { result } = await rpcClient.call({
     method: 'get_contract_state',
-    params: [contractAddress, method, []]
+    params: [contractAddress, method, methodArguments]
   })
 
   contractState.value = {
