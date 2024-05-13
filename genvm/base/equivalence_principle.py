@@ -1,3 +1,4 @@
+import ast
 import re
 from typing import Optional
 import inspect
@@ -39,29 +40,9 @@ class EquivalencePrinciple:
         self.last_args = []
 
     async def __aenter__(self):
-        # 1. check that block does not modify self with ast, else throw error
-        # 2. comparative=False => execute eq_principle without running the block
-        # 3. change output with leaders' output if agree
-        #    skip the block
-
-        caller_method_name = inspect.currentframe().f_back.f_code.co_name
-        if caller_method_name == "call_llm_with_principle":
-            return self
-
-        caller_frame = inspect.currentframe().f_back
-        code_in_eq_bloc = get_code_in_eq_block(caller_frame)
-        modifying_self_patten = r'[ ]*self.[_0-9a-zA-Z]+[ ]*='
-        for code in code_in_eq_bloc:
-            if bool(re.match(modifying_self_patten, code)):
-                raise Exception('You cannot modify self inside an equivalence block')
-
         return self
 
     async def __aexit__(self):
-
-        caller_frame = inspect.currentframe().f_back
-        locals_in_caller = caller_frame.f_locals
-        clear_locals(locals_in_caller)
 
         # check eq principle
         if self.principle == None:
@@ -135,34 +116,3 @@ async def get_webpage_with_principle(url, eq_principle, comparative=True):
     ) as eq:
         result = await eq.get_webpage(url)
         eq.set(result)
-
-
-def get_code_in_eq_block(caller_frame):
-    caller_source_lines, start_line_number = inspect.getsourcelines(caller_frame)
-    line_number = start_line_number
-    eq_started = False
-    eq_finished = False
-    eq_indent = None
-    code_in_eq_bloc = []
-
-    for line in caller_source_lines:
-        # Get the indent of the eq block
-        if line_number == caller_frame.f_lineno:
-            eq_indent = line_indent_count(line) + 4
-        # Start from the eq block
-        if line_number >= caller_frame.f_lineno:
-            # Only get thge lines in the eq block
-            if eq_started and not eq_finished:
-                if eq_indent == line_indent_count(line):
-                    code_in_eq_bloc.append(line)
-                else:
-                    eq_finished = True
-            if ' as eq:' in line:
-                eq_started = True
-        line_number += 1
-
-    return code_in_eq_bloc
-
-def line_indent_count(line:str) -> int:
-    return len(line) - len(line.lstrip())
-

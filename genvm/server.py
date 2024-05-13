@@ -10,7 +10,14 @@ from flask_jsonrpc import JSONRPC
 from flask_socketio import SocketIO
 from flask_cors import CORS
 
-from genvm.utils import transaction_files, save_files, delete_recipts, generate_deploy_contract
+from genvm.utils import (
+    transaction_files,
+    save_files,
+    delete_recipts,
+    generate_deploy_contract
+)
+from code_enforcement import code_enforcement_check
+
 from common.messages import MessageHandler
 from common.logging import setup_logging_config
 
@@ -189,8 +196,12 @@ def get_icontract_schema(icontract: str) -> dict:
 def deploy_contract(
     contract_code: str, constructor_args: str, class_name: str, leader_config: dict
 ) -> dict:
-    
     msg = MessageHandler(app, socketio)
+
+    result = code_enforcement_check(contract_code, class_name)
+
+    if result["status"] == "error":
+        return msg.response_format(**result)
 
     deploy_contract_code = generate_deploy_contract(
         contract_code, constructor_args, class_name
