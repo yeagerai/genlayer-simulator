@@ -7,7 +7,6 @@ import router from './router'
 import { persistStorePlugin, createToolTipPlugin } from '@/plugins'
 import { setupStores } from '@/utils'
 
-
 const app = createApp(App)
 const pinia = createPinia()
 
@@ -21,7 +20,6 @@ app.use(
   })
 )
 app.use(Notifications)
-
 
 app.mount('#app')
 setupStores()

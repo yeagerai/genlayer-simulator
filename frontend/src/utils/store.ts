@@ -27,7 +27,6 @@ export const setupStores = async () => {
   }
 
   mainStore.deployedContracts = await db.deployedContracts.toArray()
-  console.log(  mainStore.accounts, "mainStore.accounts")
   if ( mainStore.accounts.length < 1) {
     await mainStore.generateNewAccount()
   } else {
