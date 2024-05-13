@@ -1,4 +1,5 @@
 import os
+import sys
 import ast
 import subprocess
 import json
@@ -227,7 +228,11 @@ def get_contract_data(code: str, state: str, method_name: str, method_args: list
     msg = MessageHandler(app, socketio)
     namespace = {}
     exec(code, namespace)
-    globals().update(namespace)
+
+    target_module = sys.modules['__main__']
+    for name, value in namespace.items():
+        setattr(target_module, name, value)
+    
     print("namespace", namespace)
     decoded_pickled_object = base64.b64decode(state)
     contract_state = pickle.loads(decoded_pickled_object)
