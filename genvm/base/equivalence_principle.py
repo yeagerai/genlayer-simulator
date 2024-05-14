@@ -1,3 +1,5 @@
+import ast
+import re
 from typing import Optional
 import inspect
 from genvm.base.context_wrapper import enforce_with_context
@@ -38,17 +40,9 @@ class EquivalencePrinciple:
         self.last_args = []
 
     async def __aenter__(self):
-        # check that block does not modify self with ast, else throw error
-        # comparative=False => execute eq_principle without running the block
-        # change output with leaders' output if agree
-        # skip the block
         return self
 
     async def __aexit__(self):
-
-        caller_frame = inspect.currentframe().f_back
-        locals_in_caller = caller_frame.f_locals
-        clear_locals(locals_in_caller)
 
         # check eq principle
         if self.principle == None:
@@ -122,5 +116,3 @@ async def get_webpage_with_principle(url, eq_principle, comparative=True):
     ) as eq:
         result = await eq.get_webpage(url)
         eq.set(result)
-
-    return final_result["output"]

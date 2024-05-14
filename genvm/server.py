@@ -1,4 +1,5 @@
 import os
+import sys
 import ast
 import subprocess
 import json
@@ -10,7 +11,15 @@ from flask_jsonrpc import JSONRPC
 from flask_socketio import SocketIO
 from flask_cors import CORS
 
-from genvm.utils import transaction_files, save_files, delete_recipts, generate_deploy_contract
+from genvm.utils import (
+    transaction_files,
+    save_files,
+    delete_recipts,
+    generate_deploy_contract,
+    get_contract_class_name
+)
+from code_enforcement import code_enforcement_check
+
 from common.messages import MessageHandler
 from common.logging import setup_logging_config
 
@@ -127,13 +136,9 @@ def get_icontract_schema(icontract: str) -> dict:
 
     msg.debug_response("Contract Code", icontract)
 
-    class_name = None
     namespace = {}
     exec(icontract, globals(), namespace)
-    for class_name_in_contract, class_type_in_contract in namespace.items():
-        if "__main__" in str(class_type_in_contract):
-            class_name = class_name_in_contract
-
+    class_name = get_contract_class_name(icontract)
     msg.debug_response("class name", class_name)
 
     if not class_name:
@@ -186,13 +191,17 @@ def get_icontract_schema(icontract: str) -> dict:
 
 @jsonrpc.method("deploy_contract")
 def deploy_contract(
-    contract_code: str, constructor_args: str, class_name: str, leader_config: dict
+    from_address:str, contract_code: str, constructor_args: str, class_name: str, leader_config: dict
 ) -> dict:
-    
     msg = MessageHandler(app, socketio)
 
+    result = code_enforcement_check(contract_code, class_name)
+
+    if result["status"] == "error":
+        return msg.response_format(**result)
+
     deploy_contract_code = generate_deploy_contract(
-        contract_code, constructor_args, class_name
+        from_address, contract_code, constructor_args, class_name
     )
 
     contract_file, _, _, _ = transaction_files()
@@ -226,15 +235,19 @@ def deploy_contract(
 
 
 @jsonrpc.method("get_contract_data")
-def get_contract_data(code: str, state: str, method_name: str) -> dict:
+def get_contract_data(code: str, state: str, method_name: str, method_args: list) -> dict:
     msg = MessageHandler(app, socketio)
     namespace = {}
     exec(code, namespace)
-    globals().update(namespace)
+
+    target_module = sys.modules['__main__']
+    for name, value in namespace.items():
+        setattr(target_module, name, value)
+    
     decoded_pickled_object = base64.b64decode(state)
     contract_state = pickle.loads(decoded_pickled_object)
     method_to_call = getattr(contract_state, method_name)
-    return msg.success_response(method_to_call())
+    return msg.success_response(method_to_call(*method_args))
 
 
 if __name__ == "__main__":

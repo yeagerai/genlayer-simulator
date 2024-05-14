@@ -1,5 +1,7 @@
+from genvm.base.icontract import IContract
+
 # contract class
-class Storage:
+class Storage(IContract):
 
     # constructor
     def __init__(self, initial_storage: str):
