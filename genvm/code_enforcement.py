@@ -44,6 +44,8 @@ def _does_class_exist_in_code(code:str, class_name:str) -> bool:
     return visitor.class_exists
 
 
+# Visits each class in the code and checks if the
+# class name matches the class name poassed in
 class ClassExistsVisitor(ast.NodeVisitor):
     def __init__(self, class_name):
         self.class_name = class_name
@@ -69,11 +71,13 @@ class EquivalencePrincipleVisitor(ast.NodeVisitor):
         self.all_eq_line_nums = []
         self.eq_line_nums_inside_async_waith_blocks = []
 
+    # All the places where the EquivalencePrinciple class is called
     def visit_Call(self, node):
         if isinstance(node.func, ast.Name) and node.func.id == 'EquivalencePrinciple':
             self.eq_line_nums_inside_async_waith_blocks.append(node.lineno)
         self.generic_visit(node)
 
+    # All the places where the EquivalencePrinciple class is called within an async with block
     def visit_AsyncWith(self, node):
         async_ctx = node.items[0].context_expr
         if isinstance(async_ctx, ast.Call) and isinstance(async_ctx.func, ast.Name):
@@ -96,6 +100,7 @@ class EquivalencePrincipleModifySelfVisitor(ast.NodeVisitor):
         self.inside_eq_block = False
         self.modeifies_self_linenos = []
 
+    # Mark the fact that we are inside the code's class method
     def visit_ClassDef(self, node):
         if node.name == self.class_name:
             for body_item in node.body:
@@ -104,6 +109,7 @@ class EquivalencePrincipleModifySelfVisitor(ast.NodeVisitor):
                     self.generic_visit(body_item)
                     self.inside_call_method = False
 
+    # Mark thew fact that we are inside an equivalence block
     def visit_AsyncWith(self, node):
         async_ctx = node.items[0].context_expr
         if isinstance(async_ctx, ast.Call) and isinstance(async_ctx.func, ast.Name):
@@ -112,6 +118,8 @@ class EquivalencePrincipleModifySelfVisitor(ast.NodeVisitor):
                 self.generic_visit(node)
                 self.inside_eq_block = False
 
+    # Record all assignments of class variables done inside an
+    # equivalence block
     def visit_Assign(self, node):
         for target in node.targets:
             if self.inside_call_method and self.inside_eq_block:
@@ -136,6 +144,7 @@ class EquivalencePrincipleBlockVariables(ast.NodeVisitor):
         self.eq_block_variables = []
         self.referenced_block_variables = []
 
+    # Mark the fact that we are inside the code's class method
     def visit_ClassDef(self, node):
         if node.name == self.class_name:
             for body_item in node.body:
@@ -144,6 +153,8 @@ class EquivalencePrincipleBlockVariables(ast.NodeVisitor):
                     self.generic_visit(body_item)
                     self.inside_call_method = False
 
+    # Mark the fact that we are inside an equivalence block
+    # (and have visited at least one equivalence block)
     def visit_AsyncWith(self, node):
         async_ctx = node.items[0].context_expr
         if isinstance(async_ctx, ast.Call) and isinstance(async_ctx.func, ast.Name):
@@ -153,12 +164,15 @@ class EquivalencePrincipleBlockVariables(ast.NodeVisitor):
                 self.inside_eq_block = False
                 self.has_visited_eq_block = True
 
+    # Records all the variables declared inside an equivalence block
     def visit_Assign(self, node):
         for target in node.targets:
             if isinstance(target, ast.Name) and self.inside_call_method and self.inside_eq_block:
                 self.eq_block_variables.append(target.id)
         self.generic_visit(node)
 
+    # Records all the variables declared in an equivalence block
+    # that are referenced outside of it
     def visit_Name(self, node):
         if self.inside_call_method and not self.inside_eq_block and \
                 node.id in self.eq_block_variables:
