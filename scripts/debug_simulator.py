@@ -70,9 +70,9 @@ if 'result' in fund_account_result and 'address' in fund_account_result['result'
     print('Account funded! ('+str(balance)+')')
 
 # Your hardcoded values
-contract_file_path = 'examples/contracts/wizzard_of_coin.py'
-function_to_execute = 'WizzardOfCoin.ask_for_coin'
-class_name = 'WizzardOfCoin'
+contract_file_path = 'examples/contracts/wizard_of_coin.py'
+function_to_execute = 'WizardOfCoin.ask_for_coin'
+class_name = 'WizardOfCoin'
 initial_contract_state = '{"have_coin": "True"}'
 
 # Deploy the contract

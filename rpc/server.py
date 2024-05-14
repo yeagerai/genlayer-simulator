@@ -244,7 +244,7 @@ def deploy_intelligent_contract(
     payload = {
         "jsonrpc": "2.0",
         "method": "deploy_contract",
-        "params": [contract_code, constructor_args, class_name, leader_config],
+        "params": [from_account, contract_code, constructor_args, class_name, leader_config],
         "id": 3,
     }
     response = requests.post(genvm_url() + "/api", json=payload).json()
@@ -427,12 +427,12 @@ def create_random_validator(stake: float) -> dict:
 
 @jsonrpc.method("call_contract_function")
 async def call_contract_function(
-    from_account: str, contract_address: str, function_name: str, args: list
+    from_address: str, contract_address: str, function_name: str, args: list
 ) -> dict:
     msg = MessageHandler(app, socketio)
 
-    if not address_is_in_correct_format(from_account):
-        return msg.error_response(message="from_account not in ethereum address format")
+    if not address_is_in_correct_format(from_address):
+        return msg.error_response(message="from_address not in ethereum address format")
 
     if not address_is_in_correct_format(contract_address):
         return msg.error_response(message="contract_address not in ethereum address format")
@@ -447,11 +447,11 @@ async def call_contract_function(
         ).model_dump_json()
         msg.info_response('Data formatted')
 
-        msg.info_response(f"Transaction sent from {from_account} to {contract_address}...")
+        msg.info_response(f"Transaction sent from {from_address} to {contract_address}...")
 
         # TODO: More logging needs to be done inside the consensus functionallity
         # call consensus
-        execution_output = await exec_transaction(json.loads(function_call_data), logger=log_status)
+        execution_output = await exec_transaction(from_address, json.loads(function_call_data), logger=log_status)
 
         cursor.close()
         connection.close()
@@ -496,7 +496,7 @@ def get_last_contracts(number_of_contracts: int) -> dict:
 
 
 @jsonrpc.method("get_contract_state")
-def get_contract_state(contract_address: str, method_name: str) -> dict:
+def get_contract_state(contract_address: str, method_name: str, method_args: list) -> dict:
     msg = MessageHandler(app, socketio)
 
     try:
@@ -520,7 +520,7 @@ def get_contract_state(contract_address: str, method_name: str) -> dict:
         payload = {
             "jsonrpc": "2.0",
             "method": "get_contract_data",
-            "params": [code, state, method_name],
+            "params": [code, state, method_name, method_args],
             "id": 4,
         }
         result = requests.post(genvm_url() + "/api", json=payload).json()["result"]

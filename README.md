@@ -8,11 +8,11 @@ This Simulator is an interactive sandbox designed for developers to explore the 
 
 The GenLayer simulator consists of the following main components:
 
-* **State Storage (PostgreSQL):** We use a SQL database to maintain the blockchain's updated and persistent state.
-* **State Manager (JSON-RPC Server):** A backend that processes requests, either to read the state of the blockchain or to execute transactions involving intelligent contracts.
-* **Developer Interface:** CLI and some execution scripts to facilitate developers' interaction with the node, allowing the deployment and execution of intelligent contracts.
-* **The Consensus Algorithm:** A python routine that launches execution processes into the GenVM, following the approach defined in the whitepaper.
-* **Gen Virtual Machine (GenVM):** A Dockerized environment prepared to run intelligent contracts safely.
+- **State Storage (PostgreSQL):** We use a SQL database to maintain the blockchain's updated and persistent state.
+- **State Manager (JSON-RPC Server):** A backend that processes requests, either to read the state of the blockchain or to execute transactions involving intelligent contracts.
+- **Developer Interface:** CLI and some execution scripts to facilitate developers' interaction with the node, allowing the deployment and execution of intelligent contracts.
+- **The Consensus Algorithm:** A python routine that launches execution processes into the GenVM, following the approach defined in the whitepaper.
+- **Gen Virtual Machine (GenVM):** A Dockerized environment prepared to run intelligent contracts safely.
 
 ## Quick Install
 
@@ -27,7 +27,7 @@ To run genlayer again just run:
 $ genlayer up
 ```
 
-*(Additional installation instructions can be found [here](https://docs.genlayer.com/simulator/installation))*
+_(Additional installation instructions can be found [here](https://docs.genlayer.com/simulator/installation))_
 
 Then visit [localhost:8080](http://localhost:8080/)
 
@@ -74,18 +74,20 @@ Use the following commands to run through a demo step-by-step.
 ...
 (.venv) # python cli/genlayer.py create-eoa --balance 10
 ...<your-new-address>...
-(.venv) # python cli/genlayer.py deploy --from-account <your-new-address> --initial-state {"have_coin": True} examples/contracts/wizzard_of_coin.py
+(.venv) # python cli/genlayer.py deploy --from-account <your-new-address> --initial-state {"have_coin": True} examples/contracts/wizard_of_coin.py
 ...<contract-address>...
-(.venv) # python cli/genlayer.py contract --from-account <your-new-address> --contract-address <contract-address> --function WizzardOfCoin.ask_for_coin --args {"request": "Can I have the coin please?"}
+(.venv) # python cli/genlayer.py contract --from-account <your-new-address> --contract-address <contract-address> --function WizardOfCoin.ask_for_coin --args {"request": "Can I have the coin please?"}
 ...
 ```
 
-*(NOTE: You can find the full list of CLI commands [here](https://github.com/yeagerai/genlayer-simulator/blob/main/cli/genlayer.py))*
+_(NOTE: You can find the full list of CLI commands [here](https://github.com/yeagerai/genlayer-simulator/blob/main/cli/genlayer.py))_
 
 <a name="set-up-an-environment"></a>
+
 ## Set up an environment
 
 ### Linux / MacOS
+
 ```
 $ virtualenv .venv
 $ source .venv/bin/activate
@@ -94,6 +96,7 @@ $ source .venv/bin/activate
 ```
 
 ### Windows (cmd)
+
 ```
 $ virtualenv .venv
 $  .\.venv\Scripts\activate
@@ -102,6 +105,7 @@ $  .\.venv\Scripts\activate
 ```
 
 ### Windows (PowerShell)
+
 ```
 $ virtualenv .venv
 $  .\.venv\Scripts\activate
@@ -113,4 +117,4 @@ $  .\.venv\Scripts\activate
 
 Additional documentation
 
- - https://docs.genlayer.com/
+- https://docs.genlayer.com/

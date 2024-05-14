@@ -4,8 +4,8 @@ from cli.genlayer import cli
 
 # Hardcoded values (change after install)
 hardcoded_from_address = '95594942-17e5-4f91-8862-c3a4eae5b58c'
-contract_file_path = 'genvm/contracts/wizzard_of_coin.py' 
-function_to_execute = 'WizzardOfCoin.ask_for_coin'
+contract_file_path = 'genvm/contracts/wizard_of_coin.py' 
+function_to_execute = 'WizardOfCoin.ask_for_coin'
 initial_contract_state = '{"have_coin": true}'
 
 runner = CliRunner()

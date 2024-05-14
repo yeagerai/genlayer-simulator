@@ -13,7 +13,7 @@ const props = defineProps<{
   parentHeight: number,
   parentWidth: number
 }>()
-const emit = defineEmits(['content-change', 'run-debug'])
+
 const editorElement = ref<HTMLDivElement | null>(null)
 const editorRef = shallowRef<monaco.editor.IStandaloneCodeEditor | null>(null)
 const theme = computed(() => uiStore.mode === 'light' ? 'vs' : 'vs-dark')

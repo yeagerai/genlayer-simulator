@@ -11,10 +11,11 @@ def gas_model_logic():
 
 
 class ContractRunner:
-    def __init__(self):
+    def __init__(self, from_address: str):
         self.node_config = json.load(
             open(os.environ.get("GENVMCONLOC") + "/node-config.json")
         )
+        self.from_address = from_address
         self.mode = None
         self.gas_used = 0
         self.eq_num = 0
