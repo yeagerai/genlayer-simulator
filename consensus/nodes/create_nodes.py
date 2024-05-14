@@ -17,9 +17,9 @@ def get_random_provider_using_weights(defaults):
     # remove providers if no api key
     provider_weights = defaults['provider_weights']
     default_value = '<add_your_api_key_here>'
-    if 'OPENAIKEY' not in os.environ or os.environ['OPENAIKEY'] == default_value:
+    if ('openai' in provider_weights and provider_weights['openai'] > 0 and ('OPENAIKEY' not in os.environ or os.environ['OPENAIKEY'] == default_value)):
         provider_weights.pop('openai')
-    if 'HEURISTAIAPIKEY' not in os.environ or os.environ['HEURISTAIAPIKEY'] == default_value:
+    if ('heuristai' in provider_weights and provider_weights['heuristai'] > 0 and('HEURISTAIAPIKEY' not in os.environ or os.environ['HEURISTAIAPIKEY'] == default_value)):
         provider_weights.pop('heuristai')
 
     total_weight = sum(provider_weights.values())
@@ -53,11 +53,21 @@ def get_provider_models(defaults:str, provider:str) -> list:
 def get_providers() -> list:
     return ['openai', 'ollama', 'heuristai']
 
-def get_config_for_providers_and_nodes() -> dict:
+def get_config_for_providers_and_nodes(exclusive_providers: list) -> dict:
     cwd = os.path.abspath(os.getcwd())
     nodes_dir = '/consensus/nodes'
     file = open(cwd + nodes_dir + '/defaults.json', 'r')
-    return json.load(file)[0]
+    config = json.load(file)[0]
+    file.close()
+    if len(exclusive_providers) > 0:
+        default_providers_weights = config['providers']['provider_weights']
+
+         # Rebuild the dictionary with only the desired keys
+        config['providers']['provider_weights'] = {
+            provider: weight for provider, weight in default_providers_weights.items()
+            if provider in exclusive_providers
+        }
+    return config
 
 def get_options(provider, contents):
     options = None
@@ -77,8 +87,8 @@ def num_decimal_places(number:float) -> int:
         decimal_places += 1
     return decimal_places
 
-def random_validator_config():
-    config = get_config_for_providers_and_nodes()
+def random_validator_config(exclusive_providers: list):
+    config = get_config_for_providers_and_nodes(exclusive_providers=exclusive_providers)
 
     ollama_models = get_provider_models({}, 'ollama')
 
@@ -95,7 +105,6 @@ def random_validator_config():
     #    heuristic_models.append(entry['name'])
 
     provider = get_random_provider_using_weights(config['providers'])
-
     options = get_options(provider, config)
 
     if provider == 'openai':

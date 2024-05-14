@@ -395,12 +395,12 @@ def delete_all_validators() -> dict:
 
 
 @jsonrpc.method("create_random_validators")
-def create_random_validators(count:int, min_stake:float, max_stake:float) -> dict:
+def create_random_validators(count:int, min_stake:float, max_stake:float, exclusive_providers: list=[]) -> dict:
     msg = MessageHandler(app, socketio)
     try:
         for _ in range(count):
             stake = random.uniform(min_stake, max_stake)
-            details = random_validator_config()
+            details = random_validator_config(exclusive_providers=exclusive_providers)
             new_validator = create_validator(
                 stake, details["provider"], details["model"], details["config"]
             )
