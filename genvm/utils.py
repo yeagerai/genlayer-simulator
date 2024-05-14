@@ -99,7 +99,7 @@ async def main():
 if __name__=="__main__":
     import asyncio
     asyncio.run(main())
-    """
+"""
 
 def get_contract_class_name(contract_code: str) -> str:
     pattern = r"class (\w+)\(IContract\):"
