@@ -623,7 +623,7 @@ def ping() -> dict:
 if __name__ == "__main__":
     socketio.run(
         app,
-        debug=True,
+        debug=os.environ["VSCODEDEBUG"] == "false",
         port=os.environ.get("RPCPORT"),
         host="0.0.0.0",
         allow_unsafe_werkzeug=True,

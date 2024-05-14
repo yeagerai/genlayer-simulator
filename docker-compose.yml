@@ -19,7 +19,6 @@ services:
     build:
       context: ./
       dockerfile: ./docker/Dockerfile.rpc
-      target: debug
     environment:
       - FLASK_SERVER_PORT=${RPCPORT}
       # TODO: remove this in production
@@ -40,6 +39,12 @@ services:
       - genvm
     expose:
       - "${RPCPORT}"
+    command: >
+      sh -c 'if [ "${VSCODEDEBUG}" = "true" ]; then
+        python -m debugpy --listen 0.0.0.0:${RPCDEBUGPORT} rpc/server.py
+      else
+        python rpc/server.py
+      fi'
 
   webrequest:
     build:
@@ -59,12 +64,10 @@ services:
     build:
       context: ./
       dockerfile: ./docker/Dockerfile.genvm
-      target: debug
     environment:
       - FLASK_SERVER_PORT=${GENVMPORT}
-      - DEBUG=${GENVMDEBUG}
-      - GENVMDEBUGPORT=${GENVMDEBUGPORT}
-      - PYTHONUNBUFFERED=${GENVMDEBUG}
+      # TODO: remove this in production
+      - PYTHONUNBUFFERED=1
     expose:
       - "${GENVMPORT}"
     ports:
@@ -72,6 +75,12 @@ services:
     volumes:
       - ./genvm:/app/genvm
       - ./common:/app/common
+    command: >
+      sh -c 'if [ "${VSCODEDEBUG}" = "true" ]; then
+        python -m debugpy --listen 0.0.0.0:${GENVMDEBUGPORT} genvm/server.py
+      else
+        python genvm/server.py
+      fi'
 
   ollama:
     image: ollama/ollama:latest
