@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { useMainStore } from '@/stores'
-import { computed, onMounted, ref, watch } from 'vue'
-import { rpcClient } from '@/utils'
+import { computed, onMounted, ref, watch, inject } from 'vue'
 import { notify } from '@kyvg/vue3-notification'
 import ContractState from '@/components/Simulator/ContractState.vue'
 import ExecuteTransactions from '@/components/Simulator/ExecuteTransactions.vue'
 import TransactionsList from '@/components/Simulator/TransactionsList.vue'
 import ConstructorParameters from '@/components/Simulator/ConstructorParameters.vue'
 import type { DeployedContract } from '@/types'
+import type { IJsonRPCService } from '@/services'
 
 const store = useMainStore()
-
+const $jsonRpc = inject<IJsonRPCService>('$jsonRpc')!
 const constructorInputs = ref<{ [k: string]: string }>({})
 const abi = ref<any>()
 const contractState = ref<any>({})
@@ -27,7 +27,7 @@ const handleGetContractState = async (
   method: string,
   methodArguments: string[]
 ) => {
-  const { result } = await rpcClient.call({
+  const { result } = await $jsonRpc.call({
     method: 'get_contract_state',
     params: [contractAddress, method, methodArguments]
   })
@@ -40,7 +40,7 @@ const handleGetContractState = async (
 
 const handleCallContractMethod = async ({ method, params }: { method: string; params: any[] }) => {
   console.log('handleCallContractMethod', method, params, abi.value.class)
-  const { result } = await rpcClient.call({
+  const { result } = await $jsonRpc.call({
     method: 'call_contract_function',
     params: [
       store.currentUserAddress,
@@ -72,14 +72,14 @@ const handleDeployContract = async ({
       // Getting the ABI to check the class name
       const {
         result: { data: contractSchema }
-      } = await rpcClient.call({
+      } = await $jsonRpc.call({
         method: 'get_icontract_schema_for_code',
         params: [contract.content]
       })
 
       // Deploy the contract
       const constructorParamsAsString = JSON.stringify(constructorParams)
-      const { result } = await rpcClient.call({
+      const { result } = await $jsonRpc.call({
         method: 'deploy_intelligent_contract',
         params: [
           store.currentUserAddress,
@@ -118,7 +118,7 @@ const setDefaultState = async (contract: DeployedContract) => {
     // TODO: check if we need to update again also we have an issue with conversion
     // between `bool` in Python with value `True` vs JSON boolean with value `true`
 
-    const { result } = await rpcClient.call({
+    const { result } = await $jsonRpc.call({
       method: 'get_icontract_schema',
       params: [contract.address]
     })
@@ -132,7 +132,7 @@ const setDefaultState = async (contract: DeployedContract) => {
 
 const getConstructorInputs = async () => {
   if (contract.value) {
-    const { result } = await rpcClient.call({
+    const { result } = await $jsonRpc.call({
       method: 'get_icontract_schema_for_code',
       params: [contract.value.content]
     })
@@ -192,7 +192,7 @@ onMounted(() => {
         <div class="flex flex-col">
           <ExecuteTransactions :abi="abi" @call-method="handleCallContractMethod" />
         </div>
-        <div id="tutorial-node-output" class="flex flex-col">
+        <div class="flex flex-col">
           <TransactionsList :transactions="contractTransactions" />
         </div>
       </div>
