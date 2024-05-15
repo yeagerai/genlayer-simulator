@@ -253,9 +253,9 @@ const handleCreateNewValidator = async () => {
       </div>
     </div>
     <div class="flex flex-col p-2 w-full">
-      <h4 class="text-md">Validators Configuration</h4>
+      <h4 class="text-md" id="tutorial-validators">Validators Configuration</h4>
     </div>
-    <div class="flex flex-col">
+    <div class="flex flex-col" id="tutorial-validators">
       <div class="flex flex-col text-xs w-full">
         <div class="flex px-2 justify-between items-center hover:bg-slate-100 p-1 dark:hover:bg-zinc-700"
           v-for="validator in validators" :key="validator.id">

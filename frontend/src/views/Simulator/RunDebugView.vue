@@ -192,7 +192,7 @@ onMounted(() => {
         <div class="flex flex-col">
           <ExecuteTransactions :abi="abi" @call-method="handleCallContractMethod" />
         </div>
-        <div id="tutorial-node-output" class="flex flex-col">
+        <div class="flex flex-col">
           <TransactionsList :transactions="contractTransactions" />
         </div>
       </div>
