@@ -24,23 +24,29 @@ const steps = [
   {
     target: '#tutorial-welcome',
     header: {
-      title: ''
+      title: 'Welcome to GenLayer Simulator!'
     },
-    content: 'Welcome to the genlayer prototype',
+    content: 'This tutorial will guide you through the basics. Click “Next” to begin!',
     onNextStep: async (store: any) => {
       store.openFile('tutorial-example')
     }
   },
   {
     target: '#tutorial-contract-example',
-    content: 'Here is the code editor',
+    header: {
+      title: 'Code Editor'
+    },
+    content: "Write and edit your Intelligent Contracts here. The example contract 'ExampleContract.py' is preloaded for you.",
     onNextStep: async (store: any, router: any) => {
       router.push({ name: 'simulator.run-debug', query: { tutorial: true } })
     }
   },
   {
     target: '#tutorial-how-to-deploy',
-    content: "Here's how to deploy",
+    header: {
+      title: 'Deploying Contracts'
+    },
+    content: "Click “Next” to automatically deploy your Intelligent Contract to the GenLayer network.",
     onNextStep: async (store: any, router: any) => {
       const contract = store.contracts.find((c: any) => c.id === 'tutorial-example')
       const { result } = await rpcClient.call({
@@ -75,28 +81,53 @@ const steps = [
     }
   },
   {
-    target: '#tutorial-how-to-create-transaction',
-    content: "Here's how to create a transaction"
-  },
-  {
     target: '#tutorial-node-output',
-    content: "Here is the node output as it's executing the tx"
+    header: {
+      title: 'Node Output'
+    },
+    content: "View real-time feedback as your transaction execution and debug any issues."
   },
 
   {
     target: '#tutorial-contract-state',
-    content: 'Here is the contract state'
+    header: {
+      title: 'Contract State'
+    },
+    content: "This panel shows the contract's data after executing transactions."
   },
   {
     target: '#tutorial-tx-response',
-    content: 'Here is the tx response',
+    header: {
+      title: 'Transaction Response'
+    },
+    content: 'See the results of your transaction interaction with the contract in this area.',
     onNextStep: async (store: any, router: any) => {
       router.push({ name: 'simulator.contracts' })
     }
   },
   {
+    header: {
+      title: 'Switching Examples'
+    },
     target: '#tutorial-how-to-change-example',
-    content: "Here's how to change to another example"
+    content: "Switch between different example contracts to explore various features and functionalities.",
+    onNextStep: async (store: any, router: any) => {
+      await router.push({ name: 'simulator.settings' })
+    }
+  },
+  {
+    header: {
+      title: 'Validators'
+    },
+    target: '#tutorial-validators',
+    content: "Configure the number of validators and set up their parameters here."
+  },
+  {
+    header: {
+      title: 'Congratulations!'
+    },
+    target: '#tutorial-end',
+    content: "You've completed the GenLayer Simulator tutorial. Feel free to revisit any step or start experimenting with your own contracts. Happy coding!"
   }
 ]
 
@@ -160,6 +191,7 @@ export default {
   },
   methods: {
     async start(startStep?: number) {
+      this.$router.replace({ name: 'simulator.contracts' })
       const store = useMainStore()
       store.openFile('tutorial-example')
       store.setCurrentContractId('')
@@ -202,7 +234,9 @@ export default {
           if (cb) {
             cb(useMainStore(), this.$router).then(() => {
               this.currentStep = futureStep
-              resolve(0)
+              setTimeout(() => {
+                resolve(0)
+              }, 300);
             })
           } else {
             this.currentStep = futureStep
@@ -234,7 +268,9 @@ export default {
           if (cb) {
             cb(useMainStore(), this.$router).then(() => {
               this.currentStep = futureStep
-              resolve(0)
+              setTimeout(() => {
+                resolve(0)
+              }, 300);
             })
           } else {
             this.currentStep = futureStep

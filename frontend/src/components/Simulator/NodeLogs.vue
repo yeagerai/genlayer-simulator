@@ -40,7 +40,7 @@ onUnmounted(() => {
   <div class="z-20 flex flex-col h-full w-full absolute bottom-0 left-0">
     <div class="flex bg-slate-100 p-1 dark:bg-zinc-700 h-6">
     </div>
-    <div class="flex flex-col w-full overflow-y-auto h-full p-1 bg-white dark:bg-zinc-800 dark:text-white cursor-text">
+    <div id="tutorial-node-output"  class="flex flex-col w-full overflow-y-auto h-full p-1 bg-white dark:bg-zinc-800 dark:text-white cursor-text">
       <div v-show="mainStore.nodeLogs.length > 0"
         class="flex flex-col overflow-y-auto scroll-smooth p-0" ref="scrollContainer">
         <div v-for="({ message }, index) in mainStore.nodeLogs" :key="index" class="flex items-center">

@@ -151,7 +151,7 @@ export default {
                     jump(this.targetElement, jumpOptions)
                 } else {
                     // Use the native scroll by default if no scroll options has been defined
-                    this.targetElement.scrollIntoView({ behavior: 'smooth' })
+                    this.targetElement?.scrollIntoView({ behavior: 'smooth' })
                 }
             }
         },
@@ -167,14 +167,14 @@ export default {
                 const transitionValue = window.getComputedStyle(this.targetElement).getPropertyValue('transition')
 
                 // Make sure our background doesn't flick on transitions
-                if (transitionValue !== 'all 0s ease 0s') {
+                if (transitionValue !== 'all 0s ease 0s' && this.targetElement) {
                     this.targetElement.style.transition = `${transitionValue}, ${HIGHLIGHT.transition}`
                 }
 
-                this.targetElement.classList.add(HIGHLIGHT.classes.targetHighlighted)
+                this.targetElement?.classList.add(HIGHLIGHT.classes.targetHighlighted)
                 // The element must have a position, if it doesn't have one, add a relative position class
-                if (!this.targetElement.style.position) {
-                    this.targetElement.classList.add(HIGHLIGHT.classes.targetRelative)
+                if (!this.targetElement?.style.position) {
+                    this.targetElement?.classList.add(HIGHLIGHT.classes.targetRelative)
                 }
             } else {
                 document.body.classList.remove(HIGHLIGHT.classes.active)
@@ -183,7 +183,8 @@ export default {
         removeHighlight() {
             if (this.isHighlightEnabled()) {
                 const target = this.targetElement
-                const currentTransition = this.targetElement.style.transition
+                if(target) {
+                    const currentTransition = this.targetElement.style.transition
                 this.targetElement.classList.remove(HIGHLIGHT.classes.targetHighlighted)
                 this.targetElement.classList.remove(HIGHLIGHT.classes.targetRelative)
                 // Remove our transition when step is finished.
@@ -191,6 +192,7 @@ export default {
                     setTimeout(() => {
                         target.style.transition = currentTransition.replace(`, ${HIGHLIGHT.transition}`, '')
                     }, 0)
+                }
                 }
             }
         },
