@@ -21,6 +21,7 @@ services:
       - FLASK_SERVER_PORT=${RPCPORT}
       # TODO: remove this in production
       - PYTHONUNBUFFERED=1
+      - VSCODEDEBUG=${VSCODEDEBUG}
       - RPCDEBUGPORT=${RPCDEBUGPORT}
     ports:
       - "${RPCPORT}:${RPCPORT}"
@@ -37,12 +38,7 @@ services:
       - genvm
     expose:
       - "${RPCPORT}"
-    command: >
-      sh -c 'if [ "${VSCODEDEBUG}" = "true" ]; then
-        python -m debugpy --listen 0.0.0.0:${RPCDEBUGPORT} rpc/server.py
-      else
-        python rpc/server.py
-      fi'
+    command: sh -c '/app/rpc/server.sh'
 
   webrequest:
     build:
@@ -66,6 +62,8 @@ services:
       - FLASK_SERVER_PORT=${GENVMPORT}
       # TODO: remove this in production
       - PYTHONUNBUFFERED=1
+      - GENVMDEBUGPORT=${GENVMDEBUGPORT}
+      - VSCODEDEBUG=${VSCODEDEBUG}
     expose:
       - "${GENVMPORT}"
     ports:
@@ -73,12 +71,7 @@ services:
     volumes:
       - ./genvm:/app/genvm
       - ./common:/app/common
-    command: >
-      sh -c 'if [ "${VSCODEDEBUG}" = "true" ]; then
-        python -m debugpy --listen 0.0.0.0:${GENVMDEBUGPORT} genvm/server.py
-      else
-        python genvm/server.py
-      fi'
+    command: sh -c '/app/genvm/server.sh'
 
   ollama:
     image: ollama/ollama:latest
