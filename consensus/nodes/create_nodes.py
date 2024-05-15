@@ -17,9 +17,9 @@ def get_random_provider_using_weights(defaults):
     # remove providers if no api key
     provider_weights = defaults['provider_weights']
     default_value = '<add_your_api_key_here>'
-    if ('openai' in provider_weights and provider_weights['openai'] > 0 and ('OPENAIKEY' not in os.environ or os.environ['OPENAIKEY'] == default_value)):
+    if ('openai' in provider_weights and ('OPENAIKEY' not in os.environ or os.environ['OPENAIKEY'] == default_value)):
         provider_weights.pop('openai')
-    if ('heuristai' in provider_weights and provider_weights['heuristai'] > 0 and('HEURISTAIAPIKEY' not in os.environ or os.environ['HEURISTAIAPIKEY'] == default_value)):
+    if ('heuristai' in provider_weights and('HEURISTAIAPIKEY' not in os.environ or os.environ['HEURISTAIAPIKEY'] == default_value)):
         provider_weights.pop('heuristai')
 
     total_weight = sum(provider_weights.values())
@@ -53,19 +53,22 @@ def get_provider_models(defaults:str, provider:str) -> list:
 def get_providers() -> list:
     return ['openai', 'ollama', 'heuristai']
 
-def get_config_for_providers_and_nodes(exclusive_providers: list) -> dict:
+def get_default_config_for_providers_and_nodes() -> dict:
     cwd = os.path.abspath(os.getcwd())
     nodes_dir = '/consensus/nodes'
     file = open(cwd + nodes_dir + '/defaults.json', 'r')
     config = json.load(file)[0]
     file.close()
-    if len(exclusive_providers) > 0:
+    return config
+
+def get_config_with_specific_providers(config, providers: list) -> dict: 
+    if len(providers) > 0:
         default_providers_weights = config['providers']['provider_weights']
 
          # Rebuild the dictionary with only the desired keys
         config['providers']['provider_weights'] = {
             provider: weight for provider, weight in default_providers_weights.items()
-            if provider in exclusive_providers
+            if provider in providers
         }
     return config
 
@@ -87,9 +90,9 @@ def num_decimal_places(number:float) -> int:
         decimal_places += 1
     return decimal_places
 
-def random_validator_config(exclusive_providers: list):
-    config = get_config_for_providers_and_nodes(exclusive_providers=exclusive_providers)
-
+def random_validator_config(providers: list):
+    default_config = get_default_config_for_providers_and_nodes()
+    config = get_config_with_specific_providers(default_config, providers)
     ollama_models = get_provider_models({}, 'ollama')
 
     if not len(ollama_models) and \
