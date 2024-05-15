@@ -22,7 +22,7 @@ const showTutorial = () => {
             <img v-if="uiStore.mode === 'light'" alt="GenLayer Logo" class="logo" src="@/assets/images/logo.png" width="125" height="125"/>
             <img v-else alt="GenLayer Logo" class="logo" src="@/assets/images/logo_white.png" width="125" height="125"/>
         </a>
-        <div class="flex items-center">
+        <div class="flex items-center" id="tutorial-end">
             <RouterLink :to="{ name: 'profile' }" class="text-sm  dark:text-white text-primary dark:text-white text-primary">
                 {{ shortenAddress(mainStore.currentUserAddress || '') }}
                 <ToolTip :text="mainStore.currentUserAddress" :options="{ placement: 'bottom' }" />

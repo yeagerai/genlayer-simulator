@@ -23,6 +23,7 @@ export interface MainStoreState {
   deployedContracts: DeployedContract[]
   currentUserAddress?: string
   nodeLogs: {
+    date: string
     message: {
       function: string
       trace_id: string
@@ -53,6 +54,9 @@ export interface ValidatorModel {
 }
 
 export interface CreateValidatorModel {
+  config: string
+  model: string
+  provider: string
   stake: number
 }
 
@@ -66,4 +70,19 @@ export interface UpdateValidatorModel {
 export interface ContractMethod {
   name: string
   inputs: { [k: string]: string }
+}
+
+export interface JsonRPCRequest {
+  method: string
+  params: any[]
+}
+
+export interface JsonRPCResponse {
+  id: string
+  jsonrpc: string
+  result: {
+    data: any
+    message: string
+    status: string
+  }
 }
