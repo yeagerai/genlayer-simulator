@@ -248,8 +248,9 @@ def deploy_intelligent_contract(
         "id": 3,
     }
     response = requests.post(genvm_url() + "/api", json=payload).json()
-    if response["result"]["status"] != "success":
-        return {"status": "fail", "message": response["result"]["data"]}
+
+    if response["result"]["status"] == "error":
+        return msg.response_format(**response["result"])
 
     try:
         connection = get_genlayer_db_connection()

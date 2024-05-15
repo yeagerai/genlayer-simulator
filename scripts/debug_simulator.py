@@ -69,15 +69,15 @@ fund_account_result = fund_account_logic(new_account, balance)
 if 'result' in fund_account_result and 'address' in fund_account_result['result']['data']:
     print('Account funded! ('+str(balance)+')')
 
-
 # Your hardcoded values
 contract_file_path = 'examples/contracts/wizard_of_coin.py'
 function_to_execute = 'WizardOfCoin.ask_for_coin'
+class_name = 'WizardOfCoin'
 initial_contract_state = '{"have_coin": "True"}'
 
 # Deploy the contract
 with open(contract_file_path, 'rb') as contract_file:
-    deploy_output = deploy_logic(new_account, 'WizardOfCoin', contract_file, initial_contract_state)
+    deploy_output = deploy_logic(new_account, class_name, contract_file, initial_contract_state)
     print("Deploy command output:", deploy_output)
 
 # Retrieve the last contract ID (you should parse the actual ID from the output)

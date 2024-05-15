@@ -54,6 +54,9 @@ export interface ValidatorModel {
 }
 
 export interface CreateValidatorModel {
+  config: string
+  model: string
+  provider: string
   stake: number
 }
 
