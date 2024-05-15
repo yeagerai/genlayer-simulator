@@ -36,7 +36,8 @@
     "vite-svg-loader": "^5.1.0",
     "vue": "^3.4.21",
     "vue-router": "^4.0.13",
-    "vue3-json-viewer": "^2.2.2"
+    "vue3-json-viewer": "^2.2.2",
+    "vue3-spinners": "^1.2.2"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.8.0",
