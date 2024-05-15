@@ -1,13 +1,13 @@
 <template>
-    <div v-bind:class="{ 'v-step--sticky': isSticky }" class="v-step" :id="'v-step-' + hash" :ref="'v-step-' + hash">
+    <div v-bind:class="{ 'v-step--sticky': isSticky }" class="v-step bg-slate-300 dark:bg-zinc-700" :id="'v-step-' + hash" :ref="'v-step-' + hash">
         <slot name="header">
-            <div v-if="step.header" class="v-step__header">
+            <div v-if="step.header" class="v-step__header bg-slate-300 dark:bg-zinc-700">
                 <div v-if="step.header.title" v-html="step.header.title"></div>
             </div>
         </slot>
 
         <slot name="content">
-            <div class="v-step__content">
+            <div class="v-step__content bg-slate-300 dark:bg-zinc-700">
                 <div v-if="step.content" v-html="step.content"></div>
                 <div v-else>This is a demo step! The id of this step is {{ hash }} and it targets {{ step.target }}.
                 </div>
@@ -15,7 +15,7 @@
         </slot>
 
         <slot name="actions">
-            <div class="v-step__buttons">
+            <div class="v-step__buttons bg-slate-300 dark:bg-zinc-700">
                 <button @click.prevent="skip" v-if="!isLast && isButtonEnabled('buttonSkip')"
                     class="v-step__button v-step__button-skip">{{ labels.buttonSkip }}</button>
                 <button @click.prevent="previousStep" v-if="!isFirst && isButtonEnabled('buttonPrevious')"
@@ -209,9 +209,8 @@ export default {
 
 <style scoped>
 .v-step {
-    background: #1a3851;
+    color: #1a3851;
     /* #ffc107, #35495e */
-    color: white;
     max-width: 320px;
     border-radius: 3px;
     box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px,
@@ -243,11 +242,11 @@ export default {
 }
 
 .v-step__arrow--dark::before {
-    background: #1a3851;
+    
 }
 
 .v-step__arrow::before {
-    background: #1a3851;
+    
     visibility: visible;
     content: '';
     transform: rotate(45deg);
@@ -275,21 +274,19 @@ export default {
 .v-step__header {
     margin: -1rem -1rem 0.5rem;
     padding: 0.5rem;
-    background-color: #1a3851;
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
 }
 
 .v-step__content {
     margin: 0 0 1rem 0;
-    background-color: #1a3851;
 }
 
 .v-step__button {
     background: transparent;
-    border: .05rem solid white;
+    border: .05rem solid;
     border-radius: .1rem;
-    color: white;
+    
     cursor: pointer;
     display: inline-block;
     font-size: .8rem;
@@ -306,7 +303,6 @@ export default {
 }
 
 .v-step__button:hover {
-
     background-color: rgba(white, 0.95);
     color: #1a3851;
 }

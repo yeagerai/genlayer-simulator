@@ -28,9 +28,9 @@ export const DEFAULT_CALLBACKS = {
     stopOnTargetNotFound: false,
     useKeyboardNavigation: true,
     enabledNavigationKeys: {
-      "escape": true,
-      "arrowRight": true,
-      "arrowLeft": true
+      "escape": false,
+      "arrowRight": false,
+      "arrowLeft": false
     },
     debug: false
   }

@@ -305,7 +305,7 @@ export default {
 }
 </script>
 <template>
-  <div class="v-tour">
+  <div class="v-tour bg-slate-300 dark:bg-zinc-700">
     <slot
       :current-step="currentStep"
       :steps="steps"
