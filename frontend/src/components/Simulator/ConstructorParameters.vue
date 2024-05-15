@@ -111,7 +111,7 @@ onMounted(() => {
       <textarea rows="5" class="w-full bg-slate-100 dark:dark:bg-zinc-700 p-2" v-model="jsonParams"
         clear-icon="ri-close-circle" label="State" />
     </div>
-    <div class="flex mt-2" v-else>
+    <div class="flex flex-col mt-2" v-else>
       <div class="flex items-center py-2 justify-between" v-for="(inputType, input) in props.inputs" :key="input">
         <label :for="`${input}`" class="text-xs mr-2">{{ input }}</label>
         <input v-model="inputParams[input]" :name="`${input}`" :type="InputTypesMap[inputType]"

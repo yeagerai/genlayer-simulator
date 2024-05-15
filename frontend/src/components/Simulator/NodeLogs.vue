@@ -22,7 +22,7 @@ onMounted(() => {
   webSocketClient.on('status_update', (event) => {
     console.log('webSocketClient.details', event)
     mainStore.$patch((state) => {
-      state.nodeLogs.push(event)
+      state.nodeLogs.push({ date: new Date().toISOString(), message: event.message})
     })
 
     scrollContainer.value?.scrollTo({ top: scrollContainer.value.scrollHeight, behavior: 'smooth' })
@@ -43,11 +43,11 @@ onUnmounted(() => {
     <div id="tutorial-node-output"  class="flex flex-col w-full overflow-y-auto h-full p-1 bg-white dark:bg-zinc-800 dark:text-white cursor-text">
       <div v-show="mainStore.nodeLogs.length > 0"
         class="flex flex-col overflow-y-auto scroll-smooth p-0" ref="scrollContainer">
-        <div v-for="({ message }, index) in mainStore.nodeLogs" :key="index" class="flex items-center">
+        <div v-for="({ message, date }, index) in mainStore.nodeLogs" :key="index" class="flex items-center">
           <div class="flex items-start" :class="colorMap[message?.response?.status] || 'text-black-500'">
 
             <div class="flex text-xs font-light"><span class="flex flex-col items-center w-8">{{ index + 1 }}</span> {{
-        message.trace_id }} :: </div>
+        date }} :: </div>
             <div v-if="typeof message === 'string'" class="flex text-xs ml-1 flex-1">"{{ message }}</div>
             <div v-else class="flex text-xs ml-1 flex-1">
               {{ message.function }} {{ message?.response?.message ? ` ===> ${message.response.message}` : '' }}

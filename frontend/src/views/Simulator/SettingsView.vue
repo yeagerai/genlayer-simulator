@@ -1,16 +1,15 @@
 <script setup lang="ts">
 import type { ValidatorModel, UpdateValidatorModel, CreateValidatorModel } from '@/types'
-import { rpcClient } from '@/utils'
-import { onMounted, ref } from 'vue'
+
+import { inject, onMounted, ref } from 'vue'
 import { notify } from '@kyvg/vue3-notification'
 import Modal from '@/components/ModalComponent.vue'
 import { TrashIcon } from '@heroicons/vue/24/solid'
+import type { IJsonRPCService } from '@/services'
 
-const nodeProviders: Record<string, string[]> = {
-  openai: ['gpt-3.5-turbo', 'gpt-4'],
-  ollama: ['llama3', 'gemma', 'mistral', 'mixtral', 'gpt-4']
-}
+const nodeProviders = ref<Record<string, string[]>>({})
 // state
+const $jsonRpc = inject<IJsonRPCService>('$jsonRpc')!
 const validators = ref<ValidatorModel[]>([])
 const updateValidatorModalOpen = ref<boolean>(false)
 const createValidatorModalOpen = ref<boolean>(false)
@@ -32,16 +31,32 @@ const validatorToCreate = ref<CreateValidatorModel>({
 // Hooks
 onMounted(async () => {
   try {
-    const { result } = await rpcClient.call({
+
+    const [{ result: validatorsResult }, { result: modelsResult }] = await Promise.all([$jsonRpc.call({
       method: 'get_all_validators',
       params: []
-    })
-    if (result?.status === 'success') {
-      validators.value = result.data
+    }), $jsonRpc.call({
+      method: 'get_providers_and_models',
+      params: []
+    })])
+
+    
+    if (validatorsResult?.status === 'success') {
+      validators.value = validatorsResult.data
     } else {
       notify({
         title: 'Error',
         text: 'Error getting validators',
+        type: 'error'
+      })
+    }
+
+    if (modelsResult?.status === 'success') {
+      nodeProviders.value = modelsResult.data
+    } else {
+      notify({
+        title: 'Error',
+        text: 'Error getting Providers and Models data',
         type: 'error'
       })
     }
@@ -101,7 +116,7 @@ const handleUpdateValidator = async () => {
       return
     }
     const contractConfig = JSON.parse(config || '{}')
-    const { result } = await rpcClient.call({
+    const { result } = await $jsonRpc.call({
       method: 'update_validator',
       params: [selectedValidator.value?.address, stake, provider, model, contractConfig]
     })
@@ -147,7 +162,7 @@ const handleDeleteValidator = async () => {
       })
       return
     }
-    const { result } = await rpcClient.call({
+    const { result } = await $jsonRpc.call({
       method: 'delete_validator',
       params: [address]
     })
@@ -196,7 +211,7 @@ const handleCreateNewValidator = async () => {
       return
     }
     const { stake, provider, model, config } = validatorToCreate.value
-    const { result } = await rpcClient.call({
+    const { result } = await $jsonRpc.call({
       method: 'create_validator',
       params: [stake, provider, model, config]
     })

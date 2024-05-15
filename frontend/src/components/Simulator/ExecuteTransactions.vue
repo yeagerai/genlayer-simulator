@@ -96,10 +96,10 @@ const setCurentUserAddress = (event: Event) => {
         </div>
       </div>
       <div class="flex flex-col mt-4 w-full">
-        <ToolTip :text="`Excute ${method.name}()`" :options="{ placement: 'top' }" />
+        <ToolTip :text="`Execute ${method.name}()`" :options="{ placement: 'top' }" />
         <button @click="handleMethodCall"
           class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
-          Excute {{ ` ${method.name}` }}()
+          Execute {{ ` ${method.name}` }}()
         </button>
       </div>
     </template>
