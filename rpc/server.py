@@ -1,11 +1,9 @@
-import re
 import os
 import json
 import psycopg2
 import string
 import requests
 import random
-from logging.config import dictConfig
 from flask import Flask
 from flask_jsonrpc import JSONRPC
 from flask_socketio import SocketIO
@@ -30,6 +28,7 @@ from consensus.utils import vrf, genvm_url
 from consensus.nodes.create_nodes import random_validator_config
 from common.messages import MessageHandler
 from common.logging import setup_logging_config
+from common.address import create_new_address, address_is_in_correct_format
 
 from dotenv import load_dotenv
 
@@ -43,16 +42,6 @@ CORS(app, resources={r"/api/*": {"origins": "*"}}, intercept_exceptions=False)
 jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-
-def create_new_address() -> str:
-    new_address = ''.join(random.choice(string.hexdigits) for _ in range(40))
-    return '0x' + new_address
-
-def address_is_in_correct_format(address:str) -> bool:
-    pattern = r'^0x['+string.hexdigits+']{40}$'
-    if re.fullmatch(pattern, address):
-        return True
-    return False
 
 
 @socketio.on("connect")
@@ -93,9 +82,9 @@ def create_tables() -> dict:
 
 @jsonrpc.method("clear_account_and_transactions_tables")
 def clear_account_and_transactions_tables() -> dict:
+    msg = MessageHandler(app, socketio)
     result = clear_db_tables(app, ["current_state", "transactions"])
-    app.logger.info(result)
-    return {"status": result}
+    return msg.success_response(result)
 
 
 @jsonrpc.method("create_account")
@@ -113,6 +102,9 @@ def create_account() -> dict:
             "INSERT INTO current_state (id, data) VALUES (%s, %s);",
             (new_address, account_state),
         )
+        connection.commit()
+        cursor.close()
+        connection.close()
     except Exception as e:
         return msg.error_response(exception=e)
     return msg.success_response({"address": new_address, "balance": balance})

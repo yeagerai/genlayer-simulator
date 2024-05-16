@@ -1,33 +1,12 @@
 import re
-import json
 
-from database.init_db import clear_db_tables
+from common.testing.db.base import transaction_data
+from common.testing.db.base import setup_db_and_tables
 from database.functions import DatabaseFunctions
 
 
-def clear_tables():
-    clear_db_tables(None, ["current_state", "transactions"])
-
-
-def transaction_data(from_address:str="0x123", to_address:str="0x123"):
-    return {
-        "from_address": from_address,
-        "to_address": to_address,
-        "data": json.dumps({"key": "value"}),
-        "type": 1,
-        "value": 2,
-        "input_data": json.dumps({"key": "value"}),
-        "consensus_data": json.dumps({"key": "value"}),
-        "nonce": 3,
-        "gaslimit": 4,
-        "r": 5,
-        "s": 6,
-        "v": 7
-    }
-
-
 def test_insert_transaction():
-    clear_tables()
+    setup_db_and_tables()
     random_transaction_data = transaction_data()
     with DatabaseFunctions() as dbf:
         transaction = dbf.insert_transaction(**random_transaction_data)
@@ -49,7 +28,7 @@ def test_insert_transaction():
 
 
 def test_get_transaction():
-    clear_tables()
+    setup_db_and_tables()
     random_transaction_data = transaction_data()
     with DatabaseFunctions() as dbf:
         transaction_insert_result = dbf.insert_transaction(**random_transaction_data)

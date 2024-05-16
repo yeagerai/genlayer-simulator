@@ -1,13 +1,11 @@
 import re
 import json
 
-from rpc.utils import create_new_address
+from common.address import create_new_address
+from common.testing.db.base import setup_db_and_tables
 from database.init_db import clear_db_tables
 from database.functions import DatabaseFunctions
 
-
-def clear_tables():
-    clear_db_tables(None, ["current_state", "validators"])
 
 def random_validator_data():
     return validator_data(create_new_address())
@@ -22,7 +20,7 @@ def validator_data(address:str="0x123"):
     }
 
 def test_create_validator():
-    clear_tables()
+    setup_db_and_tables()
     with DatabaseFunctions() as dbf:
         validator = dbf.create_validator(**validator_data())
         dbf.close()
@@ -35,7 +33,7 @@ def test_create_validator():
     assert re.match(r"\d{2}/\d{2}/\d{4} \d{1,2}:\d{2}:\d{2}", validator["updated_at"])
 
 def test_get__validator():
-    clear_tables()
+    setup_db_and_tables()
     with DatabaseFunctions() as dbf:
         new_validator = dbf.create_validator(**validator_data())
         validator = dbf.get_validator(new_validator['address'])
@@ -50,7 +48,7 @@ def test_get__validator():
 
 
 def test_get_all_validators():
-    clear_tables()
+    setup_db_and_tables()
     with DatabaseFunctions() as dbf:
         dbf.create_validator(**random_validator_data())
         dbf.create_validator(**random_validator_data())
@@ -62,7 +60,7 @@ def test_get_all_validators():
 
 
 def test_delete_validator():
-    clear_tables()
+    setup_db_and_tables()
     with DatabaseFunctions() as dbf:
         dbf.create_validator(**random_validator_data())
         dbf.create_validator(**random_validator_data())
@@ -75,7 +73,7 @@ def test_delete_validator():
     assert validator_data()['address'] not in addresses
 
 def test_update_validator():
-    clear_tables()
+    setup_db_and_tables()
     with DatabaseFunctions() as dbf:
         validator = dbf.create_validator(**random_validator_data())
         updated_validator = dbf.update_validator(

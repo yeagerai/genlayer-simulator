@@ -1,30 +1,19 @@
-from os import environ
-import requests
-
-from database.init_db import clear_db_tables, db_cursor
-from rpc.utils import get_rpc_url
-
-from dotenv import load_dotenv
-load_dotenv()
-
-db_name = environ.get("DBNAME")
-
-
-def delete_database():
-    connection = db_cursor("postgres")
-    cursor = connection.cursor()
-    cursor.execute(f"DROP DATABASE IF EXISTS {db_name}")
-    cursor.close()
-    connection.close()
-
-def clear_tables(tables: list):
-    clear_db_tables(None, tables)
+from database.init_db import drop_db_if_it_already_exists
+from common.testing.db.base import setup_db_and_tables, db_name
+from rpc.tests.base import payload, post_request
 
 
 def test_create_db_endpoint():
-    delete_database()
-    print(get_rpc_url() + "/create_db")
-    response = requests.post(get_rpc_url() + "/create_db", {})
-    print(response.text)
+    setup_db_and_tables()
+    response = post_request(payload("create_db"))
     assert response.status_code == 200
-    assert response.json()["message"] == f"Database {db_name} created successfully!"
+    assert response.json()['result']['status'] == 'success'
+    assert response.json()['result']['data'] == f'Database {db_name} already exists.'
+
+
+def test_create_db_endpoint_from_fresh():
+    drop_db_if_it_already_exists()
+    response = post_request(payload("create_db"))
+    assert response.status_code == 200
+    assert response.json()['result']['status'] == 'success'
+    assert response.json()['result']['data'] == f'Database {db_name} created successfully.'

@@ -1,9 +1,11 @@
+from common.testing.db.base import setup_db_and_tables
 from rpc.tests.base import payload, post_request
 
 validator_keys = ['id', 'address', 'stake', 'provider','model', 'config', 'updated_at']
 
 
 def test_create_random_validator():
+    setup_db_and_tables()
     response = post_request(payload('create_random_validator', 10)).json()
     assert response['result']['status'] == 'success'
     assert response['result']['data']['stake'] == 10
@@ -11,24 +13,28 @@ def test_create_random_validator():
         assert key in response['result']['data']
 
 def test_delete_validator_does_not_exist():
+    setup_db_and_tables()
     name = 'dave'
     response = post_request(payload('delete_validator', name)).json()
     assert response['result']['status'] == 'error'
     assert response['result']['message'] == f'validator {name} not found'
 
 def test_delete_validator():
+    setup_db_and_tables()
     new_validator = post_request(payload('create_random_validator', 10)).json()
     response = post_request(payload('delete_validator', new_validator['result']['data']['address'])).json()
     assert response['result']['status'] == 'success'
     assert response['result']['data'] == new_validator['result']['data']['address']
 
 def test_get_validator_does_not_exist():
+    setup_db_and_tables()
     name = 'dave'
     response = post_request(payload('get_validator', name)).json()
     assert response['result']['status'] == 'error'
     assert response['result']['message'] == f'validator {name} not found'
 
 def test_get_validator():
+    setup_db_and_tables()
     new_validator = post_request(payload('create_random_validator', 10)).json()
     response = post_request(payload('get_validator', new_validator['result']['data']['address'])).json()
     assert response['result']['status'] == 'success'
@@ -37,6 +43,7 @@ def test_get_validator():
     post_request(payload('delete_validator', new_validator['result']['data']['address']))
 
 def test_get_and_delete_all_validator():
+    setup_db_and_tables()
     num_validators = 10
     # delete all validators first
     delete_reponse = post_request(payload('delete_all_validators')).json()
@@ -59,6 +66,7 @@ def test_get_and_delete_all_validator():
     assert len(response['result']['data']) == 0
 
 def test_create_validator():
+    setup_db_and_tables()
     data = {
         'stake': 8.0,
         'provider': 'openai',
@@ -80,6 +88,7 @@ def test_create_validator():
     post_request(payload('delete_validator', new_validator['result']['data']['address']))
 
 def test_update_validator_validator_does_not_exist():
+    setup_db_and_tables()
     new_address = 'dave'
     data = {
         'stake': 12.0,
@@ -101,6 +110,7 @@ def test_update_validator_validator_does_not_exist():
     assert updated_validator['result']['message'] == f'validator {new_address} not found'
 
 def test_update_validator():
+    setup_db_and_tables()
     new_validator = post_request(payload('create_random_validator', 10)).json()
     new_address = new_validator['result']['data']['address']
     data = {

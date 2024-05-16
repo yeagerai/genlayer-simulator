@@ -2,8 +2,18 @@ import os
 import json
 import requests
 
+from database.functions import DatabaseFunctions
+
 from dotenv import load_dotenv
 load_dotenv()
+
+
+def get_all_rows_for_table(table:str):
+    with DatabaseFunctions() as db:
+        db.cursor.execute(f"SELECT * FROM {table}")
+        db.connection.commit()
+        transactions = db.cursor.fetchall()
+    return transactions
 
 
 def payload(function_name:str, *args) -> dict:

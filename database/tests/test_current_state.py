@@ -2,13 +2,10 @@ import re
 import json
 from time import sleep
 
-from rpc.utils import create_new_address
-from database.init_db import clear_db_tables
+from common.address import create_new_address
+from common.testing.db.base import setup_db_and_tables
 from database.functions import DatabaseFunctions
 
-
-def _clear_tables():
-    clear_db_tables(None, ["current_state"])
 
 def _random_current_state_data():
     return _current_state_data(create_new_address())
@@ -21,7 +18,7 @@ def _current_state_data(id:str="0x123"):
 
 
 def test_insert_current_state():
-    _clear_tables()
+    setup_db_and_tables()
     random_current_state_data = _random_current_state_data()
     with DatabaseFunctions() as dbf:
         current_state = dbf.insert_current_state(**random_current_state_data)
@@ -32,7 +29,7 @@ def test_insert_current_state():
     assert re.match(r"\d{2}/\d{2}/\d{4} \d{1,2}:\d{2}:\d{2}", current_state["updated_at"])
 
 def test_get_current_state():
-    _clear_tables()
+    setup_db_and_tables()
     random_current_state_data = _random_current_state_data()
     with DatabaseFunctions() as dbf:
         insert_current_state_result = dbf.insert_current_state(**random_current_state_data)
@@ -44,7 +41,7 @@ def test_get_current_state():
     assert re.match(r"\d{2}/\d{2}/\d{4} \d{1,2}:\d{2}:\d{2}", current_state["updated_at"])
 
 def test_update_current_state():
-    _clear_tables()
+    setup_db_and_tables()
     new_data = {"key_2": "value_2"}
     random_current_state_data = _random_current_state_data()
     with DatabaseFunctions() as dbf:

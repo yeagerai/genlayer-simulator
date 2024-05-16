@@ -138,3 +138,19 @@ def clear_db_tables(app:flask.app.Flask, tables: list) -> str:
             connection.close()
 
     return result
+
+def drop_db_if_it_already_exists() -> str:
+    db_name = environ.get('DBNAME')
+    connection = db_cursor('postgres')
+    cursor = connection.cursor()
+    cursor.execute(f"SELECT 1 FROM pg_catalog.pg_database WHERE datname = '{db_name}'")
+    exists = cursor.fetchone()
+    if exists:
+        cursor.execute(f"DROP DATABASE {db_name}")
+        result = f"Database {db_name} dropped successfully."
+    else:
+        result = f"Database {db_name} does not exist."
+
+    cursor.close()
+    connection.close()
+    return result
