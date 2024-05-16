@@ -12,7 +12,6 @@ import type { IJsonRPCService } from '@/services'
 const store = useMainStore()
 const $jsonRpc = inject<IJsonRPCService>('$jsonRpc')!
 const constructorInputs = ref<{ [k: string]: string }>({})
-const loadingConstructorInputs = ref(false)
 const errorConstructorInputs = ref<Error>()
 const abi = ref<any>()
 const contractState = ref<any>({})
@@ -24,35 +23,65 @@ const deployedContract = computed(() =>
 )
 const contractTransactions = ref<any[]>([])
 
+//loadings
+const loadingConstructorInputs = ref(false)
+const callingContractMethod = ref(false)
+const callingContractState = ref(false)
+const deployingContract = ref(false)
+
 const handleGetContractState = async (
   contractAddress: string,
   method: string,
   methodArguments: string[]
 ) => {
-  const { result } = await $jsonRpc.call({
-    method: 'get_contract_state',
-    params: [contractAddress, method, methodArguments]
-  })
+  callingContractState.value = true
+  try {
+    const { result } = await $jsonRpc.call({
+      method: 'get_contract_state',
+      params: [contractAddress, method, methodArguments]
+    })
 
-  contractState.value = {
-    ...contractState.value,
-    [method]: result.data[method]
+    contractState.value = {
+      ...contractState.value,
+      [method]: result.data[method]
+    }
+  } catch (error) {
+    console.error(error)
+    notify({
+      title: 'Error',
+      text: 'Error getting contract state',
+      type: 'error'
+    })
+  } finally {
+    callingContractState.value = false
   }
 }
 
 const handleCallContractMethod = async ({ method, params }: { method: string; params: any[] }) => {
-  console.log('handleCallContractMethod', method, params, abi.value.class)
-  const { result } = await $jsonRpc.call({
-    method: 'call_contract_function',
-    params: [
-      store.currentUserAddress,
-      deployedContract.value?.address,
-      `${abi.value.class}.${method}`,
-      params
-    ]
-  })
+  callingContractMethod.value = true
+  try {
+    const { result } = await $jsonRpc.call({
+      method: 'call_contract_function',
+      params: [
+        store.currentUserAddress,
+        deployedContract.value?.address,
+        `${abi.value.class}.${method}`,
+        params
+      ]
+    })
 
-  contractTransactions.value.push(result)
+    contractTransactions.value.push(result)
+  } catch (error) {
+    console.error(error)
+    notify({
+      title: 'Error',
+      text: 'Error calling contract method',
+      type: 'error'
+    })
+  } finally {
+
+    callingContractMethod.value = false
+  }
 }
 
 const handleDeployContract = async ({
@@ -98,34 +127,46 @@ const handleDeployContract = async ({
 
       if (contractSchema) {
         // Deploy the contract
-        const constructorParamsAsString = JSON.stringify(constructorParams)
-        const { result } = await $jsonRpc.call({
-          method: 'deploy_intelligent_contract',
-          params: [
-            store.currentUserAddress,
-            contractSchema.class,
-            contract.content,
-            constructorParamsAsString
-          ]
-        })
-        if (result?.status === 'success') {
-          store.addDeployedContract({
-            address: result?.data.contract_id,
-            contractId: contract.id,
-            defaultState: constructorParamsAsString
+        deployingContract.value = true
+        try {
+          const constructorParamsAsString = JSON.stringify(constructorParams)
+          const { result } = await $jsonRpc.call({
+            method: 'deploy_intelligent_contract',
+            params: [
+              store.currentUserAddress,
+              contractSchema.class,
+              contract.content,
+              constructorParamsAsString
+            ]
           })
-          notify({
-            title: 'OK',
-            text: 'Contract deployed',
-            type: 'success'
-          })
-        } else {
+          if (result?.status === 'success') {
+            store.addDeployedContract({
+              address: result?.data.contract_id,
+              contractId: contract.id,
+              defaultState: constructorParamsAsString
+            })
+            notify({
+              title: 'OK',
+              text: 'Contract deployed',
+              type: 'success'
+            })
+          } else {
+            notify({
+              title: 'Error',
+              text:
+                typeof result.message === 'string' ? result.message : 'Error Deploying the contract',
+              type: 'error'
+            })
+          }
+        } catch (error) {
           notify({
             title: 'Error',
-            text:
-              typeof result.message === 'string' ? result.message : 'Error Deploying the contract',
+            text: 'Error Deploying the contract',
             type: 'error'
           })
+        }
+        finally {
+          deployingContract.value = false
         }
       }
     }
@@ -165,10 +206,10 @@ const getConstructorInputs = async () => {
       console.error(error)
       errorConstructorInputs.value = error as Error
       notify({
-          title: 'Error',
-          text: 'Error getting the contract schema',
-          type: 'error'
-        })
+        title: 'Error',
+        text: 'Error getting the contract schema',
+        type: 'error'
+      })
     } finally {
       loadingConstructorInputs.value = false
     }
@@ -209,16 +250,18 @@ onMounted(() => {
             {{ contract?.name }}
           </div>
         </div>
-        <ConstructorParameters :inputs="constructorInputs" :loading="loadingConstructorInputs" :error="errorConstructorInputs" @deploy-contract="handleDeployContract" />
+        <ConstructorParameters :inputs="constructorInputs" :loading="loadingConstructorInputs"
+          :error="errorConstructorInputs" @deploy-contract="handleDeployContract" :deploying="deployingContract"/>
       </div>
       <div class="flex flex-col" v-show="deployedContract">
         <div class="flex flex-col">
           <ContractState :abi="abi" :contract-state="contractState" :deployed-contract="deployedContract"
-            :get-contract-state="handleGetContractState" />
+            :get-contract-state="handleGetContractState" :calling-state="callingContractState" />
         </div>
 
         <div class="flex flex-col">
-          <ExecuteTransactions :abi="abi" @call-method="handleCallContractMethod" />
+          <ExecuteTransactions :abi="abi" @call-method="handleCallContractMethod"
+            :calling-method="callingContractMethod" />
         </div>
         <div class="flex flex-col">
           <TransactionsList :transactions="contractTransactions" />
