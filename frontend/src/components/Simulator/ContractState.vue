@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { DeployedContract, ContractMethod } from '@/types'
 import { computed, ref } from 'vue'
+import LoadingIndicator from '@/components/LoadingIndicator.vue'
 
 interface Abi {
   methods: {
@@ -16,6 +17,7 @@ const props = defineProps<{
   contractState: any
   deployedContract?: DeployedContract
   getContractState: (contractAddress: string, method: string, methodArguments: string[]) => void
+  callingState: boolean
 }>()
 
 const inputParams = ref<{ [k: string]: any }>({})
@@ -57,7 +59,9 @@ const getInputPlaceholder = (methodInputs: { [k: string]: string }) => {
             "
             class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded text-ellipsis w-[40%] overflow-hidden whitespace-nowrap"
           >
-            {{ method.name }}
+            <LoadingIndicator v-if="props.callingState" :color="'white'">
+          </LoadingIndicator>
+          <span v-else>{{ method.name }}</span>
           </button>
           <input
             v-if="Object.keys(method.inputs).length > 0"

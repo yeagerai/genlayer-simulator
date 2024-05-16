@@ -4,10 +4,13 @@ import { InputTypesMap } from '@/utils'
 import { notify } from '@kyvg/vue3-notification';
 import { useUIStore } from '@/stores';
 import { ExclamationTriangleIcon } from '@heroicons/vue/24/solid'
+import LoadingIndicator from '@/components/LoadingIndicator.vue'
+
 interface Props {
   inputs: { [k: string]: string }
   loading: boolean
-  error?: Error
+  error?: Error,
+  deploying: boolean
 }
 
 // TODO: check if we need to update again also we have an issue with conversion 
@@ -156,7 +159,9 @@ onMounted(() => {
       <ToolTip text="Deploy" :options="{ placement: 'top' }" />
       <button @click="handleDeployContract"
         class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
-        Deploy
+        <LoadingIndicator v-if="props.deploying" :color="'white'">
+          </LoadingIndicator>
+          <span v-else>Deploy</span>
       </button>
     </div>
   </div>
