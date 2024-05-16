@@ -8,6 +8,7 @@ import TransactionsList from '@/components/Simulator/TransactionsList.vue'
 import ConstructorParameters from '@/components/Simulator/ConstructorParameters.vue'
 import type { DeployedContract } from '@/types'
 import type { IJsonRPCService } from '@/services'
+import { debounce } from 'vue-debounce'
 
 const store = useMainStore()
 const $jsonRpc = inject<IJsonRPCService>('$jsonRpc')!
@@ -200,7 +201,14 @@ const getConstructorInputs = async () => {
         method: 'get_icontract_schema_for_code',
         params: [contract.value.content]
       })
-      constructorInputs.value = result.data?.methods['__init__']?.inputs
+      if(!constructorInputs.value) {
+        constructorInputs.value = result.data?.methods['__init__']?.inputs
+      } else {
+        //compare existing inputs with new ones
+        if (JSON.stringify(constructorInputs.value) !== JSON.stringify(result.data?.methods['__init__']?.inputs)) {
+          constructorInputs.value = result.data?.methods['__init__']?.inputs
+        }
+      }
       errorConstructorInputs.value = undefined
     } catch (error) {
       console.error(error)
@@ -223,8 +231,10 @@ watch(() => deployedContract.value, (newValue) => {
 })
 
 watch(() => contract.value, (newValue) => {
-  if (newValue) {
-    getConstructorInputs()
+  if (newValue && !loadingConstructorInputs.value) {
+    loadingConstructorInputs.value = true
+    const debounced = debounce(() => getConstructorInputs(), 3000)
+    debounced()
   }
 })
 
