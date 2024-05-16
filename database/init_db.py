@@ -119,7 +119,7 @@ def create_tables_if_they_dont_already_exist(app:flask.app.Flask) -> str:
     return result
 
 def clear_db_tables(app:flask.app.Flask, tables: list) -> str:
-    result = "Tables cleared successfully!"
+    result = "Failed to clear tables!"
 
     tables_str = ', '.join(tables)
 
@@ -130,9 +130,9 @@ def clear_db_tables(app:flask.app.Flask, tables: list) -> str:
         cursor.execute(f"TRUNCATE TABLE {tables_str} RESTART IDENTITY")
         cursor.close()
         connection.commit()
+        result = "Tables cleared successfully!"
     except (Exception, psycopg2.DatabaseError) as error:
         app.error(error)
-        result = 'Failed to clear tables!'
     finally:
         if connection is not None:
             connection.close()

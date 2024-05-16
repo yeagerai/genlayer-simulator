@@ -91,7 +91,6 @@ def create_tables() -> dict:
     return msg.success_response(result)
 
 
-
 @jsonrpc.method("clear_account_and_transactions_tables")
 def clear_account_and_transactions_tables() -> dict:
     result = clear_db_tables(app, ["current_state", "transactions"])

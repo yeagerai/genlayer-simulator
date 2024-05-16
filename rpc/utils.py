@@ -1,7 +1,15 @@
+from os import environ
 import re
 import string
 import random
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+def get_rpc_url():
+    return environ.get('RPCPROTOCOL')+"://localhost:"+environ.get('RPCPORT')+"/api"
 
 def create_new_address() -> str:
     new_address = ''.join(random.choice(string.hexdigits) for _ in range(40))
