@@ -107,6 +107,7 @@ const setCurentUserAddress = (event: Event) => {
         </button>
       </div>
     </template>
+    <div id="tutorial-creating-transactions" class="flex"></div>
   </div>
 </template>
 

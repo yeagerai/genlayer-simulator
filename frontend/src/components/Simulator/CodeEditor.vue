@@ -76,6 +76,6 @@ watch(
 
 <style>
 .monaco-scrollable-element {
-  display: none !important;
+  
 }
 </style>

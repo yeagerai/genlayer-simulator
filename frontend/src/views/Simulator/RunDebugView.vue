@@ -22,7 +22,12 @@ const contract = computed(() =>
 const deployedContract = computed(() =>
   store.deployedContracts.find((contract) => contract.contractId === store.currentContractId)
 )
-const contractTransactions = ref<any[]>([])
+const contractTransactions = computed(() => {
+  if (deployedContract.value?.address && store.contractTransactions[deployedContract.value?.address]) {
+    return store.contractTransactions[deployedContract.value?.address]
+  }
+  return []
+})
 
 //loadings
 const loadingConstructorInputs = ref(false)
@@ -71,7 +76,13 @@ const handleCallContractMethod = async ({ method, params }: { method: string; pa
       ]
     })
 
-    contractTransactions.value.push(result)
+    if (deployedContract.value?.address && result.status === 'success') {
+      if (!store.contractTransactions[deployedContract.value?.address]) {
+        store.contractTransactions[deployedContract.value?.address] = [result.data?.execution_output]
+      } else {
+        store.contractTransactions[deployedContract.value?.address].push(result)
+      }
+    }
   } catch (error) {
     console.error(error)
     notify({
@@ -201,7 +212,7 @@ const getConstructorInputs = async () => {
         method: 'get_icontract_schema_for_code',
         params: [contract.value.content]
       })
-      if(!constructorInputs.value) {
+      if (!constructorInputs.value) {
         constructorInputs.value = result.data?.methods['__init__']?.inputs
       } else {
         //compare existing inputs with new ones
@@ -224,9 +235,9 @@ const getConstructorInputs = async () => {
   }
 }
 
-watch(() => deployedContract.value, (newValue) => {
-  if (newValue) {
-    setDefaultState(newValue)
+watch(() => deployedContract.value?.address, (newValue) => {
+  if (newValue && deployedContract.value) {
+    setDefaultState(deployedContract.value)
   }
 })
 
@@ -261,7 +272,7 @@ onMounted(() => {
           </div>
         </div>
         <ConstructorParameters :inputs="constructorInputs" :loading="loadingConstructorInputs"
-          :error="errorConstructorInputs" @deploy-contract="handleDeployContract" :deploying="deployingContract"/>
+          :error="errorConstructorInputs" @deploy-contract="handleDeployContract" :deploying="deployingContract" />
       </div>
       <div class="flex flex-col" v-show="deployedContract">
         <div class="flex flex-col">
