@@ -159,7 +159,7 @@ const handleDeployContract = async ({
             })
             notify({
               title: 'OK',
-              text: 'Contract sent to be deployed',
+              text: 'Contract deployed',
               type: 'success'
             })
           } else {
