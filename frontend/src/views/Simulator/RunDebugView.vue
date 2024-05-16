@@ -147,7 +147,7 @@ const handleDeployContract = async ({
             })
             notify({
               title: 'OK',
-              text: 'Contract deployed',
+              text: 'Contract sent to be deployed',
               type: 'success'
             })
           } else {
@@ -216,7 +216,7 @@ const getConstructorInputs = async () => {
   }
 }
 
-watch(deployedContract, (newValue) => {
+watch(() => deployedContract.value, (newValue) => {
   if (newValue) {
     setDefaultState(newValue)
   }
