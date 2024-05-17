@@ -19,7 +19,7 @@
 <script>
 import JsonBox from "./json-box.vue";
 import Clipboard from "clipboard";
-import { debounce } from "./utils.js";
+import { debounce } from 'vue-debounce'
 
 export default {
   name: "JsonViewer",
