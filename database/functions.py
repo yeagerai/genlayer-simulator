@@ -138,7 +138,7 @@ class DatabaseFunctions:
         if transaction:
             return self.transaction_details(transaction)
         else:
-            return {}
+            return None
 
 
     ### CURRENT STATE ###
@@ -160,7 +160,7 @@ class DatabaseFunctions:
         if current_state:
             return self.current_state_details(current_state)
         else:
-            return {}
+            return None
 
     def update_current_state(self, id:str, data:json):
         self.cursor.execute(

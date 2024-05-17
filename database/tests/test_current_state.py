@@ -28,6 +28,12 @@ def test_insert_current_state():
     assert current_state["data"] == random_current_state_data["data"]
     assert re.match(r"\d{2}/\d{2}/\d{4} \d{1,2}:\d{2}:\d{2}", current_state["updated_at"])
 
+
+# TODO: This
+def test_get_current_state_for_address_that_doesnt_exist():
+    pass
+
+
 def test_get_current_state():
     setup_db_and_tables()
     random_current_state_data = _random_current_state_data()
@@ -39,6 +45,7 @@ def test_get_current_state():
     assert current_state["id"] == random_current_state_data["id"]
     assert current_state["data"] == random_current_state_data["data"]
     assert re.match(r"\d{2}/\d{2}/\d{4} \d{1,2}:\d{2}:\d{2}", current_state["updated_at"])
+
 
 def test_update_current_state():
     setup_db_and_tables()

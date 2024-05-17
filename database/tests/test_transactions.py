@@ -27,6 +27,11 @@ def test_insert_transaction():
     assert re.match(r"\d{2}/\d{2}/\d{4} \d{1,2}:\d{2}:\d{2}", transaction["created_at"])
 
 
+# TODO: This
+def test_get_transaction_for_address_that_doesnt_exist():
+    pass
+
+
 def test_get_transaction():
     setup_db_and_tables()
     random_transaction_data = transaction_data()

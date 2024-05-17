@@ -2,6 +2,7 @@ import re
 import string
 import random
 
+#TODO: Test this
 def create_new_address() -> str:
     new_address = ''.join(random.choice(string.hexdigits) for _ in range(40))
     return '0x' + new_address
