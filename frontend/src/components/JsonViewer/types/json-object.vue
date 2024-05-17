@@ -1,6 +1,6 @@
 <script>
 import JsonBox from '../json-box.vue'
-import {h} from "vue"
+import { h } from "vue"
 export default {
   name: 'JsonObject',
   props: {
@@ -26,7 +26,7 @@ export default {
     }
   },
   computed: {
-    ordered () {
+    ordered() {
       if (!this.sort) {
         return this.value
       }
@@ -67,7 +67,7 @@ export default {
       }
     }
   },
-  render () {
+  render() {
     let elements = []
     if (!this.previewMode && !this.keyName) {
       elements.push(h('span', {
@@ -89,6 +89,7 @@ export default {
 
     if (this.expand) {
       for (let key in this.ordered) {
+        // eslint-disable-next-line no-prototype-builtins
         if (this.ordered.hasOwnProperty(key)) {
           let value = this.ordered[key]
 
@@ -115,7 +116,7 @@ export default {
         class: {
           'jv-ellipsis': true,
         },
-        onClick:this.toggle,
+        onClick: this.toggle,
         title: `click to reveal object content (keys: ${Object.keys(this.ordered).join(', ')})`,
         innerText: '...'
       }))

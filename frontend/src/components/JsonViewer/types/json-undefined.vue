@@ -1,5 +1,5 @@
 <script>
-import {h} from "vue"
+import { h } from "vue"
 export default {
   name: 'JsonUndefined',
   functional: true,
@@ -9,7 +9,7 @@ export default {
       default: null
     }
   },
-  render () {
+  render() {
     return h('span', {
       class: {
         'jv-item': true,

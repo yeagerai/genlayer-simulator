@@ -1,5 +1,5 @@
 <script>
-import {h} from "vue"
+import { h } from "vue"
 export default {
   name: 'JsonDate',
   inject: ['timeformat'],
@@ -10,7 +10,7 @@ export default {
       required: true
     }
   },
-  render () {
+  render() {
     const value = this.jsonValue;
     const timeformat = this.timeformat;
 

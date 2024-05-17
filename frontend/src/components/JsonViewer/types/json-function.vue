@@ -1,5 +1,5 @@
 <script>
-import {h} from "vue"
+import { h } from "vue"
 export default {
   name: 'JsonFunction',
   functional: true,
@@ -9,7 +9,7 @@ export default {
       required: true
     }
   },
-  render () {
+  render() {
     return h('span', {
       class: {
         'jv-item': true,

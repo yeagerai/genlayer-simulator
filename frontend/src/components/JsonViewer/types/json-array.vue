@@ -1,6 +1,6 @@
 <script>
 import JsonBox from '../json-box.vue'
-import{h} from "vue"
+import { h } from "vue"
 export default {
   name: 'JsonArray',
   props: {
@@ -57,9 +57,9 @@ export default {
         this.$el.dispatchEvent(evt)
       }
     },
-    
+
   },
-  render () {
+  render() {
     let elements = []
 
     if (!this.previewMode && !this.keyName) {
@@ -68,7 +68,7 @@ export default {
           'jv-toggle': true,
           'open': !!this.expand,
         },
-        onClick:this.toggle
+        onClick: this.toggle
       }))
     }
 
@@ -103,7 +103,7 @@ export default {
         class: {
           'jv-ellipsis': true,
         },
-        onClick:this.toggle,
+        onClick: this.toggle,
         title: `click to reveal ${this.value.length} hidden items`,
         innerText: '...'
       }))
