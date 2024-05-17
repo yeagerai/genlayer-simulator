@@ -87,6 +87,7 @@ def generate_deploy_contract(
 current_contract = None
 
 async def main():
+    global contract_runner 
     from genvm.base.contract_runner import ContractRunner
     contract_runner = ContractRunner(from_address="{from_address}")
     contract_runner._set_mode("leader")

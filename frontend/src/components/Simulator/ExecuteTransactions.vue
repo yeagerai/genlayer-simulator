@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { InputTypesMap } from '@/utils'
 import { useMainStore } from '@/stores'
 import type { ContractMethod } from '@/types'
-
+import LoadingIndicator from '@/components/LoadingIndicator.vue'
 interface Abi {
   methods: {
     [k: string]: {
@@ -15,6 +15,7 @@ interface Abi {
 
 interface Props {
   abi?: Abi
+  callingMethod: boolean
 }
 
 const store = useMainStore()
@@ -68,12 +69,13 @@ const setCurentUserAddress = (event: Event) => {
 
 <template>
   <div class="flex flex-col px-2 mt-6 py-2 w-full bg-slate-100 dark:bg-zinc-700">
-    <h5 class="text-sm" id="tutorial-how-to-create-transaction">Execute transactions</h5>
+    <h5 class="text-sm">Execute transactions</h5>
   </div>
   <div class="flex flex-col p-2 overflow-y-auto">
     <div class="flex flex-col items-start w-full">
       <p>Current Account:</p>
-      <select name="" id="" @change="setCurentUserAddress" class="text-xs w-full dark:bg-zinc-700" :value="store.currentUserAddress">
+      <select name="" id="" @change="setCurentUserAddress" class="text-xs w-full dark:bg-zinc-700"
+        :value="store.currentUserAddress">
         <option v-for="account in store.accounts" :key="account" :value="account">
           {{ account }}
         </option>
@@ -96,10 +98,12 @@ const setCurentUserAddress = (event: Event) => {
         </div>
       </div>
       <div class="flex flex-col mt-4 w-full">
-        <ToolTip :text="`Excute ${method.name}()`" :options="{ placement: 'top' }" />
+        <ToolTip :text="`Execute ${method.name}()`" :options="{ placement: 'top' }" />
         <button @click="handleMethodCall"
           class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
-          Excute {{ ` ${method.name}` }}()
+          <LoadingIndicator v-if="props.callingMethod" :color="'white'">
+          </LoadingIndicator>
+          <template v-else>Execute {{ ` ${method.name}` }}()</template>
         </button>
       </div>
     </template>

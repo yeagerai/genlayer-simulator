@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import { useMainStore } from '@/stores'
-import { computed, onMounted, ref, watch } from 'vue'
-import { rpcClient } from '@/utils'
+import { computed, onMounted, ref, watch, inject } from 'vue'
 import { notify } from '@kyvg/vue3-notification'
 import ContractState from '@/components/Simulator/ContractState.vue'
 import ExecuteTransactions from '@/components/Simulator/ExecuteTransactions.vue'
 import TransactionsList from '@/components/Simulator/TransactionsList.vue'
 import ConstructorParameters from '@/components/Simulator/ConstructorParameters.vue'
 import type { DeployedContract } from '@/types'
+import type { IJsonRPCService } from '@/services'
 
 const store = useMainStore()
-
+const $jsonRpc = inject<IJsonRPCService>('$jsonRpc')!
 const constructorInputs = ref<{ [k: string]: string }>({})
+const errorConstructorInputs = ref<Error>()
 const abi = ref<any>()
 const contractState = ref<any>({})
 const contract = computed(() =>
@@ -22,35 +23,65 @@ const deployedContract = computed(() =>
 )
 const contractTransactions = ref<any[]>([])
 
+//loadings
+const loadingConstructorInputs = ref(false)
+const callingContractMethod = ref(false)
+const callingContractState = ref(false)
+const deployingContract = ref(false)
+
 const handleGetContractState = async (
   contractAddress: string,
   method: string,
   methodArguments: string[]
 ) => {
-  const { result } = await rpcClient.call({
-    method: 'get_contract_state',
-    params: [contractAddress, method, methodArguments]
-  })
+  callingContractState.value = true
+  try {
+    const { result } = await $jsonRpc.call({
+      method: 'get_contract_state',
+      params: [contractAddress, method, methodArguments]
+    })
 
-  contractState.value = {
-    ...contractState.value,
-    [method]: result.data[method]
+    contractState.value = {
+      ...contractState.value,
+      [method]: result.data[method]
+    }
+  } catch (error) {
+    console.error(error)
+    notify({
+      title: 'Error',
+      text: 'Error getting contract state',
+      type: 'error'
+    })
+  } finally {
+    callingContractState.value = false
   }
 }
 
 const handleCallContractMethod = async ({ method, params }: { method: string; params: any[] }) => {
-  console.log('handleCallContractMethod', method, params, abi.value.class)
-  const { result } = await rpcClient.call({
-    method: 'call_contract_function',
-    params: [
-      store.currentUserAddress,
-      deployedContract.value?.address,
-      `${abi.value.class}.${method}`,
-      params
-    ]
-  })
+  callingContractMethod.value = true
+  try {
+    const { result } = await $jsonRpc.call({
+      method: 'call_contract_function',
+      params: [
+        store.currentUserAddress,
+        deployedContract.value?.address,
+        `${abi.value.class}.${method}`,
+        params
+      ]
+    })
 
-  contractTransactions.value.push(result)
+    contractTransactions.value.push(result)
+  } catch (error) {
+    console.error(error)
+    notify({
+      title: 'Error',
+      text: 'Error calling contract method',
+      type: 'error'
+    })
+  } finally {
+
+    callingContractMethod.value = false
+  }
 }
 
 const handleDeployContract = async ({
@@ -70,43 +101,73 @@ const handleDeployContract = async ({
       })
     } else {
       // Getting the ABI to check the class name
-      const {
-        result: { data: contractSchema }
-      } = await rpcClient.call({
-        method: 'get_icontract_schema_for_code',
-        params: [contract.content]
-      })
-
-      // Deploy the contract
-      const constructorParamsAsString = JSON.stringify(constructorParams)
-      const { result } = await rpcClient.call({
-        method: 'deploy_intelligent_contract',
-        params: [
-          store.currentUserAddress,
-          contractSchema.class,
-          contract.content,
-          constructorParamsAsString
-        ]
-      })
-
-      if (result?.status === 'success') {
-        store.addDeployedContract({
-          address: result?.data.contract_id,
-          contractId: contract.id,
-          defaultState: constructorParamsAsString
+      let contractSchema = null
+      loadingConstructorInputs.value = true
+      try {
+        const {
+          result: { data }
+        } = await $jsonRpc.call({
+          method: 'get_icontract_schema_for_code',
+          params: [contract.content]
         })
-        notify({
-          title: 'OK',
-          text: 'Contract deployed',
-          type: 'success'
-        })
-      } else {
+
+        contractSchema = data
+        errorConstructorInputs.value = undefined
+      } catch (error) {
+        console.error(error)
+        errorConstructorInputs.value = error as Error
         notify({
           title: 'Error',
-          text:
-            typeof result.message === 'string' ? result.message : 'Error Deploying the contract',
+          text: 'Error getting the contract schema',
           type: 'error'
         })
+      } finally {
+        loadingConstructorInputs.value = false
+      }
+
+      if (contractSchema) {
+        // Deploy the contract
+        deployingContract.value = true
+        try {
+          const constructorParamsAsString = JSON.stringify(constructorParams)
+          const { result } = await $jsonRpc.call({
+            method: 'deploy_intelligent_contract',
+            params: [
+              store.currentUserAddress,
+              contractSchema.class,
+              contract.content,
+              constructorParamsAsString
+            ]
+          })
+          if (result?.status === 'success') {
+            store.addDeployedContract({
+              address: result?.data.contract_id,
+              contractId: contract.id,
+              defaultState: constructorParamsAsString
+            })
+            notify({
+              title: 'OK',
+              text: 'Contract deployed',
+              type: 'success'
+            })
+          } else {
+            notify({
+              title: 'Error',
+              text:
+                typeof result.message === 'string' ? result.message : 'Error Deploying the contract',
+              type: 'error'
+            })
+          }
+        } catch (error) {
+          notify({
+            title: 'Error',
+            text: 'Error Deploying the contract',
+            type: 'error'
+          })
+        }
+        finally {
+          deployingContract.value = false
+        }
       }
     }
   }
@@ -118,7 +179,7 @@ const setDefaultState = async (contract: DeployedContract) => {
     // TODO: check if we need to update again also we have an issue with conversion
     // between `bool` in Python with value `True` vs JSON boolean with value `true`
 
-    const { result } = await rpcClient.call({
+    const { result } = await $jsonRpc.call({
       method: 'get_icontract_schema',
       params: [contract.address]
     })
@@ -132,11 +193,26 @@ const setDefaultState = async (contract: DeployedContract) => {
 
 const getConstructorInputs = async () => {
   if (contract.value) {
-    const { result } = await rpcClient.call({
-      method: 'get_icontract_schema_for_code',
-      params: [contract.value.content]
-    })
-    constructorInputs.value = result.data?.methods['__init__']?.inputs
+    loadingConstructorInputs.value = true
+    try {
+
+      const { result } = await $jsonRpc.call({
+        method: 'get_icontract_schema_for_code',
+        params: [contract.value.content]
+      })
+      constructorInputs.value = result.data?.methods['__init__']?.inputs
+      errorConstructorInputs.value = undefined
+    } catch (error) {
+      console.error(error)
+      errorConstructorInputs.value = error as Error
+      notify({
+        title: 'Error',
+        text: 'Error getting the contract schema',
+        type: 'error'
+      })
+    } finally {
+      loadingConstructorInputs.value = false
+    }
   }
 }
 
@@ -146,7 +222,7 @@ watch(deployedContract, (newValue) => {
   }
 })
 
-watch(contract, (newValue) => {
+watch(() => contract.value, (newValue) => {
   if (newValue) {
     getConstructorInputs()
   }
@@ -174,25 +250,20 @@ onMounted(() => {
             {{ contract?.name }}
           </div>
         </div>
-        <ConstructorParameters
-          :inputs="constructorInputs"
-          @deploy-contract="handleDeployContract"
-        />
+        <ConstructorParameters :inputs="constructorInputs" :loading="loadingConstructorInputs"
+          :error="errorConstructorInputs" @deploy-contract="handleDeployContract" :deploying="deployingContract"/>
       </div>
       <div class="flex flex-col" v-show="deployedContract">
         <div class="flex flex-col">
-          <ContractState
-            :abi="abi"
-            :contract-state="contractState"
-            :deployed-contract="deployedContract"
-            :get-contract-state="handleGetContractState"
-          />
+          <ContractState :abi="abi" :contract-state="contractState" :deployed-contract="deployedContract"
+            :get-contract-state="handleGetContractState" :calling-state="callingContractState" />
         </div>
 
         <div class="flex flex-col">
-          <ExecuteTransactions :abi="abi" @call-method="handleCallContractMethod" />
+          <ExecuteTransactions :abi="abi" @call-method="handleCallContractMethod"
+            :calling-method="callingContractMethod" />
         </div>
-        <div id="tutorial-node-output" class="flex flex-col">
+        <div class="flex flex-col">
           <TransactionsList :transactions="contractTransactions" />
         </div>
       </div>

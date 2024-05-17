@@ -1,5 +1,4 @@
 services:
-
   frontend:
     build:
       context: ./
@@ -12,7 +11,6 @@ services:
       - jsonrpc
     expose:
       - "${FRONTEND_PORT}"
-
   jsonrpc:
     build:
       context: ./
@@ -52,7 +50,7 @@ services:
       - PYTHONUNBUFFERED=1
     expose:
       - "${WEBREQUESTPORT}"
-  
+
   genvm:
     build:
       context: ./
@@ -81,7 +79,6 @@ services:
     pull_policy: always
     tty: true
     restart: always
-
   postgres:
     image: postgres:12.17
     restart: always

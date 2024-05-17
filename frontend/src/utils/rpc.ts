@@ -1,12 +1,10 @@
 const JSON_RPC_SERVER_URL = import.meta.env.VITE_JSON_RPC_SERVER_URL
+import type { JsonRPCRequest } from '@/types'
 import { v4 as uuidv4 } from 'uuid'
-export interface JsonRPCParams {
-  method: string
-  params: any[]
-}
+
 
 export const rpcClient = {
-  call: async ({ method, params }: JsonRPCParams) => {
+  call: async ({ method, params }: JsonRPCRequest) => {
     const requestId = uuidv4()
     const data = {
       jsonrpc: '2.0',

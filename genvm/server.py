@@ -24,7 +24,6 @@ from common.messages import MessageHandler
 from common.logging import setup_logging_config
 
 from dotenv import load_dotenv
-
 load_dotenv()
 
 setup_logging_config()
@@ -252,4 +251,10 @@ def get_contract_data(code: str, state: str, method_name: str, method_args: list
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=os.environ.get("GENVMPORT"), host="0.0.0.0")
+    socketio.run(
+        app,
+        debug=os.environ["VSCODEDEBUG"] == "false",
+        port=os.environ.get("GENVMPORT"),
+        host="0.0.0.0",
+        allow_unsafe_werkzeug=True,
+    )
