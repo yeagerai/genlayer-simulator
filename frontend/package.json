@@ -37,7 +37,6 @@
     "vue": "^3.4.21",
     "vue-debounce": "^5.0.0",
     "vue-router": "^4.0.13",
-    "vue3-json-viewer": "^2.2.2",
     "vue3-spinners": "^1.2.2"
   },
   "devDependencies": {
