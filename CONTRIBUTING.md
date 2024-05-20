@@ -6,32 +6,32 @@ We're thrilled that you're interested in working on the GenLayer Simulator! This
 
 The GenLayer Simulator is an interactive sandbox designed for developers to explore the potential of GenLayer's Intelligent Contracts. It replicates the GenLayer network's execution environment and consensus algorithm, providing a controlled and local environment to test different ideas and behaviors.
 
-Begin by setting up your development environment to start contributing: Follow our [README](https://github.com/yeagerai/genlayer-simulator/blob/main/README.md) for detailed setup instructions.
-
 ## How You Can Contribute?
 
 Contributions to the GenLayer Simulator are welcome in several forms:
 
 ### Testing the Simulator and Providing Feedback
 
-Help us enhance user experience and system functionality.
-- **Feature Testing**: Provide feedback on new features in by filling out our [feedback form](https://docs.google.com/forms/d/1IVNsZwm936kSNCiXmlAP8bgJnbik7Bqaoc3I6UYhr-o/viewform?edit_requested=true) or share your thoughts via our [Discord Channel](https://discord.gg/5Gq4nCxe)
-- **Report Bugs**: Submit bugs through our [GitHub issues](https://github.com/yeagerai/genlayer-simulator/issues).
+Help us make the simulator better by testing and giving feedback:
+- First, install the simulator using the GenLayer [CLI](https://github.com/yeagerai/genlayer-simulator?tab=readme-ov-file#quick-install).
+- Try out the Simulator features and tell us what you think through our [feedback form](https://docs.google.com/forms/d/1IVNsZwm936kSNCiXmlAP8bgJnbik7Bqaoc3I6UYhr-o/viewform?edit_requested=true) or on our [Discord Channel](https://discord.gg/5Gq4nCxe).
+- If you find any issues, please report them on our [GitHub issues page](https://github.com/yeagerai/genlayer-simulator/issues).
 
 ### Sharing New Ideas and Use Cases
-
-Innovate with us by proposing new use cases for Intelligent Contracts.
-- **Idea Submission**: Share your innovative ideas in our [Discord channel](https://discord.gg/5Gq4nCxe).
+Have ideas for new features or usecases? We're eager to hear them! But first:
+- Install the [Simulator](https://github.com/yeagerai/genlayer-simulator?tab=readme-ov-file#quick-install) to explore existing use cases.
+- After you've familiarized yourself with the simulator, contribute your unique use case and share your ideas in our [Discord channel](https://discord.gg/8Jm4v89VAu). 
 
 ### Writing Code
 
-Contribute to feature development or bug fixes.
-- **How to Start**: Check our [issue tracker](https://github.com/yeagerai/genlayer-simulator/issues) for tasks labeled `help wanted`.
+To contribute to feature development or bug fixes.
+
+- Setup Simulator manually following the steps [here](https://github.com/yeagerai/genlayer-simulator?tab=readme-ov-file#installing-manually).
+- Check our [issue tracker](https://github.com/yeagerai/genlayer-simulator/issues) for tasks labeled `help wanted`.
 
 ### Improving Documentation
 
-Enhance our documentation to help users and developers get the most out of the Simulator.
-- **Start Here**: Review our [Documentation Repository](https://github.com/yeagerai/genlayer-docs).
+To enhance our documentation to help users and developers get the most out of the Simulator, start by reviewing our [Documentation Repository](https://github.com/yeagerai/genlayer-docs).
 
 ## Review Process
 
