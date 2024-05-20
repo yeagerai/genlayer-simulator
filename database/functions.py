@@ -35,11 +35,12 @@ class DatabaseFunctions:
             'nonce': transaction[6],
             'value': transaction[7],
             'type': transaction[8],
-            'gaslimit': transaction[9],
-            'created_at': transaction[10].strftime("%m/%d/%Y %H:%M:%S"),
-            'r': transaction[11],
-            's': transaction[12],
-            'v': transaction[13]
+            'status': transaction[9],
+            'gaslimit': transaction[10],
+            'created_at': transaction[11].strftime("%m/%d/%Y %H:%M:%S"),
+            'r': transaction[12],
+            's': transaction[13],
+            'v': transaction[14]
         }
     
     def current_state_details(self, current_state) -> dict:
@@ -115,6 +116,7 @@ class DatabaseFunctions:
             data:json,
             type:int,
             value:int,
+            status:str="pending",
             input_data:json=None,
             consensus_data:json=None,
             nonce:int=None,
@@ -123,8 +125,8 @@ class DatabaseFunctions:
             s:int=None,
             v:int=None):
         self.cursor.execute(
-            "INSERT INTO transactions (from_address, to_address, data, type, value, input_data, consensus_data, nonce, gaslimit, r, s, v) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id;",
-            (from_address, to_address, data, type, value, input_data, consensus_data, nonce, gaslimit, r, s, v),
+            "INSERT INTO transactions (from_address, to_address, data, type, value, status, input_data, consensus_data, nonce, gaslimit, r, s, v) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id;",
+            (from_address, to_address, data, type, value, status, input_data, consensus_data, nonce, gaslimit, r, s, v),
         )
         self.connection.commit()
         new_row_id = self.cursor.fetchone()[0]

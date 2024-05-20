@@ -132,6 +132,13 @@ def fund_account(account: string, balance: float) -> dict:
             return current_account_result
 
         current_account = current_account_result["data"]["address"]
+    else:
+        with DatabaseFunctions() as dbf:
+            current_account_data = dbf.get_current_state(current_account)
+            dbf.close()
+
+        if not current_account_data:
+            return msg.error_response(message="account does not exist")
 
     try:
         connection = get_genlayer_db_connection()

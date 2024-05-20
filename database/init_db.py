@@ -17,6 +17,9 @@ def db_get_transactions_table_create_command() -> str:
         nonce INT,
         value NUMERIC,
         type INT CHECK (type IN (0, 1, 2)),
+        status VARCHAR DEFAULT 'pending' CHECK (
+            status IN ('pending', 'committing', 'revealing', 'accepted', 'undetermined', 'finalized')
+        ),
         gasLimit BIGINT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         r INT,
@@ -30,9 +33,7 @@ def db_get_transactions_audit_table_create_command() -> str:
     return """
     CREATE TABLE IF NOT EXISTS transactions_audit (
         id SERIAL PRIMARY KEY,
-        transaction_id INT,
-        status VARCHAR(255),
-        transaction_data JSONB,
+        data JSONB,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     )
     """

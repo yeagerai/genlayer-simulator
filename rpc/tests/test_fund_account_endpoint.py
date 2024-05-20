@@ -1,3 +1,4 @@
+from common.address import create_new_address
 from database.functions import DatabaseFunctions
 from common.testing.db.base import (
     setup_db_and_tables,
@@ -38,7 +39,7 @@ def test_fund_account_endpoint_pass_create_account():
     assert_these_tables_are_empty(["transactions", "current_state"])
 
     result = post_request(payload("fund_account", "create_account", balance)).json()
-
+    print(result)
     all_rows_for_current_state = get_all_rows_for_table("current_state")
     all_rows_for_transactions = get_all_rows_for_table("transactions")
     assert len(all_rows_for_current_state) == 1
@@ -62,7 +63,21 @@ def test_fund_account_endpoint_pass_create_account():
     assert_funds_transfer_data_in_db(transaction, address, data, balance)
 
 
-# TODO: test fund_account_endpoint with address that does not have an initial balance
+def test_fund_account_endpoint_account_does_not_exist():
+    setup_db_and_tables()
+
+    assert_these_tables_are_empty(["transactions", "current_state"])
+
+    result = post_request(payload("fund_account", create_new_address(), balance)).json()
+
+    all_rows_for_current_state = get_all_rows_for_table("current_state")
+    all_rows_for_transactions = get_all_rows_for_table("transactions")
+    assert len(all_rows_for_current_state) == 0
+    assert len(all_rows_for_transactions) == 0
+
+    assert has_error_status(result)
+    assert has_message(result)
+    assert message_is(result, "account does not exist")
 
 
 def test_fund_account_endpoint():

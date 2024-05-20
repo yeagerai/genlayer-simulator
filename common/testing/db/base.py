@@ -21,11 +21,12 @@ def transaction_data(from_address:str="0x123", to_address:str="0x123"):
         "from_address": from_address,
         "to_address": to_address,
         "data": json.dumps({"key": "value"}),
-        "type": 1,
-        "value": 2,
         "input_data": json.dumps({"key": "value"}),
         "consensus_data": json.dumps({"key": "value"}),
         "nonce": 3,
+        "value": 2,
+        "type": 1,
+        "status": "pending",
         "gaslimit": 4,
         "r": 5,
         "s": 6,
@@ -42,12 +43,13 @@ def assert_funds_transfer_data_in_db(transaction:list, address:str, data:dict, b
     assert transaction[6] == None
     assert transaction[7] == balance
     assert transaction[8] == 0
-    assert transaction[9] == None
+    assert transaction[9] == "pending"
+    assert transaction[10] == None
     # Datetime stamp
-    #assert transaction[10] == None
-    assert transaction[11] == None
+    #assert transaction[11] == None
     assert transaction[12] == None
     assert transaction[13] == None
+    assert transaction[14] == None
 
 
 def current_state_data(id:str="0x123"):

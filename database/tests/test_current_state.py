@@ -29,9 +29,15 @@ def test_insert_current_state():
     assert re.match(r"\d{2}/\d{2}/\d{4} \d{1,2}:\d{2}:\d{2}", current_state["updated_at"])
 
 
-# TODO: This
 def test_get_current_state_for_address_that_doesnt_exist():
-    pass
+    setup_db_and_tables()
+    random_current_state_data = _random_current_state_data()
+    with DatabaseFunctions() as dbf:
+        dbf.insert_current_state(**random_current_state_data)
+        current_state = dbf.get_current_state(create_new_address())
+        dbf.close()
+
+    assert current_state is None
 
 
 def test_get_current_state():
