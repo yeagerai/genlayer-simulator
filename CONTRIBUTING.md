@@ -19,7 +19,7 @@ Help us make the simulator better by testing and giving feedback:
 
 ### Sharing New Ideas and Use Cases
 Have ideas for new features or usecases? We're eager to hear them! But first:
-- Install the [Simulator](https://github.com/yeagerai/genlayer-simulator?tab=readme-ov-file#quick-install) to explore existing use cases.
+- - Ensure you have the [Simulator installed](https://github.com/yeagerai/genlayer-simulator?tab=readme-ov-file#quick-install) first to explore existing use cases.
 - After you've familiarized yourself with the simulator, contribute your unique use case and share your ideas in our [Discord channel](https://discord.gg/8Jm4v89VAu). 
 
 ### Writing Code
@@ -32,6 +32,7 @@ To contribute to feature development or bug fixes.
 ### Improving Documentation
 
 To enhance our documentation to help users and developers get the most out of the Simulator, start by reviewing our [Documentation Repository](https://github.com/yeagerai/genlayer-docs).
+Visit our [Documentation repository](https://github.com/yeagerai/genlayer-docs) to create new issues or contribute to existing documentation.
 
 ## Review Process
 
