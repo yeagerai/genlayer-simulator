@@ -20,7 +20,7 @@ from database.types import ContractData, CallContractInputData
 from consensus.algorithm import exec_transaction
 from consensus.nodes.create_nodes import (
     random_validator_config,
-    get_config_for_providers_and_nodes,
+    get_default_config_for_providers_and_nodes,
     get_providers,
     get_provider_models,
 )
@@ -410,12 +410,12 @@ def delete_all_validators() -> dict:
 
 
 @jsonrpc.method("create_random_validators")
-def create_random_validators(count:int, min_stake:float, max_stake:float) -> dict:
+def create_random_validators(count:int, min_stake:float, max_stake:float, providers: list=[]) -> dict:
     msg = MessageHandler(app, socketio)
     try:
         for _ in range(count):
             stake = random.uniform(min_stake, max_stake)
-            details = random_validator_config()
+            details = random_validator_config(providers=providers)
             new_validator = create_validator(
                 stake, details["provider"], details["model"], details["config"]
             )
@@ -621,7 +621,7 @@ def get_icontract_schema_for_code(contract_code: str) -> dict:
 @jsonrpc.method("get_providers_and_models")
 def get_providers_and_models() -> dict:
     msg = MessageHandler(app, socketio)
-    config = get_config_for_providers_and_nodes()
+    config = get_default_config_for_providers_and_nodes()
     providers = get_providers()
     providers_and_models = {}
     for provider in providers:
@@ -639,7 +639,7 @@ def ping() -> dict:
 if __name__ == "__main__":
     socketio.run(
         app,
-        debug=True,
+        debug=os.environ["VSCODEDEBUG"] == "false",
         port=os.environ.get("RPCPORT"),
         host="0.0.0.0",
         allow_unsafe_werkzeug=True,
