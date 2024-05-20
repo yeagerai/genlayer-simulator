@@ -30,7 +30,7 @@ To contribute to feature development or bug fixes.
 
 ### Improving Documentation
 
-To enhance our documentation to help users and developers get the most out of the Simulator, start by visiting our [Documentation Repository](https://github.com/yeagerai/genlayer-docs) to create new issues or contribute to existing documentation.
+To contribute to our docs, start by visiting our [Documentation Repository](https://github.com/yeagerai/genlayer-docs) to create new issues or contribute to existing issues.
 
 ## Review Process
 
