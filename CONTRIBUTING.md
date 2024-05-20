@@ -1,6 +1,6 @@
 # Contributing to GenLayer Simulator
 
-We're thrilled that you're interested in working on the GenLayer Simulator! This document will guide you through the contribution process.
+We're thrilled that you're interested in contributing to the GenLayer Simulator! This document will guide you through the contribution process.
 
 ## What is the GenLayer Simulator?
 
