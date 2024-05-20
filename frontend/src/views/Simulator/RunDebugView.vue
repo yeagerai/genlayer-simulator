@@ -204,7 +204,6 @@ const setDefaultState = async (contract: DeployedContract) => {
 }
 
 const getConstructorInputs = async () => {
-  console.warn('getConstructorInputs')
   if (contract.value) {
     loadingConstructorInputs.value = true
     try {
