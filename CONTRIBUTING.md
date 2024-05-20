@@ -14,7 +14,7 @@ Contributions to the GenLayer Simulator are welcome in several forms:
 
 Help us make the simulator better by testing and giving feedback:
 - First, install the simulator using the GenLayer [CLI](https://github.com/yeagerai/genlayer-simulator?tab=readme-ov-file#quick-install).
-- Try out the Simulator features and tell us what you think through our [feedback form](https://docs.google.com/forms/d/1IVNsZwm936kSNCiXmlAP8bgJnbik7Bqaoc3I6UYhr-o/viewform?edit_requested=true) or on our [Discord Channel](https://discord.gg/5Gq4nCxe).
+- Try out the Simulator features and tell us what you think through our [feedback form](https://docs.google.com/forms/d/1IVNsZwm936kSNCiXmlAP8bgJnbik7Bqaoc3I6UYhr-o/viewform?edit_requested=true) or on our [Discord Channel](https://discord.gg/8Jm4v89VAu).
 - If you find any issues, please report them on our [GitHub issues page](https://github.com/yeagerai/genlayer-simulator/issues).
 
 ### Sharing New Ideas and Use Cases
