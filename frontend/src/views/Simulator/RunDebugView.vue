@@ -204,6 +204,7 @@ const setDefaultState = async (contract: DeployedContract) => {
 }
 
 const getConstructorInputs = async () => {
+  console.warn('getConstructorInputs')
   if (contract.value) {
     loadingConstructorInputs.value = true
     try {
@@ -235,6 +236,8 @@ const getConstructorInputs = async () => {
   }
 }
 
+const debouncedGetConstructorInputs = debounce(() => getConstructorInputs(), 3000)
+
 watch(() => deployedContract.value?.address, (newValue) => {
   if (newValue && deployedContract.value) {
     setDefaultState(deployedContract.value)
@@ -244,8 +247,7 @@ watch(() => deployedContract.value?.address, (newValue) => {
 watch(() => contract.value, (newValue) => {
   if (newValue && !loadingConstructorInputs.value) {
     loadingConstructorInputs.value = true
-    const debounced = debounce(() => getConstructorInputs(), 3000)
-    debounced()
+    debouncedGetConstructorInputs()
   }
 })
 
