@@ -74,8 +74,5 @@ watch(
   </div>
 </template>
 
-<style>
-.monaco-scrollable-element {
-  
-}
+<style scoped>
 </style>
