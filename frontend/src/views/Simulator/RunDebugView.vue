@@ -245,7 +245,6 @@ watch(() => deployedContract.value?.address, (newValue) => {
 
 watch(() => contract.value, (newValue) => {
   if (newValue && !loadingConstructorInputs.value) {
-    loadingConstructorInputs.value = true
     debouncedGetConstructorInputs()
   }
 })
