@@ -5,7 +5,6 @@ import psycopg2
 import string
 import requests
 import random
-from logging.config import dictConfig
 from flask import Flask
 from flask_jsonrpc import JSONRPC
 from flask_socketio import SocketIO
@@ -30,6 +29,7 @@ from consensus.utils import vrf, genvm_url
 from consensus.nodes.create_nodes import random_validator_config
 from common.messages import MessageHandler
 from common.logging import setup_logging_config
+from rpc.utils import db_query_data_to_json
 
 from dotenv import load_dotenv
 
@@ -142,12 +142,23 @@ def fund_account(account: string, balance: float) -> dict:
 
         # Optionally log the account creation in the transactions table
         cursor.execute(
-            "INSERT INTO transactions (from_address, to_address, data, value, type) VALUES (NULL, %s, %s, %s, 0);",
+            "INSERT INTO transactions (from_address, to_address, data, value, type) VALUES (NULL, %s, %s, %s, 0) RETURNING id;",
             (
                 current_account,
                 json.dumps({"action": "create_account", "initial_balance": balance}),
                 balance,
             ),
+        )
+        new_transaction_id = cursor.fetchone()
+        cursor.execute("SELECT * FROM transactions WHERE id = %s;", (new_transaction_id,))
+
+        new_transaction = cursor.fetchone()
+
+        new_transaction_json = db_query_data_to_json(cursor, new_transaction)
+        
+        cursor.execute(
+            "INSERT INTO transactions_audit (data) VALUES (%s);",
+            (new_transaction_json,),
         )
 
         connection.commit()
@@ -202,8 +213,20 @@ def send_transaction(from_account: str, to_account: str, amount: float) -> dict:
 
             # Log the transaction
             cursor.execute(
-                "INSERT INTO transactions (from_address, to_address, value, type) VALUES (%s, %s, %s, %s, 0);",
+                "INSERT INTO transactions (from_address, to_address, value, type) VALUES (%s, %s, %s, %s, 0) RETURNING id;",
                 (from_account, to_account, amount),
+            )
+
+            new_transaction_id = cursor.fetchone()
+            cursor.execute("SELECT * FROM transactions WHERE id = %s;", (new_transaction_id,))
+
+            new_transaction = cursor.fetchone()
+
+            new_transaction_json = db_query_data_to_json(cursor, new_transaction)
+            
+            cursor.execute(
+                "INSERT INTO transactions_audit (data) VALUES (%s);",
+                (new_transaction_json,),
             )
 
             connection.commit()
@@ -263,8 +286,20 @@ def deploy_intelligent_contract(
                 (contract_id, contract_data),
             )
             cursor.execute(
-                "INSERT INTO transactions (from_address, to_address, data, type) VALUES (%s, %s, %s, 1);",
+                "INSERT INTO transactions (from_address, to_address, data, type) VALUES (%s, %s, %s, 1) RETURNING id;",
                 (from_account, contract_id, contract_data),
+            )
+
+            new_transaction_id = cursor.fetchone()
+            cursor.execute("SELECT * FROM transactions WHERE id = %s;", (new_transaction_id,))
+
+            new_transaction = cursor.fetchone()
+
+            new_transaction_json = db_query_data_to_json(cursor, new_transaction)
+            
+            cursor.execute(
+                "INSERT INTO transactions_audit (data) VALUES (%s);",
+                (new_transaction_json,),
             )
         except psycopg2.errors.UndefinedTable:
             return msg.error_response(message="create the tables in the database first")

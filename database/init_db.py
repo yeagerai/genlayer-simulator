@@ -17,9 +17,6 @@ def db_get_transactions_table_create_command() -> str:
         nonce INT,
         value NUMERIC,
         type INT CHECK (type IN (0, 1, 2)),
-        status VARCHAR DEFAULT 'pending' CHECK (
-            status IN ('pending', 'committing', 'revealing', 'accepted', 'undetermined', 'finalized')
-        ),
         gasLimit BIGINT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         r INT,
