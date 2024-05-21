@@ -11,11 +11,11 @@ services:
       - jsonrpc
     expose:
       - "${FRONTEND_PORT}"
+
   jsonrpc:
     build:
       context: ./
       dockerfile: ./docker/Dockerfile.rpc
-      target: debug
     environment:
       - FLASK_SERVER_PORT=${RPCPORT}
       # TODO: remove this in production
@@ -36,6 +36,7 @@ services:
       - genvm
     expose:
       - "${RPCPORT}"
+    command: sh -c 'rpc/server.sh'
 
   webrequest:
     build:
@@ -55,10 +56,10 @@ services:
     build:
       context: ./
       dockerfile: ./docker/Dockerfile.genvm
-      target: debug
     environment:
       - FLASK_SERVER_PORT=${GENVMPORT}
       - DEBUG=${GENVMDEBUG}
+      - VSCODEDEBUG=${VSCODEDEBUG}
       - GENVMDEBUGPORT=${GENVMDEBUGPORT}
       - PYTHONUNBUFFERED=${GENVMDEBUG}
     expose:
@@ -68,6 +69,7 @@ services:
     volumes:
       - ./genvm:/app/genvm
       - ./common:/app/common
+    command: sh -c 'genvm/server.sh'
 
   ollama:
     image: ollama/ollama:latest

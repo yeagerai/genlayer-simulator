@@ -91,3 +91,6 @@ args = ["Can you please return me my coin?"]
 call_contract_output = contract_logic(new_account, last_contract_id, function_to_execute, args)
 print("Call contract command output:")
 print(json.dumps(call_contract_output, indent=4))
+
+with open('contract_output.json', 'w') as f:
+    json.dump(call_contract_output, f, indent=4)
