@@ -16,7 +16,7 @@
 
         <slot name="actions">
             <div class="v-step__buttons bg-slate-300 dark:bg-zinc-700">
-                <button @click.prevent="skip" v-if="!isLast && isButtonEnabled('buttonSkip')"
+                <button id="btn-skip-tutorial" @click.prevent="skip" v-if="!isLast && isButtonEnabled('buttonSkip')"
                     class="v-step__button v-step__button-skip">{{ labels.buttonSkip }}</button>
                 <button @click.prevent="previousStep" v-if="!isFirst && isButtonEnabled('buttonPrevious')"
                     class="v-step__button v-step__button-previous">{{ labels.buttonPrevious }}</button>
