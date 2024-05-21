@@ -1,9 +1,11 @@
+import re
 import os
 import json
 import psycopg2
 import string
 import requests
 import random
+from logging.config import dictConfig
 from flask import Flask
 from flask_jsonrpc import JSONRPC
 from flask_socketio import SocketIO
@@ -28,7 +30,6 @@ from consensus.utils import vrf, genvm_url
 from consensus.nodes.create_nodes import random_validator_config
 from common.messages import MessageHandler
 from common.logging import setup_logging_config
-from common.address import create_new_address, address_is_in_correct_format
 
 from dotenv import load_dotenv
 
@@ -42,6 +43,16 @@ CORS(app, resources={r"/api/*": {"origins": "*"}}, intercept_exceptions=False)
 jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
+
+def create_new_address() -> str:
+    new_address = ''.join(random.choice(string.hexdigits) for _ in range(40))
+    return '0x' + new_address
+
+def address_is_in_correct_format(address:str) -> bool:
+    pattern = r'^0x['+string.hexdigits+']{40}$'
+    if re.fullmatch(pattern, address):
+        return True
+    return False
 
 
 @socketio.on("connect")
@@ -80,11 +91,12 @@ def create_tables() -> dict:
     return msg.success_response(result)
 
 
+
 @jsonrpc.method("clear_account_and_transactions_tables")
 def clear_account_and_transactions_tables() -> dict:
-    msg = MessageHandler(app, socketio)
-    result = clear_db_tables(app, ["current_state", "transactions"])
-    return msg.success_response(result)
+    result = clear_db_tables(["current_state", "transactions"])
+    app.logger.info(result)
+    return {"status": result}
 
 
 @jsonrpc.method("create_account")
@@ -102,16 +114,8 @@ def create_account() -> dict:
             "INSERT INTO current_state (id, data) VALUES (%s, %s);",
             (new_address, account_state),
         )
-        connection.commit()
-        cursor.close()
-        connection.close()
     except Exception as e:
         return msg.error_response(exception=e)
-
-    connection = get_genlayer_db_connection()
-    cursor = connection.cursor()
-    cursor.execute("SELECT * FROM current_state;")
-
     return msg.success_response({"address": new_address, "balance": balance})
 
 
@@ -119,45 +123,29 @@ def create_account() -> dict:
 def fund_account(account: string, balance: float) -> dict:
     msg = MessageHandler(app, socketio)
 
-    create_account_string = 'create_account'
-
-    if not address_is_in_correct_format(account) and account != create_account_string:
+    if not address_is_in_correct_format(account):
         return msg.error_response(message="account not in ethereum address format")
-    
-    current_account = account
-    if account == create_account_string:
-        current_account_result = create_account()
-
-        if current_account_result["status"] == 'error':
-            return current_account_result
-
-        current_account = current_account_result["data"]["address"]
-    else:
-        with DatabaseFunctions() as dbf:
-            current_account_data = dbf.get_current_state(current_account)
-            dbf.close()
-
-        if not current_account_data:
-            return msg.error_response(message="account does not exist")
 
     try:
         connection = get_genlayer_db_connection()
         cursor = connection.cursor()
 
-        account_state = json.dumps({"balance": balance})
+        current_account = account
+        if account == 'create_account':
+            current_account = create_account()
 
         # Update current_state table with the new account and its balance
         cursor.execute(
-            "UPDATE current_state SET data=%s WHERE id = %s;",
-            (account_state, current_account),
+            "INSERT INTO current_state (id, data) VALUES (%s, %s);",
+            (current_account, json.dumps({"balance": balance})),
         )
 
         # Optionally log the account creation in the transactions table
         cursor.execute(
-            "INSERT INTO transactions (from_address, to_address, data, value, type) VALUES (NULL, %s, %s, %s, 0) RETURNING id;",
+            "INSERT INTO transactions (from_address, to_address, data, value, type) VALUES (NULL, %s, %s, %s, 0);",
             (
                 current_account,
-                json.dumps({"action": "fund_account", "balance": balance}),
+                json.dumps({"action": "create_account", "initial_balance": balance}),
                 balance,
             ),
         )
@@ -167,7 +155,7 @@ def fund_account(account: string, balance: float) -> dict:
         connection.close()
     except Exception as e:
         return msg.error_response(exception=e)
-
+    
     return msg.success_response({"address": current_account, "balance": balance})
 
 
@@ -181,51 +169,48 @@ def send_transaction(from_account: str, to_account: str, amount: float) -> dict:
     if not address_is_in_correct_format(to_account):
         return msg.error_response(message="to_account not in ethereum address format")
     
-    with DatabaseFunctions() as dbf:
-        from_account_data = dbf.get_current_state(from_account)
-        to_account_data = dbf.get_current_state(to_account)
-    
-    if not from_account_data:
-        return msg.error_response(message="from_account does not exist")
-
-    if not to_account_data:
-        return msg.error_response(message="to_account does not exist")
-
-    # insufficient funds
-    from_account_funds = json.loads(from_account_data["data"])["balance"]
-    if from_account_funds < amount:
-        return msg.error_response(message="insufficient funds")
-
     try:
         connection = get_genlayer_db_connection()
         cursor = connection.cursor()
 
-        # Update sender's balance
-        from_account_balance = from_account_funds - amount
-        cursor.execute(
-            "UPDATE current_state SET data = jsonb_set(data, '{balance}', '%s') WHERE id = %s;",
-            (from_account_balance, from_account),
-        )
+        # Verify sender's balance
+        cursor.execute("SELECT data FROM current_state WHERE id = %s;", (from_account,))
+        sender_state = cursor.fetchone()
+        if sender_state and sender_state[0].get("balance", 0) >= amount:
+            # Update sender's balance
+            new_sender_balance = sender_state[0]["balance"] - amount
+            cursor.execute(
+                "UPDATE current_state SET data = jsonb_set(data, '{balance}', %s) WHERE id = %s;",
+                (json.dumps(new_sender_balance), from_account),
+            )
 
-        # Update recipient's balance
-        cursor.execute("SELECT data FROM current_state WHERE id = %s;", (to_account,))
-        recipient_state = cursor.fetchone()
-        to_account_balance = recipient_state[0].get("balance") + amount
-        cursor.execute(
-            "UPDATE current_state SET data = jsonb_set(data, '{balance}', '%s') WHERE id = %s;",
-            (to_account_balance, to_account),
-        )
+            # Update recipient's balance
+            cursor.execute("SELECT data FROM current_state WHERE id = %s;", (to_account,))
+            recipient_state = cursor.fetchone()
+            if recipient_state:
+                new_recipient_balance = recipient_state[0].get("balance", 0) + amount
+                cursor.execute(
+                    "UPDATE current_state SET data = jsonb_set(data, '{balance}', %s) WHERE id = %s;",
+                    (json.dumps(new_recipient_balance), to_account),
+                )
+            else:
+                # Create account if it doesn't exist
+                cursor.execute(
+                    "INSERT INTO current_state (id, data) VALUES (%s, %s);",
+                    (to_account, json.dumps({"balance": amount})),
+                )
 
-        # Log the transaction
-        data = {"action": "send_transaction", "amount": amount}
-        cursor.execute(
-            "INSERT INTO transactions (from_address, to_address, data, value, type) VALUES (%s, %s, %s, %s, 0);",
-            (from_account, to_account, json.dumps(data), amount),
-        )
+            # Log the transaction
+            cursor.execute(
+                "INSERT INTO transactions (from_address, to_address, value, type) VALUES (%s, %s, %s, %s, 0);",
+                (from_account, to_account, amount),
+            )
 
-        connection.commit()
-        cursor.close()
-        connection.close()
+            connection.commit()
+            cursor.close()
+            connection.close()
+        else:
+            return msg.error_response(message="insufficient funds")
 
     except Exception as e:
         return msg.error_response(exception=e)
@@ -431,7 +416,7 @@ def create_random_validators(count:int, min_stake:float, max_stake:float, provid
 def create_random_validator(stake: float) -> dict:
     msg = MessageHandler(app, socketio)
     try:
-        details = random_validator_config([])
+        details = random_validator_config()
         response = create_validator(
             stake, details["provider"], details["model"], details["config"]
         )
