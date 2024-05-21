@@ -21,48 +21,11 @@ class DatabaseFunctions:
             'provider': validator[3],
             'model': validator[4],
             'config': validator[5],
-            'updated_at': validator[6].strftime("%m/%d/%Y %H:%M:%S")
-        }
-
-    def transaction_details(self, transaction) -> dict:
-        return {
-            'id': transaction[0],
-            'from_address': transaction[1],
-            'to_address': transaction[2],
-            'input_data': json.dumps(transaction[3]),
-            'data': json.dumps(transaction[4]),
-            'consensus_data': json.dumps(transaction[5]),
-            'nonce': transaction[6],
-            'value': transaction[7],
-            'type': transaction[8],
-            'status': transaction[9],
-            'gaslimit': transaction[10],
-            'created_at': transaction[11].strftime("%m/%d/%Y %H:%M:%S"),
-            'r': transaction[12],
-            's': transaction[13],
-            'v': transaction[14]
-        }
-    
-    def current_state_details(self, current_state) -> dict:
-        return {
-            'id': current_state[0],
-            'data': json.dumps(current_state[1]),
-            'updated_at': current_state[2].strftime("%m/%d/%Y %H:%M:%S")
-        }
-    
-    def transaction_audit_details(self, transaction_audit) -> dict:
-        return {
-            'id': transaction_audit[0],
-            'transaction_id': transaction_audit[1],
-            'status': transaction_audit[2],
-            'transaction_data': transaction_audit[3],
-            'created_at': transaction_audit[4].strftime("%m/%d/%Y %H:%M:%S")
+            'updated_at': validator[6].strftime("%m/%d/%Y, %H:%M:%S")
         }
 
 
-    ### VALIDATORS ###
-
-    def create_validator(self, address:str, stake:int, provider:str, model:str, config:json):
+    def create_validator(self, address:str, stake:int, provider:str, model:str, config:str):
         self.cursor.execute(
             "INSERT INTO current_state (id, data) VALUES (%s, %s);", (address, json.dumps({'stake':stake}))
         )
@@ -81,7 +44,7 @@ class DatabaseFunctions:
         self.connection.commit()
         return {}
 
-    def update_validator(self, validator_address:str, stake:float, provider:str, model:str, config:json):
+    def update_validator(self, validator_address:str, stake:float, provider:str, model:str, config:str):
         self.cursor.execute(
             "UPDATE validators SET stake = %s, provider = %s, model = %s, config = %s, created_at = CURRENT_TIMESTAMP WHERE address = %s;",
             (stake, provider, model, config, validator_address),
@@ -105,91 +68,6 @@ class DatabaseFunctions:
         for validator in self.cursor.fetchall():
             validators.append(self.validator_details(validator))
         return validators
-
-
-    ### TRANSACTIONS ###
-
-    def insert_transaction(
-            self,
-            from_address:str,
-            to_address:str,
-            data:json,
-            type:int,
-            value:int,
-            status:str="pending",
-            input_data:json=None,
-            consensus_data:json=None,
-            nonce:int=None,
-            gaslimit:int=None,
-            r:int=None,
-            s:int=None,
-            v:int=None):
-        self.cursor.execute(
-            "INSERT INTO transactions (from_address, to_address, data, type, value, status, input_data, consensus_data, nonce, gaslimit, r, s, v) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id;",
-            (from_address, to_address, data, type, value, status, input_data, consensus_data, nonce, gaslimit, r, s, v),
-        )
-        self.connection.commit()
-        new_row_id = self.cursor.fetchone()[0]
-        return self.get_transaction(new_row_id)
-
-
-    def get_transaction(self, transaction_id:int):
-        self.cursor.execute("SELECT * FROM transactions WHERE id = %s", (transaction_id,))
-        self.connection.commit()
-        transaction = self.cursor.fetchone()
-        if transaction:
-            return self.transaction_details(transaction)
-        else:
-            return None
-
-
-    ### CURRENT STATE ###
-
-    def insert_current_state(self, id:str, data:json):
-        self.cursor.execute(
-            "INSERT INTO current_state (id, data) VALUES (%s, %s) RETURNING id;",
-            (id, data),
-        )
-        self.connection.commit()
-        current_state_id = self.cursor.fetchone()[0]
-        return self.get_current_state(current_state_id)
-
-
-    def get_current_state(self, id:str):
-        self.cursor.execute("SELECT * FROM current_state WHERE id = %s", (id,))
-        self.connection.commit()
-        current_state = self.cursor.fetchone()
-        if current_state:
-            return self.current_state_details(current_state)
-        else:
-            return None
-
-    def update_current_state(self, id:str, data:json):
-        self.cursor.execute(
-            "UPDATE current_state SET data = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s;",
-            (data, id),
-        )
-        self.connection.commit()
-        return self.get_current_state(id)
-
-
-    ### TRANSACTION AUDIT ###
-
-    def insert_transaction_audit(self, transaction_id:int, status:str, transaction_data:str):
-        self.cursor.execute(
-            "INSERT INTO transactions_audit (transaction_id, status, transaction_data) VALUES (%s, %s, %s);",
-            (transaction_id, status, transaction_data),
-        )
-        self.connection.commit()
-        return self.get_transaction_audit(transaction_id)
-
-    def get_transaction_audit(self, transaction_id:int):
-        self.cursor.execute("SELECT * FROM transactions_audit WHERE transaction_id = %s", (transaction_id,))
-        self.connection.commit()
-        audit_entries = []
-        for audit in self.cursor.fetchall():
-            audit_entries.append(self.transaction_audit_details(audit))
-        return audit_entries
 
     def __enter__(self):
         return self
