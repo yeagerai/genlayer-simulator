@@ -2,6 +2,8 @@ import os
 import json
 import requests
 
+from database.functions import DatabaseFunctions
+
 from dotenv import load_dotenv
 load_dotenv()
 
