@@ -1,0 +1,92 @@
+[
+    {
+        "id": 1,
+        "address": "0xfE927F366eFcC13F0dc8C8B20EF919B4A4DD7Cb8",
+        "stake": 10.0,
+        "provider": "openai",
+        "model": "gpt-3.5-turbo",
+        "config": {},
+        "updated_at": "05/21/2024 12:13:36"
+    },
+    {
+        "id": 2,
+        "address": "0xED2efA7cb3AFAe49cF3e3CD29EbBAda8CcB7Ed6d",
+        "stake": 10.0,
+        "provider": "openai",
+        "model": "gpt-3.5-turbo",
+        "config": {},
+        "updated_at": "05/21/2024 12:13:36"
+    },
+    {
+        "id": 3,
+        "address": "0xB971fBcF04245C9B17d6bD5EebdFadeec5b6bB88",
+        "stake": 10.0,
+        "provider": "openai",
+        "model": "gpt-3.5-turbo",
+        "config": {},
+        "updated_at": "05/21/2024 12:13:36"
+    },
+    {
+        "id": 4,
+        "address": "0xb182add12b709f9d1F8c8fe512e30CCE2eAe3cD3",
+        "stake": 10.0,
+        "provider": "openai",
+        "model": "gpt-3.5-turbo",
+        "config": {},
+        "updated_at": "05/21/2024 12:13:36"
+    },
+    {
+        "id": 5,
+        "address": "0x61b2ec477bCDFe0E6CF031bda85cF15889CD08da",
+        "stake": 10.0,
+        "provider": "openai",
+        "model": "gpt-3.5-turbo",
+        "config": {},
+        "updated_at": "05/21/2024 12:13:36"
+    },
+    {
+        "id": 6,
+        "address": "0xF32DBb1636eC47EC399a4d13Df7164Bf28273301",
+        "stake": 10.0,
+        "provider": "openai",
+        "model": "gpt-3.5-turbo",
+        "config": {},
+        "updated_at": "05/21/2024 12:13:36"
+    },
+    {
+        "id": 7,
+        "address": "0x47610AC8cE606bfdAA06f0b4e81B00A4cb40C6EC",
+        "stake": 10.0,
+        "provider": "openai",
+        "model": "gpt-3.5-turbo",
+        "config": {},
+        "updated_at": "05/21/2024 12:13:36"
+    },
+    {
+        "id": 8,
+        "address": "0x05fE91cB1F775D6853BCbB9aadA1d63e2CfEb19d",
+        "stake": 10.0,
+        "provider": "openai",
+        "model": "gpt-3.5-turbo",
+        "config": {},
+        "updated_at": "05/21/2024 12:13:36"
+    },
+    {
+        "id": 9,
+        "address": "0xaa1cCC07EECb833E4d5EAe2eFEB8F2FD0Fd8Aade",
+        "stake": 10.0,
+        "provider": "openai",
+        "model": "gpt-3.5-turbo",
+        "config": {},
+        "updated_at": "05/21/2024 12:13:36"
+    },
+    {
+        "id": 10,
+        "address": "0x5Be1Ca1EBc8CC0Fa23F15F5ECB1F2999DD37ac1D",
+        "stake": 10.0,
+        "provider": "openai",
+        "model": "gpt-3.5-turbo",
+        "config": {},
+        "updated_at": "05/21/2024 12:13:36"
+    }
+]

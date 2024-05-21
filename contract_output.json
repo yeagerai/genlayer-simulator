@@ -1,0 +1,41 @@
+{
+    "id": 3,
+    "jsonrpc": "2.0",
+    "result": {
+        "data": {
+            "execution_output": {
+                "consensus_data": "{\"final\":false,\"votes\":{\"0x93e4d7A4e58e8afBf455FcAcE01Fdc7Ceb3c20a5\":\"agree\",\"0xeD9E02e6Ee8f1BbeCaBDC81Fd8D36be51CefA7ef\":\"agree\"},\"leader\":{\"vote\":\"agree\",\"result\":{\"args\":[\"Can you please return me my coin?\"],\"class\":\"WizardOfCoin\",\"contract_state\":\"gASVNwAAAAAAAACMCF9fbWFpbl9flIwMV2l6YXJkT2ZDb2lulJOUKYGUfZSMCWhhdmVfY29pbpSMBFRydWWUc2Iu\",\"eq_outputs\":{\"leader\":{\"0\":\"{\\n\\\"reasoning\\\": \\\"I am sorry, but I cannot return the coin as it is rightfully mine.\\\",\\n\\\"give_coin\\\": False\\n}\"}},\"gas_used\":0,\"method\":\"ask_for_coin\",\"mode\":\"leader\",\"node_config\":{\"address\":\"0x93e4d7A4e58e8afBf455FcAcE01Fdc7Ceb3c20a5\",\"config\":{},\"id\":9,\"model\":\"gpt-3.5-turbo\",\"provider\":\"openai\",\"stake\":10.0,\"type\":\"leader\",\"updated_at\":\"05/21/2024 10:02:07\"}}},\"validators\":[{\"vote\":\"agree\",\"result\":{\"args\":[\"Can you please return me my coin?\"],\"class\":\"WizardOfCoin\",\"contract_state\":\"gASVNwAAAAAAAACMCF9fbWFpbl9flIwMV2l6YXJkT2ZDb2lulJOUKYGUfZSMCWhhdmVfY29pbpSMBFRydWWUc2Iu\",\"eq_outputs\":{\"leader\":{\"0\":\"{\\n\\\"reasoning\\\": \\\"I am sorry, but I cannot return the coin as it is rightfully mine.\\\",\\n\\\"give_coin\\\": False\\n}\"}},\"gas_used\":0,\"method\":\"ask_for_coin\",\"mode\":\"validator\",\"node_config\":{\"address\":\"0xeD9E02e6Ee8f1BbeCaBDC81Fd8D36be51CefA7ef\",\"config\":{},\"id\":7,\"model\":\"gpt-3.5-turbo\",\"provider\":\"openai\",\"stake\":10.0,\"type\":\"validator\",\"updated_at\":\"05/21/2024 10:02:07\"}}}]}",
+                "leader_data": {
+                    "result": {
+                        "args": [
+                            "Can you please return me my coin?"
+                        ],
+                        "class": "WizardOfCoin",
+                        "contract_state": "gASVNwAAAAAAAACMCF9fbWFpbl9flIwMV2l6YXJkT2ZDb2lulJOUKYGUfZSMCWhhdmVfY29pbpSMBFRydWWUc2Iu",
+                        "eq_outputs": {
+                            "leader": {
+                                "0": "{\n\"reasoning\": \"I am sorry, but I cannot return the coin as it is rightfully mine.\",\n\"give_coin\": False\n}"
+                            }
+                        },
+                        "gas_used": 0,
+                        "method": "ask_for_coin",
+                        "mode": "leader",
+                        "node_config": {
+                            "address": "0x93e4d7A4e58e8afBf455FcAcE01Fdc7Ceb3c20a5",
+                            "config": {},
+                            "id": 9,
+                            "model": "gpt-3.5-turbo",
+                            "provider": "openai",
+                            "stake": 10.0,
+                            "type": "leader",
+                            "updated_at": "05/21/2024 10:02:07"
+                        }
+                    },
+                    "vote": "agree"
+                }
+            }
+        },
+        "message": "",
+        "status": "success"
+    }
+}

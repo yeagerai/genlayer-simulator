@@ -3,47 +3,26 @@
     "jsonrpc": "2.0",
     "result": {
         "data": {
-            "execution_output": {
-                "consensus_data": "{\"final\":false,\"votes\":{\"0xaB2c48e9a4074339A2A4CB3Df94d5e1F9B626fe0\":\"agree\",\"0xA9414fe78CCEd69445826a31b1E57A15b03a67aa\":\"agree\"},\"leader\":{\"vote\":\"agree\",\"result\":{\"args\":[\"Can you please return me my coin?\"],\"class\":\"WizardOfCoin\",\"contract_state\":\"gASVNwAAAAAAAACMCF9fbWFpbl9flIwMV2l6YXJkT2ZDb2lulJOUKYGUfZSMCWhhdmVfY29pbpSMBFRydWWUc2Iu\",\"eq_outputs\":{\"leader\":{\"0\":\"{\\n\\\"reasoning\\\": \\\"Sorry, but I cannot give you the coin. It's magic, and I cannot let it fall into the wrong hands.\\\",\\n\\\"give_coin\\\": False\\n}\"}},\"gas_used\":0,\"method\":\"ask_for_coin\",\"mode\":\"leader\",\"node_config\":{\"address\":\"0xaB2c48e9a4074339A2A4CB3Df94d5e1F9B626fe0\",\"config\":{\"mirostat_tau\":2.7,\"num_gpu\":4,\"num_gqa\":5,\"num_thread\":14,\"seed\":90186,\"stop\":\"\",\"temprature\":0.0,\"tfs_z\":1.8,\"top_k\":13,\"top_p\":0.93},\"id\":10,\"model\":\"llama2\",\"provider\":\"ollama\",\"stake\":9.262727768517411,\"type\":\"leader\",\"updated_at\":\"05/20/2024 19:07:54\"}}},\"validators\":[{\"vote\":\"agree\",\"result\":{\"args\":[\"Can you please return me my coin?\"],\"class\":\"WizardOfCoin\",\"contract_state\":\"gASVNwAAAAAAAACMCF9fbWFpbl9flIwMV2l6YXJkT2ZDb2lulJOUKYGUfZSMCWhhdmVfY29pbpSMBFRydWWUc2Iu\",\"eq_outputs\":{\"leader\":{\"0\":\"{\\n\\\"reasoning\\\": \\\"Sorry, but I cannot give you the coin. It's magic, and I cannot let it fall into the wrong hands.\\\",\\n\\\"give_coin\\\": False\\n}\"}},\"gas_used\":0,\"method\":\"ask_for_coin\",\"mode\":\"validator\",\"node_config\":{\"address\":\"0xA9414fe78CCEd69445826a31b1E57A15b03a67aa\",\"config\":{\"mirostat\":1,\"mirostat_tau\":7.4,\"num_thread\":3,\"seed\":332456,\"stop\":\"\",\"top_p\":0.9},\"id\":6,\"model\":\"llama3\",\"provider\":\"ollama\",\"stake\":7.228764269305734,\"type\":\"validator\",\"updated_at\":\"05/20/2024 19:07:54\"}}}]}",
-                "leader_data": {
-                    "result": {
-                        "args": [
-                            "Can you please return me my coin?"
-                        ],
-                        "class": "WizardOfCoin",
-                        "contract_state": "gASVNwAAAAAAAACMCF9fbWFpbl9flIwMV2l6YXJkT2ZDb2lulJOUKYGUfZSMCWhhdmVfY29pbpSMBFRydWWUc2Iu",
-                        "eq_outputs": {
-                            "leader": {
-                                "0": "{\n\"reasoning\": \"Sorry, but I cannot give you the coin. It's magic, and I cannot let it fall into the wrong hands.\",\n\"give_coin\": False\n}"
-                            }
-                        },
-                        "gas_used": 0,
-                        "method": "ask_for_coin",
-                        "mode": "leader",
-                        "node_config": {
-                            "address": "0xaB2c48e9a4074339A2A4CB3Df94d5e1F9B626fe0",
-                            "config": {
-                                "mirostat_tau": 2.7,
-                                "num_gpu": 4,
-                                "num_gqa": 5,
-                                "num_thread": 14,
-                                "seed": 90186,
-                                "stop": "",
-                                "temprature": 0.0,
-                                "tfs_z": 1.8,
-                                "top_k": 13,
-                                "top_p": 0.93
-                            },
-                            "id": 10,
-                            "model": "llama2",
-                            "provider": "ollama",
-                            "stake": 9.262727768517411,
-                            "type": "leader",
-                            "updated_at": "05/20/2024 19:07:54"
-                        }
-                    },
-                    "vote": "agree"
-                }
+            "args": [
+                    {"have_coin": "True"}
+                ],
+            "class": "ContractRunner",
+            "contract_state": "gASVNwAAAAAAAACMCF9fbWFpbl9flIwMV2l6YXJkT2ZDb2lulJOUKYGUfZSMCWhhdmVfY29pbpSMBFRydWWUc2Iu",
+            "eq_outputs": {
+                "leader": {}
+            },
+            "gas_used": 0,
+            "method": "__init__",
+            "mode": "leader",
+            "node_config": {
+                "address": "0xDCDfe7ECed672eF3bbf3dDC2d13c39AbA54644b5",
+                "config": {},
+                "id": 1,
+                "model": "gpt-3.5-turbo",
+                "provider": "openai",
+                "stake": 10.0,
+                "type": "leader",
+                "updated_at": "05/21/2024 09:51:37"
             }
         },
         "message": "",

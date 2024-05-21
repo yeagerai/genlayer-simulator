@@ -7,6 +7,7 @@ from database.init_db import (
     create_tables_if_they_dont_already_exist,
     clear_db_tables
 )
+from common.address import create_new_address
 
 from dotenv import load_dotenv
 load_dotenv()

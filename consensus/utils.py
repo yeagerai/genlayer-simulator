@@ -124,13 +124,3 @@ def get_validators(nodes_config: dict, logger=None) -> list:
     validators_stakes = [float(row[1]) for row in validator_data]
 
     return all_validators, validators_stakes
-
-
-def genvm_url():
-    return (
-        os.environ["GENVMPROTOCOL"]
-        + "://"
-        + os.environ["GENVMHOST"]
-        + ":"
-        + os.environ["GENVMPORT"]
-    )

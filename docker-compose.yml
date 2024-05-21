@@ -18,9 +18,10 @@ services:
       dockerfile: ./docker/Dockerfile.rpc
     environment:
       - FLASK_SERVER_PORT=${RPCPORT}
-      # TODO: remove this in production
+      # TODO: remove this in prod
       - PYTHONUNBUFFERED=1
       - RPCDEBUGPORT=${RPCDEBUGPORT}
+      - VSCODEDEBUG=${VSCODEDEBUG}
     ports:
       - "${RPCPORT}:${RPCPORT}"
       - "${RPCDEBUGPORT}:${RPCDEBUGPORT}"
@@ -30,6 +31,8 @@ services:
       - ./database:/app/database
       - ./consensus:/app/consensus
       - ./common:/app/common
+      # TODO: remove this in prod
+      - ./examples:/app/examples
     depends_on:
       - ollama
       - postgres

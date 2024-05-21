@@ -24,8 +24,9 @@ from consensus.nodes.create_nodes import (
     get_providers,
     get_provider_models,
 )
-from consensus.utils import vrf, genvm_url
+from consensus.utils import vrf
 from consensus.nodes.create_nodes import random_validator_config
+from common.urls import genvm_url
 from common.messages import MessageHandler
 from common.logging import setup_logging_config
 from common.address import create_new_address, address_is_in_correct_format
@@ -248,7 +249,9 @@ def deploy_intelligent_contract(
     
     with DatabaseFunctions() as dbf:
         all_validators = dbf.all_validators()
-        dbf.close()
+
+    if len(all_validators) == 0:
+        return msg.error_response(message="No validators found in the database")
 
     # Select validators using VRF
     num_validators = int(os.environ["NUMVALIDATORS"])

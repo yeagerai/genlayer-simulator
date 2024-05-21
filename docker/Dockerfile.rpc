@@ -9,6 +9,7 @@ ADD rpc $path/rpc
 ADD database $path/database
 ADD consensus $path/consensus
 ADD common $path/common
+ADD examples $path/examples
 RUN pip install --no-cache-dir -r rpc/requirements.txt
 
 ENV PYTHONPATH "${PYTHONPATH}:/${path}"

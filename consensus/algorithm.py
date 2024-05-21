@@ -4,7 +4,8 @@ import requests
 from database.credentials import get_genlayer_db_connection
 from database.types import ConsensusData
 from database.functions import DatabaseFunctions
-from consensus.utils import vrf, get_contract_state, genvm_url, run_contract
+from common.urls import genvm_url
+from consensus.utils import vrf, get_contract_state, run_contract
 
 from dotenv import load_dotenv
 
