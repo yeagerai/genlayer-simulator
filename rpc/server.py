@@ -431,7 +431,7 @@ def create_random_validators(count:int, min_stake:float, max_stake:float, provid
 def create_random_validator(stake: float) -> dict:
     msg = MessageHandler(app, socketio)
     try:
-        details = random_validator_config()
+        details = random_validator_config([])
         response = create_validator(
             stake, details["provider"], details["model"], details["config"]
         )
