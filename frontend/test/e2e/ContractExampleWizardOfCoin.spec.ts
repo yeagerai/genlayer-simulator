@@ -57,12 +57,13 @@ describe('Contract Example WizardOfCoin', () => {
 
     it('should call get_have_coin', async () => {
         await driver.wait(until.elementLocated(By.xpath("//button[text()='get_have_coin']")), 5000).click();
- 
-        const stateResult = await driver.wait(until.elementLocated(By.xpath("//div[@data-test-id='contract-state-item-get_have_coin']")), 5000);
+        
+        const stateResult = await driver.wait(until.elementLocated(By.xpath("//div[contains(@data-test-id, 'get_have_coin')]")), 5000);
+        await driver.sleep(2000); // wait for the result text
+        const stateResultText = await stateResult.getText();
         
         expect(stateResult, 'get_have_coin result should be visible').not.null;
-        
-        //TODO:  validate result content
+        expect(stateResultText, 'get_have_coin result should true').be.equal('True');
     })
     after(() => driver.quit());
 
