@@ -94,13 +94,8 @@ def create_tables() -> dict:
 
 @jsonrpc.method("clear_account_and_transactions_tables")
 def clear_account_and_transactions_tables() -> dict:
-    msg = MessageHandler(app, socketio)
-    result = None
-    try:
-        result = clear_db_tables(["current_state", "transactions"])
-    except Exception as e:
-        return msg.error_response(exception=e)
-    return msg.success_response(result)
+    clear_db_tables(["current_state", "transactions"])
+    return {"status": "OK"}
 
 
 @jsonrpc.method("create_account")
