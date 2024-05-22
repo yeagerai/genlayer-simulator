@@ -74,7 +74,7 @@ const setCurentUserAddress = (event: Event) => {
   <div class="flex flex-col p-2 overflow-y-auto">
     <div class="flex flex-col items-start w-full">
       <p>Current Account:</p>
-      <select name="" id="" @change="setCurentUserAddress" class="text-xs w-full dark:bg-zinc-700"
+      <select name="dropdown-current-account" @change="setCurentUserAddress" class="text-xs w-full dark:bg-zinc-700"
         :value="store.currentUserAddress">
         <option v-for="account in store.accounts" :key="account" :value="account">
           {{ account }}
@@ -82,7 +82,7 @@ const setCurentUserAddress = (event: Event) => {
       </select>
     </div>
     <div class="flex justify-start w-full mt-4">
-      <select name="" id="" @change="onMethodChange" class="w-full dark:bg-zinc-700">
+      <select name="dropdown-execute-method" @change="onMethodChange" class="w-full dark:bg-zinc-700">
         <option value="">Select a method</option>
         <option v-for="method in methodList" :key="method.name" :value="method.name">
           {{ method.name }}()
@@ -103,7 +103,7 @@ const setCurentUserAddress = (event: Event) => {
           class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
           <LoadingIndicator v-if="props.callingMethod" :color="'white'">
           </LoadingIndicator>
-          <template v-else>Execute {{ ` ${method.name}` }}()</template>
+          <template v-else>Execute{{ ` ${method.name}` }}()</template>
         </button>
       </div>
     </template>
