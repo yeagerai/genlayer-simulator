@@ -110,7 +110,7 @@ const closeDeleteFileModal = () => {
 <template>
   <div class="flex flex-col w-full">
     <div class="flex flex-col p-2 w-full">
-      <h3 class="text-xl" id="contracts-list-title">Your Contracts</h3>
+      <h3 class="text-xl">Your Contracts</h3>
     </div>
     <div class="flex px-1 py-2 w-full">
       <button class="flex ml-3" @click="handleAddNewFile">
@@ -134,8 +134,8 @@ const closeDeleteFileModal = () => {
           <input type="text" class="bg-slate-100 dark:bg-zinc-700 w-full" v-model="editingFileName"
             @blur="handleSaveFile" @keyup.enter="handleSaveFile">
         </div>
-        <div class="truncate flex items-center justify-between w-full" v-else>
-          <div class="truncate ... cursor-pointer" @click="openContract(contract.id)" :id="`contract-item-${contract.name}`" >
+        <div v-else class="truncate flex items-center justify-between w-full">
+          <div class="truncate ... cursor-pointer" @click="openContract(contract.id)">
             {{ contract.name }}
           </div>
           <div class="flex" v-show="showFileOptionsId === contract.id">
