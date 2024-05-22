@@ -43,8 +43,9 @@ const showHome = computed(() => store.currentContractId === '')
                         <HomeIcon class="mx-2 h-4 w-4" :class="{ 'dark:fill-white fill-primary': showHome }" />
                     </button>
                 </div>
-                <div v-for="(contract) in contracts" :key="contract.id" :id="contract.id === 'tutorial-example' ? `tutorial-contract-example`: contract.id"
-                    :class="['font-semibold flex justify-between px-2 py-2 text-neutral-500', contract.id === store.currentContractId ? 'border-b-2 border-primary dark:text-white text-primary' : '']">
+                <div v-for="(contract) in contracts" :key="contract.id" 
+                    :id="contract.id === 'tutorial-example' ? `tutorial-contract-example`: contract.id"
+                    :class="['contract-item font-semibold flex justify-between px-2 py-2 text-neutral-500', contract.id === store.currentContractId ? 'border-b-2 border-primary dark:text-white text-primary' : '']">
                     <button class="bg-transparent flex" @click="setCurrentContractTab(contract.id)">
                         <DocumentCheckIcon class="h-4 w-4 mr-2"
                             :class="{ 'dark:fill-white fill-primary': contract.id === store.currentContractId }" />
