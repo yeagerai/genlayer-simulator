@@ -38,13 +38,12 @@ describe('Contract Example WizardOfCoin', () => {
 
         const haveCoinCheck = await driver.wait(until.elementLocated(By.xpath("//input[contains(@name, 'have_coin') and contains(@type, 'checkbox')]")), 5000)
         expect(haveCoinCheck, 'Have coin checkbox should be visible').not.null
-        haveCoinCheck.click()
+        await haveCoinCheck.click()
     })
 
     it('should deploy the contract WizardOfCoin', async () => {
-        
-        await driver.wait(until.elementLocated(By.xpath("//button[contains(@class, 'bg-primary') and contains(text(), 'Deploy')]")), 5000).click()
-        
+        await driver.wait(until.elementLocated(By.xpath("//button[text()='Deploy']")), 5000).click()
+ 
         // locate elements that should be visible
         const contractStateTitle = await driver.wait(until.elementLocated(By.xpath("//h5[contains(@class, 'text-sm') and contains(text(), 'Current Intelligent Contract State')]")), 5000)
         expect(contractStateTitle, 'Contract state title section should be visible').not.null
@@ -54,6 +53,16 @@ describe('Contract Example WizardOfCoin', () => {
 
         const latestTransactions = await driver.wait(until.elementLocated(By.xpath("//h5[contains(@class, 'text-sm') and contains(text(), 'Latest Transactions')]")), 5000)
         expect(latestTransactions, 'Latest transactions title section should be visible').not.null
+    })
+
+    it('should call get_have_coin', async () => {
+        await driver.wait(until.elementLocated(By.xpath("//button[text()='get_have_coin']")), 5000).click();
+ 
+        const stateResult = await driver.wait(until.elementLocated(By.xpath("//div[@data-test-id='contract-state-item-get_have_coin']")), 5000);
+        
+        expect(stateResult, 'get_have_coin result should be visible').not.null;
+        
+        //TODO:  validate result content
     })
     after(() => driver.quit());
 
