@@ -8,7 +8,7 @@ from common.testing.response.base import (
     data_contains
 )
 from database.init_db import drop_db_if_it_already_exists
-from rpc.tests.base import payload, post_request
+from rpc.tests.integration.base import payload, post_request
 
 def num_rows_in_current_state_table() -> int:
     response = get_all_rows_for_table("current_state")

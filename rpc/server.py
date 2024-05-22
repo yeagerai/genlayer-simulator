@@ -108,10 +108,6 @@ def create_account() -> dict:
     except Exception as e:
         return msg.error_response(exception=e)
 
-    connection = get_genlayer_db_connection()
-    cursor = connection.cursor()
-    cursor.execute("SELECT * FROM current_state;")
-
     return msg.success_response({"address": new_address, "balance": balance})
 
 
@@ -284,7 +280,7 @@ def deploy_intelligent_contract(
         except psycopg2.errors.UndefinedTable:
             return msg.error_response(message="create the tables in the database first")
         except psycopg2.errors.InFailedSqlTransaction:
-            return msg.error_response(message="create the tables in the database first")
+            return msg.error_response(message="failed to insert data into the database")
 
         connection.commit()
         cursor.close()

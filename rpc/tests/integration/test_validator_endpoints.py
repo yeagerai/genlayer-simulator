@@ -1,5 +1,5 @@
 from common.testing.db.base import setup_db_and_tables
-from rpc.tests.base import payload, post_request
+from rpc.tests.integration.base import payload, post_request
 
 validator_keys = ['id', 'address', 'stake', 'provider','model', 'config', 'updated_at']
 

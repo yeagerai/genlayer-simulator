@@ -15,7 +15,7 @@ from common.testing.response.base import (
     message_is,
     data_is
 )
-from rpc.tests.base import payload, post_request
+from rpc.tests.integration.base import payload, post_request
 
 balanace = 10.0
 amount = 2.0

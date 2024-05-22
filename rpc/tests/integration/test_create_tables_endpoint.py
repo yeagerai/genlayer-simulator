@@ -8,7 +8,7 @@ from common.testing.response.base import (
     has_data,
     data_is
 )
-from rpc.tests.base import payload, post_request
+from rpc.tests.integration.base import payload, post_request
 
 
 def test_create_tables_endpoint():

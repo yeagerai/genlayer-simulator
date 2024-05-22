@@ -1,4 +1,5 @@
 services:
+
   frontend:
     build:
       context: ./
@@ -11,15 +12,16 @@ services:
       - jsonrpc
     expose:
       - "${FRONTEND_PORT}"
+
   jsonrpc:
     build:
       context: ./
       dockerfile: ./docker/Dockerfile.rpc
-      target: debug
     environment:
       - FLASK_SERVER_PORT=${RPCPORT}
       # TODO: remove this in production
       - PYTHONUNBUFFERED=1
+      - VSCODEDEBUG=${VSCODEDEBUG}
       - RPCDEBUGPORT=${RPCDEBUGPORT}
     ports:
       - "${RPCPORT}:${RPCPORT}"
@@ -36,6 +38,7 @@ services:
       - genvm
     expose:
       - "${RPCPORT}"
+    command: sh -c '/app/rpc/server.sh'
 
   webrequest:
     build:
@@ -50,17 +53,17 @@ services:
       - PYTHONUNBUFFERED=1
     expose:
       - "${WEBREQUESTPORT}"
-
+  
   genvm:
     build:
       context: ./
       dockerfile: ./docker/Dockerfile.genvm
-      target: debug
     environment:
       - FLASK_SERVER_PORT=${GENVMPORT}
-      - DEBUG=${GENVMDEBUG}
+      # TODO: remove this in production
+      - PYTHONUNBUFFERED=1
       - GENVMDEBUGPORT=${GENVMDEBUGPORT}
-      - PYTHONUNBUFFERED=${GENVMDEBUG}
+      - VSCODEDEBUG=${VSCODEDEBUG}
     expose:
       - "${GENVMPORT}"
     ports:
@@ -68,6 +71,7 @@ services:
     volumes:
       - ./genvm:/app/genvm
       - ./common:/app/common
+    command: sh -c '/app/genvm/server.sh'
 
   ollama:
     image: ollama/ollama:latest
@@ -79,6 +83,7 @@ services:
     pull_policy: always
     tty: true
     restart: always
+
   postgres:
     image: postgres:12.17
     restart: always
