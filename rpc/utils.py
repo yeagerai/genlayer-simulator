@@ -13,15 +13,3 @@ def address_is_in_correct_format(address: str) -> bool:
     if re.fullmatch(pattern, address):
         return True
     return False
-
-
-def error_response(message: str) -> dict:
-    return response_format("error", message=message)
-
-
-def success_response(data) -> dict:
-    return response_format("success", data=data)
-
-
-def response_format(status: str, message: str = "", data={}) -> dict:
-    return {"status": status, "message": message, "data": data}
