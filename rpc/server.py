@@ -5,6 +5,7 @@ import psycopg2
 import string
 import requests
 import random
+from functools import partial
 from flask import Flask
 from flask_jsonrpc import JSONRPC
 from flask_socketio import SocketIO
@@ -28,20 +29,18 @@ from consensus.nodes.create_nodes import (
 )
 from consensus.utils import vrf, genvm_url
 from consensus.nodes.create_nodes import random_validator_config
-from common.messages import MessageHandler
-from common.logging import setup_logging_config
+from message_handler.base import MessageHandler
 
 from dotenv import load_dotenv
 
 load_dotenv()
-
-setup_logging_config()
 
 app = Flask("jsonrpc_api")
 
 CORS(app, resources={r"/api/*": {"origins": "*"}}, intercept_exceptions=False)
 jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
 socketio = SocketIO(app, cors_allowed_origins="*")
+msg = MessageHandler(app, socketio)
 
 
 def create_new_address() -> str:
@@ -72,24 +71,26 @@ def log_status(message):
 
 @jsonrpc.method("create_db")
 def create_db() -> dict:
-    msg = MessageHandler(app, socketio)
+    send_message = partial(msg.send_message, "create_db")
+    send_message("info", "Starting...")
     result = None
     try:
         result = create_db_if_it_doesnt_already_exists()
     except Exception as e:
-        return msg.error_response(exception=e)
-    return msg.success_response(result)
+        return send_message("error", exception=e)
+    return send_message("success", data=result)
 
 
 @jsonrpc.method("create_tables")
 def create_tables() -> dict:
-    msg = MessageHandler(app, socketio)
+    send_message = partial(msg.send_message, "create_tables")
+    send_message("info", "Starting...")
     result = None
     try:
         result = create_tables_if_they_dont_already_exist(app)
     except Exception as e:
-        return msg.error_response(exception=e)
-    return msg.success_response(result)
+        return send_message("error", exception=e)
+    return send_message("success", data=result)
 
 
 @jsonrpc.method("clear_account_and_transactions_tables")

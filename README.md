@@ -6,7 +6,7 @@
 
 This Simulator is an interactive sandbox designed for developers to explore the potential of the [GenLayer Protocol](https://genlayer.com/). It replicates the GenLayer network's execution environment and consensus algorithm, but offers a controlled and local environment to test different ideas and behaviors.
 
-## 🛠️ Quick Install
+## 🛠️ Installation and usage
 
 ```
 $ npm install -g genlayer
@@ -18,10 +18,7 @@ To run genlayer again just run:
 ```
 $ genlayer up
 ```
-
-_(Additional installation instructions can be found [here](https://docs.genlayer.com/simulator/installation))_
-
-From here you will be able to create validators and intellegent contracts.
+After executing those commands a new tab will open in your browser with the GenLayer Simulator. Additional installation instructions can be found [here](https://docs.genlayer.com/simulator/installation)
 
 ## 🚀 Key Features
 * 🖥️ **Test Locally:** Developers can test Intelligent Contracts in a local environment, replicating the GenLayer network without the need for deployment. This speeds up the development cycle and reduces the risk of errors in the live environment.

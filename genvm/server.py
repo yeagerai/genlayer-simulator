@@ -6,6 +6,7 @@ import json
 import inspect
 import pickle
 import base64
+from functools import partial
 from flask import Flask
 from flask_jsonrpc import JSONRPC
 from flask_socketio import SocketIO
@@ -20,14 +21,12 @@ from genvm.utils import (
 )
 from code_enforcement import code_enforcement_check
 
-from common.messages import MessageHandler
-from common.logging import setup_logging_config
+from message_handler.base import MessageHandler
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
-setup_logging_config()
 
 app = Flask("genvm_api")
 
@@ -35,14 +34,13 @@ app = Flask("genvm_api")
 CORS(app, resources={r"/api/*": {"origins": "*"}}, intercept_exceptions=False)
 jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
 socketio = SocketIO(app, cors_allowed_origins="*")
+msg = MessageHandler(app, socketio)
 
 
 @jsonrpc.method("leader_executes_transaction")
 def leader_executes_transaction(contract_code: str, node_config: dict) -> dict:
 
     delete_recipts()
-
-    msg = MessageHandler(app, socketio)
 
     icontract_file, _, _, leader_recipt_file = transaction_files()
 
