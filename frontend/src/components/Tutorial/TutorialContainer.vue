@@ -81,6 +81,57 @@ const steps = [
     }
   },
   {
+    target: '#tutorial-creating-transactions',
+    header: {
+      title: 'Creating Transactions'
+    },
+    content: "This is where you can interact with the deployed contract. You can select a method you want to use from the dropdown, and provide the parameters.  Click “Next” to automatically create a transaction and interact with your deployed contract.",
+    onNextStep: async (store: any, router: any) => {
+      const deployedContract = store.deployedContracts.find((contract: any) => contract.contractId === store.currentContractId)
+      if (deployedContract) {
+        try {
+          const { result } = await rpcClient.call({
+            method: 'call_contract_function',
+            params: [
+              store.currentUserAddress,
+              deployedContract?.address,
+              'WizardOfCoin.ask_for_coin',
+              ['Please give me some coin!']
+            ]
+          })
+
+          if (result?.status === 'success') {
+            if (!store.contractTransactions[deployedContract.address]) {
+              store.contractTransactions[deployedContract.address] = [result]
+            } else {
+              store.contractTransactions[deployedContract.address].push(result)
+            }
+            notify({
+              title: 'OK',
+              text: 'Contract method called',
+              type: 'success'
+            })
+          } else {
+            notify({
+              title: 'Error',
+              text:
+                typeof result.message === 'string' ? result.message : 'Error calling contract method',
+              type: 'error'
+            })
+          }
+
+        } catch (error) {
+          console.error(error)
+          notify({
+            title: 'Error',
+            text: 'Error calling contract method',
+            type: 'error'
+          })
+        }
+      }
+    }
+  },
+  {
     target: '#tutorial-node-output',
     header: {
       title: 'Node Output'
@@ -342,40 +393,15 @@ export default {
 </script>
 <template>
   <div class="v-tour bg-slate-300 dark:bg-zinc-700">
-    <slot
-      :current-step="currentStep"
-      :steps="steps"
-      :previous-step="previousStep"
-      :next-step="nextStep"
-      :stop="stop"
-      :skip="skip"
-      :finish="finish"
-      :is-first="isFirst"
-      :is-last="isLast"
-      :labels="options.labels"
-      :enabled-buttons="options.enabledButtons"
-      :highlight="options.highlight"
-      :debug="options.debug"
-    >
+    <slot :current-step="currentStep" :steps="steps" :previous-step="previousStep" :next-step="nextStep" :stop="stop"
+      :skip="skip" :finish="finish" :is-first="isFirst" :is-last="isLast" :labels="options.labels"
+      :enabled-buttons="options.enabledButtons" :highlight="options.highlight" :debug="options.debug">
       <!--Default slot {{ currentStep }}-->
-      <TutorialStep
-        v-if="steps[currentStep]"
-        :step="steps[currentStep]"
-        :key="currentStep"
-        :previous-step="previousStep"
-        :next-step="nextStep"
-        :stop="stop"
-        :skip="skip"
-        :finish="finish"
-        :is-first="isFirst"
-        :is-last="isLast"
-        :labels="options.labels"
-        :enabled-buttons="options.enabledButtons"
-        :highlight="options.highlight"
-        :stop-on-fail="options.stopOnTargetNotFound"
-        :debug="options.debug"
-        @targetNotFound="$emit('targetNotFound', $event)"
-      >
+      <TutorialStep v-if="steps[currentStep]" :step="steps[currentStep]" :key="currentStep"
+        :previous-step="previousStep" :next-step="nextStep" :stop="stop" :skip="skip" :finish="finish"
+        :is-first="isFirst" :is-last="isLast" :labels="options.labels" :enabled-buttons="options.enabledButtons"
+        :highlight="options.highlight" :stop-on-fail="options.stopOnTargetNotFound" :debug="options.debug"
+        @targetNotFound="$emit('targetNotFound', $event)">
         <!--<div v-if="index === 2" slot="actions">
             <a @click="nextStep">Next step</a>
           </div>-->

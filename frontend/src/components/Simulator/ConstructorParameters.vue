@@ -137,11 +137,11 @@ onMounted(() => {
         <div class="flex justify-between align-middle">
           <div class="text-xs flex align-middle h-full">Constructor Parameters</div>
           <button class="bg-primary hover:opacity-80 text-white px-2 rounded texm-xs" @click="toogleMode">{{ mode ===
-    'json' ? 'Inputs' : 'Json' }}
-            <ToolTip :text="mode === 'json' ? 'See the inputs' : 'Write raw json'" :options="{ placement: 'top' }" />
+    'json' ? 'Inputs' : 'JSON' }}
+            <ToolTip :text="mode === 'json' ? 'See the inputs' : 'Write raw JSON'" :options="{ placement: 'top' }" />
           </button>
         </div>
-        <p v-if="mode === 'json'" class="text-xs">Please provide a json object with the constructor parameters.</p>
+        <p v-if="mode === 'json'" class="text-xs">Please provide a JSON object with the constructor parameters.</p>
       </div>
       <div class="flex mt-2" v-if="mode === 'json'">
         <textarea rows="5" class="w-full bg-slate-100 dark:dark:bg-zinc-700 p-2" v-model="jsonParams"

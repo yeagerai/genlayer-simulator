@@ -4,17 +4,21 @@ from genvm.base.equivalence_principle import EquivalencePrinciple
 
 
 class LlmErc20(IContract):
-    def __init__(self, initial_owner: str, total_supply: int):
+    def __init__(self, total_supply: int) -> None:
         self.balances = {}
-        self.balances[initial_owner] = total_supply
+        self.balances[contract_runner.from_address] = total_supply
 
-    async def transfer(self, amount: int, from_address: str, to_address: str) -> None:
+    async def transfer(self, amount: int, to_address: str) -> None:
         prompt = f"""
 You keep track of transactions between users and their balance in coins. 
 The current balance for all users in JSON format is:
 {json.dumps(self.balances)}
-The transaction to compute is:
-{from_address} sends {amount} coins to {to_address}
+The transaction to compute is: {{
+sender: "{contract_runner.from_address}",
+recipient: "{to_address}",
+amount: {amount},
+}}
+
 For every transaction, validate that the user sending the Coins has 
 enough balance. If any transaction is invalid, it shouldn't be processed. 
 Update the balances based on the valid transactions only.
@@ -28,6 +32,7 @@ updated_balances: object<str, int>  // Updated balances after the transaction
 It is mandatory that you respond with only the JSON output object, nothing 
 else whatsoever. Don't include any other words or characters, your 
 output must be only the JSON object"""
+        print(prompt)
         final_result = {}
         async with EquivalencePrinciple(
             result=final_result,
@@ -45,5 +50,8 @@ output must be only the JSON object"""
         self.balances = result_json["updated_balances"]
 
     
-    def get_balances(self):
+    def get_balances(self) -> dict[str, int]:
         return self.balances
+    
+    def get_balance_of(self, address: str) -> int:
+        return self.balances.get(address, 0)

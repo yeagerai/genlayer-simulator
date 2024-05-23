@@ -160,7 +160,7 @@ async def exec_transaction(from_address, transaction_input, logger=None):
     ).model_dump_json()
     connection = get_genlayer_db_connection()
     cursor = connection.cursor()
-    cursor.execute(
+    txId = cursor.execute(
         "INSERT INTO transactions (from_address, to_address, data, consensus_data, type, created_at) VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP);",
         (
             from_address,
@@ -189,6 +189,8 @@ async def exec_transaction(from_address, transaction_input, logger=None):
     if logger:
         logger(f"Transaction has been fully executed...")
         logger(f"This is the data produced by the leader:\n\n {leader_receipt}")
+        logger(f"Transaction ID:\n\n {txId}")
+
 
     execution_output = {}
     execution_output["leader_data"] = leader_receipt
