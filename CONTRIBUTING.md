@@ -82,6 +82,7 @@ To contribute to our docs, start by visiting our [Documentation Repository](http
 
 We strive to maintain high-quality code and ensure that all contributions align with our goals. Here’s our process:
 
+- **Black Formatter on Save File**: Configure IDE extensions to format your code with [Black](https://github.com/psf/black) before submitting it.
 - **Pull Request**: Submit your changes through a pull request (PR).
 - **Automated Tests**: Your PR will automatically be tested. Ensure all tests pass to proceed.
 - **Peer Review**: One or more core contributors will review your PR. They may suggest changes or improvements.
