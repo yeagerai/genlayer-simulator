@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import type { ContractFile, MainStoreState, DeployedContract } from '@/types'
-import { rpcClient } from '@/utils'
+import { rpcClient, getContractFileName } from '@/utils'
 
 const getInitialOPenedFiles = (): string[] => {
   const storage = localStorage.getItem('mainStore.openedFiles')
@@ -8,13 +8,6 @@ const getInitialOPenedFiles = (): string[] => {
   return []
 }
 
-const valdiateFileName = (name: string) => {
-  const tokens = name.split('.')
-  if (tokens.length > 0) {
-    return `${tokens[0]}.gpy`
-  }
-  return `${name}.gpy`
-}
 export const useMainStore = defineStore('mainStore', {
   state: (): MainStoreState => {
     return {
@@ -33,7 +26,7 @@ export const useMainStore = defineStore('mainStore', {
   },
   actions: {
     addContractFile(contract: ContractFile): void {
-      const name = valdiateFileName(contract.name)
+      const name = getContractFileName(contract.name)
       this.contracts.push({ ...contract, name })
     },
     removeContractFile(id: string): void {
@@ -44,7 +37,7 @@ export const useMainStore = defineStore('mainStore', {
       this.contracts = [
         ...this.contracts.map((c) => {
           if (c.id === id) {
-            const _name = valdiateFileName(name || c.name)
+            const _name = getContractFileName(name || c.name)
             const _content = content || c.content
             return { ...c, name: _name, content: _content }
           }
