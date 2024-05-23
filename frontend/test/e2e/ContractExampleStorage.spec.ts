@@ -28,7 +28,7 @@ describe('Contract Example Storage', () => {
     expect(tabs.length, 'Number of tabs should be 2').equal(2)
   })
 
-  it('should open Run debug page and set constructor arguments for WizardOfCoin', async () => {
+  it('should open Run debug page and set constructor arguments for Storage', async () => {
     await runDebugPage.navigate()
     await runDebugPage.waitUntilVisible()
 
@@ -107,7 +107,7 @@ describe('Contract Example Storage', () => {
     expect(stateResultText, 'get_storage result should be Test initial storage').be.equal('Test initial storage')
   })
 
-  it('should call ask_for_coin() method', async () => {
+  it('should call update_storage() method', async () => {
     const dropdownExecuteMethod = await driver.wait(
       until.elementLocated(By.xpath("//select[@name='dropdown-execute-method']"))
     )
