@@ -42,10 +42,7 @@ const handleGetContractState = async (
 ) => {
   callingContractState.value = true
   try {
-    const { result } = await $jsonRpc.call({
-      method: 'get_contract_state',
-      params: [contractAddress, method, methodArguments]
-    })
+    const result = await $jsonRpc.getContractState({ contractAddress, method, methodArguments })
 
     contractState.value = {
       ...contractState.value,
@@ -66,14 +63,11 @@ const handleGetContractState = async (
 const handleCallContractMethod = async ({ method, params }: { method: string; params: any[] }) => {
   callingContractMethod.value = true
   try {
-    const { result } = await $jsonRpc.call({
-      method: 'call_contract_function',
-      params: [
-        store.currentUserAddress,
-        deployedContract.value?.address,
-        `${abi.value.class}.${method}`,
-        params
-      ]
+    const result = await $jsonRpc.callContractFunction({
+      userAccount: store.currentUserAddress || '',
+      contractAddress: deployedContract.value?.address || '',
+      method: `${abi.value.class}.${method}`,
+      params
     })
 
     if (deployedContract.value?.address && result.status === 'success') {
@@ -116,12 +110,10 @@ const handleDeployContract = async ({
       let contractSchema = null
       loadingConstructorInputs.value = true
       try {
-        const {
-          result: { data }
-        } = await $jsonRpc.call({
-          method: 'get_icontract_schema_for_code',
-          params: [contract.content]
-        })
+        const { data }
+          = await $jsonRpc.getContractSchema({
+            code: contract.content
+          })
 
         contractSchema = data
         errorConstructorInputs.value = undefined
@@ -142,14 +134,11 @@ const handleDeployContract = async ({
         deployingContract.value = true
         try {
           const constructorParamsAsString = JSON.stringify(constructorParams)
-          const { result } = await $jsonRpc.call({
-            method: 'deploy_intelligent_contract',
-            params: [
-              store.currentUserAddress,
-              contractSchema.class,
-              contract.content,
-              constructorParamsAsString
-            ]
+          const result = await $jsonRpc.deployContract({
+            userAccount: store.currentUserAddress || '',
+            className: contractSchema.class,
+            code: contract.content,
+            constructorParams: constructorParamsAsString
           })
           if (result?.status === 'success') {
             store.addDeployedContract({
@@ -190,10 +179,8 @@ const setDefaultState = async (contract: DeployedContract) => {
     // constructorInputs.value = JSON.parse(contract.defaultState || '{}')
     // TODO: check if we need to update again also we have an issue with conversion
     // between `bool` in Python with value `True` vs JSON boolean with value `true`
-
-    const { result } = await $jsonRpc.call({
-      method: 'get_icontract_schema',
-      params: [contract.address]
+    const result = await $jsonRpc.getDeployedContractSchema({
+      address: contract.address
     })
 
     abi.value = result.data
@@ -208,9 +195,8 @@ const getConstructorInputs = async () => {
     loadingConstructorInputs.value = true
     try {
 
-      const { result } = await $jsonRpc.call({
-        method: 'get_icontract_schema_for_code',
-        params: [contract.value.content]
+      const result = await $jsonRpc.getContractSchema({
+        code: contract.value.content
       })
       if (!constructorInputs.value) {
         constructorInputs.value = result.data?.methods['__init__']?.inputs

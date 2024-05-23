@@ -32,15 +32,8 @@ const validatorToCreate = ref<CreateValidatorModel>({
 onMounted(async () => {
   try {
 
-    const [{ result: validatorsResult }, { result: modelsResult }] = await Promise.all([$jsonRpc.call({
-      method: 'get_all_validators',
-      params: []
-    }), $jsonRpc.call({
-      method: 'get_providers_and_models',
-      params: []
-    })])
+    const [validatorsResult, modelsResult] = await Promise.all([$jsonRpc.getValidators(), $jsonRpc.getProvidersAndModels()])
 
-    
     if (validatorsResult?.status === 'success') {
       validators.value = validatorsResult.data
     } else {
@@ -116,10 +109,7 @@ const handleUpdateValidator = async () => {
       return
     }
     const contractConfig = JSON.parse(config || '{}')
-    const { result } = await $jsonRpc.call({
-      method: 'update_validator',
-      params: [selectedValidator.value?.address, stake, provider, model, contractConfig]
-    })
+    const result = await $jsonRpc.updateValidator({ address: selectedValidator.value?.address || '', stake, provider, model, config: contractConfig })
     if (result?.status === 'success') {
       const index = validators.value.findIndex(
         (v) => v.address === selectedValidator.value?.address
@@ -162,9 +152,8 @@ const handleDeleteValidator = async () => {
       })
       return
     }
-    const { result } = await $jsonRpc.call({
-      method: 'delete_validator',
-      params: [address]
+    const result = await $jsonRpc.deleteValidator({
+      address: address || ''
     })
     if (result?.status === 'success') {
       validators.value = validators.value.filter((v) => v.address !== address)
@@ -211,10 +200,7 @@ const handleCreateNewValidator = async () => {
       return
     }
     const { stake, provider, model, config } = validatorToCreate.value
-    const { result } = await $jsonRpc.call({
-      method: 'create_validator',
-      params: [stake, provider, model, config]
-    })
+    const result = await $jsonRpc.createValidator({ stake, provider, model, config })
     if (result?.status === 'success') {
       validators.value.push(result.data)
       notify({
