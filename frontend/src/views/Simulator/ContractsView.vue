@@ -134,8 +134,8 @@ const closeDeleteFileModal = () => {
           <input type="text" class="bg-slate-100 dark:bg-zinc-700 w-full" v-model="editingFileName"
             @blur="handleSaveFile" @keyup.enter="handleSaveFile">
         </div>
-        <div class="flex items-center justify-between w-full" v-else>
-          <div class="flex max-w-[80%] cursor-pointer" @click="openContract(contract.id)">
+        <div class="truncate flex items-center justify-between w-full" v-else>
+          <div class="truncate ..." @click="openContract(contract.id)">
             {{ contract.name }}
           </div>
           <div class="flex" v-show="showFileOptionsId === contract.id">

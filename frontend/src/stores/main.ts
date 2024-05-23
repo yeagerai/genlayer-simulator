@@ -27,7 +27,8 @@ export const useMainStore = defineStore('mainStore', {
       nodeLogs: [],
       accounts: localStorage.getItem('mainStore.accounts')
         ? (localStorage.getItem('mainStore.accounts') || '').split(',')
-        : []
+        : [],
+        contractTransactions: {},
     }
   },
   actions: {
