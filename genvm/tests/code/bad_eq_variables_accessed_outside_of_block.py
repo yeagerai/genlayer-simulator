@@ -1,5 +1,6 @@
 from genvm.base.equivalence_principle import EquivalencePrinciple
 
+
 class A:
 
     def __init__(self) -> None:
@@ -9,10 +10,10 @@ class A:
         final_result = {}
         async with EquivalencePrinciple(
             result=final_result,
-            principle="The result['give_coin'] has to be exactly the same"
+            principle="The result['give_coin'] has to be exactly the same",
         ) as eq:
             result = await eq.call_llm("something")
-            name = 'james'
+            name = "james"
             eq.set(result)
-        name = 'dave'
+        name = "dave"
         return final_result["output"]

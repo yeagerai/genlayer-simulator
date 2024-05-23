@@ -12,7 +12,10 @@ load_dotenv()
 
 
 def leader_executes_transaction(
-    current_contract_state, transaction_input: dict, leader_config: dict, from_address: str,
+    current_contract_state,
+    transaction_input: dict,
+    leader_config: dict,
+    from_address: str,
 ) -> dict:
     args_str = ", ".join(f"{json.dumps(arg)}" for arg in transaction_input["args"])
 
@@ -128,7 +131,11 @@ async def exec_transaction(from_address, transaction_input, logger=None):
     valudators_results = []
     for validator in remaining_validators:
         validator_receipt = validator_executes_transaction(
-            current_contract_state, transaction_input, validator, from_address, leader_receipt
+            current_contract_state,
+            transaction_input,
+            validator,
+            from_address,
+            leader_receipt,
         )
         votes[validator["address"]] = validator_receipt["vote"]
         valudators_results.append(validator_receipt)
@@ -190,7 +197,6 @@ async def exec_transaction(from_address, transaction_input, logger=None):
         logger(f"Transaction has been fully executed...")
         logger(f"This is the data produced by the leader:\n\n {leader_receipt}")
         logger(f"Transaction ID:\n\n {txId}")
-
 
     execution_output = {}
     execution_output["leader_data"] = leader_receipt

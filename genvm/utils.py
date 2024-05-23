@@ -102,6 +102,7 @@ if __name__=="__main__":
     asyncio.run(main())
 """
 
+
 def get_contract_class_name(contract_code: str) -> str:
     pattern = r"class (\w+)\(IContract\):"
     matches = re.findall(pattern, contract_code)

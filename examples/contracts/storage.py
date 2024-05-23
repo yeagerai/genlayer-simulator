@@ -1,5 +1,6 @@
 from genvm.base.icontract import IContract
 
+
 # contract class
 class Storage(IContract):
 

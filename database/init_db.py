@@ -36,6 +36,7 @@ def db_get_transactions_audit_table_create_command() -> str:
     )
     """
 
+
 # types change data internal structure
 # 0 -> message
 # 1 -> IC_DEPLOY
@@ -48,6 +49,7 @@ def db_get_current_state_table_create_command() -> str:
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     )
     """
+
 
 def db_get_validators_table_create_command() -> str:
     return """
@@ -62,21 +64,25 @@ def db_get_validators_table_create_command() -> str:
     )
     """
 
-def db_cursor(db_name:str) -> psycopg2.extensions.connection:
-    if db_name == 'postgres':
+
+def db_cursor(db_name: str) -> psycopg2.extensions.connection:
+    if db_name == "postgres":
         connection = get_orig_db_connection()
-    elif db_name == 'genlayer_state':
+    elif db_name == "genlayer_state":
         connection = get_genlayer_db_connection()
     else:
         raise Exception('options are "postgres" or "genlayer_state"')
     connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
     return connection
 
+
 def create_db_if_it_doesnt_already_exists() -> str:
-    new_dbname = environ.get('DBNAME')
-    connection = db_cursor('postgres')
+    new_dbname = environ.get("DBNAME")
+    connection = db_cursor("postgres")
     cursor = connection.cursor()
-    cursor.execute(f"SELECT 1 FROM pg_catalog.pg_database WHERE datname = '{new_dbname}'")
+    cursor.execute(
+        f"SELECT 1 FROM pg_catalog.pg_database WHERE datname = '{new_dbname}'"
+    )
     exists = cursor.fetchone()
     if not exists:
         cursor.execute(f"CREATE DATABASE {new_dbname}")
@@ -89,7 +95,7 @@ def create_db_if_it_doesnt_already_exists() -> str:
     return result
 
 
-def create_tables_if_they_dont_already_exist(app:flask.app.Flask) -> str:
+def create_tables_if_they_dont_already_exist(app: flask.app.Flask) -> str:
     table_creation_commands = (
         db_get_transactions_table_create_command(),  # eq to blockchain
         db_get_transactions_audit_table_create_command(),  # so you can audit transactions
@@ -100,7 +106,7 @@ def create_tables_if_they_dont_already_exist(app:flask.app.Flask) -> str:
     connection = None
     result = "Tables created successfully!"
     try:
-        connection = db_cursor('genlayer_state')
+        connection = db_cursor("genlayer_state")
         cursor = connection.cursor()
 
         for command in table_creation_commands:
@@ -110,18 +116,21 @@ def create_tables_if_they_dont_already_exist(app:flask.app.Flask) -> str:
         connection.commit()
     except (Exception, psycopg2.DatabaseError) as error:
         app.error(error)
-        result = 'Failed to create tables!'
+        result = "Failed to create tables!"
     finally:
         if connection is not None:
             connection.close()
 
     return result
 
+
 def clear_db_tables(tables: list) -> str:
-    connection = db_cursor('genlayer_state')
+    connection = db_cursor("genlayer_state")
     cursor = connection.cursor()
     for table in tables:
-        cursor.execute(f"SELECT 1 FROM pg_catalog.pg_database WHERE datname = '{table}'")
+        cursor.execute(
+            f"SELECT 1 FROM pg_catalog.pg_database WHERE datname = '{table}'"
+        )
         exists = cursor.fetchone()
         if exists:
             cursor.execute(f"TRUNCATE TABLE {table} RESTART IDENTITY")

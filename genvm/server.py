@@ -16,7 +16,7 @@ from genvm.utils import (
     save_files,
     delete_recipts,
     generate_deploy_contract,
-    get_contract_class_name
+    get_contract_class_name,
 )
 from code_enforcement import code_enforcement_check
 
@@ -24,6 +24,7 @@ from common.messages import MessageHandler
 from common.logging import setup_logging_config
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 setup_logging_config()
@@ -65,8 +66,8 @@ def leader_executes_transaction(contract_code: str, node_config: dict) -> dict:
     if result.returncode != 0:
         return msg.response_format(
             status="error",
-            message=result.stderr.split('\n')[-2],
-            data=str(result.stderr)
+            message=result.stderr.split("\n")[-2],
+            data=str(result.stderr),
         )
 
     # Access the output of the subprocess.run command
@@ -88,7 +89,7 @@ def validator_executes_transaction(
 ) -> dict:
 
     delete_recipts()
-    
+
     msg = MessageHandler(app, socketio)
 
     return_data = {"status": "error", "data": None}
@@ -142,7 +143,9 @@ def get_icontract_schema(icontract: str) -> dict:
     msg.debug_response("class name", class_name)
 
     if not class_name:
-        return msg.error_response(message="This contract does not have a class declaration")
+        return msg.error_response(
+            message="This contract does not have a class declaration"
+        )
 
     iclass = namespace[class_name]
 
@@ -169,7 +172,7 @@ def get_icontract_schema(icontract: str) -> dict:
 
         result = {"inputs": inputs, "output": return_annotation}
 
-        msg.debug_response("Class method ("+class_name+"."+name+")", result)
+        msg.debug_response("Class method (" + class_name + "." + name + ")", result)
 
         methods[name] = result
 
@@ -181,7 +184,14 @@ def get_icontract_schema(icontract: str) -> dict:
             for stmt in node.body:
                 if isinstance(stmt, ast.AnnAssign):
                     if hasattr(stmt.annotation, "id") and hasattr(stmt.target, "id"):
-                        msg.debug_response("Class variables ("+class_name+"."+stmt.target.id+")", stmt.annotation.id)
+                        msg.debug_response(
+                            "Class variables ("
+                            + class_name
+                            + "."
+                            + stmt.target.id
+                            + ")",
+                            stmt.annotation.id,
+                        )
                         variables[stmt.target.id] = stmt.annotation.id
 
     response = {"class": class_name, "methods": methods, "variables": variables}
@@ -191,7 +201,11 @@ def get_icontract_schema(icontract: str) -> dict:
 
 @jsonrpc.method("deploy_contract")
 def deploy_contract(
-    from_address:str, contract_code: str, constructor_args: str, class_name: str, leader_config: dict
+    from_address: str,
+    contract_code: str,
+    constructor_args: str,
+    class_name: str,
+    leader_config: dict,
 ) -> dict:
     msg = MessageHandler(app, socketio)
 
@@ -220,7 +234,9 @@ def deploy_contract(
     msg.debug_response("RUN Deploy Result", result)
 
     if result.returncode != 0:
-        return msg.error_response(message=str(result.returncode) + ": " + str(result.stderr))
+        return msg.error_response(
+            message=str(result.returncode) + ": " + str(result.stderr)
+        )
 
     # Access the output of the subprocess.run command
     file = open(os.environ.get("GENVMCONLOC") + "/receipt_leader.json", "r")
@@ -235,15 +251,17 @@ def deploy_contract(
 
 
 @jsonrpc.method("get_contract_data")
-def get_contract_data(code: str, state: str, method_name: str, method_args: list) -> dict:
+def get_contract_data(
+    code: str, state: str, method_name: str, method_args: list
+) -> dict:
     msg = MessageHandler(app, socketio)
     namespace = {}
     exec(code, namespace)
 
-    target_module = sys.modules['__main__']
+    target_module = sys.modules["__main__"]
     for name, value in namespace.items():
         setattr(target_module, name, value)
-    
+
     decoded_pickled_object = base64.b64decode(state)
     contract_state = pickle.loads(decoded_pickled_object)
     method_to_call = getattr(contract_state, method_name)
