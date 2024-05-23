@@ -295,34 +295,30 @@ def deploy_intelligent_contract(
 @jsonrpc.method("count_validators")
 def count_validators() -> dict:
     msg = MessageHandler(app, socketio)
-
     try:
-        connection = get_genlayer_db_connection()
-        cursor = connection.cursor()
-
-        cursor.execute("SELECT count(*) FROM validators;")
-
-        row = cursor.fetchone()
-
-        connection.commit()
-        cursor.close()
-        connection.close()
-
+        with DatabaseFunctions() as dbf:
+            validators = dbf.all_validators()
+            dbf.close()
     except Exception as e:
         return msg.error_response(exception=e)
-    
-    return msg.success_response({"count": row[0]})
+    return msg.success_response({"count": len(validators)})
 
 
 @jsonrpc.method("get_validator")
 def get_validator(validator_address: str) -> dict:
     msg = MessageHandler(app, socketio)
-    with DatabaseFunctions() as dbf:
-        validator = dbf.get_validator(validator_address)
-        dbf.close()
 
-    if not len(validator):
-        return msg.error_response(message=f"validator {validator_address} not found")
+    if not address_is_in_correct_format(validator_address):
+        return msg.error_response(message="validator address not in ethereum address format")
+
+    try:
+        with DatabaseFunctions() as dbf:
+            validator = dbf.get_validator(validator_address)
+            dbf.close()
+        if not len(validator):
+            return msg.error_response(message=f"validator {validator_address} not found")
+    except Exception as e:
+        return msg.error_response(exception=e)
     return msg.success_response(validator)
 
 
