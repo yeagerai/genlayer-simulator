@@ -78,12 +78,14 @@ export interface JsonRPCRequest {
   params: any[]
 }
 
-export interface JsonRPCResponse {
+export interface JsonRPCResult<T> {
+  data: T
+  message: string
+  status: string
+}
+
+export interface JsonRPCResponse<T> {
   id: string
   jsonrpc: string
-  result: {
-    data: any
-    message: string
-    status: string
-  }
+  result: JsonRPCResult<T>
 }
