@@ -17,6 +17,7 @@ from database.init_db import (
 )
 from database.credentials import get_genlayer_db_connection
 from database.functions import DatabaseFunctions
+from database.helpers import convert_to_dict
 from database.types import ContractData, CallContractInputData
 from consensus.algorithm import exec_transaction
 from consensus.nodes.create_nodes import (
@@ -29,7 +30,6 @@ from consensus.utils import vrf, genvm_url
 from consensus.nodes.create_nodes import random_validator_config
 from common.messages import MessageHandler
 from common.logging import setup_logging_config
-from rpc.utils import db_query_data_to_json
 
 from dotenv import load_dotenv
 
@@ -142,23 +142,20 @@ def fund_account(account: string, balance: float) -> dict:
 
         # Optionally log the account creation in the transactions table
         cursor.execute(
-            "INSERT INTO transactions (from_address, to_address, data, value, type) VALUES (NULL, %s, %s, %s, 0) RETURNING id;",
+            "INSERT INTO transactions (from_address, to_address, data, value, type) VALUES (NULL, %s, %s, %s, 0) RETURNING *;",
             (
                 current_account,
                 json.dumps({"action": "create_account", "initial_balance": balance}),
                 balance,
             ),
         )
-        new_transaction_id = cursor.fetchone()
-        cursor.execute("SELECT * FROM transactions WHERE id = %s;", (new_transaction_id,))
-
         new_transaction = cursor.fetchone()
 
-        new_transaction_json = db_query_data_to_json(cursor, new_transaction)
-        
+        new_transaction_dict = convert_to_dict(cursor, new_transaction)
+
         cursor.execute(
-            "INSERT INTO transactions_audit (data) VALUES (%s);",
-            (new_transaction_json,),
+            "INSERT INTO transactions_audit (transaction_id, data) VALUES (%s, %s);",
+            (new_transaction_dict["id"], json.dumps(new_transaction_dict),),
         )
 
         connection.commit()
@@ -213,20 +210,17 @@ def send_transaction(from_account: str, to_account: str, amount: float) -> dict:
 
             # Log the transaction
             cursor.execute(
-                "INSERT INTO transactions (from_address, to_address, value, type) VALUES (%s, %s, %s, %s, 0) RETURNING id;",
+                "INSERT INTO transactions (from_address, to_address, value, type) VALUES (%s, %s, %s, %s, 0) RETURNING *;",
                 (from_account, to_account, amount),
             )
 
-            new_transaction_id = cursor.fetchone()
-            cursor.execute("SELECT * FROM transactions WHERE id = %s;", (new_transaction_id,))
-
             new_transaction = cursor.fetchone()
 
-            new_transaction_json = db_query_data_to_json(cursor, new_transaction)
+            new_transaction_dict = convert_to_dict(cursor, new_transaction)
             
             cursor.execute(
-                "INSERT INTO transactions_audit (data) VALUES (%s);",
-                (new_transaction_json,),
+                "INSERT INTO transactions_audit (transaction_id, data) VALUES (%s, %s);",
+                (new_transaction_dict["id"], json.dumps(new_transaction_dict),),
             )
 
             connection.commit()
@@ -286,20 +280,17 @@ def deploy_intelligent_contract(
                 (contract_id, contract_data),
             )
             cursor.execute(
-                "INSERT INTO transactions (from_address, to_address, data, type) VALUES (%s, %s, %s, 1) RETURNING id;",
+                "INSERT INTO transactions (from_address, to_address, data, type) VALUES (%s, %s, %s, 1) RETURNING *;",
                 (from_account, contract_id, contract_data),
             )
 
-            new_transaction_id = cursor.fetchone()
-            cursor.execute("SELECT * FROM transactions WHERE id = %s;", (new_transaction_id,))
-
             new_transaction = cursor.fetchone()
 
-            new_transaction_json = db_query_data_to_json(cursor, new_transaction)
+            new_transaction_dict = convert_to_dict(cursor, new_transaction)
             
             cursor.execute(
-                "INSERT INTO transactions_audit (data) VALUES (%s);",
-                (new_transaction_json,),
+                "INSERT INTO transactions_audit (transaction_id, data) VALUES (%s, %s);",
+                (new_transaction_dict["id"], json.dumps(new_transaction_dict),),
             )
         except psycopg2.errors.UndefinedTable:
             return msg.error_response(message="create the tables in the database first")

@@ -1,11 +1,6 @@
 import re
-import json
 import string
 import random
-import datetime
-import psycopg2
-
-from decimal import Decimal
 
 
 def create_new_address() -> str:
@@ -30,14 +25,3 @@ def response_format(status:str, message:str='', data={}) -> dict:
         'message': message,
         'data': data
     }
-
-def db_query_data_to_json(db_cursor:psycopg2.extensions.cursor, db_query_result:dict) -> dict:
-    colnames = [desc[0] for desc in db_cursor.description]
-    dict_with_names = dict(zip(colnames, db_query_result))
-    for k, v in dict_with_names.items():
-        if isinstance(v, Decimal):
-            dict_with_names[k] = float(v)
-    for k, v in dict_with_names.items():
-        if isinstance(v, datetime.datetime):
-            dict_with_names[k] = str(v.isoformat())
-    return json.dumps(dict_with_names)

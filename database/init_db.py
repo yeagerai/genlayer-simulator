@@ -30,6 +30,7 @@ def db_get_transactions_audit_table_create_command() -> str:
     return """
     CREATE TABLE IF NOT EXISTS transactions_audit (
         id SERIAL PRIMARY KEY,
+        transaction_id INT,
         data JSONB,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     )
