@@ -24,9 +24,55 @@ Have ideas for new features or usecases? We're eager to hear them! But first:
 
 ### Writing Code
 
-To contribute to feature development or bug fixes.
-- Setup Simulator manually following the steps [here](https://github.com/yeagerai/genlayer-simulator?tab=readme-ov-file#installing-manually).
-- Check our [issue tracker](https://github.com/yeagerai/genlayer-simulator/issues) for tasks labeled `help wanted`.
+To contribute to feature development or bug fixes. Check our [issue tracker](https://github.com/yeagerai/genlayer-simulator/issues) for tasks labeled `help wanted`.
+#### Setup Simulator manually
+##### Window One
+
+```
+$ cp .env.example .env
+$ docker compose up
+```
+
+##### Window Two
+
+1. Installing the Ollama model
+
+    ```
+    $ docker exec -it ollama ollama run llama3
+    ```
+2. Setup your environment
+    - Linux / MacOS
+
+        ```
+        $ virtualenv .venv
+        $ source .venv/bin/activate
+        (.venv) $ pip install -r requirements.txt
+        (.venv) $ export PYTHONPATH="$(pwd)"
+        ```
+
+    - Windows (cmd)
+
+        ```
+        $ virtualenv .venv
+        $  .\.venv\Scripts\activate
+        (.venv) $ pip install -r requirements.txt
+        (.venv) $ set PYTHONPATH=%cd%
+        ```
+
+    - Windows (PowerShell)
+
+        ```
+        $ virtualenv .venv
+        $  .\.venv\Scripts\activate
+        (.venv) $ pip install -r requirements.txt
+        (.venv) $ $env:PYTHONPATH = (Get-Location).Path
+        ```
+
+3. Execute the Demo
+
+    ```
+    (.venv) $ python scripts/debug_simulator.py
+    ```
 
 ### Improving Documentation
 
