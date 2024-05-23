@@ -35,6 +35,7 @@ export interface MainStoreState {
     }
   }[]
   accounts: string[]
+  contractTransactions: Record<string, any>
 }
 
 export type UIMode = 'light' | 'dark'
