@@ -25,6 +25,17 @@ def db_get_transactions_table_create_command() -> str:
     )
     """
 
+
+def db_get_transactions_audit_table_create_command() -> str:
+    return """
+    CREATE TABLE IF NOT EXISTS transactions_audit (
+        id SERIAL PRIMARY KEY,
+        transaction_id INT,
+        data JSONB,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    )
+    """
+
 # types change data internal structure
 # 0 -> message
 # 1 -> IC_DEPLOY
@@ -81,6 +92,7 @@ def create_db_if_it_doesnt_already_exists() -> str:
 def create_tables_if_they_dont_already_exist(app:flask.app.Flask) -> str:
     table_creation_commands = (
         db_get_transactions_table_create_command(),  # eq to blockchain
+        db_get_transactions_audit_table_create_command(),  # so you can audit transactions
         db_get_current_state_table_create_command(),  # eq to eth state trie (type of Merkle Patricia Trie)
         db_get_validators_table_create_command(),  # eq to a smart contract on the rollup with people staking to be validators
     )
@@ -105,8 +117,8 @@ def create_tables_if_they_dont_already_exist(app:flask.app.Flask) -> str:
 
     return result
 
-def clear_db_tables(tables: list) -> str:
-    result = "Tables cleared successfully!"
+def clear_db_tables(app:flask.app.Flask, tables: list) -> str:
+    result = "Failed to clear tables!"
 
     tables_str = ', '.join(tables)
 
@@ -117,9 +129,9 @@ def clear_db_tables(tables: list) -> str:
         cursor.execute(f"TRUNCATE TABLE {tables_str} RESTART IDENTITY")
         cursor.close()
         connection.commit()
+        result = "Tables cleared successfully!"
     except (Exception, psycopg2.DatabaseError) as error:
         app.error(error)
-        result = 'Failed to clear tables!'
     finally:
         if connection is not None:
             connection.close()
