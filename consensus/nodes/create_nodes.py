@@ -7,6 +7,9 @@ from random import random, choice, uniform
 from dotenv import load_dotenv
 load_dotenv()
 
+provider_api_keys_placeholder = '<add_your_api_key_here>'
+
+
 def get_ollama_url(endpoint:str) -> str:
     return f"{os.environ['OLAMAPROTOCOL']}://{os.environ['OLAMAHOST']}:{os.environ['OLAMAPORT']}/api/{endpoint}"
 
@@ -16,10 +19,9 @@ def base_node_json(provider:str, model:str) -> dict:
 def get_random_provider_using_weights(defaults):
     # remove providers if no api key
     provider_weights = defaults['provider_weights']
-    default_value = '<add_your_api_key_here>'
-    if ('openai' in provider_weights and ('OPENAIKEY' not in os.environ or os.environ['OPENAIKEY'] == default_value)):
+    if ('openai' in provider_weights and ('OPENAIKEY' not in os.environ or os.environ['OPENAIKEY'] == provider_api_keys_placeholder)):
         provider_weights.pop('openai')
-    if ('heuristai' in provider_weights and('HEURISTAIAPIKEY' not in os.environ or os.environ['HEURISTAIAPIKEY'] == default_value)):
+    if ('heuristai' in provider_weights and('HEURISTAIAPIKEY' not in os.environ or os.environ['HEURISTAIAPIKEY'] == provider_api_keys_placeholder)):
         provider_weights.pop('heuristai')
 
     total_weight = sum(provider_weights.values())
@@ -31,27 +33,51 @@ def get_random_provider_using_weights(defaults):
         if random_num <= cumulative_weight:
             return key
 
+def get_ollama_models() -> list:
+    ollama_models_result = requests.get(get_ollama_url('tags')).json()
+    ollama_models = []
+    for ollama_model in ollama_models_result['models']:
+        # "llama3:latest" => "llama3"
+        ollama_models.append(ollama_model['name'].split(':')[0])
+    return ollama_models
+
 def get_provider_models(defaults:str, provider:str) -> list:
-
     if provider == 'ollama':
-        ollama_models_result = requests.get(get_ollama_url('tags')).json()
-        ollama_models = []
-        for ollama_model in ollama_models_result['models']:
-            # "llama3:latest" => "llama3"
-            ollama_models.append(ollama_model['name'].split(':')[0])
-        return ollama_models
-
+        return get_ollama_models()
     elif provider == 'openai':
         return defaults['openai_models'].split(',')
-
     elif provider == 'heuristai':
         return defaults['heuristai_models'].split(',')
-
     else:
         raise Exception('Provider ('+provider+') not found')
 
+def ollama_avaliable():
+    if get_ollama_models():
+        return True
+    else:
+        return False
+
+def openai_avaliable():
+    if "OPENAIKEY" in os.environ and os.environ['OPENAIKEY'] != provider_api_keys_placeholder:
+        return True
+    else:
+        return False
+
+def heuristai_avaliable():
+    if 'HEURISTAIAPIKEY' in os.environ and os.environ['HEURISTAIAPIKEY'] != provider_api_keys_placeholder:
+        return True
+    else:
+        return False
+
 def get_providers() -> list:
-    return ['openai', 'ollama', 'heuristai']
+    providers = []
+    if ollama_avaliable():
+        providers.append('ollama')
+    if openai_avaliable():
+        providers.append('openai')
+    if heuristai_avaliable():
+        providers.append('heuristai')
+    return providers
 
 def get_default_config_for_providers_and_nodes() -> dict:
     cwd = os.path.abspath(os.getcwd())

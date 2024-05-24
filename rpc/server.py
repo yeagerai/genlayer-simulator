@@ -337,6 +337,14 @@ def get_all_validators() -> dict:
 @jsonrpc.method("create_validator")
 def create_validator(stake: float, provider: str, model: str, config: json) -> dict:
     msg = MessageHandler(app, socketio)
+    # Make sure the provider...
+    providers_and_models = get_providers_and_models()["data"]
+    providers = providers_and_models.keys()
+    if provider not in providers:
+        return msg.error_response(message="Provider not available")
+    # ... and model exist
+    if model not in providers_and_models[provider]:
+        return msg.error_response(message="Model not available")
     try:
         new_address = create_new_address()
         config_json = json.dumps(config)
