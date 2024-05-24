@@ -1,107 +1,21 @@
 # rpc/server.py
 
-import re
 import os
 import json
 import psycopg2
 import string
 import requests
-import random
-from functools import partial
-from flask import Flask
-from flask_jsonrpc import JSONRPC
-from flask_socketio import SocketIO
-from flask_cors import CORS
 
-from database.init_db import (
-    create_db_if_it_doesnt_already_exists,
-    create_tables_if_they_dont_already_exist,
-    clear_db_tables,
-)
 from database.credentials import get_genlayer_db_connection
 from database.functions import DatabaseFunctions
 from database.helpers import convert_to_dict
 from database.types import ContractData, CallContractInputData
 from consensus.algorithm import exec_transaction
-from consensus.nodes.create_nodes import (
-    random_validator_config,
-    get_default_config_for_providers_and_nodes,
-    get_providers,
-    get_provider_models,
-)
 from consensus.utils import vrf, genvm_url
-from consensus.nodes.create_nodes import random_validator_config
-from message_handler.base import MessageHandler
-
-from dotenv import load_dotenv
-
-load_dotenv()
-
-app = Flask("jsonrpc_api")
-
-CORS(app, resources={r"/api/*": {"origins": "*"}}, intercept_exceptions=False)
-jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
-socketio = SocketIO(app, cors_allowed_origins="*")
-msg = MessageHandler(app, socketio)
+from rpc.address_utils import address_is_in_correct_format, create_new_address
 
 
-def create_new_address() -> str:
-    new_address = "".join(random.choice(string.hexdigits) for _ in range(40))
-    return "0x" + new_address
-
-
-def address_is_in_correct_format(address: str) -> bool:
-    pattern = r"^0x[" + string.hexdigits + "]{40}$"
-    if re.fullmatch(pattern, address):
-        return True
-    return False
-
-
-@socketio.on("connect")
-def handle_connect():
-    print("Client connected")
-
-
-@socketio.on("disconnect")
-def handle_disconnect():
-    print("Client disconnected")
-
-
-def log_status(message):
-    socketio.emit("status_update", {"message": message})
-
-
-@jsonrpc.method("create_db")
-def create_db() -> dict:
-    send_message = partial(msg.send_message, "create_db")
-    send_message("info", "Starting...")
-    result = None
-    try:
-        result = create_db_if_it_doesnt_already_exists()
-    except Exception as e:
-        return send_message("error", exception=e)
-    return send_message("success", data=result)
-
-
-@jsonrpc.method("create_tables")
-def create_tables() -> dict:
-    send_message = partial(msg.send_message, "create_tables")
-    send_message("info", "Starting...")
-    result = None
-    try:
-        result = create_tables_if_they_dont_already_exist(app)
-    except Exception as e:
-        return send_message("error", exception=e)
-    return send_message("success", data=result)
-
-
-@jsonrpc.method("clear_account_and_transactions_tables")
-def clear_account_and_transactions_tables() -> dict:
-    clear_db_tables(["current_state", "transactions"])
-    return {"status": "OK"}
-
-
-@jsonrpc.method("create_account")
+@jsonrpc.method("create_account")  # DB
 def create_account() -> dict:
     msg = MessageHandler(app, socketio)
     balance = 0
@@ -121,7 +35,7 @@ def create_account() -> dict:
     return msg.success_response({"address": new_address, "balance": balance})
 
 
-@jsonrpc.method("fund_account")
+@jsonrpc.method("fund_account")  # DB
 def fund_account(account: string, balance: float) -> dict:
     msg = MessageHandler(app, socketio)
 
@@ -172,7 +86,7 @@ def fund_account(account: string, balance: float) -> dict:
     return msg.success_response({"address": current_account, "balance": balance})
 
 
-@jsonrpc.method("send_transaction")
+@jsonrpc.method("send_transaction")  # DB
 def send_transaction(from_account: str, to_account: str, amount: float) -> dict:
     msg = MessageHandler(app, socketio)
 
@@ -247,7 +161,7 @@ def send_transaction(from_account: str, to_account: str, amount: float) -> dict:
     )
 
 
-@jsonrpc.method("deploy_intelligent_contract")
+@jsonrpc.method("deploy_intelligent_contract")  # genvm
 def deploy_intelligent_contract(
     from_account: str, class_name: str, contract_code: str, constructor_args: str
 ) -> dict:
@@ -326,7 +240,7 @@ def deploy_intelligent_contract(
     return msg.success_response({"contract_id": contract_id})
 
 
-@jsonrpc.method("count_validators")
+@jsonrpc.method("count_validators")  # DB
 def count_validators() -> dict:
     msg = MessageHandler(app, socketio)
 
@@ -348,131 +262,7 @@ def count_validators() -> dict:
     return msg.success_response({"count": row[0]})
 
 
-@jsonrpc.method("get_validator")
-def get_validator(validator_address: str) -> dict:
-    msg = MessageHandler(app, socketio)
-    with DatabaseFunctions() as dbf:
-        validator = dbf.get_validator(validator_address)
-        dbf.close()
-
-    if not len(validator):
-        return msg.error_response(message=f"validator {validator_address} not found")
-    return msg.success_response(validator)
-
-
-@jsonrpc.method("get_all_validators")
-def get_all_validators() -> dict:
-    msg = MessageHandler(app, socketio)
-    try:
-        with DatabaseFunctions() as dbf:
-            validators = dbf.all_validators()
-            dbf.close()
-    except Exception as e:
-        return msg.error_response(exception=e)
-    return msg.success_response(validators)
-
-
-@jsonrpc.method("create_validator")
-def create_validator(stake: float, provider: str, model: str, config: json) -> dict:
-    msg = MessageHandler(app, socketio)
-    try:
-        new_address = create_new_address()
-        config_json = json.dumps(config)
-        with DatabaseFunctions() as dbf:
-            dbf.create_validator(new_address, stake, provider, model, config_json)
-            dbf.close()
-    except Exception as e:
-        return msg.error_response(exception=e)
-    response = get_validator(new_address)
-    return msg.response_format(**response)
-
-
-@jsonrpc.method("update_validator")
-def update_validator(
-    validator_address: str, stake: float, provider: str, model: str, config: json
-) -> dict:
-    msg = MessageHandler(app, socketio)
-    try:
-        validator = get_validator(validator_address)
-        if validator["status"] == "error":
-            return validator
-        config_json = json.dumps(config)
-        with DatabaseFunctions() as dbf:
-            dbf.update_validator(validator_address, stake, provider, model, config_json)
-            dbf.close()
-    except Exception as e:
-        return msg.error_response(exception=e)
-    response = get_validator(validator_address)
-    return msg.response_format(**response)
-
-
-@jsonrpc.method("delete_validator")
-def delete_validator(validator_address: str) -> dict:
-    msg = MessageHandler(app, socketio)
-    try:
-        validator = get_validator(validator_address)
-        if validator["status"] == "error":
-            return validator
-        with DatabaseFunctions() as dbf:
-            dbf.delete_validator(validator_address)
-            dbf.close()
-    except Exception as e:
-        return msg.error_response(exception=e)
-    return msg.success_response(validator_address)
-
-
-@jsonrpc.method("delete_all_validators")
-def delete_all_validators() -> dict:
-    msg = MessageHandler(app, socketio)
-    try:
-        all_validators = get_all_validators()
-        data = all_validators["data"]
-        addresses = []
-        with DatabaseFunctions() as dbf:
-            for validator in data:
-                addresses.append(validator["address"])
-                dbf.delete_validator(validator["address"])
-            dbf.close()
-    except Exception as e:
-        return msg.error_response(exception=e)
-    response = get_all_validators()
-    return msg.response_format(**response)
-
-
-@jsonrpc.method("create_random_validators")
-def create_random_validators(
-    count: int, min_stake: float, max_stake: float, providers: list = []
-) -> dict:
-    msg = MessageHandler(app, socketio)
-    try:
-        for _ in range(count):
-            stake = random.uniform(min_stake, max_stake)
-            details = random_validator_config(providers=providers)
-            new_validator = create_validator(
-                stake, details["provider"], details["model"], details["config"]
-            )
-            if new_validator["status"] == "error":
-                return msg.error_response(message="Failed to create Validator")
-    except Exception as e:
-        return msg.error_response(exception=e)
-    response = get_all_validators()
-    return msg.response_format(**response)
-
-
-@jsonrpc.method("create_random_validator")
-def create_random_validator(stake: float) -> dict:
-    msg = MessageHandler(app, socketio)
-    try:
-        details = random_validator_config()
-        response = create_validator(
-            stake, details["provider"], details["model"], details["config"]
-        )
-    except Exception as e:
-        return msg.error_response(exception=e)
-    return msg.response_format(**response)
-
-
-@jsonrpc.method("call_contract_function")
+@jsonrpc.method("call_contract_function")  # DB
 async def call_contract_function(
     from_address: str, contract_address: str, function_name: str, args: list
 ) -> dict:
@@ -516,7 +306,7 @@ async def call_contract_function(
     return msg.success_response({"execution_output": execution_output})
 
 
-@jsonrpc.method("get_last_contracts")
+@jsonrpc.method("get_last_contracts")  # DB
 def get_last_contracts(number_of_contracts: int) -> dict:
     msg = MessageHandler(app, socketio)
 
@@ -546,7 +336,7 @@ def get_last_contracts(number_of_contracts: int) -> dict:
     return msg.success_response(contracts_info)
 
 
-@jsonrpc.method("get_contract_state")
+@jsonrpc.method("get_contract_state")  # DB
 def get_contract_state(
     contract_address: str, method_name: str, method_args: list
 ) -> dict:
@@ -591,7 +381,7 @@ def get_contract_state(
     return msg.success_response(response)
 
 
-@jsonrpc.method("get_icontract_schema")
+@jsonrpc.method("get_icontract_schema")  # DB
 def get_icontract_schema(contract_address: str) -> dict:
     msg = MessageHandler(app, socketio)
 
@@ -643,7 +433,7 @@ def get_icontract_schema(contract_address: str) -> dict:
     return msg.response_format(**data)
 
 
-@jsonrpc.method("get_icontract_schema_for_code")
+@jsonrpc.method("get_icontract_schema_for_code")  # genvm
 def get_icontract_schema_for_code(contract_code: str) -> dict:
     msg = MessageHandler(app, socketio)
 
@@ -659,25 +449,29 @@ def get_icontract_schema_for_code(contract_code: str) -> dict:
     return msg.response_format(**data)
 
 
-@jsonrpc.method("get_providers_and_models")
-def get_providers_and_models() -> dict:
-    msg = MessageHandler(app, socketio)
-    config = get_default_config_for_providers_and_nodes()
-    providers = get_providers()
-    providers_and_models = {}
-    for provider in providers:
-        providers_and_models[provider] = get_provider_models(
-            config["providers"], provider
-        )
-    return msg.success_response(providers_and_models)
+from flask import Flask
+from flask_jsonrpc import JSONRPC
+from flask_socketio import SocketIO
+from flask_cors import CORS
+from message_handler.base import MessageHandler
+from rpc.endpoints import register_all_rpc_endpoints
+from dotenv import load_dotenv
 
 
-@jsonrpc.method("ping")
-def ping() -> dict:
-    return {"status": "OK"}
+def create_app():
+    app = Flask("jsonrpc_api")
+    CORS(app, resources={r"/api/*": {"origins": "*"}}, intercept_exceptions=False)
+    jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
+    socketio = SocketIO(app, cors_allowed_origins="*")
+    msg_handler = MessageHandler(app, socketio)
+    return app, jsonrpc, socketio, msg_handler
 
 
 if __name__ == "__main__":
+    load_dotenv()
+    app, jsonrpc, socketio, msg_handler = create_app()
+    register_all_rpc_endpoints(app, jsonrpc, msg_handler)
+
     socketio.run(
         app,
         debug=os.environ["VSCODEDEBUG"] == "false",

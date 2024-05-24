@@ -124,7 +124,7 @@ def create_tables_if_they_dont_already_exist(app: flask.app.Flask) -> str:
     return result
 
 
-def clear_db_tables(tables: list) -> str:
+def clear_db_tables(tables: list) -> dict:
     connection = db_cursor("genlayer_state")
     cursor = connection.cursor()
     for table in tables:
@@ -137,3 +137,4 @@ def clear_db_tables(tables: list) -> str:
     cursor.close()
     connection.commit()
     connection.close()
+    return {"status": "OK"}
