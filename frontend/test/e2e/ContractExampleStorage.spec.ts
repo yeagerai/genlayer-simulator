@@ -17,7 +17,6 @@ describe('Contract Example Storage', () => {
   })
 
 
-
   it('should open Storage example contract', async () => {
     await contractsPage.navigate()
     await contractsPage.waitUntilVisible()

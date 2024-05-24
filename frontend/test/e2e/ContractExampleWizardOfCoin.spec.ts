@@ -1,7 +1,12 @@
 import { WebDriver, By, until } from 'selenium-webdriver'
 import { ContractsPage } from '../pages/ContractsPage.js'
 import { RunDebugPage } from '../pages/RunDebugPage.js'
+<<<<<<< HEAD
 import { expect, beforeAll, describe, afterAll, it } from 'vitest'
+=======
+import { beforeEach, before, describe, after, it } from 'node:test'
+import { expect } from 'chai'
+>>>>>>> staging
 import { getDriver } from '../utils/driver.js'
 
 let driver: WebDriver
@@ -9,13 +14,21 @@ let contractsPage: ContractsPage
 let runDebugPage: RunDebugPage
 
 describe('Contract Example WizardOfCoin', () => {
+<<<<<<< HEAD
   beforeAll(async () => {
+=======
+  before(async () => {
+>>>>>>> staging
     driver = await getDriver()
     await driver.manage().setTimeouts({ implicit: 2000 })
     contractsPage = new ContractsPage(driver)
     runDebugPage = new RunDebugPage(driver)
   })
 
+<<<<<<< HEAD
+=======
+  beforeEach(async () => {})
+>>>>>>> staging
 
   it('should open WizardOfCoin example contract', async () => {
     await contractsPage.navigate()
@@ -36,7 +49,7 @@ describe('Contract Example WizardOfCoin', () => {
           "//div[contains(@class, 'text-xs text-neutral-800 dark:text-neutral-200') and contains(text(), 'wizard_of_coin.gpy')]"
         )
       ),
-      10000
+      5000
     )
     expect(nameOfContract, 'WizardOfCoin file name contract should be visible').not.null
 
@@ -44,7 +57,7 @@ describe('Contract Example WizardOfCoin', () => {
       until.elementLocated(
         By.xpath("//input[contains(@name, 'have_coin') and contains(@type, 'checkbox')]")
       ),
-      10000
+      5000
     )
     expect(haveCoinCheck, 'Have coin checkbox should be visible').not.null
     await haveCoinCheck.click()
@@ -60,7 +73,7 @@ describe('Contract Example WizardOfCoin', () => {
           "//h5[contains(@class, 'text-sm') and contains(text(), 'Current Intelligent Contract State')]"
         )
       ),
-      10000
+      5000
     )
     expect(contractStateTitle, 'Contract state title section should be visible').not.null
 
@@ -68,7 +81,7 @@ describe('Contract Example WizardOfCoin', () => {
       until.elementLocated(
         By.xpath("//h5[contains(@class, 'text-sm') and contains(text(), 'Execute Transactions')]")
       ),
-      10000
+      5000
     )
     expect(executeTransactionsTitle, 'Execute transactions title section should be visible').not
       .null
@@ -84,25 +97,24 @@ describe('Contract Example WizardOfCoin', () => {
 
   it('should call get_have_coin state', async () => {
     await driver
-      .wait(until.elementLocated(By.xpath("//button[text()='get_have_coin']")), 10000)
+      .wait(until.elementLocated(By.xpath("//button[text()='get_have_coin']")), 5000)
       .click()
 
     const stateResult = await driver.wait(
       until.elementLocated(By.xpath("//div[contains(@data-test-id, 'get_have_coin')]")),
-      10000
+      5000
     )
     expect(stateResult, 'get_have_coin result should be visible').not.null
 
     const stateResultText = await driver
-      .wait(until.elementTextContains(stateResult, 'True'), 10000)
+      .wait(until.elementTextContains(stateResult, 'True'), 5000)
       .getText()
     expect(stateResultText, 'get_have_coin result should true').be.equal('True')
   })
 
   it('should call ask_for_coin() method', async () => {
     const dropdownExecuteMethod = await driver.wait(
-      until.elementLocated(By.xpath("//select[@name='dropdown-execute-method']")),
-      10000
+      until.elementLocated(By.xpath("//select[@name='dropdown-execute-method']"))
     )
     expect(dropdownExecuteMethod, 'select with method list should be visible').not.null
 
@@ -120,7 +132,7 @@ describe('Contract Example WizardOfCoin', () => {
     ).to.be.equal('Please give me the coin')
 
     await driver
-    .wait(until.elementLocated(By.xpath("//button[text()='Execute ask_for_coin()']")), 1000)
+    .wait(until.elementLocated(By.xpath("//button[text()='Execute ask_for_coin()']")), 5000)
     .click()
   })
   afterAll(() => driver.quit())
