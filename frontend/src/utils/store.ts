@@ -4,6 +4,8 @@ import { v4 as uuidv4 } from 'uuid'
 
 export const setupStores = async () => {
   const mainStore = useMainStore()
+  // await db.contractFiles.clear()
+  // localStorage.setItem('mainStore.contractsModified', '')
   if (
     (await db.contractFiles.count()) === 0 &&
     !localStorage.getItem('mainStore.contractsModified')
@@ -32,4 +34,13 @@ export const setupStores = async () => {
   } else {
     mainStore.accounts = localStorage.getItem('mainStore.accounts') ?  (localStorage.getItem('mainStore.accounts') || '').split(',') : []
   }
+}
+
+
+export const getContractFileName = (name: string) => {
+  const tokens = name.split('.')
+  if (tokens.length > 0) {
+    return `${tokens[0]}.gpy`
+  }
+  return `${name}.gpy`
 }
