@@ -1,4 +1,4 @@
-from rpc.tests.base import payload, post_request
+from common.testing.requests import payload, post_request
 
 validator_keys = ['id', 'address', 'stake', 'provider','model', 'config', 'updated_at']
 

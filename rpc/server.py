@@ -620,6 +620,11 @@ def ping() -> dict:
     return {"status": "OK"}
 
 
+@app.route('/github-actions/ping')
+def ping() -> dict:
+    return {"status": "OK"}
+
+
 if __name__ == "__main__":
     socketio.run(
         app,

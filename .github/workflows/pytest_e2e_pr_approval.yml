@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - staging
+    types: [opened, synchronize, reopened]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Copy .env file
+        run: cp .env.example .env
+      
+      - name: Adding openai key to the .env
+        run: echo "OPENAIKEY=${{ secrets.OPENAI_API_KEY }}" >> .env
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Run Docker Compose
+        run: docker compose up -d
+
+      - name: Wait for services to be up
+        run: |
+          while ! curl -sSf http://localhost:4000/github-actions/ping > /dev/null; do
+            echo "Waiting for rpc server..."
+            sleep 5
+          done
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.12.2
+
+      - name: Set up PYTHONPATH
+        run: |
+          echo "::set-env name=PYTHONPATH::$(pwd)"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements.test.txt
+
+      - name: Run tests
+        run: pytest tests/e2e/
+
+      - name: Shutdown Docker Compose
+        if: always()
+        run: docker-compose down
