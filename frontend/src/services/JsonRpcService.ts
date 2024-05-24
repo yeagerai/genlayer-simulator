@@ -1,6 +1,6 @@
 import { rpcClient } from '@/utils'
 import type { IJsonRPCService } from './IJsonRpcService'
-import type { JsonRPCRequest, JsonRPCResponse, JsonRPCResult } from '@/types'
+import type { JsonRPCResult, JsonRPCRequest, JsonRPCResponse } from '@/types'
 
 export class JsonRprService implements IJsonRPCService {
   /**

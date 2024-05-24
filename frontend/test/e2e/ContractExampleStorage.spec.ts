@@ -1,8 +1,7 @@
 import { WebDriver, By, until } from 'selenium-webdriver'
 import { ContractsPage } from '../pages/ContractsPage.js'
 import { RunDebugPage } from '../pages/RunDebugPage.js'
-import { beforeEach, before, describe, after, it } from 'node:test'
-import { expect } from 'chai'
+import { expect, beforeAll, describe, afterAll, it } from 'vitest'
 import { getDriver } from '../utils/driver.js'
 
 let driver: WebDriver
@@ -10,14 +9,14 @@ let contractsPage: ContractsPage
 let runDebugPage: RunDebugPage
 
 describe('Contract Example Storage', () => {
-  before(async () => {
+  beforeAll(async () => {
     driver = await getDriver()
     await driver.manage().setTimeouts({ implicit: 2000 })
     contractsPage = new ContractsPage(driver)
     runDebugPage = new RunDebugPage(driver)
   })
 
-  beforeEach(async () => {})
+
 
   it('should open Storage example contract', async () => {
     await contractsPage.navigate()
@@ -130,5 +129,5 @@ describe('Contract Example Storage', () => {
     .wait(until.elementLocated(By.xpath("//button[text()='Execute update_storage()']")), 5000)
     .click()
   })
-  after(() => driver.quit())
+  afterAll(() => driver.quit())
 })
