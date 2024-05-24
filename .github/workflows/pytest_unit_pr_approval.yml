@@ -1,0 +1,30 @@
+name: PyTest - Unit - PR approval
+
+on:
+  pull_request:
+    branches:
+      - staging
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.12.2
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements.test.txt
+
+      - name: Run pytest
+        run: pytest rpc/tests/unit/
+
