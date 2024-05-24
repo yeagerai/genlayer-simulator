@@ -25,6 +25,15 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements.test.txt
 
-      - name: Run pytest
+      - name: Unit Tests - RPC
         run: pytest rpc/tests/unit/
+
+      - name: Unit Tests - GenVM
+        run: pytest genvm/tests/unit/
+
+      - name: Unit Tests - Consensus
+        run: pytest consensus/tests/unit/
+
+      - name: Unit Tests - Database
+        run: pytest database/tests/unit/
 
