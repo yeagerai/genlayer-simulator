@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def get_database_credentials(database):
+def get_database_credentials(database: str) -> str:
     """Retrieve the credentials for a specific database."""
     # Validate database choice and set the appropriate database name
     if database not in ["genlayer", "postgres"]:
@@ -18,7 +18,7 @@ def get_database_credentials(database):
 
 
 class PostgresManager:
-    def __init__(self, database):
+    def __init__(self, database: str) -> None:
         """Initialize the PostgresManager with connection parameters."""
         database_credentials = get_database_credentials(database)
         self.connection_pool = psycopg2.pool.SimpleConnectionPool(
@@ -29,11 +29,11 @@ class PostgresManager:
         """Retrieve a connection from the connection pool."""
         return self.connection_pool.getconn()
 
-    def release_connection(self, conn):
+    def release_connection(self, conn: psycopg2.extensions.connection) -> None:
         """Return a connection to the pool."""
         self.connection_pool.putconn(conn)
 
-    def execute_query(self, query, params=None):
+    def execute_query(self, query: str, params=None) -> list:
         """Execute a SQL query with optional parameters."""
         conn = self.get_connection()
         try:
@@ -49,24 +49,24 @@ class PostgresManager:
         finally:
             self.release_connection(conn)
 
-    def insert(self, table, data_dict):
+    def insert(self, table: str, data_dict: dict) -> None:
         """Insert a dictionary of data into a table."""
         columns = ", ".join(data_dict.keys())
         values = ", ".join(["%s"] * len(data_dict))
         query = f"INSERT INTO {table} ({columns}) VALUES ({values})"
         self.execute_query(query, list(data_dict.values()))
 
-    def update(self, table, data_dict, condition):
+    def update(self, table: str, data_dict: dict, condition: str) -> None:
         """Update rows in a table based on a condition."""
         set_clause = ", ".join([f"{key} = %s" for key in data_dict])
         query = f"UPDATE {table} SET {set_clause} WHERE {condition}"
         self.execute_query(query, list(data_dict.values()))
 
-    def remove(self, table, condition):
+    def remove(self, table: str, condition: str) -> None:
         """Remove rows from a table based on a condition."""
         query = f"DELETE FROM {table} WHERE {condition}"
         self.execute_query(query)
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Close all connections in the pool on destruction of the instance."""
         self.connection_pool.closeall()
