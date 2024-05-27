@@ -26,3 +26,6 @@ class Validators:
 
     def delete_validator(self, validator_address):
         self.validators_db_service.delete_validator(validator_address)
+
+    def delete_all_validators(self, validator_address):
+        self.validators_db_service.delete_all_validators(validator_address)
