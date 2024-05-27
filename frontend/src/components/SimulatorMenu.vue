@@ -9,6 +9,7 @@ import {
   DocumentTextIcon
 } from '@heroicons/vue/24/solid'
 import DiscordIcon from '@/assets/icons/DiscordIcon.vue'
+import { LINKS } from '@/constants/links'
 </script>
 
 <template>
@@ -42,7 +43,7 @@ import DiscordIcon from '@/assets/icons/DiscordIcon.vue'
     </div>
     <div class="flex flex-col items-center">
       <a
-        href="https://genlayer-docs.netlify.app/"
+        :href="LINKS.docs"
         target="_blank"
         class="link-docs p-3 border-r-4 border-transparent hover:border-r-primary hover:opacity-100"
       >
@@ -50,7 +51,7 @@ import DiscordIcon from '@/assets/icons/DiscordIcon.vue'
         <ToolTip text="GenLayer Docs" :options="{ placement: 'right' }" />
       </a>
       <a
-        href="https://discord.gg/wNSBXcYmJP"
+        :href="LINKS.discord"
         target="_blank"
         class="p-3 border-r-4 border-transparent hover:border-r-primary hover:opacity-100"
       >
@@ -58,7 +59,7 @@ import DiscordIcon from '@/assets/icons/DiscordIcon.vue'
         <ToolTip text="Discord" :options="{ placement: 'right' }" />
       </a>
       <a
-        href="https://docs.google.com/forms/d/1IVNsZwm936kSNCiXmlAP8bgJnbik7Bqaoc3I6UYhr-o/viewform?edit_requested=true"
+        :href="LINKS.feedbackForm"
         target="_blank"
         class="p-3 border-r-4 border-transparent hover:border-r-primary hover:opacity-100"
       >
