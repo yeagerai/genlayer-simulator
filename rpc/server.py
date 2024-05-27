@@ -3,7 +3,6 @@
 import os
 import json
 import psycopg2
-import string
 import requests
 
 from database.credentials import get_genlayer_db_connection
