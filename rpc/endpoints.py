@@ -17,11 +17,16 @@ from consensus.nodes.create_nodes import (
 )
 from consensus.nodes.create_nodes import random_validator_config
 from consensus.domain.state import State as StateDomain
+from consensus.domain.validators import Validators as ValidatorsDomain
 
 from rpc.address_utils import create_new_address
 from rpc.endpoint_generator import generate_rpc_endpoint
 from rpc.address_utils import address_is_in_correct_format, create_new_address
-from rpc.errors import InvalidAddressError
+from rpc.errors import InvalidAddressError, ItemNotFoundError
+
+
+def ping() -> dict:
+    return {"status": "OK"}
 
 
 def create_account(state_domain: StateDomain) -> dict:
@@ -42,25 +47,67 @@ def fund_account(
     return {"account_address": account_address, "amount": amount}
 
 
-def ping() -> dict:
-    return {"status": "OK"}
+def get_all_validators(validators_domain: ValidatorsDomain) -> dict:
+    return validators_domain.get_all_validators()
 
 
-def get_all_validators() -> dict:
-    with DatabaseFunctions() as dbf:
-        validators = dbf.all_validators()
-        dbf.close()
-    return validators
+def get_validator(validators_domain: ValidatorsDomain, validator_address: str) -> dict:
+    return validators_domain.get_validator(validator_address)
 
 
-def get_validator(validator_address: str) -> dict:
-    with DatabaseFunctions() as dbf:
-        validator = dbf.get_validator(validator_address)
-        dbf.close()
+def create_validator(
+    validators_domain: ValidatorsDomain,
+    stake: float,
+    provider: str,
+    model: str,
+    config: dict,
+) -> dict:
+    new_address = create_new_address()
+    new_validator = {
+        "address": new_address,
+        "stake": stake,
+        "provider": provider,
+        "model": model,
+        "config": json.dumps(config),
+    }
+    return validators_domain.create_validator(new_validator)
 
-    if not len(validator):
-        raise IndexError(validator)
-    return validator
+
+def update_validator(
+    validators_domain: ValidatorsDomain,
+    validator_address: str,
+    stake: float,
+    provider: str,
+    model: str,
+    config: dict,
+) -> dict:
+    validator = get_validator(validator_address)
+    if validator is None:
+        raise ItemNotFoundError(validator_address, "Validator not found")
+
+    validator["stake"] = stake
+    validator["provider"] = provider
+    validator["model"] = model
+    validator["config"] = json.dumps(config)
+    return validators_domain.update_validator(validator)
+
+
+def delete_validator(
+    validators_domain: ValidatorsDomain, validator_address: str
+) -> dict:
+    validator = get_validator(validator_address)
+    if validator is None:
+        raise ItemNotFoundError(validator_address, "Validator not found")
+
+    validators_domain.delete_validator(validator_address)
+    return validator_address
+
+
+def delete_all_validators(
+    validators_domain: ValidatorsDomain,
+) -> dict:
+    validators_domain.delete_all_validators()
+    return validators_domain.get_all_validators()
 
 
 def get_providers_and_models() -> dict:
@@ -72,53 +119,6 @@ def get_providers_and_models() -> dict:
             config["providers"], provider
         )
     return providers_and_models
-
-
-def create_validator(stake: float, provider: str, model: str, config: dict) -> dict:
-    new_address = create_new_address()
-    config_json = json.dumps(config)
-    with DatabaseFunctions() as dbf:
-        dbf.create_validator(new_address, stake, provider, model, config_json)
-        dbf.close()
-    response = get_validator(new_address)
-    return response
-
-
-def update_validator(
-    validator_address: str, stake: float, provider: str, model: str, config: dict
-) -> dict:
-    validator = get_validator(validator_address)
-    if validator["status"] == "error":
-        return validator
-    config_json = json.dumps(config)
-    with DatabaseFunctions() as dbf:
-        dbf.update_validator(validator_address, stake, provider, model, config_json)
-        dbf.close()
-    response = get_validator(validator_address)
-    return response
-
-
-def delete_validator(validator_address: str) -> dict:
-    validator = get_validator(validator_address)
-    if validator["status"] == "error":
-        return validator
-    with DatabaseFunctions() as dbf:
-        dbf.delete_validator(validator_address)
-        dbf.close()
-    return validator_address
-
-
-def delete_all_validators() -> dict:
-    all_validators = get_all_validators()
-    data = all_validators["data"]
-    addresses = []
-    with DatabaseFunctions() as dbf:
-        for validator in data:
-            addresses.append(validator["address"])
-            dbf.delete_validator(validator["address"])
-        dbf.close()
-    response = get_all_validators()
-    return response
 
 
 def create_random_validators(
@@ -144,19 +144,21 @@ def create_random_validator(stake: float) -> dict:
     return response
 
 
-def register_all_rpc_endpoints(app, jsonrpc, msg_handler, state_domain):
+def register_all_rpc_endpoints(
+    app, jsonrpc, msg_handler, state_domain, validators_domain
+):
     register_rpc_endpoint = partial(generate_rpc_endpoint, jsonrpc, msg_handler)
 
     register_rpc_endpoint(ping)
-    register_rpc_endpoint(create_validator)
-    register_rpc_endpoint(update_validator)
-    register_rpc_endpoint(delete_validator)
-    register_rpc_endpoint(get_validator)
-    register_rpc_endpoint(delete_all_validators)
+    register_rpc_endpoint(create_db)
+    register_rpc_endpoint(partial(validators_domain, create_validator))
+    register_rpc_endpoint(partial(validators_domain, update_validator))
+    register_rpc_endpoint(partial(validators_domain, delete_validator))
+    register_rpc_endpoint(partial(validators_domain, get_validator))
+    register_rpc_endpoint(partial(validators_domain, delete_all_validators))
+    register_rpc_endpoint(partial(validators_domain, get_all_validators))
     register_rpc_endpoint(create_random_validator)
     register_rpc_endpoint(create_random_validators)
-    register_rpc_endpoint(get_all_validators)
-    register_rpc_endpoint(create_db)
     register_rpc_endpoint(partial(create_tables, app))
     register_rpc_endpoint(get_providers_and_models)
     register_rpc_endpoint(

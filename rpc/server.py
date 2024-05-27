@@ -386,9 +386,11 @@ from message_handler.base import MessageHandler
 from rpc.endpoints import register_all_rpc_endpoints
 from dotenv import load_dotenv
 
-from database import db_client
-from consensus import domain
-from consensus import services
+from database.db_client import DBClient
+from consensus.services.state_db_service import StateDBService
+from consensus.services.validators_db_service import ValidatorsDBService
+from consensus.domain.state import State
+from consensus.domain.validators import Validators
 
 
 def create_app():
@@ -397,16 +399,18 @@ def create_app():
     jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
     socketio = SocketIO(app, cors_allowed_origins="*")
     msg_handler = MessageHandler(app, socketio)
-    genlayer_db_client = db_client.PostgresManager("genlayer")
-    state_db_service = services.StateDBService(genlayer_db_client)
-    state_domain = domain.State(state_db_service)
-    return app, jsonrpc, socketio, msg_handler, state_domain
+    genlayer_db_client = DBClient("genlayer")
+    state_domain = State(StateDBService(genlayer_db_client))
+    validators_domain = Validators(ValidatorsDBService(genlayer_db_client))
+    return app, jsonrpc, socketio, msg_handler, state_domain, validators_domain
 
 
 if __name__ == "__main__":
     load_dotenv()
-    app, jsonrpc, socketio, msg_handler, state_domain = create_app()
-    register_all_rpc_endpoints(app, jsonrpc, msg_handler, state_domain)
+    app, jsonrpc, socketio, msg_handler, state_domain, validators_domain = create_app()
+    register_all_rpc_endpoints(
+        app, jsonrpc, msg_handler, state_domain, validators_domain
+    )
 
     socketio.run(
         app,
