@@ -17,9 +17,9 @@ def get_database_credentials(database: str) -> str:
     return f"dbname={db_name} user={environ.get('DBUSER')} password={environ.get('DBPASSWORD')} host={environ.get('DBHOST')}"
 
 
-class PostgresManager:
+class DBClient:
     def __init__(self, database: str) -> None:
-        """Initialize the PostgresManager with connection parameters."""
+        """Initialize the DBClient with connection parameters."""
         database_credentials = get_database_credentials(database)
         self.connection_pool = psycopg2.pool.SimpleConnectionPool(
             1, 10, database_credentials
@@ -40,8 +40,7 @@ class PostgresManager:
             with conn.cursor() as cursor:
                 cursor.execute(query, params)
                 conn.commit()
-                if cursor.description:
-                    return cursor.fetchall()  # Return data for 'SELECT' queries
+                return cursor.fetchall()  # Return data for 'SELECT' queries
         except psycopg2.DatabaseError as e:
             conn.rollback()  # Rollback on exceptions
             print(f"Database error: {e}")
@@ -54,12 +53,16 @@ class PostgresManager:
         query = f"SELECT * FROM {table} WHERE {condition}"
         return self.execute_query(query)
 
-    def insert(self, table: str, data_dict: dict) -> None:
+    def insert(self, table: str, data_dict: dict, return_column: str) -> None:
         """Insert a dictionary of data into a table."""
         columns = ", ".join(data_dict.keys())
         values = ", ".join(["%s"] * len(data_dict))
         query = f"INSERT INTO {table} ({columns}) VALUES ({values})"
-        self.execute_query(query, list(data_dict.values()))
+        if return_column:
+            query += f" RETURNING {return_column}"
+        result = self.execute_query(query, list(data_dict.values()))
+        if result and return_column:
+            return result[0][0]
 
     def update(self, table: str, data_dict: dict, condition: str) -> None:
         """Update rows in a table based on a condition."""

@@ -2,9 +2,11 @@
 
 import json
 
+from database.db_client import DBClient
+
 
 class TransactionsDBService:
-    def __init__(self, db_client):
+    def __init__(self, db_client: DBClient):
         self.db_client = db_client
         self.db_state_table = "transactions"
         self.db_audits_table = "transactions_audit"
@@ -20,11 +22,13 @@ class TransactionsDBService:
             "value": value,
             "type": type,
         }
-        self.db_client.insert(self.db_state_table, new_transaction)
+        transaction_id = self.db_client.insert(
+            self.db_state_table, new_transaction, return_id="id"
+        )
 
         # Insert transaction audit record into the transactions_audit table
         transaction_audit_record = {
-            transaction_id: "",
+            transaction_id: transaction_id,
             data: json.dumps(new_transaction),
         }
         self.db_client.insert(self.db_audits_table, transaction_audit_record)
