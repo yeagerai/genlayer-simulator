@@ -16,20 +16,27 @@ from consensus.nodes.create_nodes import (
     get_provider_models,
 )
 from consensus.nodes.create_nodes import random_validator_config
+from consensus.domain.state import State as StateDomain
+
 from rpc.address_utils import create_new_address
 from rpc.endpoint_generator import generate_rpc_endpoint
 from rpc.address_utils import address_is_in_correct_format, create_new_address
+from rpc.errors import InvalidAddressError
 
 
-def create_account(state_domain) -> dict:
+def create_account(state_domain: StateDomain) -> dict:
     account_address = create_new_address()
     state_domain.create_account(account_address)
     return {"account_address": account_address}
 
 
-def fund_account(state_domain, account_address: str, amount: float) -> dict:
-    if not address_is_in_correct_format(account):
-        raise Exception("Incorrect address format. Please provide a valid address.")
+def fund_account(
+    state_domain: StateDomain, account_address: str, amount: float
+) -> dict:
+    if not address_is_in_correct_format(account_address):
+        raise InvalidAddressError(
+            account_address, "Incorrect address format. Please provide a valid address."
+        )
 
     state_domain.fund_account(account_address, amount)
     return {"account_address": account_address, "amount": amount}
