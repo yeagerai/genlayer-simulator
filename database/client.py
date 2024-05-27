@@ -49,6 +49,11 @@ class PostgresManager:
         finally:
             self.release_connection(conn)
 
+    def get(self, table: str, condition: str) -> list:
+        """Retrieve rows from a table based on a condition."""
+        query = f"SELECT * FROM {table} WHERE {condition}"
+        return self.execute_query(query)
+
     def insert(self, table: str, data_dict: dict) -> None:
         """Insert a dictionary of data into a table."""
         columns = ", ".join(data_dict.keys())
