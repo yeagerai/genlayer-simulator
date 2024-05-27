@@ -23,11 +23,11 @@ class StateDBService:
             "id": account_data["id"],
             "data": json.dumps({"balance": account_data["balance"]}),
         }
-        self.db_client.insert("current_state", account_state)
+        self.db_client.insert(self.db_state_table, account_state)
 
     def update_account(self, account_data: dict) -> None:
         update_condition = f"id = {account_data["id"]}"
         account_state = {
             "data": json.dumps({"balance": account_data["balance"]}),
         }
-        self.db_client.update("current_State", account_state, update_condition)
+        self.db_client.update(self.db_state_table, account_state, update_condition)
