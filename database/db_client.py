@@ -50,7 +50,9 @@ class DBClient:
 
     def get(self, table: str, condition: str) -> list:
         """Retrieve rows from a table based on a condition."""
-        query = f"SELECT * FROM {table} WHERE {condition}"
+        query = f"SELECT * FROM {table}"
+        if condition:
+            query += f" WHERE {condition}"
         return self.execute_query(query)
 
     def insert(self, table: str, data_dict: dict, return_column: str) -> None:
@@ -73,6 +75,11 @@ class DBClient:
     def remove(self, table: str, condition: str) -> None:
         """Remove rows from a table based on a condition."""
         query = f"DELETE FROM {table} WHERE {condition}"
+        self.execute_query(query)
+
+    def remove_all(self, table: str) -> None:
+        """Remove all rows from a table."""
+        query = f"DELETE FROM {table}"
         self.execute_query(query)
 
     def __del__(self) -> None:
