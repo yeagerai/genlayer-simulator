@@ -13,19 +13,24 @@ Contributions to the GenLayer Simulator are welcome in several forms:
 ### Testing the Simulator and Providing Feedback
 
 Help us make the simulator better by testing and giving feedback:
+
 - First, install the simulator using the GenLayer [CLI](https://github.com/yeagerai/genlayer-simulator?tab=readme-ov-file#quick-install).
-- Try out the Simulator features and tell us what you think through our [feedback form](https://docs.google.com/forms/d/1IVNsZwm936kSNCiXmlAP8bgJnbik7Bqaoc3I6UYhr-o/viewform?edit_requested=true) or on our [Discord Channel](https://discord.gg/8Jm4v89VAu).
+- Try out the Simulator features and tell us what you think through our [feedback form](https://docs.google.com/forms/d/1IVNsZwm936kSNCiXmlAP8bgJnbik7Bqaoc3I6UYhr-o/viewform) or on our [Discord Channel](https://discord.gg/8Jm4v89VAu).
 - If you find any issues, please report them on our [GitHub issues page](https://github.com/yeagerai/genlayer-simulator/issues).
 
 ### Sharing New Ideas and Use Cases
+
 Have ideas for new features or usecases? We're eager to hear them! But first:
+
 - Ensure you have the [Simulator installed](https://github.com/yeagerai/genlayer-simulator?tab=readme-ov-file#quick-install) first to explore existing use cases.
-- After you've familiarized yourself with the simulator, contribute your unique use case and share your ideas in our [Discord channel](https://discord.gg/8Jm4v89VAu). 
+- After you've familiarized yourself with the simulator, contribute your unique use case and share your ideas in our [Discord channel](https://discord.gg/8Jm4v89VAu).
 
 ### Writing Code
 
 To contribute to feature development or bug fixes. Check our [issue tracker](https://github.com/yeagerai/genlayer-simulator/issues) for tasks labeled `help wanted`.
+
 #### Setup Simulator manually
+
 ##### Window One
 
 ```
@@ -37,42 +42,44 @@ $ docker compose up
 
 1. Installing the Ollama model
 
-    ```
-    $ docker exec -it ollama ollama run llama3
-    ```
+   ```
+   $ docker exec -it ollama ollama run llama3
+   ```
+
 2. Setup your environment
-    - Linux / MacOS
 
-        ```
-        $ virtualenv .venv
-        $ source .venv/bin/activate
-        (.venv) $ pip install -r requirements.txt
-        (.venv) $ export PYTHONPATH="$(pwd)"
-        ```
+   - Linux / MacOS
 
-    - Windows (cmd)
+     ```
+     $ virtualenv .venv
+     $ source .venv/bin/activate
+     (.venv) $ pip install -r requirements.txt
+     (.venv) $ export PYTHONPATH="$(pwd)"
+     ```
 
-        ```
-        $ virtualenv .venv
-        $  .\.venv\Scripts\activate
-        (.venv) $ pip install -r requirements.txt
-        (.venv) $ set PYTHONPATH=%cd%
-        ```
+   - Windows (cmd)
 
-    - Windows (PowerShell)
+     ```
+     $ virtualenv .venv
+     $  .\.venv\Scripts\activate
+     (.venv) $ pip install -r requirements.txt
+     (.venv) $ set PYTHONPATH=%cd%
+     ```
 
-        ```
-        $ virtualenv .venv
-        $  .\.venv\Scripts\activate
-        (.venv) $ pip install -r requirements.txt
-        (.venv) $ $env:PYTHONPATH = (Get-Location).Path
-        ```
+   - Windows (PowerShell)
+
+     ```
+     $ virtualenv .venv
+     $  .\.venv\Scripts\activate
+     (.venv) $ pip install -r requirements.txt
+     (.venv) $ $env:PYTHONPATH = (Get-Location).Path
+     ```
 
 3. Execute the Demo
 
-    ```
-    (.venv) $ python scripts/debug_simulator.py
-    ```
+   ```
+   (.venv) $ python scripts/debug_simulator.py
+   ```
 
 ### Improving Documentation
 
