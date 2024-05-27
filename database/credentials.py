@@ -1,3 +1,4 @@
+# Description: this file is deprecated and should not be used. It is kept for reference only while the refactor is ongoing.
 import psycopg2
 from os import environ
 
