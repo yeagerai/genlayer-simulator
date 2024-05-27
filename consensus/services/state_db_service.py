@@ -2,9 +2,10 @@
 
 import json
 
+from database.db_client import DBClient
 
 class StateDBService:
-    def __init__(self, db_client):
+    def __init__(self, db_client: DBClient):
         self.db_client = db_client
         self.db_state_table = "current_state"
 

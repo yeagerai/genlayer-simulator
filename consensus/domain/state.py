@@ -2,9 +2,16 @@
 
 import json
 
+from consensus.services.state_db_service import StateDBService
+from consensus.services.transactions_db_service import TransactionsDBService
+
 
 class State:
-    def __init__(self, state_db_service, transactions_db_service):
+    def __init__(
+        self,
+        state_db_service: StateDBService,
+        transactions_db_service: TransactionsDBService,
+    ):
         self.state_db_service = state_db_service
         self.transactions_db_service = transactions_db_service
 
