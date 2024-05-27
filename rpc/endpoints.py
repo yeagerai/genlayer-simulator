@@ -20,26 +20,18 @@ from rpc.address_utils import create_new_address
 from rpc.endpoint_generator import generate_rpc_endpoint
 from rpc.address_utils import address_is_in_correct_format, create_new_address
 
-from database import db_client
-from consensus import domain
-from consensus import services
 
-genlayer_db_client = db_client.PostgresManager("genlayer")
-state_db_service = services.StateDBService(genlayer_db_client)
-state = domain.State(state_db_service)
-
-
-def create_account() -> dict:
+def create_account(state_domain) -> dict:
     account_address = create_new_address()
-    state.create_account(account_address)
+    state_domain.create_account(account_address)
     return {"account_address": account_address}
 
 
-def fund_account(account_address: str, amount: float) -> dict:
+def fund_account(state_domain, account_address: str, amount: float) -> dict:
     if not address_is_in_correct_format(account):
         raise Exception("Incorrect address format. Please provide a valid address.")
 
-    state.fund_account(account_address, amount)
+    state_domain.fund_account(account_address, amount)
     return {"account_address": account_address, "amount": amount}
 
 
@@ -145,7 +137,7 @@ def create_random_validator(stake: float) -> dict:
     return response
 
 
-def register_all_rpc_endpoints(app, jsonrpc, msg_handler):
+def register_all_rpc_endpoints(app, jsonrpc, msg_handler, state_domain):
     register_rpc_endpoint = partial(generate_rpc_endpoint, jsonrpc, msg_handler)
 
     register_rpc_endpoint(ping)
@@ -165,5 +157,5 @@ def register_all_rpc_endpoints(app, jsonrpc, msg_handler):
             clear_account_and_transactions_tables, ["current_state", "transactions"]
         )
     )
-    register_rpc_endpoint(create_account)
-    register_rpc_endpoint(fund_account)
+    register_rpc_endpoint(partial(create_account, state_domain))
+    register_rpc_endpoint(partial(fund_account, state_domain))

@@ -386,6 +386,10 @@ from message_handler.base import MessageHandler
 from rpc.endpoints import register_all_rpc_endpoints
 from dotenv import load_dotenv
 
+from database import db_client
+from consensus import domain
+from consensus import services
+
 
 def create_app():
     app = Flask("jsonrpc_api")
@@ -393,13 +397,16 @@ def create_app():
     jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
     socketio = SocketIO(app, cors_allowed_origins="*")
     msg_handler = MessageHandler(app, socketio)
-    return app, jsonrpc, socketio, msg_handler
+    genlayer_db_client = db_client.PostgresManager("genlayer")
+    state_db_service = services.StateDBService(genlayer_db_client)
+    state_domain = domain.State(state_db_service)
+    return app, jsonrpc, socketio, msg_handler, state_domain
 
 
 if __name__ == "__main__":
     load_dotenv()
-    app, jsonrpc, socketio, msg_handler = create_app()
-    register_all_rpc_endpoints(app, jsonrpc, msg_handler)
+    app, jsonrpc, socketio, msg_handler, state_domain = create_app()
+    register_all_rpc_endpoints(app, jsonrpc, msg_handler, state_domain)
 
     socketio.run(
         app,
