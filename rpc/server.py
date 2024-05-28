@@ -9,84 +9,9 @@ from database.credentials import get_genlayer_db_connection
 from database.functions import DatabaseFunctions
 from database.helpers import convert_to_dict
 from database.types import ContractData, CallContractInputData
-from consensus.algorithm import exec_transaction
-from consensus.utils import vrf, genvm_url
+from node.algorithm import exec_transaction
+from node.utils import vrf, genvm_url
 from rpc.address_utils import address_is_in_correct_format, create_new_address
-
-
-@jsonrpc.method("send_transaction")  # DB
-def send_transaction(from_account: str, to_account: str, amount: float) -> dict:
-    msg = MessageHandler(app, socketio)
-
-    if not address_is_in_correct_format(from_account):
-        return msg.error_response(message="from_account not in ethereum address format")
-
-    if not address_is_in_correct_format(to_account):
-        return msg.error_response(message="to_account not in ethereum address format")
-
-    try:
-        connection = get_genlayer_db_connection()
-        cursor = connection.cursor()
-
-        # Verify sender's balance
-        cursor.execute("SELECT data FROM current_state WHERE id = %s;", (from_account,))
-        sender_state = cursor.fetchone()
-        if sender_state and sender_state[0].get("balance", 0) >= amount:
-            # Update sender's balance
-            new_sender_balance = sender_state[0]["balance"] - amount
-            cursor.execute(
-                "UPDATE current_state SET data = jsonb_set(data, '{balance}', %s) WHERE id = %s;",
-                (json.dumps(new_sender_balance), from_account),
-            )
-
-            # Update recipient's balance
-            cursor.execute(
-                "SELECT data FROM current_state WHERE id = %s;", (to_account,)
-            )
-            recipient_state = cursor.fetchone()
-            if recipient_state:
-                new_recipient_balance = recipient_state[0].get("balance", 0) + amount
-                cursor.execute(
-                    "UPDATE current_state SET data = jsonb_set(data, '{balance}', %s) WHERE id = %s;",
-                    (json.dumps(new_recipient_balance), to_account),
-                )
-            else:
-                # Create account if it doesn't exist
-                cursor.execute(
-                    "INSERT INTO current_state (id, data) VALUES (%s, %s);",
-                    (to_account, json.dumps({"balance": amount})),
-                )
-
-            # Log the transaction
-            cursor.execute(
-                "INSERT INTO transactions (from_address, to_address, value, type) VALUES (%s, %s, %s, %s, 0) RETURNING *;",
-                (from_account, to_account, amount),
-            )
-
-            new_transaction = cursor.fetchone()
-
-            new_transaction_dict = convert_to_dict(cursor, new_transaction)
-
-            cursor.execute(
-                "INSERT INTO transactions_audit (transaction_id, data) VALUES (%s, %s);",
-                (
-                    new_transaction_dict["id"],
-                    json.dumps(new_transaction_dict),
-                ),
-            )
-
-            connection.commit()
-            cursor.close()
-            connection.close()
-        else:
-            return msg.error_response(message="insufficient funds")
-
-    except Exception as e:
-        return msg.error_response(exception=e)
-
-    return msg.success_response(
-        {"from_account": from_account, "to_account": to_account, "amount": amount}
-    )
 
 
 @jsonrpc.method("deploy_intelligent_contract")  # genvm
@@ -386,10 +311,10 @@ from rpc.endpoints import register_all_rpc_endpoints
 from dotenv import load_dotenv
 
 from database.db_client import DBClient
-from consensus.services.state_db_service import StateDBService
-from consensus.services.validators_db_service import ValidatorsDBService
-from consensus.domain.state import State
-from consensus.domain.validators import Validators
+from node.services.state_db_service import StateDBService
+from node.services.validators_db_service import ValidatorsDBService
+from node.domain.state import State
+from node.domain.validators import Validators
 
 
 def create_app():

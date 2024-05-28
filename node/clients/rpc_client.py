@@ -2,7 +2,7 @@
 
 import requests
 
-from consensus.errors import GenVMRPCErrorResponse
+from node.errors import GenVMRPCErrorResponse
 
 
 class RPCClient:

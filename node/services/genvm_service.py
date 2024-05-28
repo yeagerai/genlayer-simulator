@@ -2,8 +2,8 @@
 
 import requests
 
-from consensus.errors import GenVMRPCErrorResponse
-from consensus.clients.rpc_client import RPCClient
+from node.errors import GenVMRPCErrorResponse
+from node.clients.rpc_client import RPCClient
 
 
 class GenVMRPCService:

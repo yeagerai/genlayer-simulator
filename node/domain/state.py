@@ -2,9 +2,9 @@
 
 import json
 
-from consensus.services.state_db_service import StateDBService
-from consensus.services.transactions_db_service import TransactionsDBService
-from consensus.errors import AccountNotFoundError, InsufficientFundsError
+from node.services.state_db_service import StateDBService
+from node.services.transactions_db_service import TransactionsDBService
+from node.errors import AccountNotFoundError, InsufficientFundsError
 
 
 class State:

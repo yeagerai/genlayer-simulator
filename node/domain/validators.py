@@ -2,7 +2,7 @@
 
 import json
 
-from consensus.services.validators_db_service import ValidatorsDBService
+from node.services.validators_db_service import ValidatorsDBService
 
 
 class Validators:

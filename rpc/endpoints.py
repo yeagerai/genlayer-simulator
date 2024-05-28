@@ -10,14 +10,14 @@ from database.init_db import (
     clear_db_tables as clear_account_and_transactions_tables,
 )
 
-from consensus.nodes.create_nodes import (
+from node.nodes.create_nodes import (
     get_default_config_for_providers_and_nodes,
     get_providers,
     get_provider_models,
 )
-from consensus.nodes.create_nodes import random_validator_config
-from consensus.domain.state import State as StateDomain
-from consensus.domain.validators import Validators as ValidatorsDomain
+from node.nodes.create_nodes import random_validator_config
+from node.domain.state import State as StateDomain
+from node.domain.validators import Validators as ValidatorsDomain
 
 from rpc.address_utils import create_new_address
 from rpc.endpoint_generator import generate_rpc_endpoint
