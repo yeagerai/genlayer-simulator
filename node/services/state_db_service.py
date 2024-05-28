@@ -8,15 +8,18 @@ class StateDBService:
     def __init__(self, db_client: DBClient):
         self.db_client = db_client
         self.db_state_table = "current_state"
-
+    
+    def parse_state_result(self, state_result: list) -> dict:
+        return {
+            "id": state_result[0],
+            "data": json.loads(state_result[1]),
+        }
+    
     def get_account_by_address(self, account_address: str) -> dict:
         condition = f"id = {account_address}"
         result = self.db_client.get(self.db_state_table, condition)
         if (result[0]):
-            return {
-                "id": result[0]["id"],
-                "balance": json.loads(result[0]["data"])["balance"],
-            }
+            return self.parse_state_result(result[0])
         return None
 
     def create_new_account(self, account_data: dict) -> None:
@@ -45,4 +48,9 @@ class StateDBService:
         self.db_client.insert(self.db_state_table, contract_state)
 
     def get_last_contracts(self, number_of_contracts: int) -> list:
-        return self.db_client.get(self.db_state_table, None, number_of_contracts, 0)
+        db_contracts = self.db_client.get(self.db_state_table, None, number_of_contracts, 0)
+        
+        contracts = []
+        for contract in db_contracts:
+            contracts.append(self.parse_state_result(contract))
+        return contracts
