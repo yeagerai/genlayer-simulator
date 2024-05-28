@@ -8,6 +8,7 @@ from node.services.transactions_db_service import TransactionsDBService
 from node.services.validators_db_service import ValidatorsDBService
 from node.services.genvm_service import GenVMService
 from node.consensus.validators import ConsensusValidators
+from node.consensus.execute_transaction import exec_transaction
 from node.errors import (
     AccountNotFoundError,
     InsufficientFundsError,
@@ -162,3 +163,75 @@ class State:
 
     def get_contract_schema_for_code(self, contract_code: str) -> dict:
         return self.genvm_service.get_contract_schema(contract_code)
+
+    async def call_contract_function(
+        self,
+        from_address: str,
+        contract_address: str,
+        function_name: str,
+        args: dict,
+    ) -> dict:
+        # account fetching and validation
+        from_account_data = self.state_db_service.get_account_by_address(from_address)
+        contract_account_data = self.state_db_service.get_account_by_address(
+            contract_address
+        )
+
+        if not from_account_data:
+            raise AccountNotFoundError(
+                from_address, f"Account {from_address} does not exist."
+            )
+        if not contract_account_data:
+            raise AccountNotFoundError(
+                contract_address, f"Contract {contract_address} does not exist."
+            )
+
+        all_validators = self.validators_db_service.get_all_validators()
+        leader, remaining_validators = (
+            self.consensus_validators.get_validators_for_transaction(
+                all_validators, self.num_validators
+            )
+        )
+
+        # contract function call
+        function_call_data = {
+            "contract_address": contract_address,
+            "function_name": function_name,
+            "args": args,
+        }
+        execution_output = await exec_transaction(
+            from_address,
+            function_call_data,
+            current_contract_state=contract_account_data["data"],
+            leader=leader,
+            validators=remaining_validators,
+        )
+
+        leader_data = execution_output["leader_data"]
+        consensus_data = execution_output["consensus_data"]
+
+        # Update state
+        contract_data = (
+            {
+                "code": contract_account_data["data"]["code"],
+                "state": leader_data["result"]["contract_state"],
+            }
+        ).model_dump_json()
+        self.state_db_service.update_account(
+            {"id": contract_address, "data": contract_data}
+        )
+
+        # Record transaction
+        transaction_data = {
+            "from_address": from_address,
+            "to_address": contract_address,
+            "data": json.dumps(
+                {"new_contract_state": leader_data["result"]["contract_state"]}
+            ),
+            "consensus_data": consensus_data,
+            "value": 0,
+            "type": 2,
+        }
+        self.transactions_db_service.insert_transaction(**transaction_data)
+
+        return {"execution_output": execution_output}

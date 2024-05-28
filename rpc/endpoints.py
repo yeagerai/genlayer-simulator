@@ -39,9 +39,7 @@ def fund_account(
     state_domain: StateDomain, account_address: str, amount: float
 ) -> dict:
     if not address_is_in_correct_format(account_address):
-        raise InvalidAddressError(
-            account_address, "Incorrect address format. Please provide a valid address."
-        )
+        raise InvalidAddressError(account_address)
 
     state_domain.fund_account(account_address, amount)
     return {"account_address": account_address, "amount": amount}
@@ -51,14 +49,10 @@ def send_transaction(
     state_domain: StateDomain, from_account: str, to_account: str, amount: int
 ) -> dict:
     if not address_is_in_correct_format(from_account):
-        raise InvalidAddressError(
-            from_account, "Incorrect address format. Please provide a valid address."
-        )
+        raise InvalidAddressError(from_account)
 
     if not address_is_in_correct_format(to_account):
-        raise InvalidAddressError(
-            to_account, "Incorrect address format. Please provide a valid address."
-        )
+        raise InvalidAddressError(to_account)
 
     state_domain.send_funds(from_account, to_account, amount)
 
@@ -73,9 +67,7 @@ def deploy_intelligent_contract(
     constructor_args: str,
 ) -> dict:
     if not address_is_in_correct_format(from_account):
-        raise InvalidAddressError(
-            from_account, "Incorrect address format. Please provide a valid address."
-        )
+        raise InvalidAddressError(from_account)
 
     contract_address = create_new_address()
     return state_domain.deploy_intelligent_contract(
@@ -110,6 +102,23 @@ def get_icontract_schema_for_code(
     state_domain: StateDomain, contract_code: str
 ) -> dict:
     return state_domain.get_contract_schema_for_code(contract_code)
+
+
+def call_contract_function(
+    state_domain: StateDomain,
+    from_address: str,
+    contract_address: str,
+    function_name: str,
+    args: dict,
+) -> dict:
+    if not address_is_in_correct_format(from_address):
+        raise InvalidAddressError(from_address)
+    if not address_is_in_correct_format(contract_address):
+        raise InvalidAddressError(contract_address)
+
+    return state_domain.call_contract_function(
+        from_address, contract_address, function_name, args
+    )
 
 
 def get_all_validators(validators_domain: ValidatorsDomain) -> dict:
@@ -240,3 +249,4 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint(partial(send_transaction, state_domain))
     register_rpc_endpoint(partial(deploy_intelligent_contract, state_domain))
     register_rpc_endpoint(partial(get_last_contracts, state_domain))
+    register_rpc_endpoint(partial(call_contract_function, state_domain))

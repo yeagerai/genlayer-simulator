@@ -10,52 +10,8 @@ from database.functions import DatabaseFunctions
 from database.helpers import convert_to_dict
 from database.types import ContractData, CallContractInputData
 from node.consensus.execute_transaction import exec_transaction
-from node.utils import vrf, genvm_url
+from node.utils import genvm_url
 from rpc.address_utils import address_is_in_correct_format, create_new_address
-
-
-@jsonrpc.method("call_contract_function")  # DB
-async def call_contract_function(
-    from_address: str, contract_address: str, function_name: str, args: list
-) -> dict:
-    msg = MessageHandler(app, socketio)
-
-    if not address_is_in_correct_format(from_address):
-        return msg.error_response(message="from_address not in ethereum address format")
-
-    if not address_is_in_correct_format(contract_address):
-        return msg.error_response(
-            message="contract_address not in ethereum address format"
-        )
-
-    try:
-        connection = get_genlayer_db_connection()
-        cursor = connection.cursor()
-        msg.info_response("db connection created")
-
-        function_call_data = CallContractInputData(
-            contract_address=contract_address, function_name=function_name, args=args
-        ).model_dump_json()
-        msg.info_response("Data formatted")
-
-        msg.info_response(
-            f"Transaction sent from {from_address} to {contract_address}..."
-        )
-
-        # TODO: More logging needs to be done inside the consensus functionallity
-        # call consensus
-        execution_output = await exec_transaction(
-            from_address, json.loads(function_call_data), logger=log_status
-        )
-
-        cursor.close()
-        connection.close()
-        msg.info_response("db closed")
-
-    except Exception as e:
-        return msg.error_response(exception=e)
-
-    return msg.success_response({"execution_output": execution_output})
 
 
 @jsonrpc.method("get_contract_state")  # DB

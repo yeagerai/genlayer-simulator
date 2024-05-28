@@ -4,7 +4,7 @@ import requests
 from database.credentials import get_genlayer_db_connection
 from database.types import ConsensusData
 from database.functions import DatabaseFunctions
-from node.utils import vrf, get_contract_state, genvm_url, run_contract
+from node.utils import genvm_url, run_contract
 
 from dotenv import load_dotenv
 
@@ -98,25 +98,14 @@ def validator_executes_transaction(
     return return_value
 
 
-async def exec_transaction(from_address, transaction_input, logger=None):
-
-    with DatabaseFunctions() as dbf:
-        all_validators = dbf.all_validators()
-        dbf.close()
-
-    # Select validators using VRF
-    num_validators = int(os.environ["NUMVALIDATORS"])
-    selected_validators = vrf(all_validators, num_validators)
-
-    leader = selected_validators[0]
-    remaining_validators = selected_validators[1 : num_validators + 1]
-    if logger:
-        logger(f"Selected Leader: {leader}...")
-        logger(f"Selected Validators: {remaining_validators}...")
-        logger(f"Leader {leader} starts contract execution...")
-
-    # Get current contract state to pass it to leader and validators
-    current_contract_state = get_contract_state(transaction_input["contract_address"])
+async def exec_transaction(
+    from_address: str,
+    transaction_input: dict,
+    current_contract_state: dict,
+    leader: dict,
+    validators: list,
+) -> dict:
+    num_validators = len(validators) + 1
 
     # Leader executes transaction
     leader_receipt = leader_executes_transaction(
@@ -125,11 +114,8 @@ async def exec_transaction(from_address, transaction_input, logger=None):
 
     votes = {leader["address"]: leader_receipt["vote"]}
 
-    if logger:
-        logger(f"Leader {leader} has finished contract execution...")
-
     valudators_results = []
-    for validator in remaining_validators:
+    for validator in validators:
         validator_receipt = validator_executes_transaction(
             current_contract_state,
             transaction_input,
@@ -155,48 +141,10 @@ async def exec_transaction(from_address, transaction_input, logger=None):
     # for i in range(len(validation_results)):
     #     votes[f"{validation_results[i]['validator']}"] = validation_results[i]["vote"]
 
-    # Write transaction into DB
-    to_address = transaction_input["contract_address"]
-    data = json.dumps(
-        {"new_contract_state": leader_receipt["result"]["contract_state"]}
-    )
-    transaction_type = 2
     final = False
     consensus_data = ConsensusData(
         final=final, votes=votes, leader=leader_receipt, validators=valudators_results
     ).model_dump_json()
-    connection = get_genlayer_db_connection()
-    cursor = connection.cursor()
-    txId = cursor.execute(
-        "INSERT INTO transactions (from_address, to_address, data, consensus_data, type, created_at) VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP);",
-        (
-            from_address,
-            to_address,
-            data,
-            consensus_data,
-            transaction_type,
-        ),
-    )
-    # Update current state
-    new_contract_data = {}
-    new_contract_data["code"] = current_contract_state["code"]
-    new_contract_data["state"] = leader_receipt["result"]["contract_state"]
-    cursor.execute(
-        "UPDATE current_state SET data = %s WHERE id = %s;",
-        (
-            json.dumps(new_contract_data),
-            to_address,
-        ),
-    )
-
-    connection.commit()
-    cursor.close()
-    connection.close()
-
-    if logger:
-        logger(f"Transaction has been fully executed...")
-        logger(f"This is the data produced by the leader:\n\n {leader_receipt}")
-        logger(f"Transaction ID:\n\n {txId}")
 
     execution_output = {}
     execution_output["leader_data"] = leader_receipt

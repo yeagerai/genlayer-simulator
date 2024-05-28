@@ -2,7 +2,9 @@ import random
 
 
 class ConsensusValidators:
-    def select_random_validators(self, all_validators, num_validators):
+    def select_random_validators(
+        self, all_validators: list, num_validators: int
+    ) -> list:
         weights = []
         for i in all_validators:
             weights.append(float(i["stake"]))
@@ -20,7 +22,9 @@ class ConsensusValidators:
 
         return [all_validators[i] for i in unique_indices]
 
-    def get_validators_for_transaction(self, all_validators, num_validators):
+    def get_validators_for_transaction(
+        self, all_validators: list, num_validators: int
+    ) -> tuple:
         selected_validators = self.select_random_validators(
             all_validators, num_validators
         )
