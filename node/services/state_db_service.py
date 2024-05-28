@@ -43,3 +43,6 @@ class StateDBService:
             "data": contract_data,
         }
         self.db_client.insert(self.db_state_table, contract_state)
+
+    def get_last_contracts(self, number_of_contracts: int) -> list:
+        return self.db_client.get(self.db_state_table, None, number_of_contracts, 0)

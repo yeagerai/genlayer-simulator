@@ -14,28 +14,6 @@ from node.utils import vrf, genvm_url
 from rpc.address_utils import address_is_in_correct_format, create_new_address
 
 
-@jsonrpc.method("count_validators")  # DB
-def count_validators() -> dict:
-    msg = MessageHandler(app, socketio)
-
-    try:
-        connection = get_genlayer_db_connection()
-        cursor = connection.cursor()
-
-        cursor.execute("SELECT count(*) FROM validators;")
-
-        row = cursor.fetchone()
-
-        connection.commit()
-        cursor.close()
-        connection.close()
-
-    except Exception as e:
-        return msg.error_response(exception=e)
-
-    return msg.success_response({"count": row[0]})
-
-
 @jsonrpc.method("call_contract_function")  # DB
 async def call_contract_function(
     from_address: str, contract_address: str, function_name: str, args: list
@@ -78,36 +56,6 @@ async def call_contract_function(
         return msg.error_response(exception=e)
 
     return msg.success_response({"execution_output": execution_output})
-
-
-@jsonrpc.method("get_last_contracts")  # DB
-def get_last_contracts(number_of_contracts: int) -> dict:
-    msg = MessageHandler(app, socketio)
-
-    try:
-        connection = get_genlayer_db_connection()
-        cursor = connection.cursor()
-
-        # Query the database for the last N deployed contracts
-        cursor.execute(
-            "SELECT to_address, data FROM transactions WHERE type = 1 ORDER BY created_at DESC LIMIT %s;",
-            (number_of_contracts,),
-        )
-        contracts = cursor.fetchall()
-
-        # Format the result
-        contracts_info = []
-        for contract in contracts:
-            contract_info = {"address": contract[0]}
-            contracts_info.append(contract_info)
-
-            cursor.close()
-            connection.close()
-
-    except Exception as e:
-        return msg.error_response(exception=e)
-
-    return msg.success_response(contracts_info)
 
 
 @jsonrpc.method("get_contract_state")  # DB

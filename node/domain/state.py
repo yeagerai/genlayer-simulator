@@ -147,3 +147,7 @@ class State:
         }
         self.transactions_db_service.insert_transaction(**transaction_data)
         return {"contract_id": contract_address}
+
+    def get_last_contracts(self, number_of_contracts: int) -> dict:
+        last_contracts = self.state_db_service.get_last_contracts(number_of_contracts)
+        return {"contracts": last_contracts}

@@ -22,7 +22,7 @@ from node.domain.validators import Validators as ValidatorsDomain
 from rpc.address_utils import create_new_address
 from rpc.endpoint_generator import generate_rpc_endpoint
 from rpc.address_utils import address_is_in_correct_format, create_new_address
-from rpc.errors import InvalidAddressError, ItemNotFoundError
+from rpc.errors import InvalidAddressError, ItemNotFoundError, InvalidInputError
 
 
 def ping() -> dict:
@@ -85,6 +85,16 @@ def deploy_intelligent_contract(
         contract_code,
         constructor_args,
     )
+
+
+def get_last_contracts(state_domain: StateDomain, number_of_contracts: int) -> dict:
+    if not number_of_contracts < 1:
+        raise InvalidInputError(
+            "number_of_contracts",
+            number_of_contracts,
+            "Number of contracts should be greater than 0.",
+        )
+    return state_domain.get_last_contracts(number_of_contracts)
 
 
 def get_all_validators(validators_domain: ValidatorsDomain) -> dict:
@@ -214,3 +224,4 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint(partial(fund_account, state_domain))
     register_rpc_endpoint(partial(send_transaction, state_domain))
     register_rpc_endpoint(partial(deploy_intelligent_contract, state_domain))
+    register_rpc_endpoint(partial(get_last_contracts, state_domain))
