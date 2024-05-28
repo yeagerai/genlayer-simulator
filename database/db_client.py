@@ -53,11 +53,24 @@ class DBClient:
         query = f"SELECT COUNT(*) FROM {table}"
         return self.execute_query(query)[0][0]
 
-    def get(self, table: str, condition: str) -> list:
+    def get(
+        self, table: str, condition: str = None, limit: int = None, offset: int = None
+    ) -> list:
         """Retrieve rows from a table based on a condition."""
         query = f"SELECT * FROM {table}"
+
+        # Append WHERE clause if condition is provided
         if condition:
             query += f" WHERE {condition}"
+
+        # Append OFFSET clause if offset is provided and is a positive integer
+        if offset is not None and offset >= 0:
+            query += f" OFFSET {offset}"
+
+        # Append LIMIT clause if limit is provided and is a positive integer
+        if limit is not None and limit > 0:
+            query += f" LIMIT {limit}"
+
         return self.execute_query(query)
 
     def insert(self, table: str, data_dict: dict, return_column: str) -> None:
