@@ -235,3 +235,23 @@ class State:
         self.transactions_db_service.insert_transaction(**transaction_data)
 
         return {"execution_output": execution_output}
+
+    def get_contract_state(
+        self, contract_address: str, method_name: str, method_args: list
+    ) -> dict:
+        contract_data = self.state_db_service.get_account_by_address(contract_address)
+        if not contract_data:
+            raise AccountNotFoundError(
+                contract_address, f"Contract {contract_address} does not exist."
+            )
+
+        contract_code = contract_data["data"]["code"]
+        contract_state = contract_data["data"]["state"]
+
+        result = self.genvm_service.get_contract_state(
+            contract_code, contract_state, method_name, method_args
+        )
+
+        response = {"id": contract_address}
+        response[method_name] = result["data"]
+        return response

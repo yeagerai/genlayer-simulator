@@ -31,3 +31,13 @@ class GenVMService:
     def get_contract_schema(self, contract_code: str) -> dict:
         params = [contract_code]
         return self.rpc_client.call("get_icontract_schema", params)
+
+    def get_contract_state(
+        self,
+        contract_code: str,
+        contract_state: dict,
+        method_name: str,
+        method_args: list,
+    ) -> dict:
+        params = [contract_code, contract_state, method_name, method_args]
+        return self.rpc_client.call("get_contract_data", params)

@@ -121,6 +121,18 @@ def call_contract_function(
     )
 
 
+def get_contract_state(
+    state_domain: StateDomain,
+    contract_address: str,
+    method_name: str,
+    method_args: list,
+) -> dict:
+    if not address_is_in_correct_format(contract_address):
+        raise InvalidAddressError(contract_address)
+
+    return state_domain.get_contract_state(contract_address, method_name, method_args)
+
+
 def get_all_validators(validators_domain: ValidatorsDomain) -> dict:
     return validators_domain.get_all_validators()
 
@@ -250,3 +262,4 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint(partial(deploy_intelligent_contract, state_domain))
     register_rpc_endpoint(partial(get_last_contracts, state_domain))
     register_rpc_endpoint(partial(call_contract_function, state_domain))
+    register_rpc_endpoint(partial(get_contract_state, state_domain))
