@@ -38,7 +38,6 @@ export class JsonRpcService implements IJsonRpcService {
       method: 'get_contract_state',
       params: [contractAddress, method, methodArguments]
     })
-    console.log('this.rpcClient', result)
     return result
   }
   /**
