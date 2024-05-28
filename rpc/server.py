@@ -1,63 +1,6 @@
 # rpc/server.py
 
 import os
-import json
-import psycopg2
-import requests
-
-from database.credentials import get_genlayer_db_connection
-from database.functions import DatabaseFunctions
-from database.helpers import convert_to_dict
-from database.types import ContractData, CallContractInputData
-from node.consensus.execute_transaction import exec_transaction
-from node.utils import genvm_url
-from rpc.address_utils import address_is_in_correct_format, create_new_address
-
-
-@jsonrpc.method("get_contract_state")  # DB
-def get_contract_state(
-    contract_address: str, method_name: str, method_args: list
-) -> dict:
-    msg = MessageHandler(app, socketio)
-
-    try:
-        connection = get_genlayer_db_connection()
-        cursor = connection.cursor()
-
-        # Query the database for the current state of a deployed contract
-        cursor.execute(
-            "SELECT id, data FROM current_state WHERE id = %s;", (contract_address,)
-        )
-        row = cursor.fetchall()
-        cursor.close()
-        connection.close()
-
-        if not row:
-            return msg.error_response(
-                message=contract_address + " contract does not exist"
-            )
-
-        code = row[0][1]["code"]
-        state = row[0][1]["state"]
-        payload = {
-            "jsonrpc": "2.0",
-            "method": "get_contract_data",
-            "params": [code, state, method_name, method_args],
-            "id": 4,
-        }
-        result = requests.post(genvm_url() + "/api", json=payload).json()["result"]
-
-        if result["status"] == "error":
-            return msg.error_response(result["message"])
-
-        response = {"id": row[0][0]}
-        response[method_name] = result["data"]
-
-    except Exception as e:
-        return msg.error_response(exception=e)
-
-    return msg.success_response(response)
-
 
 from flask import Flask
 from flask_jsonrpc import JSONRPC
@@ -77,15 +20,16 @@ from node.consensus.validators import ConsensusValidators
 from node.services.genvm_service import GenVMService
 from node.clients.rpc_client import RPCClient
 
+GENVM_URL = (
+    os.environ["GENVMPROTOCOL"]
+    + "://"
+    + os.environ["GENVMHOST"]
+    + ":"
+    + os.environ["GENVMPORT"]
+)
+
 
 def create_app():
-    GENVM_URL = (
-        os.environ["GENVMPROTOCOL"]
-        + "://"
-        + os.environ["GENVMHOST"]
-        + ":"
-        + os.environ["GENVMPORT"]
-    )
     app = Flask("jsonrpc_api")
     CORS(app, resources={r"/api/*": {"origins": "*"}}, intercept_exceptions=False)
     jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
