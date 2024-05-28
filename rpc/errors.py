@@ -3,8 +3,8 @@ class InvalidAddressError(Exception):
 
     def __init__(
         self,
-        address,
-        message="Incorrect address format. Please provide a valid address.",
+        address: str,
+        message: str = "Incorrect address format. Please provide a valid address.",
     ):
         self.address = address
         self.message = message
@@ -17,7 +17,7 @@ class ItemNotFoundError(Exception):
     def __init__(
         self,
         id,
-        message="Item not found.",
+        message: str = "Item not found.",
     ):
         self.id = id
         self.message = message
