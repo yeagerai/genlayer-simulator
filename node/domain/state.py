@@ -32,6 +32,15 @@ class State:
         self.consensus_validators = consensus_validators
         self.genvm_service = genvm_service
 
+    def _get_account_or_fail(self, account_address: str):
+        """Private method to check if an account exists, and raise an error if not."""
+        account_data = self.state_db_service.get_account_by_address(account_address)
+        if not account_data:
+            raise AccountNotFoundError(
+                account_address, f"Account {account_address} does not exist."
+            )
+        return account_data
+
     def create_account(self, account_address: str):
         self.state_db_service.create_new_account({"id": account_address, "balance": 0})
 
@@ -60,17 +69,9 @@ class State:
 
     def send_funds(self, from_address: str, to_address: str, amount: int):
         # account fetching and validation
-        from_account_data = self.state_db_service.get_account_by_address(from_address)
-        to_account_data = self.state_db_service.get_account_by_address(to_address)
+        from_account_data = self._get_account_or_fail(from_address)
+        to_account_data = self._get_account_or_fail(to_address)
 
-        if not from_account_data:
-            raise AccountNotFoundError(
-                from_address, f"Account {from_address} does not exist."
-            )
-        if not to_account_data:
-            raise AccountNotFoundError(
-                to_address, f"Account {to_address} does not exist."
-            )
         if from_account_data["data"]["balance"] < amount:
             raise InsufficientFundsError(
                 from_address, f"Insufficient funds in account {from_address}."
@@ -101,11 +102,7 @@ class State:
         constructor_args: str,
     ) -> None:
         # account fetching and validation
-        from_account_data = self.state_db_service.get_account_by_address(from_address)
-        if not from_account_data:
-            raise AccountNotFoundError(
-                from_address, f"Account {from_address} does not exist."
-            )
+        self._get_account_or_fail(from_address)
 
         # existing contract checking
         existing_contract_account = self.state_db_service.get_account_by_address(
@@ -154,11 +151,7 @@ class State:
         return {"contracts": last_contracts}
 
     def get_contract_schema(self, contract_address: str) -> dict:
-        contract_data = self.state_db_service.get_account_by_address(contract_address)
-        if not contract_data:
-            raise AccountNotFoundError(
-                contract_address, f"Contract {contract_address} does not exist."
-            )
+        contract_data = self._get_account_or_fail(contract_address)
         return self.get_contract_schema_for_code(contract_data["data"]["code"])
 
     def get_contract_schema_for_code(self, contract_code: str) -> dict:
@@ -172,19 +165,8 @@ class State:
         args: dict,
     ) -> dict:
         # account fetching and validation
-        from_account_data = self.state_db_service.get_account_by_address(from_address)
-        contract_account_data = self.state_db_service.get_account_by_address(
-            contract_address
-        )
-
-        if not from_account_data:
-            raise AccountNotFoundError(
-                from_address, f"Account {from_address} does not exist."
-            )
-        if not contract_account_data:
-            raise AccountNotFoundError(
-                contract_address, f"Contract {contract_address} does not exist."
-            )
+        from_account_data = self._get_account_or_fail(from_address)
+        contract_account_data = self._get_account_or_fail(contract_address)
 
         all_validators = self.validators_db_service.get_all_validators()
         leader, remaining_validators = (
@@ -239,12 +221,7 @@ class State:
     def get_contract_state(
         self, contract_address: str, method_name: str, method_args: list
     ) -> dict:
-        contract_data = self.state_db_service.get_account_by_address(contract_address)
-        if not contract_data:
-            raise AccountNotFoundError(
-                contract_address, f"Contract {contract_address} does not exist."
-            )
-
+        contract_data = self._get_account_or_fail(contract_address)
         contract_code = contract_data["data"]["code"]
         contract_state = contract_data["data"]["state"]
 
