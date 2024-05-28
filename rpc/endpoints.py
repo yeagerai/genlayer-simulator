@@ -184,6 +184,10 @@ def create_random_validator(stake: float) -> dict:
     return response
 
 
+def count_validators(validators_domain: ValidatorsDomain) -> dict:
+    return validators_domain.count_validators()
+
+
 def register_all_rpc_endpoints(
     app, jsonrpc, msg_handler, state_domain, validators_domain
 ):

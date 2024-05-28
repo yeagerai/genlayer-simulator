@@ -12,6 +12,9 @@ class Validators:
     ):
         self.validators_db_service = validators_db_service
 
+    def count_validators(self):
+        return self.validators_db_service.count_validators()
+
     def get_all_validators(self):
         return self.validators_db_service.get_all_validators()
 

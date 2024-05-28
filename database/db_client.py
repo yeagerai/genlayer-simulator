@@ -40,13 +40,18 @@ class DBClient:
             with conn.cursor() as cursor:
                 cursor.execute(query, params)
                 conn.commit()
-                return cursor.fetchall()  # Return data for 'SELECT' queries
+                return cursor.fetchall()  # Return data
         except psycopg2.DatabaseError as e:
             conn.rollback()  # Rollback on exceptions
             print(f"Database error: {e}")
             return None
         finally:
             self.release_connection(conn)
+
+    def count(self, table: str) -> int:
+        """Count the number of rows in a table."""
+        query = f"SELECT COUNT(*) FROM {table}"
+        return self.execute_query(query)[0][0]
 
     def get(self, table: str, condition: str) -> list:
         """Retrieve rows from a table based on a condition."""

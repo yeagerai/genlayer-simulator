@@ -21,6 +21,9 @@ class ValidatorsDBService:
             "updated_at": validator_result[6].strftime("%m/%d/%Y, %H:%M:%S"),
         }
 
+    def count_validators(self) -> int:
+        return self.db_client.count(self.db_state_table)
+
     def get_all_validators(self) -> list:
         result = self.db_client.get(self.db_state_table)
         validators = []
