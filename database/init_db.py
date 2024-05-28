@@ -5,6 +5,10 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from database.credentials import get_orig_db_connection, get_genlayer_db_connection
 
 
+# transaction types
+# 0 -> send funds
+# 1 -> IC_DEPLOY
+# 2 -> IC_EXEC
 def db_get_transactions_table_create_command() -> str:
     return """
     CREATE TABLE IF NOT EXISTS transactions (
