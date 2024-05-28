@@ -39,7 +39,7 @@ class State:
         account_data = self.state_db_service.get_account_by_address(account_address)
         if account_data:
             # Account exists, update it
-            account_data["balance"] + amount
+            account_data["data"]["balance"] + amount
             self.state_db_service.update_account(account_data)
         else:
             # Account doesn't exist, create it
@@ -70,14 +70,14 @@ class State:
             raise AccountNotFoundError(
                 to_address, f"Account {to_address} does not exist."
             )
-        if from_account_data["balance"] < amount:
+        if from_account_data["data"]["balance"] < amount:
             raise InsufficientFundsError(
                 from_address, f"Insufficient funds in account {from_address}."
             )
 
         # Update account balances
-        from_account_data["balance"] -= amount
-        to_account_data["balance"] += amount
+        from_account_data["data"]["balance"] -= amount
+        to_account_data["data"]["balance"] += amount
         self.state_db_service.update_account(from_account_data)
         self.state_db_service.update_account(to_account_data)
 
@@ -151,3 +151,14 @@ class State:
     def get_last_contracts(self, number_of_contracts: int) -> dict:
         last_contracts = self.state_db_service.get_last_contracts(number_of_contracts)
         return {"contracts": last_contracts}
+
+    def get_contract_schema(self, contract_address: str) -> dict:
+        contract_data = self.state_db_service.get_account_by_address(contract_address)
+        if not contract_data:
+            raise AccountNotFoundError(
+                contract_address, f"Contract {contract_address} does not exist."
+            )
+        return self.get_contract_schema_for_code(contract_data["data"]["code"])
+
+    def get_contract_schema_for_code(self, contract_code: str) -> dict:
+        return self.genvm_service.get_contract_schema(contract_code)

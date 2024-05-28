@@ -97,6 +97,21 @@ def get_last_contracts(state_domain: StateDomain, number_of_contracts: int) -> d
     return state_domain.get_last_contracts(number_of_contracts)
 
 
+def get_icontract_schema(state_domain: StateDomain, contract_address: str) -> dict:
+    if not address_is_in_correct_format(contract_address):
+        raise InvalidAddressError(
+            contract_address,
+            "Incorrect address format. Please provide a valid address.",
+        )
+    return state_domain.get_contract_schema(contract_address)
+
+
+def get_icontract_schema_for_code(
+    state_domain: StateDomain, contract_code: str
+) -> dict:
+    return state_domain.get_contract_schema_for_code(contract_code)
+
+
 def get_all_validators(validators_domain: ValidatorsDomain) -> dict:
     return validators_domain.get_all_validators()
 

@@ -18,10 +18,16 @@ class GenVMService:
         class_name: str,
         leader_config: dict,
     ) -> dict:
-        return self.rpc_client.deploy_contract(
+        params = [
             from_address,
             contract_code,
             constructor_args,
             class_name,
             leader_config,
-        )
+        ]
+        result = self.rpc_client.call("deploy_contract", params)
+        return result["data"]
+
+    def get_contract_schema(self, contract_code: str) -> dict:
+        params = [contract_code]
+        return self.rpc_client.call("get_icontract_schema", params)
