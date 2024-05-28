@@ -65,6 +65,28 @@ def send_transaction(
     return {"from_account": from_account, "to_account": to_account, "amount": amount}
 
 
+def deploy_intelligent_contract(
+    state_domain: StateDomain,
+    from_account: str,
+    class_name: str,
+    contract_code: str,
+    constructor_args: str,
+) -> dict:
+    if not address_is_in_correct_format(from_account):
+        raise InvalidAddressError(
+            from_account, "Incorrect address format. Please provide a valid address."
+        )
+
+    contract_address = create_new_address()
+    return state_domain.deploy_intelligent_contract(
+        from_account,
+        contract_address,
+        class_name,
+        contract_code,
+        constructor_args,
+    )
+
+
 def get_all_validators(validators_domain: ValidatorsDomain) -> dict:
     return validators_domain.get_all_validators()
 
@@ -187,3 +209,4 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint(partial(create_account, state_domain))
     register_rpc_endpoint(partial(fund_account, state_domain))
     register_rpc_endpoint(partial(send_transaction, state_domain))
+    register_rpc_endpoint(partial(deploy_intelligent_contract, state_domain))

@@ -9,88 +9,9 @@ from database.credentials import get_genlayer_db_connection
 from database.functions import DatabaseFunctions
 from database.helpers import convert_to_dict
 from database.types import ContractData, CallContractInputData
-from node.algorithm import exec_transaction
+from node.consensus.execute_transaction import exec_transaction
 from node.utils import vrf, genvm_url
 from rpc.address_utils import address_is_in_correct_format, create_new_address
-
-
-@jsonrpc.method("deploy_intelligent_contract")  # genvm
-def deploy_intelligent_contract(
-    from_account: str, class_name: str, contract_code: str, constructor_args: str
-) -> dict:
-    msg = MessageHandler(app, socketio)
-
-    if not address_is_in_correct_format(from_account):
-        return msg.error_response(message="from_account not in ethereum address format")
-
-    with DatabaseFunctions() as dbf:
-        all_validators = dbf.all_validators()
-        dbf.close()
-
-    # Select validators using VRF
-    num_validators = int(os.environ["NUMVALIDATORS"])
-    selected_validators = vrf(all_validators, num_validators)
-
-    leader_config = selected_validators[0]
-
-    payload = {
-        "jsonrpc": "2.0",
-        "method": "deploy_contract",
-        "params": [
-            from_account,
-            contract_code,
-            constructor_args,
-            class_name,
-            leader_config,
-        ],
-        "id": 3,
-    }
-    response = requests.post(genvm_url() + "/api", json=payload).json()
-
-    if response["result"]["status"] == "error":
-        return msg.response_format(**response["result"])
-
-    try:
-        connection = get_genlayer_db_connection()
-        cursor = connection.cursor()
-        contract_id = create_new_address()
-        contract_data = ContractData(
-            code=contract_code, state=response["result"]["data"]["contract_state"]
-        ).model_dump_json()
-        try:
-            cursor.execute(
-                "INSERT INTO current_state (id, data) VALUES (%s, %s);",
-                (contract_id, contract_data),
-            )
-            cursor.execute(
-                "INSERT INTO transactions (from_address, to_address, data, type) VALUES (%s, %s, %s, 1) RETURNING *;",
-                (from_account, contract_id, contract_data),
-            )
-
-            new_transaction = cursor.fetchone()
-
-            new_transaction_dict = convert_to_dict(cursor, new_transaction)
-
-            cursor.execute(
-                "INSERT INTO transactions_audit (transaction_id, data) VALUES (%s, %s);",
-                (
-                    new_transaction_dict["id"],
-                    json.dumps(new_transaction_dict),
-                ),
-            )
-        except psycopg2.errors.UndefinedTable:
-            return msg.error_response(message="create the tables in the database first")
-        except psycopg2.errors.InFailedSqlTransaction:
-            return msg.error_response(message="create the tables in the database first")
-
-        connection.commit()
-        cursor.close()
-        connection.close()
-
-    except Exception as e:
-        return msg.error_response(exception=e)
-
-    return msg.success_response({"contract_id": contract_id})
 
 
 @jsonrpc.method("count_validators")  # DB
@@ -313,19 +234,42 @@ from dotenv import load_dotenv
 from database.db_client import DBClient
 from node.services.state_db_service import StateDBService
 from node.services.validators_db_service import ValidatorsDBService
+from node.services.transactions_db_service import TransactionsDBService
 from node.domain.state import State
 from node.domain.validators import Validators
+from node.consensus.validators import ConsensusValidators
+from node.services.genvm_service import GenVMService
+from node.clients.rpc_client import RPCClient
 
 
 def create_app():
+    GENVM_URL = (
+        os.environ["GENVMPROTOCOL"]
+        + "://"
+        + os.environ["GENVMHOST"]
+        + ":"
+        + os.environ["GENVMPORT"]
+    )
     app = Flask("jsonrpc_api")
     CORS(app, resources={r"/api/*": {"origins": "*"}}, intercept_exceptions=False)
     jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
     socketio = SocketIO(app, cors_allowed_origins="*")
     msg_handler = MessageHandler(app, socketio)
     genlayer_db_client = DBClient("genlayer")
-    state_domain = State(StateDBService(genlayer_db_client))
-    validators_domain = Validators(ValidatorsDBService(genlayer_db_client))
+    transactions_db_service = TransactionsDBService(genlayer_db_client)
+    validators_db_service = ValidatorsDBService(genlayer_db_client)
+    validators_domain = Validators(validators_db_service)
+    consensus_validators = ConsensusValidators()
+    genvm_rpc_client = RPCClient(GENVM_URL)
+    genvm_service = GenVMService(genvm_rpc_client)
+    state_db_service = StateDBService(genlayer_db_client)
+    state_domain = State(
+        state_db_service,
+        transactions_db_service,
+        validators_db_service,
+        consensus_validators,
+        genvm_service,
+    )
     return app, jsonrpc, socketio, msg_handler, state_domain, validators_domain
 
 

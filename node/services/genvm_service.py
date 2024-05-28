@@ -6,7 +6,7 @@ from node.errors import GenVMRPCErrorResponse
 from node.clients.rpc_client import RPCClient
 
 
-class GenVMRPCService:
+class GenVMService:
     def __init__(self, rpc_client: RPCClient):
         self.rpc_client = rpc_client
 

@@ -32,3 +32,14 @@ class StateDBService:
             "data": json.dumps({"balance": account_data["balance"]}),
         }
         self.db_client.update(self.db_state_table, account_state, update_condition)
+
+    def create_new_contract_account(
+        self,
+        contract_address: str,
+        contract_data: str,
+    ) -> None:
+        contract_state = {
+            "id": contract_address,
+            "data": contract_data,
+        }
+        self.db_client.insert(self.db_state_table, contract_state)

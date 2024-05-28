@@ -35,3 +35,16 @@ class GenVMRPCErrorResponse(Exception):
         self.data = data
         self.message = message
         super().__init__(self.message)
+
+
+class AccountAlreadyExists(Exception):
+    """Exception raised when someone wants to create an account with an address that already exists."""
+
+    def __init__(
+        self,
+        address: str,
+        message: str = "Account already exists.",
+    ):
+        self.address = address
+        self.message = message
+        super().__init__(self.message)
