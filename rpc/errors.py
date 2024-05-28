@@ -11,6 +11,21 @@ class InvalidAddressError(Exception):
         super().__init__(self.message)
 
 
+class InvalidInputError(Exception):
+    """Exception raised when the given input is not valid."""
+
+    def __init__(
+        self,
+        input_name: str,
+        input_value: str,
+        message: str = "Incorrect input",
+    ):
+        self.input_name = input_name
+        self.input_value = input_value
+        self.message = message
+        super().__init__(self.message)
+
+
 class ItemNotFoundError(Exception):
     """Exception raised when a given item is not found."""
 
