@@ -1,15 +1,29 @@
-import type { JsonRPCRequest, JsonRPCResponse, JsonRPCResult } from "@/types"
+import type {
+  GetContractStateRequest,
+  JsonRPCRequest,
+  JsonRPCResponse,
+  JsonRpcResult,
+  GetContractStateResult,
+  CallContractFunctionResult,
+  CallContractFunctionRequest,
+  DeployContractRequest,
+  GetDeployedContractSchemaRequest,
+  CreateValidatorRequest,
+  UpdateValidatorRequest,
+  DeleteValidatorRequest,
+  GetContractSchemaRequest
+} from '@/types'
 
-  export interface IJsonRPCService {
-    call({ method, params }: JsonRPCRequest) : Promise<JsonRPCResponse<any>>;
-    getContractState(request: { contractAddress: string, method: string, methodArguments: any[]}) : Promise<JsonRPCResult<any>>;
-    callContractFunction(request: { userAccount: string, contractAddress: string, method: string, params: any[]}) : Promise<JsonRPCResult<any>>;
-    deployContract(request: { userAccount: string, className: string, code: string, constructorParams: string}) : Promise<JsonRPCResult<any>>;
-    getContractSchema(request: { code: string}) : Promise<JsonRPCResult<any>>;
-    getDeployedContractSchema(request: { address: string}) : Promise<JsonRPCResult<any>>;
-    getValidators() : Promise<JsonRPCResult<any>>;
-    getProvidersAndModels() : Promise<JsonRPCResult<any>>;
-    createValidator(request: { stake: number, provider: string, model: string, config: any }) : Promise<JsonRPCResult<any>>;
-    updateValidator(request: { address: string, stake: number, provider: string, model: string, config: any }) : Promise<JsonRPCResult<any>>;
-    deleteValidator(request: { address: string }) : Promise<JsonRPCResult<any>>;
-  }
+export interface IJsonRpcService {
+  call(request: JsonRPCRequest): Promise<JsonRPCResponse<any>>
+  getContractState(request: GetContractStateRequest): Promise<JsonRpcResult<GetContractStateResult>>
+  callContractFunction(request: CallContractFunctionRequest): Promise<JsonRpcResult<CallContractFunctionResult>>
+  deployContract(request: DeployContractRequest): Promise<JsonRpcResult<any>>
+  getContractSchema(request: GetContractSchemaRequest): Promise<JsonRpcResult<any>>
+  getDeployedContractSchema(request: GetDeployedContractSchemaRequest): Promise<JsonRpcResult<any>>
+  getValidators(): Promise<JsonRpcResult<any>>
+  getProvidersAndModels(): Promise<JsonRpcResult<any>>
+  createValidator(request: CreateValidatorRequest): Promise<JsonRpcResult<any>>
+  updateValidator(request: UpdateValidatorRequest): Promise<JsonRpcResult<any>>
+  deleteValidator(request: DeleteValidatorRequest): Promise<JsonRpcResult<any>>
+}

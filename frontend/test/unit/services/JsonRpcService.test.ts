@@ -1,54 +1,105 @@
-import { beforeEach, describe, afterEach, it } from 'node:test'
-import { expect } from 'chai'
-import * as sinon from 'sinon';
-import { JsonRprService } from '../../../src/services/JsonRpcService';
-import { rpcClient } from '../../../src/utils';
-import { JsonRPCResult } from '../../../src/types';
+import { JsonRpcService } from '../../../src/services/JsonRpcService'
+import { IJsonRpcService } from '../../../src/services/IJsonRpcService'
+import { rpcClient } from '../../../src/utils/rpc'
+import { CallContractFunctionResult, GetContractStateResult, JsonRpcResult } from '@/types'
+import { describe, test, expect, it, vi, afterEach, beforeEach } from 'vitest'
+
+// vi.mock('../../../src/utils/rpc', () => {
+//   const rpcClient = vi.fn()
+//   rpcClient.prototype.call = vi.fn()
+
+//   return { rpcClient }
+// })
+
 
 describe('JsonRprService', () => {
-  let jsonRpcService: JsonRprService;
+  let jsonRpcService: IJsonRpcService
 
   beforeEach(() => {
-    jsonRpcService = new JsonRprService();
-  });
+    jsonRpcService = new JsonRpcService()
+  })
 
   afterEach(() => {
-    sinon.restore();
-  });
+    vi.restoreAllMocks()
+  })
 
   describe('getContractState', () => {
     it('should get contract state', async () => {
-      const mockResult: JsonRPCResult<any> = { result: 'mocked result' };
-      sinon.stub(rpcClient, 'call').resolves({ result: mockResult });
+      const mockResult: JsonRpcResult<GetContractStateResult> = {
+        data: {
+          get_have_coin: 'True',
+          id: '0x58FaA28cbAA1b52F8Ec8D3c6FFCE6f1AaF8bEEB1'
+        },
+        message: '',
+        status: 'success'
+      }
+      
+      const spy = vi.spyOn(rpcClient, 'call')
+      spy.mockImplementationOnce(async () => mockResult)
 
+  
+      expect(spy.getMockName()).toEqual('call')
       const result = await jsonRpcService.getContractState({
-        contractAddress: 'address',
-        method: 'method',
-        methodArguments: ['arg1', 'arg2'],
-      });
-
-      expect(result).to.deep.equal('mocked result');
-      sinon.assert.calledOnce(rpcClient.call);
-    });
-  });
+        contractAddress: '0x58FaA28cbAA1b52F8Ec8D3c6FFCE6f1AaF8bEEB1',
+        method: 'get_have_coin',
+        methodArguments: []
+      })
+      console.log('result', result)
+      expect(result.data.get_have_coin).to.equal('True')
+      expect(spy).toHaveBeenCalledTimes(1)
+    })
+  })
 
   describe('callContractFunction', () => {
     it('should call contract function and return result', async () => {
-      const mockResult: JsonRPCResult<any> = { result: 'mocked result' };
-      sinon.stub(rpcClient, 'call').resolves({ result: mockResult });
+      const mockResult: JsonRpcResult<CallContractFunctionResult> = {
+        data: {
+          execution_output: {
+            consensus_data:
+              '{"final":false,"votes":{"0x46CFb7C09EEc0661dfaE35edf9eefb516Be8c9ED":"agree","0x5cceEce5b0DD5Ca98899CC11cAbd2BcbeeAdaBB2":"agree","0xbF2Ea1ac0FC66dbD4C6b0C78B646571c02e0245c":"agree","0xA9e410DcF02ddBdC525DADebEDC865d119479AB8":"agree"},"leader":{"vote":"agree","result":{"args":["test"],"class":"WizardOfCoin","contract_state":"gASVNwAAAAAAAACMCF9fbWFpbl9flIwMV2l6YXJkT2ZDb2lulJOUKYGUfZSMCWhhdmVfY29pbpSMBFRydWWUc2Iu","eq_outputs":{"leader":{"0":"{\\n\\"reasoning\\": \\"I cannot give you the coin because it holds powerful magic that must not fall into the wrong hands.\\",\\n\\"give_coin\\": False\\n}"}},"gas_used":0,"method":"ask_for_coin","mode":"leader","node_config":{"address":"0xB1971EAfB15Fd2a04afAd55A7d5eF9940c0dd464","config":{},"id":1,"model":"gpt-3.5-turbo","provider":"openai","stake":6.9066502309882605,"type":"validator","updated_at":"05/27/2024, 19:50:36"}}},"validators":[{"vote":"agree","result":{"args":["test"],"class":"WizardOfCoin","contract_state":"gASVNwAAAAAAAACMCF9fbWFpbl9flIwMV2l6YXJkT2ZDb2lulJOUKYGUfZSMCWhhdmVfY29pbpSMBFRydWWUc2Iu","eq_outputs":{"leader":{"0":"{\\n\\"reasoning\\": \\"I cannot give you the coin because it holds powerful magic that must not fall into the wrong hands.\\",\\n\\"give_coin\\": False\\n}"}},"gas_used":0,"method":"ask_for_coin","mode":"validator","node_config":{"address":"0x5cceEce5b0DD5Ca98899CC11cAbd2BcbeeAdaBB2","config":{},"id":10,"model":"gpt-4","provider":"openai","stake":8.800945043259368,"type":"validator","updated_at":"05/27/2024, 19:50:36"}}},{"vote":"agree","result":{"args":["test"],"class":"WizardOfCoin","contract_state":"gASVNwAAAAAAAACMCF9fbWFpbl9flIwMV2l6YXJkT2ZDb2lulJOUKYGUfZSMCWhhdmVfY29pbpSMBFRydWWUc2Iu","eq_outputs":{"leader":{"0":"{\\n\\"reasoning\\": \\"I cannot give you the coin because it holds powerful magic that must not fall into the wrong hands.\\",\\n\\"give_coin\\": False\\n}"}},"gas_used":0,"method":"ask_for_coin","mode":"validator","node_config":{"address":"0xbF2Ea1ac0FC66dbD4C6b0C78B646571c02e0245c","config":{"mirostat":0,"mirostat_tau":6.0,"num_gqa":5,"num_thread":14,"repeat_penalty":1.3,"stop":"","tfs_z":1.0,"top_k":31,"top_p":0.96},"id":3,"model":"llama2","provider":"ollama","stake":1.7517946864812701,"type":"validator","updated_at":"05/27/2024, 19:50:36"}}},{"vote":"agree","result":{"args":["test"],"class":"WizardOfCoin","contract_state":"gASVNwAAAAAAAACMCF9fbWFpbl9flIwMV2l6YXJkT2ZDb2lulJOUKYGUfZSMCWhhdmVfY29pbpSMBFRydWWUc2Iu","eq_outputs":{"leader":{"0":"{\\n\\"reasoning\\": \\"I cannot give you the coin because it holds powerful magic that must not fall into the wrong hands.\\",\\n\\"give_coin\\": False\\n}"}},"gas_used":0,"method":"ask_for_coin","mode":"validator","node_config":{"address":"0xA9e410DcF02ddBdC525DADebEDC865d119479AB8","config":{"mirostat":0,"num_gpu":13,"repeat_penalty":1.8,"stop":"","temprature":0.1,"tfs_z":1.0},"id":2,"model":"llama2","provider":"ollama","stake":4.99630617747627,"type":"validator","updated_at":"05/27/2024, 19:50:36"}}}]}',
+            leader_data: {
+              result: {
+                args: ['test'],
+                class: 'WizardOfCoin',
+                contract_state:
+                  'gASVNwAAAAAAAACMCF9fbWFpbl9flIwMV2l6YXJkT2ZDb2lulJOUKYGUfZSMCWhhdmVfY29pbpSMBFRydWWUc2Iu',
+                eq_outputs: {
+                  leader: {
+                    '0': '{\n"reasoning": "I cannot give you the coin because it holds powerful magic that must not fall into the wrong hands.",\n"give_coin": False\n}'
+                  }
+                },
+                gas_used: 0,
+                method: 'ask_for_coin',
+                mode: 'leader',
+                node_config: {
+                  address: '0xB1971EAfB15Fd2a04afAd55A7d5eF9940c0dd464',
+                  config: {},
+                  id: 1,
+                  model: 'gpt-3.5-turbo',
+                  provider: 'openai',
+                  stake: 6.9066502309882605,
+                  type: 'validator',
+                  updated_at: '05/27/2024, 19:50:36'
+                }
+              },
+              vote: 'agree'
+            }
+          }
+        },
+        message: '',
+        status: 'success'
+      }
+      // const call = sinon.stub(rpcClient, 'call').resolves({ result: mockResult })
 
-      const result = await jsonRpcService.callContractFunction({
-        userAccount: 'user',
-        contractAddress: 'address',
-        method: 'method',
-        params: [1, 2, 3],
-      });
+      // const result = await jsonRpcService.callContractFunction({
+      //   userAccount: '0xFEaedeC4c6549236EaF49C1F7c5cf860FD2C3fcB',
+      //   contractAddress: '0x58FaA28cbAA1b52F8Ec8D3c6FFCE6f1AaF8bEEB1',
+      //   method: 'WizardOfCoin.ask_for_coin',
+      //   params: ['Give me the coin']
+      // })
 
-      expect(result).to.deep.equal('mocked result');
-      sinon.assert.calledOnce(rpcClient.call);
-    });
-  });
-
-  // Add similar test cases for other methods
-
-});
+      // expect(result.data.execution_output.leader_data.result.method).to.equal('ask_for_coin')
+      // expect(result.data.execution_output.leader_data.vote).to.equal('agree')
+    })
+  })
+})

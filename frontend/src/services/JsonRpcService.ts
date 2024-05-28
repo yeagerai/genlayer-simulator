@@ -1,60 +1,69 @@
-import { rpcClient } from '@/utils'
-import type { IJsonRPCService } from './IJsonRpcService'
-import type { JsonRPCResult, JsonRPCRequest, JsonRPCResponse } from '@/types'
+import type { IRpcClient } from '@/utils'
+import type { IJsonRpcService } from './IJsonRpcService'
+import type {
+  JsonRpcResult,
+  JsonRPCRequest,
+  JsonRPCResponse,
+  GetContractStateRequest,
+  GetContractStateResult,
+  CallContractFunctionRequest,
+  CallContractFunctionResult,
+  DeployContractRequest,
+  GetContractSchemaRequest,
+  GetDeployedContractSchemaRequest,
+  CreateValidatorRequest,
+  UpdateValidatorRequest
+} from '@/types'
 
-export class JsonRprService implements IJsonRPCService {
+export class JsonRpcService implements IJsonRpcService {
+
+  constructor(protected rpcClient: IRpcClient) { 
+
+  }
   /**
    * Retrieves the state of a contract at a specific address and method.
    *
-   * @param {Object} params - The parameters for the function.
+   * @param {GetContractStateRequest} params - The parameters for the function.
    * @param {string} params.contractAddress - The address of the contract.
    * @param {string} params.method - The method of the contract.
    * @param {any[]} params.methodArguments - The arguments for the method.
-   * @return {Promise<JsonRPCResult<any>>} A promise that resolves to the result of the contract state retrieval.
+   * @return {Promise<JsonRpcResult<GetContractStateResult>>} A promise that resolves to the result of the contract state retrieval.
    */
   async getContractState({
     contractAddress,
     method,
     methodArguments
-  }: {
-    contractAddress: string
-    method: string
-    methodArguments: any[]
-  }): Promise<JsonRPCResult<any>> {
-    const { result } = await rpcClient.call({
+  }: GetContractStateRequest): Promise<JsonRpcResult<GetContractStateResult>> {
+    const { result } = await this.rpcClient.call<GetContractStateResult>({
       method: 'get_contract_state',
       params: [contractAddress, method, methodArguments]
     })
+    console.log('this.rpcClient', result)
     return result
   }
   /**
    * Calls a contract function and returns the result.
    *
-   * @param {Object} params - The parameters for the function.
+   * @param {CallContractFunctionResult} params - The parameters for the function.
    * @param {string} params.userAccount - The user account calling the function.
    * @param {string} params.contractAddress - The address of the contract.
    * @param {string} params.method - The method of the contract.
    * @param {any[]} params.params - The parameters for the method.
-   * @return {Promise<JsonRPCResult<any>>} A promise that resolves to the result of the contract function call.
+   * @return {Promise<JsonRpcResult<any>>} A promise that resolves to the result of the contract function call.
    */
   async callContractFunction({
     userAccount,
     contractAddress,
     method,
     params
-  }: {
-    userAccount: string
-    contractAddress: string
-    method: string
-    params: any[]
-  }): Promise<JsonRPCResult<any>> {
-    const { result } = await rpcClient.call({
+  }: CallContractFunctionRequest): Promise<JsonRpcResult<CallContractFunctionResult>> {
+    const { result } = await this.rpcClient.call<CallContractFunctionResult>({
       method: 'call_contract_function',
       params: [userAccount, contractAddress, method, params]
     })
     return result
   }
-  
+
   /**
    * Deploys a new intelligent contract.
    *
@@ -63,35 +72,30 @@ export class JsonRprService implements IJsonRPCService {
    * @param {string} params.className - The name of the class for the contract.
    * @param {string} params.code - The code for the contract.
    * @param {string} params.constructorParams - The parameters for the contract constructor.
-   * @return {Promise<JsonRPCResult<any>>} A promise that resolves to the result of the contract deployment.
+   * @return {Promise<JsonRpcResult<any>>} A promise that resolves to the result of the contract deployment.
    */
   async deployContract({
     userAccount,
     className,
     code,
     constructorParams
-  }: {
-    userAccount: string
-    className: string
-    code: string
-    constructorParams: string
-  }): Promise<JsonRPCResult<any>> {
-    const { result } = await rpcClient.call({
+  }: DeployContractRequest): Promise<JsonRpcResult<any>> {
+    const { result } = await this.rpcClient.call({
       method: 'deploy_intelligent_contract',
       params: [userAccount, className, code, constructorParams]
     })
     return result
   }
-  
+
   /**
    * Retrieves the contract schema for the given code.
    *
    * @param {Object} params - The parameters for the function.
    * @param {string} params.code - The code for which the contract schema is retrieved.
-   * @return {Promise<JsonRPCResult<any>>} A promise that resolves to the contract schema.
+   * @return {Promise<JsonRpcResult<any>>} A promise that resolves to the contract schema.
    */
-  async getContractSchema({ code }: { code: string }): Promise<JsonRPCResult<any>> {
-    const { result } = await rpcClient.call({
+  async getContractSchema({ code }: GetContractSchemaRequest): Promise<JsonRpcResult<any>> {
+    const { result } = await this.rpcClient.call({
       method: 'get_icontract_schema_for_code',
       params: [code]
     })
@@ -102,10 +106,10 @@ export class JsonRprService implements IJsonRPCService {
    *
    * @param {Object} params - The parameters for the function.
    * @param {string} params.address - The address of the deployed contract.
-   * @return {Promise<JsonRPCResult<any>>} A promise that resolves to the deployed contract schema.
+   * @return {Promise<JsonRpcResult<any>>} A promise that resolves to the deployed contract schema.
    */
-  async  getDeployedContractSchema({ address }: { address: string }): Promise<JsonRPCResult<any>> {
-    const { result } = await rpcClient.call({
+  async getDeployedContractSchema({ address }: GetDeployedContractSchemaRequest): Promise<JsonRpcResult<any>> {
+    const { result } = await this.rpcClient.call({
       method: 'get_icontract_schema',
       params: [address]
     })
@@ -114,23 +118,23 @@ export class JsonRprService implements IJsonRPCService {
   /**
    * Retrieves a list of validators from the JSON-RPC server.
    *
-   * @return {Promise<JsonRPCResult<any>>} A promise that resolves to the list of validators.
+   * @return {Promise<JsonRpcResult<any>>} A promise that resolves to the list of validators.
    */
-  async  getValidators(): Promise<JsonRPCResult<any>> {
-    const { result } = await rpcClient.call({
+  async getValidators(): Promise<JsonRpcResult<any>> {
+    const { result } = await this.rpcClient.call({
       method: 'get_all_validators',
       params: []
     })
     return result
   }
-  
+
   /**
    * Retrieves a list of providers and models from the JSON-RPC server.
    *
-   * @return {Promise<JsonRPCResult<any>>} A promise that resolves to the list of providers and models.
+   * @return {Promise<JsonRpcResult<any>>} A promise that resolves to the list of providers and models.
    */
-  async  getProvidersAndModels(): Promise<JsonRPCResult<any>> {
-    const { result } = await rpcClient.call({
+  async getProvidersAndModels(): Promise<JsonRpcResult<any>> {
+    const { result } = await this.rpcClient.call({
       method: 'get_providers_and_models',
       params: []
     })
@@ -144,20 +148,15 @@ export class JsonRprService implements IJsonRPCService {
    * @param {string} params.provider - The provider for the validator.
    * @param {string} params.model - The model for the validator.
    * @param {any} params.config - The configuration for the validator.
-   * @return {Promise<JsonRPCResult<any>>} A promise that resolves to the result of the validator creation.
+   * @return {Promise<JsonRpcResult<any>>} A promise that resolves to the result of the validator creation.
    */
   async createValidator({
     stake,
     provider,
     model,
     config
-  }: {
-    stake: number
-    provider: string
-    model: string
-    config: any
-  }): Promise<JsonRPCResult<any>> {
-    const { result } = await rpcClient.call({
+  }: CreateValidatorRequest): Promise<JsonRpcResult<any>> {
+    const { result } = await this.rpcClient.call({
       method: 'create_validator',
       params: [stake, provider, model, config]
     })
@@ -173,7 +172,7 @@ export class JsonRprService implements IJsonRPCService {
    * @param {string} params.provider - The updated provider for the validator.
    * @param {string} params.model - The updated model for the validator.
    * @param {any} params.config - The updated configuration for the validator.
-   * @return {Promise<JsonRPCResult<any>>} A promise that resolves to the result of the validator update.
+   * @return {Promise<JsonRpcResult<any>>} A promise that resolves to the result of the validator update.
    */
   async updateValidator({
     address,
@@ -181,14 +180,8 @@ export class JsonRprService implements IJsonRPCService {
     provider,
     model,
     config
-  }: {
-    address: string
-    stake: number
-    provider: string
-    model: string
-    config: any
-  }): Promise<JsonRPCResult<any>> {
-    const { result } = await rpcClient.call({
+  }: UpdateValidatorRequest): Promise<JsonRpcResult<any>> {
+    const { result } = await this.rpcClient.call({
       method: 'update_validator',
       params: [address, stake, provider, model, config]
     })
@@ -199,10 +192,10 @@ export class JsonRprService implements IJsonRPCService {
    *
    * @param {Object} params - The parameters for deleting the validator.
    * @param {string} params.address - The address of the validator to delete.
-   * @return {Promise<JsonRPCResult<any>>} A promise that resolves to the result of the validator deletion.
+   * @return {Promise<JsonRpcResult<any>>} A promise that resolves to the result of the validator deletion.
    */
-  async deleteValidator({ address }: { address: string }): Promise<JsonRPCResult<any>> {
-    const { result } = await rpcClient.call({
+  async deleteValidator({ address }: { address: string }): Promise<JsonRpcResult<any>> {
+    const { result } = await this.rpcClient.call({
       method: 'delete_validator',
       params: [address]
     })
@@ -218,6 +211,6 @@ export class JsonRprService implements IJsonRPCService {
    * @return {Promise<JsonRPCResponse<any>>} A promise that resolves to the JSON-RPC response.
    */
   call({ method, params }: JsonRPCRequest): Promise<JsonRPCResponse<any>> {
-    return rpcClient.call({ method, params })
+    return this.rpcClient.call({ method, params })
   }
 }
