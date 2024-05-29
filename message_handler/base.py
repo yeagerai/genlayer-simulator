@@ -8,7 +8,7 @@ from logging.config import dictConfig
 
 def setup_logging_config():
     logging_env = os.environ["LOGCONFIG"]
-    file_path = f"rpc/common/config/logging.{logging_env}.json"
+    file_path = f"message_handler/config/logging.{logging_env}.json"
     with open(file_path, "r") as file:
         logging_config = json.load(file)
         dictConfig(logging_config)
