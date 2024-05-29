@@ -9,6 +9,7 @@ ADD rpc $path/rpc
 ADD database $path/database
 ADD node $path/node
 ADD common $path/common
+ADD message_handler $path/message_handler
 RUN pip install --no-cache-dir -r rpc/requirements.txt
 
 ENV PYTHONPATH "${PYTHONPATH}:/${path}"
