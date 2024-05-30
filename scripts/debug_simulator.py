@@ -24,7 +24,7 @@ if "PYTHONPATH" not in os.environ:
     sys.exit()
 
 
-from cli.genlayer import (
+from rpc.commands import (
     create_random_validators_logic,
     count_validators_logic,
     create_db_logic,
