@@ -80,7 +80,7 @@ def db_cursor(db_name: str) -> psycopg2.extensions.connection:
     return connection
 
 
-def create_db_if_it_doesnt_already_exists() -> str:
+def create_db_if_it_doesnt_already_exists() -> dict:
     new_dbname = environ.get("DBNAME")
     connection = db_cursor("postgres")
     cursor = connection.cursor()
