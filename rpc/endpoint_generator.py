@@ -21,3 +21,16 @@ def generate_rpc_endpoint(
             return send_message("error", exception=str(e))
 
     return endpoint
+
+
+def generate_rpc_endpoint_for_partial(
+    partial_generator: Callable, function: Callable, *args
+) -> Callable:
+    partial_function = partial(function, *args)
+    partial_function.__name__ = function.__name__
+    partial_function.__annotations__ = {
+        k: v
+        for k, v in function.__annotations__.items()
+        if k not in list(function.__annotations__)[: len(args)]
+    }
+    return partial_generator(partial_function)

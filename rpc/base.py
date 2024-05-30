@@ -17,7 +17,7 @@ json_rpc_url = (
 def create_db_logic() -> dict:
     payload = {
         "jsonrpc": "2.0",
-        "method": "create_db",
+        "method": "create_db_if_it_doesnt_already_exists",
         "params": [],
         "id": 1,
     }
@@ -28,7 +28,7 @@ def create_db_logic() -> dict:
 def create_tables_logic() -> dict:
     payload = {
         "jsonrpc": "2.0",
-        "method": "create_tables",
+        "method": "create_tables_if_they_dont_already_exist",
         "params": [],
         "id": 1,
     }

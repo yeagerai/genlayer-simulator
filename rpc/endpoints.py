@@ -1,13 +1,17 @@
 # rpc/endpoints.py
 
 import random
-from functools import partial
 import json
+from functools import partial
+from flask_jsonrpc import JSONRPC
+from flask import Flask
+
+from message_handler.base import MessageHandler
 from database.functions import DatabaseFunctions
 from database.init_db import (
-    create_db_if_it_doesnt_already_exists as create_db,
-    create_tables_if_they_dont_already_exist as create_tables,
-    clear_db_tables as clear_account_and_transactions_tables,
+    create_db_if_it_doesnt_already_exists,
+    create_tables_if_they_dont_already_exist,
+    clear_db_tables,
 )
 
 from node.nodes.create_nodes import (
@@ -20,7 +24,10 @@ from node.domain.state import State as StateDomain
 from node.domain.validators import Validators as ValidatorsDomain
 
 from rpc.address_utils import create_new_address
-from rpc.endpoint_generator import generate_rpc_endpoint
+from rpc.endpoint_generator import (
+    generate_rpc_endpoint,
+    generate_rpc_endpoint_for_partial,
+)
 from rpc.address_utils import address_is_in_correct_format, create_new_address
 from rpc.errors import InvalidAddressError, ItemNotFoundError, InvalidInputError
 
@@ -235,31 +242,38 @@ def count_validators(validators_domain: ValidatorsDomain) -> dict:
 
 
 def register_all_rpc_endpoints(
-    app, jsonrpc, msg_handler, state_domain, validators_domain
+    app: Flask,
+    jsonrpc: JSONRPC,
+    msg_handler: MessageHandler,
+    state_domain: StateDomain,
+    validators_domain: ValidatorsDomain,
 ):
     register_rpc_endpoint = partial(generate_rpc_endpoint, jsonrpc, msg_handler)
+    register_rpc_endpoint_for_partial = partial(
+        generate_rpc_endpoint_for_partial, register_rpc_endpoint
+    )
 
     register_rpc_endpoint(ping)
-    register_rpc_endpoint(create_db)
-    register_rpc_endpoint(partial(validators_domain, create_validator))
-    register_rpc_endpoint(partial(validators_domain, update_validator))
-    register_rpc_endpoint(partial(validators_domain, delete_validator))
-    register_rpc_endpoint(partial(validators_domain, get_validator))
-    register_rpc_endpoint(partial(validators_domain, delete_all_validators))
-    register_rpc_endpoint(partial(validators_domain, get_all_validators))
+    register_rpc_endpoint(create_db_if_it_doesnt_already_exists)
+    register_rpc_endpoint_for_partial(create_validator, validators_domain)
+    register_rpc_endpoint_for_partial(update_validator, validators_domain)
+    register_rpc_endpoint_for_partial(delete_validator, validators_domain)
+    register_rpc_endpoint_for_partial(get_validator, validators_domain)
+    register_rpc_endpoint_for_partial(delete_all_validators, validators_domain)
+    register_rpc_endpoint_for_partial(get_all_validators, validators_domain)
     register_rpc_endpoint(create_random_validator)
     register_rpc_endpoint(create_random_validators)
-    register_rpc_endpoint(partial(create_tables, app))
+    register_rpc_endpoint_for_partial(create_tables_if_they_dont_already_exist, app)
     register_rpc_endpoint(get_providers_and_models)
-    register_rpc_endpoint(
-        partial(
-            clear_account_and_transactions_tables, ["current_state", "transactions"]
-        )
+    register_rpc_endpoint_for_partial(
+        clear_db_tables, ["current_state", "transactions"]
     )
-    register_rpc_endpoint(partial(create_account, state_domain))
-    register_rpc_endpoint(partial(fund_account, state_domain))
-    register_rpc_endpoint(partial(send_transaction, state_domain))
-    register_rpc_endpoint(partial(deploy_intelligent_contract, state_domain))
-    register_rpc_endpoint(partial(get_last_contracts, state_domain))
-    register_rpc_endpoint(partial(call_contract_function, state_domain))
-    register_rpc_endpoint(partial(get_contract_state, state_domain))
+    register_rpc_endpoint_for_partial(create_account, state_domain)
+    register_rpc_endpoint_for_partial(fund_account, state_domain)
+    register_rpc_endpoint_for_partial(send_transaction, state_domain)
+    register_rpc_endpoint_for_partial(deploy_intelligent_contract, state_domain)
+    register_rpc_endpoint_for_partial(get_last_contracts, state_domain)
+    register_rpc_endpoint_for_partial(get_icontract_schema, state_domain)
+    register_rpc_endpoint_for_partial(get_icontract_schema_for_code, state_domain)
+    register_rpc_endpoint_for_partial(call_contract_function, state_domain)
+    register_rpc_endpoint_for_partial(get_contract_state, state_domain)

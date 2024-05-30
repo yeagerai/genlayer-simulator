@@ -53,17 +53,14 @@ def create_app():
     return app, jsonrpc, socketio, msg_handler, state_domain, validators_domain
 
 
-if __name__ == "__main__":
-    load_dotenv()
-    app, jsonrpc, socketio, msg_handler, state_domain, validators_domain = create_app()
-    register_all_rpc_endpoints(
-        app, jsonrpc, msg_handler, state_domain, validators_domain
-    )
+load_dotenv()
+app, jsonrpc, socketio, msg_handler, state_domain, validators_domain = create_app()
+register_all_rpc_endpoints(app, jsonrpc, msg_handler, state_domain, validators_domain)
 
-    socketio.run(
-        app,
-        debug=os.environ["VSCODEDEBUG"] == "false",
-        port=os.environ.get("RPCPORT"),
-        host="0.0.0.0",
-        allow_unsafe_werkzeug=True,
-    )
+socketio.run(
+    app,
+    debug=os.environ["VSCODEDEBUG"] == "false",
+    port=os.environ.get("RPCPORT"),
+    host="0.0.0.0",
+    allow_unsafe_werkzeug=True,
+)
