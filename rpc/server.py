@@ -11,7 +11,7 @@ from flask_jsonrpc import JSONRPC
 from flask_socketio import SocketIO
 from flask_cors import CORS
 
-from database.init_db import (
+from database.initialization.init_db import (
     create_db_if_it_doesnt_already_exists,
     create_tables_if_they_dont_already_exist,
     clear_db_tables,
