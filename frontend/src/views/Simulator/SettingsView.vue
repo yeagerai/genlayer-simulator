@@ -5,11 +5,11 @@ import { inject, onMounted, ref } from 'vue'
 import { notify } from '@kyvg/vue3-notification'
 import Modal from '@/components/ModalComponent.vue'
 import { TrashIcon } from '@heroicons/vue/24/solid'
-import type { IJsonRPCService } from '@/services'
+import type { IJsonRpcService } from '@/services'
 
 const nodeProviders = ref<Record<string, string[]>>({})
 // state
-const $jsonRpc = inject<IJsonRPCService>('$jsonRpc')!
+const $jsonRpc = inject<IJsonRpcService>('$jsonRpc')!
 const validators = ref<ValidatorModel[]>([])
 const updateValidatorModalOpen = ref<boolean>(false)
 const createValidatorModalOpen = ref<boolean>(false)

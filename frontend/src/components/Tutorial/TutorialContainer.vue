@@ -49,7 +49,7 @@ const steps = [
     content: "Click “Next” to automatically deploy your Intelligent Contract to the GenLayer network.",
     onNextStep: async (store: any, router: any) => {
       const contract = store.contracts.find((c: any) => c.id === 'tutorial-example')
-      const { result } = await rpcClient.call({
+      const { result } = await rpcClient.call<any>({
         method: 'deploy_intelligent_contract',
         params: [
           store.currentUserAddress,

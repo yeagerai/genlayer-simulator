@@ -7,11 +7,11 @@ import ExecuteTransactions from '@/components/Simulator/ExecuteTransactions.vue'
 import TransactionsList from '@/components/Simulator/TransactionsList.vue'
 import ConstructorParameters from '@/components/Simulator/ConstructorParameters.vue'
 import type { DeployedContract } from '@/types'
-import type { IJsonRPCService } from '@/services'
+import type { IJsonRpcService } from '@/services'
 import { debounce } from 'vue-debounce'
 
 const store = useMainStore()
-const $jsonRpc = inject<IJsonRPCService>('$jsonRpc')!
+const $jsonRpc = inject<IJsonRpcService>('$jsonRpc')!
 const constructorInputs = ref<{ [k: string]: string }>({})
 const errorConstructorInputs = ref<Error>()
 const abi = ref<any>()
