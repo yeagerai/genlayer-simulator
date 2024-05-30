@@ -91,7 +91,7 @@ services:
       - POSTGRES_DB=${DBNAME}
     volumes:
       - ./database:/var/lib/postgresql
-    command: ["sh", "/var/lib/postgresql/initialization/startup.sh"]
+    command: ["/bin/bash", "/var/lib/postgresql/initialization/startup.sh"]
     # If you want your db to persist in dev
     #volumes:
     #  - "./data/postgres:/var/lib/postgresql/data"
