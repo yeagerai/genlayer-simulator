@@ -4,8 +4,8 @@ validator_keys = ["id", "address", "stake", "provider", "model", "config", "upda
 
 
 def test_create_db_and_tables():
-    post_request(payload("create_db"))
-    post_request(payload("create_tables"))
+    post_request(payload("create_db_if_it_doesnt_already_exists"))
+    post_request(payload("create_tables_if_they_dont_already_exist"))
     assert True
 
 
