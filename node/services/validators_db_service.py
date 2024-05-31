@@ -44,11 +44,14 @@ class ValidatorsDBService:
             "stake": validator_data["stake"],
             "provider": validator_data["provider"],
             "model": validator_data["model"],
-            "config": validator_data["config"],
+            "config": json.dumps(validator_data["config"]),
             "created_at": "CURRENT_TIMESTAMP",
         }
-        self.db_client.insert(self.db_state_table, validator)
-        return validator
+        new_id = self.db_client.insert(
+            self.db_state_table, validator, return_column="id"
+        )
+        validator_data["id"] = new_id
+        return validator_data
 
     def update_validator(self, validator_data: dict) -> None:
         update_condition = f"address = '{validator_data['address']}'"
@@ -56,11 +59,11 @@ class ValidatorsDBService:
             "stake": validator_data["stake"],
             "provider": validator_data["provider"],
             "model": validator_data["model"],
-            "config": validator_data["config"],
+            "config": json.dumps(validator_data["config"]),
             "created_at": "CURRENT_TIMESTAMP",
         }
         self.db_client.update(self.db_state_table, validator, update_condition)
-        return validator
+        return validator_data
 
     def delete_validator(self, validator_address: str) -> None:
         delete_condition = f"address = '{validator_address}'"

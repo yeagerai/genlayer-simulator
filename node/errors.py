@@ -48,3 +48,16 @@ class AccountAlreadyExists(Exception):
         self.address = address
         self.message = message
         super().__init__(self.message)
+
+
+class ValidatorNotFound(Exception):
+    """Exception raised when someone wants to get, update, or remove a validator that doesn't exist."""
+
+    def __init__(
+        self,
+        address: str,
+        message: str = "Validator doesn't exist.",
+    ):
+        self.address = address
+        self.message = message
+        super().__init__(self.message)

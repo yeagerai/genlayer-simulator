@@ -31,16 +31,17 @@ const validatorToCreate = ref<CreateValidatorModel>({
 // Hooks
 onMounted(async () => {
   try {
+    const [{ result: validatorsResult }, { result: modelsResult }] = await Promise.all([
+      $jsonRpc.call({
+        method: 'get_all_validators',
+        params: []
+      }),
+      $jsonRpc.call({
+        method: 'get_providers_and_models',
+        params: []
+      })
+    ])
 
-    const [{ result: validatorsResult }, { result: modelsResult }] = await Promise.all([$jsonRpc.call({
-      method: 'get_all_validators',
-      params: []
-    }), $jsonRpc.call({
-      method: 'get_providers_and_models',
-      params: []
-    })])
-
-    
     if (validatorsResult?.status === 'success') {
       validators.value = validatorsResult.data
     } else {
@@ -78,11 +79,16 @@ const openDeleteValidatorModal = (validator: ValidatorModel) => {
 const openUpdateValidatorModal = (validator: ValidatorModel) => {
   selectedValidator.value = validator
   const { model, provider, stake, config } = validator
+  console.log('🚀 ~ openUpdateValidatorModal ~ config:', typeof config)
+  console.log('🚀 ~ openUpdateValidatorModal ~ config:', config)
   validatorToUpdate.value = {
     model,
     provider,
     stake,
-    config: JSON.stringify(config || '{ }', null, 2)
+    config:
+      config === validatorToCreate.value.config
+        ? validatorToCreate.value.config
+        : JSON.stringify(config, null, 2)
   }
   updateValidatorModalOpen.value = true
 }
@@ -106,6 +112,8 @@ const closeDeleteValidatorModal = () => {
 const handleUpdateValidator = async () => {
   try {
     const { stake, provider, model, config } = validatorToUpdate.value
+    console.log('🚀 ~ handleUpdateValidator ~ config:', typeof config)
+    console.log('🚀 ~ handleUpdateValidator ~ config:', config)
 
     if (stake <= 0 || !provider || !model || !config) {
       notify({
@@ -257,9 +265,15 @@ const handleCreateNewValidator = async () => {
     </div>
     <div class="flex flex-col" id="tutorial-validators">
       <div class="flex flex-col text-xs w-full">
-        <div class="flex px-2 justify-between items-center hover:bg-slate-100 p-1 dark:hover:bg-zinc-700"
-          v-for="validator in validators" :key="validator.id">
-          <div class="flex items-center cursor-pointer" @click="openUpdateValidatorModal(validator)">
+        <div
+          class="flex px-2 justify-between items-center hover:bg-slate-100 p-1 dark:hover:bg-zinc-700"
+          v-for="validator in validators"
+          :key="validator.id"
+        >
+          <div
+            class="flex items-center cursor-pointer"
+            @click="openUpdateValidatorModal(validator)"
+          >
             <div class="flex dark:text-white text-primary">{{ validator.id }} -</div>
             <div class="flex flex-col items-start ml-2">
               <div class="flex">
@@ -282,8 +296,10 @@ const handleCreateNewValidator = async () => {
       </div>
     </div>
     <div class="flex flex-col mt-4 w-full px-2">
-      <button @click="openCreateNewValidatorModal"
-        class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
+      <button
+        @click="openCreateNewValidatorModal"
+        class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded"
+      >
         New Validator
       </button>
     </div>
@@ -302,40 +318,69 @@ const handleCreateNewValidator = async () => {
         </div>
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Provider:</p>
-          <select class="p-2 w-full bg-slate-100 dark:bg-zinc-700 overflow-y-auto" name="" id=""
-            v-model="validatorToUpdate.provider">
-            <option v-for="(_, provider) in nodeProviders" :key="provider" :value="provider"
-              :selected="provider === validatorToUpdate.provider">
+          <select
+            class="p-2 w-full bg-slate-100 dark:bg-zinc-700 overflow-y-auto"
+            name=""
+            id=""
+            v-model="validatorToUpdate.provider"
+          >
+            <option
+              v-for="(_, provider) in nodeProviders"
+              :key="provider"
+              :value="provider"
+              :selected="provider === validatorToUpdate.provider"
+            >
               {{ provider }}
             </option>
           </select>
         </div>
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Model:</p>
-          <select class="p-2 w-full bg-slate-100 overflow-y-auto dark:bg-zinc-700" name="" id=""
-            v-model="validatorToUpdate.model">
-            <option v-for="model in nodeProviders[validatorToUpdate.provider]" :key="model" :value="model"
-              :selected="model === validatorToUpdate.model">
+          <select
+            class="p-2 w-full bg-slate-100 overflow-y-auto dark:bg-zinc-700"
+            name=""
+            id=""
+            v-model="validatorToUpdate.model"
+          >
+            <option
+              v-for="model in nodeProviders[validatorToUpdate.provider]"
+              :key="model"
+              :value="model"
+              :selected="model === validatorToUpdate.model"
+            >
               {{ model }}
             </option>
           </select>
         </div>
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Stake:</p>
-          <input type="number" min="0.01" v-model="validatorToUpdate.stake"
-            class="p-2 w-full bg-slate-100 dark:bg-zinc-700" required />
+          <input
+            type="number"
+            min="0.01"
+            v-model="validatorToUpdate.stake"
+            class="p-2 w-full bg-slate-100 dark:bg-zinc-700"
+            required
+          />
         </div>
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Config:</p>
 
-          <textarea name="" id="" rows="5" cols="60" class="p-2 max-h-64 w-full bg-slate-100 dark:bg-zinc-700"
-            v-model="validatorToUpdate.config">
+          <textarea
+            name=""
+            id=""
+            rows="5"
+            cols="60"
+            class="p-2 max-h-64 w-full bg-slate-100 dark:bg-zinc-700"
+            v-model="validatorToUpdate.config"
+          >
           </textarea>
         </div>
       </div>
       <div class="flex flex-col mt-4 w-full">
-        <button @click="handleUpdateValidator"
-          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
+        <button
+          @click="handleUpdateValidator"
+          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded"
+        >
           Save
         </button>
       </div>
@@ -348,40 +393,69 @@ const handleCreateNewValidator = async () => {
         </div>
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Provider:</p>
-          <select class="p-2 w-full bg-slate-100 dark:bg-zinc-700 overflow-y-auto" name="" id=""
-            v-model="validatorToCreate.provider">
-            <option v-for="(_, provider) in nodeProviders" :key="provider" :value="provider"
-              :selected="provider === validatorToCreate.provider">
+          <select
+            class="p-2 w-full bg-slate-100 dark:bg-zinc-700 overflow-y-auto"
+            name=""
+            id=""
+            v-model="validatorToCreate.provider"
+          >
+            <option
+              v-for="(_, provider) in nodeProviders"
+              :key="provider"
+              :value="provider"
+              :selected="provider === validatorToCreate.provider"
+            >
               {{ provider }}
             </option>
           </select>
         </div>
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Model:</p>
-          <select class="p-2 w-full bg-slate-100 overflow-y-auto dark:bg-zinc-700" name="" id=""
-            v-model="validatorToCreate.model">
-            <option v-for="model in nodeProviders[validatorToCreate.provider]" :key="model" :value="model"
-              :selected="model === validatorToCreate.model">
+          <select
+            class="p-2 w-full bg-slate-100 overflow-y-auto dark:bg-zinc-700"
+            name=""
+            id=""
+            v-model="validatorToCreate.model"
+          >
+            <option
+              v-for="model in nodeProviders[validatorToCreate.provider]"
+              :key="model"
+              :value="model"
+              :selected="model === validatorToCreate.model"
+            >
               {{ model }}
             </option>
           </select>
         </div>
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Stake:</p>
-          <input type="number" min="0.01" v-model="validatorToCreate.stake"
-            class="p-2 w-full bg-slate-100 dark:bg-zinc-700" required />
+          <input
+            type="number"
+            min="0.01"
+            v-model="validatorToCreate.stake"
+            class="p-2 w-full bg-slate-100 dark:bg-zinc-700"
+            required
+          />
         </div>
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Config:</p>
 
-          <textarea name="" id="" rows="5" cols="60" class="p-2 max-h-64 w-full bg-slate-100 dark:bg-zinc-700"
-            v-model="validatorToCreate.config">
+          <textarea
+            name=""
+            id=""
+            rows="5"
+            cols="60"
+            class="p-2 max-h-64 w-full bg-slate-100 dark:bg-zinc-700"
+            v-model="validatorToCreate.config"
+          >
           </textarea>
         </div>
       </div>
       <div class="flex flex-col mt-4 w-full">
-        <button @click="handleCreateNewValidator"
-          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
+        <button
+          @click="handleCreateNewValidator"
+          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded"
+        >
           Create
         </button>
       </div>
@@ -416,8 +490,10 @@ const handleCreateNewValidator = async () => {
         </div>
       </div>
       <div class="flex flex-col mt-4 w-full">
-        <button @click="handleDeleteValidator"
-          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
+        <button
+          @click="handleDeleteValidator"
+          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded"
+        >
           Delete Validator
         </button>
       </div>

@@ -23,7 +23,7 @@ class TransactionsDBService:
             "type": type,
         }
         transaction_id = self.db_client.insert(
-            self.db_state_table, new_transaction, return_id="id"
+            self.db_state_table, new_transaction, return_column="id"
         )
 
         # Insert transaction audit record into the transactions_audit table

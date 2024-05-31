@@ -107,7 +107,9 @@ def num_decimal_places(number: float) -> int:
     return decimal_places
 
 
-def random_validator_config(providers: list):
+def random_validator_config(providers: list = []):
+    if len(providers) == 0:
+        providers = get_providers()
     default_config = get_default_config_for_providers_and_nodes()
     config = get_config_with_specific_providers(default_config, providers)
     ollama_models = get_provider_models({}, "ollama")

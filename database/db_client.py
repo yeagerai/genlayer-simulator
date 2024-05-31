@@ -39,6 +39,8 @@ class DBClient:
         conn = self.get_connection()
         try:
             with conn.cursor() as cursor:
+                print("DBClient ~ ~ query:", query)
+                print("DBClient ~ ~ params:", params)
                 cursor.execute(query, params)
                 conn.commit()
                 return cursor.fetchall()  # Return data
@@ -74,22 +76,48 @@ class DBClient:
 
         return self.execute_query(query)
 
-    def insert(self, table: str, data_dict: dict, return_column: str) -> None:
+    def insert(self, table: str, data_dict: dict, return_column: str = None) -> None:
         """Insert a dictionary of data into a table."""
-        columns = ", ".join(data_dict.keys())
-        values = ", ".join(["%s"] * len(data_dict))
-        query = f"INSERT INTO {table} ({columns}) VALUES ({values})"
+        columns = []
+        placeholders = []
+        values = []
+
+        for key, value in data_dict.items():
+            columns.append(key)
+            if value == "CURRENT_TIMESTAMP":
+                placeholders.append("CURRENT_TIMESTAMP")  # Directly use SQL function
+            else:
+                placeholders.append("%s")
+                values.append(value)
+
+        columns_str = ", ".join(columns)
+        placeholders_str = ", ".join(placeholders)
+
+        query = f"INSERT INTO {table} ({columns_str}) VALUES ({placeholders_str})"
         if return_column:
             query += f" RETURNING {return_column}"
-        result = self.execute_query(query, list(data_dict.values()))
+        result = self.execute_query(query, values)
         if result and return_column:
             return result[0][0]
 
     def update(self, table: str, data_dict: dict, condition: str) -> None:
         """Update rows in a table based on a condition."""
-        set_clause = ", ".join([f"{key} = %s" for key in data_dict])
-        query = f"UPDATE {table} SET {set_clause} WHERE {condition}"
-        self.execute_query(query, list(data_dict.values()))
+        set_clauses = []
+        values = []
+
+        for key, value in data_dict.items():
+            if value == "CURRENT_TIMESTAMP":
+                set_clauses.append(
+                    f"{key} = CURRENT_TIMESTAMP"
+                )  # Directly use SQL function
+            else:
+                set_clauses.append(f"{key} = %s")
+                values.append(value)
+
+        set_clause_str = ", ".join(set_clauses)
+
+        query = f"UPDATE {table} SET {set_clause_str} WHERE {condition}"
+        self.execute_query(query, values)
 
     def remove(self, table: str, condition: str) -> None:
         """Remove rows from a table based on a condition."""

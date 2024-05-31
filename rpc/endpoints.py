@@ -42,9 +42,7 @@ def create_account(state_domain: StateDomain) -> dict:
     return {"account_address": account_address}
 
 
-def fund_account(
-    state_domain: StateDomain, account_address: str, amount: float
-) -> dict:
+def fund_account(state_domain: StateDomain, account_address: str, amount: int) -> dict:
     if not address_is_in_correct_format(account_address):
         raise InvalidAddressError(account_address)
 
@@ -150,47 +148,37 @@ def get_validator(validators_domain: ValidatorsDomain, validator_address: str) -
 
 def create_validator(
     validators_domain: ValidatorsDomain,
-    stake: float,
+    stake: int,
     provider: str,
     model: str,
-    config: dict,
+    config: json,
 ) -> dict:
     new_address = create_new_address()
-    new_validator = {
-        "address": new_address,
-        "stake": stake,
-        "provider": provider,
-        "model": model,
-        "config": json.dumps(config),
-    }
-    return validators_domain.create_validator(new_validator)
+    return validators_domain.create_validator(
+        new_address, stake, provider, model, config
+    )
 
 
 def update_validator(
     validators_domain: ValidatorsDomain,
     validator_address: str,
-    stake: float,
+    stake: int,
     provider: str,
     model: str,
-    config: dict,
+    config: json,
 ) -> dict:
-    validator = get_validator(validator_address)
-    if validator is None:
-        raise ItemNotFoundError(validator_address, "Validator not found")
-
-    validator["stake"] = stake
-    validator["provider"] = provider
-    validator["model"] = model
-    validator["config"] = json.dumps(config)
-    return validators_domain.update_validator(validator)
+    if not address_is_in_correct_format(validator_address):
+        raise InvalidAddressError(validator_address)
+    return validators_domain.update_validator(
+        validator_address, stake, provider, model, config
+    )
 
 
 def delete_validator(
     validators_domain: ValidatorsDomain, validator_address: str
 ) -> dict:
-    validator = get_validator(validator_address)
-    if validator is None:
-        raise ItemNotFoundError(validator_address, "Validator not found")
+    if not address_is_in_correct_format(validator_address):
+        raise InvalidAddressError(validator_address)
 
     validators_domain.delete_validator(validator_address)
     return validator_address
@@ -215,12 +203,16 @@ def get_providers_and_models() -> dict:
 
 
 def create_random_validators(
-    count: int, min_stake: float, max_stake: float, providers: list = []
+    validators_domain: ValidatorsDomain,
+    count: int,
+    min_stake: int,
+    max_stake: int,
+    providers: list = [],
 ) -> dict:
     for _ in range(count):
         stake = random.uniform(min_stake, max_stake)
         details = random_validator_config(providers=providers)
-        new_validator = create_validator(
+        new_validator = validators_domain.create_validator(
             stake, details["provider"], details["model"], details["config"]
         )
         if new_validator["status"] == "error":
@@ -229,9 +221,9 @@ def create_random_validators(
     return response
 
 
-def create_random_validator(stake: float) -> dict:
+def create_random_validator(validators_domain: ValidatorsDomain, stake: int) -> dict:
     details = random_validator_config()
-    response = create_validator(
+    response = validators_domain.create_validator(
         stake, details["provider"], details["model"], details["config"]
     )
     return response
@@ -253,21 +245,21 @@ def register_all_rpc_endpoints(
         generate_rpc_endpoint_for_partial, register_rpc_endpoint
     )
 
-    register_rpc_endpoint(ping)
-    register_rpc_endpoint(create_db_if_it_doesnt_already_exists)
-    register_rpc_endpoint_for_partial(create_validator, validators_domain)
-    register_rpc_endpoint_for_partial(update_validator, validators_domain)
-    register_rpc_endpoint_for_partial(delete_validator, validators_domain)
-    register_rpc_endpoint_for_partial(get_validator, validators_domain)
-    register_rpc_endpoint_for_partial(delete_all_validators, validators_domain)
-    register_rpc_endpoint_for_partial(get_all_validators, validators_domain)
-    register_rpc_endpoint(create_random_validator)
-    register_rpc_endpoint(create_random_validators)
-    register_rpc_endpoint_for_partial(create_tables_if_they_dont_already_exist, app)
+    register_rpc_endpoint(ping)  # OK
+    register_rpc_endpoint(create_db_if_it_doesnt_already_exists)  # OK
     register_rpc_endpoint(get_providers_and_models)
     register_rpc_endpoint_for_partial(
         clear_db_tables, ["current_state", "transactions"]
     )
+    register_rpc_endpoint_for_partial(create_validator, validators_domain)  # OK
+    register_rpc_endpoint_for_partial(update_validator, validators_domain)  # OK
+    register_rpc_endpoint_for_partial(delete_validator, validators_domain)  # OK
+    register_rpc_endpoint_for_partial(get_validator, validators_domain)  # OK
+    register_rpc_endpoint_for_partial(delete_all_validators, validators_domain)
+    register_rpc_endpoint_for_partial(get_all_validators, validators_domain)  # OK
+    register_rpc_endpoint_for_partial(create_random_validator, validators_domain)
+    register_rpc_endpoint_for_partial(create_random_validators, validators_domain)
+    register_rpc_endpoint_for_partial(create_tables_if_they_dont_already_exist, app)
     register_rpc_endpoint_for_partial(create_account, state_domain)
     register_rpc_endpoint_for_partial(fund_account, state_domain)
     register_rpc_endpoint_for_partial(send_transaction, state_domain)
