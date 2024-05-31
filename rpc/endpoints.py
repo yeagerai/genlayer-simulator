@@ -202,6 +202,8 @@ def get_providers_and_models() -> dict:
     return providers_and_models
 
 
+# TODO: Refactor this function to put the random config generator inside the domain
+# and reuse the generate single random validator function
 def create_random_validators(
     validators_domain: ValidatorsDomain,
     count: int,
@@ -211,20 +213,30 @@ def create_random_validators(
 ) -> dict:
     for _ in range(count):
         stake = random.uniform(min_stake, max_stake)
+        validator_address = create_new_address()
         details = random_validator_config(providers=providers)
         new_validator = validators_domain.create_validator(
-            stake, details["provider"], details["model"], details["config"]
+            validator_address,
+            stake,
+            details["provider"],
+            details["model"],
+            details["config"],
         )
-        if new_validator["status"] == "error":
+        if not "id" in new_validator:
             raise SystemError("Failed to create Validator")
-    response = get_all_validators()
+    response = validators_domain.get_all_validators()
     return response
 
 
 def create_random_validator(validators_domain: ValidatorsDomain, stake: int) -> dict:
+    validator_address = create_new_address()
     details = random_validator_config()
     response = validators_domain.create_validator(
-        stake, details["provider"], details["model"], details["config"]
+        validator_address,
+        stake,
+        details["provider"],
+        details["model"],
+        details["config"],
     )
     return response
 
@@ -245,18 +257,18 @@ def register_all_rpc_endpoints(
         generate_rpc_endpoint_for_partial, register_rpc_endpoint
     )
 
-    register_rpc_endpoint(ping)  # OK
-    register_rpc_endpoint(create_db_if_it_doesnt_already_exists)  # OK
+    register_rpc_endpoint(ping)
+    register_rpc_endpoint(create_db_if_it_doesnt_already_exists)
     register_rpc_endpoint(get_providers_and_models)
     register_rpc_endpoint_for_partial(
         clear_db_tables, ["current_state", "transactions"]
     )
-    register_rpc_endpoint_for_partial(create_validator, validators_domain)  # OK
-    register_rpc_endpoint_for_partial(update_validator, validators_domain)  # OK
-    register_rpc_endpoint_for_partial(delete_validator, validators_domain)  # OK
-    register_rpc_endpoint_for_partial(get_validator, validators_domain)  # OK
+    register_rpc_endpoint_for_partial(create_validator, validators_domain)
+    register_rpc_endpoint_for_partial(update_validator, validators_domain)
+    register_rpc_endpoint_for_partial(delete_validator, validators_domain)
+    register_rpc_endpoint_for_partial(get_validator, validators_domain)
     register_rpc_endpoint_for_partial(delete_all_validators, validators_domain)
-    register_rpc_endpoint_for_partial(get_all_validators, validators_domain)  # OK
+    register_rpc_endpoint_for_partial(get_all_validators, validators_domain)
     register_rpc_endpoint_for_partial(create_random_validator, validators_domain)
     register_rpc_endpoint_for_partial(create_random_validators, validators_domain)
     register_rpc_endpoint_for_partial(create_tables_if_they_dont_already_exist, app)
