@@ -124,3 +124,7 @@ $  .\.venv\Scripts\activate
 Additional documentation
 
 - https://docs.genlayer.com/
+
+## Troubleshooting
+
+If you encounter any issues with the simulator, check out our [troubleshooting guide](https://docs.genlayer.com/simulator/troubleshooting)
