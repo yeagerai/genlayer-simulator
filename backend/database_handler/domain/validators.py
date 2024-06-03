@@ -2,8 +2,8 @@
 
 import json
 
-from node.services.validators_db_service import ValidatorsDBService
-from node.errors import ValidatorNotFound
+from backend.database_handler.services.validators_db_service import ValidatorsDBService
+from backend.errors.errors import ValidatorNotFound
 
 
 class Validators:

@@ -6,30 +6,35 @@ from functools import partial
 from flask_jsonrpc import JSONRPC
 from flask import Flask
 
-from message_handler.base import MessageHandler
-from database.functions import DatabaseFunctions
-from database.initialization.init_db import (
+from backend.protocol_rpc.message_handler.base import MessageHandler
+
+from backend.database_handler.domain.state import State as StateDomain
+from backend.database_handler.domain.validators import Validators as ValidatorsDomain
+from backend.database_handler.initialization.init_db import (
     create_db_if_it_doesnt_already_exists,
     create_tables_if_they_dont_already_exist,
     clear_db_tables,
 )
 
-from node.nodes.create_nodes import (
+from backend.node.create_nodes.create_nodes import (
     get_default_config_for_providers_and_nodes,
     get_providers,
     get_provider_models,
+    random_validator_config,
 )
-from node.nodes.create_nodes import random_validator_config
-from node.domain.state import State as StateDomain
-from node.domain.validators import Validators as ValidatorsDomain
 
-from rpc.address_utils import create_new_address
-from rpc.endpoint_generator import (
+from backend.protocol_rpc.endpoint_generator import (
     generate_rpc_endpoint,
     generate_rpc_endpoint_for_partial,
 )
-from rpc.address_utils import address_is_in_correct_format, create_new_address
-from rpc.errors import InvalidAddressError, ItemNotFoundError, InvalidInputError
+from backend.protocol_rpc.address_utils import (
+    address_is_in_correct_format,
+    create_new_address,
+)
+from backend.errors.errors import (
+    InvalidAddressError,
+    InvalidInputError,
+)
 
 
 def ping() -> dict:
