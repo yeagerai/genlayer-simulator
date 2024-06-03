@@ -30,7 +30,7 @@ const contractTransactions = computed(() => {
 })
 
 //loadings
-const loadingConstructorInputs = ref(true)
+const loadingConstructorInputs = ref(false)
 const callingContractMethod = ref(false)
 const callingContractState = ref(false)
 const deployingContract = ref(false)
@@ -243,21 +243,21 @@ watch(() => deployedContract.value?.contractId, (newValue) => {
   } 
 })
 
-watch(() => contract.value?.content, (newValue) => {
-  if (newValue && !loadingConstructorInputs.value) {
-    debouncedGetConstructorInputs()
-  }
-})
 
-watch(() => contract.value?.id, (newValue) => {
-  if (newValue) {
+watch(() => contract.value?.id, (newValue, oldValue) => {
+  if (newValue && newValue !== oldValue) {
     getConstructorInputs()
   }
 })
 
-onMounted(() => {
-  getConstructorInputs()
+watch(() => contract.value?.content, (newValue, oldValue) => {
+  if (newValue && newValue !== oldValue && !loadingConstructorInputs.value) {
+    console.log('getConstructorInputs')
+    debouncedGetConstructorInputs()
+  }
+})
 
+onMounted(() => {
   if (deployedContract.value) {
     getContractAbi(deployedContract.value)
   } 
