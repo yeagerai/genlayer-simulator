@@ -42,26 +42,24 @@ class State:
         return account_data
 
     def create_account(self, account_address: str):
-        self.state_db_service.create_new_account({"id": account_address, "balance": 0})
+        self.state_db_service.create_new_account(account_address, 0)
 
     def fund_account(self, account_address: str, amount: int):
         # account creation or balance update
         account_data = self.state_db_service.get_account_by_address(account_address)
         if account_data:
             # Account exists, update it
-            account_data["data"]["balance"] + amount
-            self.state_db_service.update_account(account_data)
+            account_data["data"]["balance"] += amount
+            self.state_db_service.update_account(account_address, account_data["data"])
         else:
             # Account doesn't exist, create it
-            self.state_db_service.create_new_account(
-                {"id": account_address, "balance": amount}
-            )
+            self.state_db_service.create_new_account(account_address, amount)
 
         # Record transaction
         transaction_data = {
             "from_address": "NULL",
             "to_address": account_address,
-            "data": json.dumps({"action": "fund_account", "amount": amount}),
+            "data": {"action": "fund_account", "amount": amount},
             "value": amount,
             "type": 0,
         }
@@ -80,8 +78,8 @@ class State:
         # Update account balances
         from_account_data["data"]["balance"] -= amount
         to_account_data["data"]["balance"] += amount
-        self.state_db_service.update_account(from_account_data)
-        self.state_db_service.update_account(to_account_data)
+        self.state_db_service.update_account(from_address, from_account_data["data"])
+        self.state_db_service.update_account(to_address, to_account_data["data"])
 
         # Record transaction
         transaction_data = {
@@ -199,9 +197,7 @@ class State:
                 "state": leader_data["result"]["contract_state"],
             }
         ).model_dump_json()
-        self.state_db_service.update_account(
-            {"id": contract_address, "data": contract_data}
-        )
+        self.state_db_service.update_account(contract_address, contract_data)
 
         # Record transaction
         transaction_data = {

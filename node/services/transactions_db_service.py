@@ -28,7 +28,7 @@ class TransactionsDBService:
 
         # Insert transaction audit record into the transactions_audit table
         transaction_audit_record = {
-            transaction_id: transaction_id,
-            data: json.dumps(new_transaction),
+            "transaction_id": transaction_id,
+            "data": json.dumps(new_transaction),
         }
         self.db_client.insert(self.db_audits_table, transaction_audit_record)

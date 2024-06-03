@@ -12,27 +12,27 @@ class StateDBService:
     def parse_state_result(self, state_result: list) -> dict:
         return {
             "id": state_result[0],
-            "data": json.loads(state_result[1]),
+            "data": state_result[1],
         }
     
     def get_account_by_address(self, account_address: str) -> dict:
-        condition = f"id = {account_address}"
+        condition = f"id = '{account_address}'"
         result = self.db_client.get(self.db_state_table, condition)
         if (result[0]):
             return self.parse_state_result(result[0])
         return None
 
-    def create_new_account(self, account_data: dict) -> None:
+    def create_new_account(self, id: str, balance: int) -> None:
         account_state = {
-            "id": account_data["id"],
-            "data": json.dumps({"balance": account_data["balance"]}),
+            "id": id,
+            "data": json.dumps({"balance": balance}),
         }
         self.db_client.insert(self.db_state_table, account_state)
 
-    def update_account(self, account_data: dict) -> None:
-        update_condition = f"id = {account_data["id"]}"
+    def update_account(self, id: str, data: dict) -> None:
+        update_condition = f"id = '{id}'"
         account_state = {
-            "data": json.dumps({"balance": account_data["balance"]}),
+            "data": json.dumps(data),
         }
         self.db_client.update(self.db_state_table, account_state, update_condition)
 

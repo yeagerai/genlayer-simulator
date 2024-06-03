@@ -83,7 +83,7 @@ class DBClient:
         values = []
 
         for key, value in data_dict.items():
-            columns.append(key)
+            columns.append(str(key))
             if value == "CURRENT_TIMESTAMP":
                 placeholders.append("CURRENT_TIMESTAMP")  # Directly use SQL function
             else:
