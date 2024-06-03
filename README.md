@@ -14,6 +14,12 @@ The GenLayer simulator consists of the following main components:
 - **The Consensus Algorithm:** A python routine that launches execution processes into the GenVM, following the approach defined in the whitepaper.
 - **Gen Virtual Machine (GenVM):** A Dockerized environment prepared to run intelligent contracts safely.
 
+## Prerequisites
+Before installing the GenLayer CLI, ensure you have the following prerequisites installed:
+
+- [Docker](https://docs.docker.com/engine/install/): Required to run the GenLayer environment. **Required version**: Docker 26+
+- [Node.js and npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm/): Needed for the GenLayer CLI tool. **Required version**: Node.js 18+
+
 ## Quick Install
 
 ```
