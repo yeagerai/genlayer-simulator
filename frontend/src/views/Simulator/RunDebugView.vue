@@ -30,7 +30,7 @@ const contractTransactions = computed(() => {
 })
 
 //loadings
-const loadingConstructorInputs = ref(false)
+const loadingConstructorInputs = ref(true)
 const callingContractMethod = ref(false)
 const callingContractState = ref(false)
 const deployingContract = ref(false)
@@ -243,9 +243,15 @@ watch(() => deployedContract.value?.contractId, (newValue) => {
   } 
 })
 
-watch(() => contract.value, (newValue) => {
+watch(() => contract.value?.content, (newValue) => {
   if (newValue && !loadingConstructorInputs.value) {
     debouncedGetConstructorInputs()
+  }
+})
+
+watch(() => contract.value?.id, (newValue) => {
+  if (newValue) {
+    getConstructorInputs()
   }
 })
 
