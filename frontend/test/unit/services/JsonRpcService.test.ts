@@ -26,14 +26,17 @@ describe('JsonRprService', () => {
     }
     it('should call rpc client', async () => {
       vi.spyOn(rpcClient, 'call').mockImplementationOnce(() => Promise.resolve(mockResult))
-      const params = {
+      const input = {
         contractAddress: '0x58FaA28cbAA1b52F8Ec8D3c6FFCE6f1AaF8bEEB1',
         method: 'get_have_coin',
         methodArguments: []
       }
-      await jsonRpcService.getContractState(params)
+      await jsonRpcService.getContractState(input)
       expect(rpcClient.call).toHaveBeenCalledTimes(1)
-      expect(rpcClient.call).toHaveBeenCalledWith(params)
+      expect(rpcClient.call).toHaveBeenCalledWith({
+        method: 'get_contract_state',
+        params: [input.contractAddress, input.method, []]
+      })
     })
 
     it('should return contract state', async () => {
@@ -45,7 +48,7 @@ describe('JsonRprService', () => {
         method: 'get_have_coin',
         methodArguments: []
       })
-      expect(result).to.deep.equal(mockResult)
+      expect(result).to.deep.equal(mockResult.data)
     })
   })
 
@@ -89,15 +92,20 @@ describe('JsonRprService', () => {
     }
     it('should call rpc client', async () => {
       vi.spyOn(rpcClient, 'call').mockImplementationOnce(() => Promise.resolve(mockResult))
-      const params = {
+      const input = {
         userAccount: '0xFEaedeC4c6549236EaF49C1F7c5cf860FD2C3fcB',
         contractAddress: '0x58FaA28cbAA1b52F8Ec8D3c6FFCE6f1AaF8bEEB1',
         method: 'WizardOfCoin.ask_for_coin',
         params: ['Give me the coin']
       }
-      await jsonRpcService.callContractFunction(params)
+      await jsonRpcService.callContractFunction(input)
       expect(rpcClient.call).toHaveBeenCalledTimes(1)
-      expect(rpcClient.call).toHaveBeenCalledWith(params)
+      expect(rpcClient.call).toHaveBeenCalledWith(
+        {
+          method: 'call_contract_function',
+          params: [input.userAccount, input.contractAddress, input.method, [...input.params]]
+        }
+      )
     })
 
     it('should call contract function and return result', async () => {
@@ -110,8 +118,7 @@ describe('JsonRprService', () => {
         method: 'WizardOfCoin.ask_for_coin',
         params: ['Give me the coin']
       })
-
-      expect(result).to.deep.equal(mockResult)
+      expect(result).to.equal(mockResult.data)
     })
   })
 })
