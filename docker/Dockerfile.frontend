@@ -9,7 +9,7 @@ RUN npm i
 COPY ./frontend .
 COPY ./examples src/assets/examples
 COPY ./.env .
-RUN npm run build 
+RUN npm run build
 
 EXPOSE 8080
 

@@ -26,23 +26,26 @@ describe('JsonRprService', () => {
     }
     it('should call rpc client', async () => {
       vi.spyOn(rpcClient, 'call').mockImplementationOnce(() => Promise.resolve(mockResult))
-
-      await jsonRpcService.getContractState({
+      const params = {
         contractAddress: '0x58FaA28cbAA1b52F8Ec8D3c6FFCE6f1AaF8bEEB1',
         method: 'get_have_coin',
         methodArguments: []
-      })
+      }
+      await jsonRpcService.getContractState(params)
       expect(rpcClient.call).toHaveBeenCalledTimes(1)
+      expect(rpcClient.call).toHaveBeenCalledWith(params)
     })
 
     it('should return contract state', async () => {
-      vi.spyOn(jsonRpcService, 'getContractState').mockImplementationOnce(() => Promise.resolve(mockResult.data))
+      vi.spyOn(jsonRpcService, 'getContractState').mockImplementationOnce(() =>
+        Promise.resolve(mockResult.data)
+      )
       const result = await jsonRpcService.getContractState({
         contractAddress: '0x58FaA28cbAA1b52F8Ec8D3c6FFCE6f1AaF8bEEB1',
         method: 'get_have_coin',
         methodArguments: []
       })
-      expect(result.get_have_coin).to.equal('True')
+      expect(result).to.deep.equal(mockResult)
     })
   })
 
@@ -86,28 +89,29 @@ describe('JsonRprService', () => {
     }
     it('should call rpc client', async () => {
       vi.spyOn(rpcClient, 'call').mockImplementationOnce(() => Promise.resolve(mockResult))
+      const params = {
+        userAccount: '0xFEaedeC4c6549236EaF49C1F7c5cf860FD2C3fcB',
+        contractAddress: '0x58FaA28cbAA1b52F8Ec8D3c6FFCE6f1AaF8bEEB1',
+        method: 'WizardOfCoin.ask_for_coin',
+        params: ['Give me the coin']
+      }
+      await jsonRpcService.callContractFunction(params)
+      expect(rpcClient.call).toHaveBeenCalledTimes(1)
+      expect(rpcClient.call).toHaveBeenCalledWith(params)
+    })
 
-       await jsonRpcService.callContractFunction({
+    it('should call contract function and return result', async () => {
+      vi.spyOn(jsonRpcService, 'callContractFunction').mockImplementationOnce(() =>
+        Promise.resolve(mockResult.data)
+      )
+      const result = await jsonRpcService.callContractFunction({
         userAccount: '0xFEaedeC4c6549236EaF49C1F7c5cf860FD2C3fcB',
         contractAddress: '0x58FaA28cbAA1b52F8Ec8D3c6FFCE6f1AaF8bEEB1',
         method: 'WizardOfCoin.ask_for_coin',
         params: ['Give me the coin']
       })
-      expect(rpcClient.call).toHaveBeenCalledTimes(1)
-    })
 
-    it('should call contract function and return result', async () => {
-      vi.spyOn(jsonRpcService, 'callContractFunction').mockImplementationOnce(() => Promise.resolve(mockResult.data))
-      const result =  await jsonRpcService.callContractFunction({
-          userAccount: '0xFEaedeC4c6549236EaF49C1F7c5cf860FD2C3fcB',
-          contractAddress: '0x58FaA28cbAA1b52F8Ec8D3c6FFCE6f1AaF8bEEB1',
-          method: 'WizardOfCoin.ask_for_coin',
-          params: ['Give me the coin']
-        })
-      
-
-      expect(result.execution_output.leader_data.result.method).to.equal('ask_for_coin')
-      expect(result.execution_output.leader_data.vote).to.equal('agree')
+      expect(result).to.deep.equal(mockResult)
     })
   })
 })
