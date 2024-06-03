@@ -252,7 +252,6 @@ watch(() => contract.value?.id, (newValue, oldValue) => {
 
 watch(() => contract.value?.content, (newValue, oldValue) => {
   if (newValue && newValue !== oldValue && !loadingConstructorInputs.value) {
-    console.log('getConstructorInputs')
     debouncedGetConstructorInputs()
   }
 })
