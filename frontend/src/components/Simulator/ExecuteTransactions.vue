@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, toRef, watch, watchEffect } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { InputTypesMap } from '@/utils'
 import { useMainStore } from '@/stores'
 import type { ContractMethod } from '@/types'
