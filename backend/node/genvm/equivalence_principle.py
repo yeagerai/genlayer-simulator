@@ -1,11 +1,8 @@
-import ast
-import re
 from typing import Optional
-import inspect
-from genvm.base.context_wrapper import enforce_with_context
-from genvm.base import llms
-from genvm.base.contract_runner import ContractRunner
-from genvm.utils import get_webpage_content
+from backend.node.genvm.context_wrapper import enforce_with_context
+from backend.node.genvm.llms import llms
+from backend.node.genvm.contract_runner import ContractRunner
+from backend.node.genvm.webpage_utils import get_webpage_content
 
 
 def clear_locals(scope):
@@ -23,7 +20,7 @@ def clear_locals(scope):
 
 @enforce_with_context
 class EquivalencePrinciple:
-    contract_runner: ContractRunner
+    contract_runner: dict
 
     def __init__(
         self,

@@ -8,8 +8,8 @@ from backend.database_handler.services.transactions_db_service import (
     TransactionsDBService,
 )
 from backend.database_handler.services.validators_db_service import ValidatorsDBService
-from backend.consensus.validators import ConsensusValidators
-from backend.consensus.execute_transaction import exec_transaction
+from backend.consensus.vrf import ConsensusValidators
+from backend.consensus.base import exec_transaction
 from backend.errors.errors import (
     AccountNotFoundError,
     InsufficientFundsError,
@@ -17,7 +17,7 @@ from backend.errors.errors import (
 )
 
 
-class State:
+class State:  # TODO: Rename to Snapshot to be more geth like or CurrentState
     def __init__(
         self,
         state_db_service: StateDBService,

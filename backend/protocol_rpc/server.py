@@ -18,7 +18,7 @@ from backend.database_handler.services.transactions_db_service import (
 )
 from backend.database_handler.domain.state import State
 from backend.database_handler.domain.validators import Validators
-from backend.consensus.validators import ConsensusValidators
+
 
 GENVM_URL = (
     os.environ["GENVMPROTOCOL"]
@@ -39,13 +39,11 @@ def create_app():
     transactions_db_service = TransactionsDBService(genlayer_db_client)
     validators_db_service = ValidatorsDBService(genlayer_db_client)
     validators_domain = Validators(validators_db_service)
-    consensus_validators = ConsensusValidators()
     state_db_service = StateDBService(genlayer_db_client)
     state_domain = State(
         state_db_service,
         transactions_db_service,
         validators_db_service,
-        consensus_validators,
     )
     return app, jsonrpc, socketio, msg_handler, state_domain, validators_domain
 
