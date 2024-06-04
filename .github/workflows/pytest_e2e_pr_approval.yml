@@ -1,10 +1,10 @@
 name: CI
 
 on:
-  pull_request:
+  pull_request_review:
     branches:
       - staging
-    types: [opened, synchronize, reopened]
+    types: [submitted]
 
 jobs:
   test:
@@ -19,9 +19,15 @@ jobs:
 
       - name: Copy .env file
         run: cp .env.example .env
+
+      - name: Changing URL for rpc server to localhost
+        run: echo "RPCHOST = 'localhost'" >> .env
       
-      - name: Adding openai key to the .env
-        run: echo "OPENAIKEY=${{ secrets.OPENAI_API_KEY }}" >> .env
+      - name: Remove OPENAIKEY from the .env file so it can be loaded from the environment
+        run: sed -i "/^OPENAIKEY *= *'<add_your_api_key_here>'$/d" .env
+
+      - name: Printing out the .env file
+        run: cat .env
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -39,7 +45,7 @@ jobs:
 
       - name: Wait for services to be up
         run: |
-          while ! curl -sSf http://localhost:4000/github-actions/ping > /dev/null; do
+          while ! curl -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"ping","params":[],"id":1}' http://0.0.0.0:4000/api > /dev/null; do
             echo "Waiting for rpc server..."
             sleep 5
           done
@@ -60,4 +66,4 @@ jobs:
 
       - name: Shutdown Docker Compose
         if: always()
-        run: docker-compose down
+        run: docker compose down
