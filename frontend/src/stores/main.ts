@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import type { ContractFile, MainStoreState, DeployedContract } from '@/types'
-import { rpcClient } from '@/utils'
+import { db, rpcClient } from '@/utils'
 
 const getInitialOPenedFiles = (): string[] => {
   const storage = localStorage.getItem('mainStore.openedFiles')
@@ -28,7 +28,7 @@ export const useMainStore = defineStore('mainStore', {
       accounts: localStorage.getItem('mainStore.accounts')
         ? (localStorage.getItem('mainStore.accounts') || '').split(',')
         : [],
-        contractTransactions: {},
+      contractTransactions: {}
     }
   },
   actions: {
@@ -101,6 +101,22 @@ export const useMainStore = defineStore('mainStore', {
       } catch (error) {
         console.error
         return null
+      }
+    },
+    async resetStorage(): Promise<void> {
+      try {
+        localStorage.setItem('mainStore.contractsModified', '')
+        localStorage.setItem('mainStore.currentContractId', '')
+        localStorage.setItem('mainStore.openedFiles', '')
+        await db.deployedContracts.clear()
+        await db.contractFiles.clear()
+
+        this.deployedContracts = []
+        this.contracts = []
+        this.currentContractId = ''
+        this.openedFiles = []
+      } catch (error) {
+        console.error(error)
       }
     }
   }
