@@ -32,9 +32,6 @@ jobs:
       - name: Remove OPENAIKEY from the .env file so it can be loaded from the environment
         run: sed -i "/^OPENAIKEY *= *'<add_your_api_key_here>'$/d" .env
 
-      - name: Printing out the .env file
-        run: cat .env
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
