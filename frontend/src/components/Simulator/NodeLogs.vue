@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { webSocketClient } from '@/utils'
 import { useMainStore, useUIStore } from '@/stores'
 import JsonViewer from '@/components/JsonViewer/json-viewer.vue'
@@ -22,7 +22,9 @@ onMounted(() => {
       state.nodeLogs.push({ date: new Date().toISOString(), message: event.message })
     })
 
-    scrollContainer.value?.scrollTo({ top: scrollContainer.value.scrollHeight, behavior: 'smooth' })
+    nextTick(() => {
+      scrollContainer.value?.scrollTo({ top: scrollContainer.value.scrollHeight, behavior: 'smooth' })
+  })
 
   })
 })
