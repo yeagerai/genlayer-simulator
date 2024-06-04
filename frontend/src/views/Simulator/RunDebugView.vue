@@ -257,6 +257,7 @@ watch(() => contract.value?.content, (newValue, oldValue) => {
 })
 
 onMounted(() => {
+  getConstructorInputs()
   if (deployedContract.value) {
     getContractAbi(deployedContract.value)
   } 
