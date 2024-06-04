@@ -37,12 +37,6 @@ jobs:
           OPENAIKEY: ${{ secrets.OPENAIKEY }}
         run: printf "\nOPENAIKEY='$OPENAIKEY'\n" >> .env
 
-      - name: Print the .env file for debugging
-        run: cat .env
-
-      - name: Check to make sure OPENAIKEY is in the environment
-        run: printenv
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
