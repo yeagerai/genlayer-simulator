@@ -1,6 +1,12 @@
 name: CI
 
 on:
+  pull_request:
+    branches:
+      - staging
+    types:
+      - opened
+      - synchronize
   pull_request_review:
     branches:
       - staging
