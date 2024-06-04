@@ -39,4 +39,4 @@ Detailed information of how to use the simulator can be found at [GenLayer Docs]
 
 
 ## Contributing
-As an open-source project in a rapidly developing field, we are extremely open to contributions, whether it be in the form of a new feature, improved infrastructure, or better documentation. Please read our [CONTRIBUTING](https://github.com/yeagerai/genworlds/blob/main/CONTRIBUTING.md) for guidelines on how to submit your contributions.
+As an open-source project in a rapidly developing field, we are extremely open to contributions, whether it be in the form of a new feature, improved infrastructure, or better documentation. Please read our [CONTRIBUTING](https://github.com/yeagerai/genlayer-simulator/blob/main/CONTRIBUTING.md) for guidelines on how to submit your contributions.
