@@ -27,10 +27,59 @@ Have ideas for new features or usecases? We're eager to hear them! But first:
 
 ### Writing Code
 
-To contribute to feature development or bug fixes.
+To contribute to feature development or bug fixes. Check our [issue tracker](https://github.com/yeagerai/genlayer-simulator/issues) for tasks labeled `help wanted`.
 
-- Setup Simulator manually following the steps [here](https://github.com/yeagerai/genlayer-simulator?tab=readme-ov-file#installing-manually).
-- Check our [issue tracker](https://github.com/yeagerai/genlayer-simulator/issues) for tasks labeled `help wanted`.
+#### Setup Simulator manually
+
+##### Window One
+
+```
+$ cp .env.example .env
+$ docker compose up
+```
+
+##### Window Two
+
+1. Installing the Ollama model
+
+   ```
+   $ docker exec -it ollama ollama run llama3
+   ```
+
+2. Setup your environment
+
+   - Linux / MacOS
+
+     ```
+     $ virtualenv .venv
+     $ source .venv/bin/activate
+     (.venv) $ pip install -r requirements.txt
+     (.venv) $ export PYTHONPATH="$(pwd)"
+     ```
+
+   - Windows (cmd)
+
+     ```
+     $ virtualenv .venv
+     $  .\.venv\Scripts\activate
+     (.venv) $ pip install -r requirements.txt
+     (.venv) $ set PYTHONPATH=%cd%
+     ```
+
+   - Windows (PowerShell)
+
+     ```
+     $ virtualenv .venv
+     $  .\.venv\Scripts\activate
+     (.venv) $ pip install -r requirements.txt
+     (.venv) $ $env:PYTHONPATH = (Get-Location).Path
+     ```
+
+3. Execute the Demo
+
+   ```
+   (.venv) $ python scripts/debug_simulator.py
+   ```
 
 ### Improving Documentation
 
@@ -40,6 +89,7 @@ To contribute to our docs, start by visiting our [Documentation Repository](http
 
 We strive to maintain high-quality code and ensure that all contributions align with our goals. Here’s our process:
 
+- **Black Formatter on Save File**: Configure IDE extensions to format your code with [Black](https://github.com/psf/black) before submitting it.
 - **Pull Request**: Submit your changes through a pull request (PR).
 - **Automated Tests**: Your PR will automatically be tested. Ensure all tests pass to proceed.
 - **Peer Review**: One or more core contributors will review your PR. They may suggest changes or improvements.
