@@ -11,6 +11,7 @@ def test_create_db_and_tables():
 def test_create_random_validator():
     stake = 10
     response = post_request(payload('create_random_validator', stake)).json()
+    print(response)
     assert response['result']['status'] == 'success'
     assert response['result']['data']['stake'] == stake
     for key in validator_keys:
