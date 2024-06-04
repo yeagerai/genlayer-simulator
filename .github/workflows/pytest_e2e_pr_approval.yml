@@ -35,7 +35,7 @@ jobs:
       - name: Adding OPENAIKEY to the .env file
         env:
           OPENAIKEY: ${{ secrets.OPENAIKEY }}
-        run: echo "OPENAIKEY = '$OPENAIKEY'" >> .env
+        run: printf "\nOPENAIKEY='$OPENAIKEY'\n" >> .env
 
       - name: Print the .env file for debugging
         run: cat .env
