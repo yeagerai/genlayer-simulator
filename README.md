@@ -6,6 +6,12 @@
 
 This Simulator is an interactive sandbox designed for developers to explore the potential of the [GenLayer Protocol](https://genlayer.com/). It replicates the GenLayer network's execution environment and consensus algorithm, but offers a controlled and local environment to test different ideas and behaviors.
 
+## Prerequisites
+Before installing the GenLayer CLI, ensure you have the following prerequisites installed:
+
+- [Docker](https://docs.docker.com/engine/install/): Required to run the GenLayer environment. **Required version**: Docker 26+
+- [Node.js and npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm/): Needed for the GenLayer CLI tool. **Required version**: Node.js 18+
+
 ## 🛠️ Installation and usage
 
 ```
