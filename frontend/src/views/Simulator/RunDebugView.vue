@@ -9,6 +9,7 @@ import ConstructorParameters from '@/components/Simulator/ConstructorParameters.
 import type { DeployedContract } from '@/types'
 import type { IJsonRPCService } from '@/services'
 import { debounce } from 'vue-debounce'
+import { v4 as uuidv4 } from 'uuid'
 
 const store = useMainStore()
 const $jsonRpc = inject<IJsonRPCService>('$jsonRpc')!
@@ -78,10 +79,10 @@ const handleCallContractMethod = async ({ method, params }: { method: string; pa
 
     if (deployedContract.value?.address && result.status === 'success') {
       if (!store.contractTransactions[deployedContract.value?.address]) {
-        store.contractTransactions[deployedContract.value?.address] = [result.data?.execution_output]
-      } else {
-        store.contractTransactions[deployedContract.value?.address].push(result)
-      }
+        store.contractTransactions[deployedContract.value?.address] = []
+      } 
+
+      store.contractTransactions[deployedContract.value?.address].push({ id: uuidv4(), ...result})
     }
   } catch (error) {
     console.error(error)
