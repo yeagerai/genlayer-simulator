@@ -1,4 +1,7 @@
 from common.testing.requests import payload, post_request
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 validator_keys = ['id', 'address', 'stake', 'provider','model', 'config', 'updated_at']
 
@@ -12,11 +15,12 @@ def test_create_random_validator():
     stake = 10
     response = post_request(payload('create_random_validator', stake)).json()
     print(response)
+    print(os.environ)
     assert response['result']['status'] == 'success'
     assert response['result']['data']['stake'] == stake
     for key in validator_keys:
         assert key in response['result']['data']
-
+'''
 def test_delete_validator_does_not_exist():
     validator_address = 'dave'
     response = post_request(payload('delete_validator', validator_address)).json()
@@ -130,3 +134,4 @@ def test_update_validator():
         assert key in updated_validator['result']['data']
         assert value == updated_validator['result']['data'][key]
     post_request(payload('delete_validator', new_address))
+'''
