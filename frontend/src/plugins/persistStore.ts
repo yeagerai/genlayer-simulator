@@ -1,5 +1,5 @@
 import type { ContractFile, DeployedContract } from '@/types'
-import { db } from '@/utils'
+import { db, getContractFileName } from '@/utils'
 import { type PiniaPluginContext } from 'pinia'
 
 /**
@@ -34,7 +34,7 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
       if (store.$id === 'mainStore') {
         switch (name) {
           case 'addContractFile':
-            await db.contractFiles.add(args[0] as ContractFile)
+            await db.contractFiles.add({...args[0] as ContractFile, name: getContractFileName(args[0].name)})
             break
           case 'updateContractFile':
             await db.contractFiles.update(args[0] as string, args[1] as ContractFile)
