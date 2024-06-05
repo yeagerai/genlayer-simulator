@@ -1,6 +1,7 @@
 # rpc/server.py
 
 import os
+import threading
 
 from flask import Flask
 from flask_jsonrpc import JSONRPC
@@ -18,7 +19,7 @@ from backend.database_handler.services.transactions_db_service import (
 )
 from backend.database_handler.domain.state import State
 from backend.database_handler.domain.validators import Validators
-
+from backend.consensus.base import ConsensusAlgorithm
 
 GENVM_URL = (
     os.environ["GENVMPROTOCOL"]
@@ -45,17 +46,56 @@ def create_app():
         transactions_db_service,
         validators_db_service,
     )
-    return app, jsonrpc, socketio, msg_handler, state_domain, validators_domain
+    consensus = ConsensusAlgorithm(state_domain)
+    return (
+        app,
+        jsonrpc,
+        socketio,
+        msg_handler,
+        state_domain,
+        validators_domain,
+        consensus,
+    )
 
 
 load_dotenv()
-app, jsonrpc, socketio, msg_handler, state_domain, validators_domain = create_app()
+app, jsonrpc, socketio, msg_handler, state_domain, validators_domain, consensus = (
+    create_app()
+)
 register_all_rpc_endpoints(app, jsonrpc, msg_handler, state_domain, validators_domain)
 
-socketio.run(
-    app,
-    debug=os.environ["VSCODEDEBUG"] == "false",
-    port=os.environ.get("RPCPORT"),
-    host="0.0.0.0",
-    allow_unsafe_werkzeug=True,
-)
+
+def run_socketio():
+    socketio.run(
+        app,
+        debug=os.environ["VSCODEDEBUG"] == "false",
+        port=os.environ.get("RPCPORT"),
+        host="0.0.0.0",
+        allow_unsafe_werkzeug=True,
+    )
+
+
+def run_crawl_snapshot():
+    consensus.crawl_snapshot()
+
+
+def run_consensus_algorithm():
+    consensus.run_consensus()
+
+
+# Thread for the Flask-SocketIO server
+thread_socketio = threading.Thread(target=run_socketio)
+thread_socketio.start()
+
+# Thread for the crawl_snapshot method
+thread_crawl_snapshot = threading.Thread(target=run_crawl_snapshot)
+thread_crawl_snapshot.start()
+
+# Thread for the run_consensus method
+thread_consensus = threading.Thread(target=run_consensus_algorithm)
+thread_consensus.start()
+
+# Join threads to the main thread to keep them running
+thread_socketio.join()
+thread_crawl_snapshot.join()
+thread_consensus.join()

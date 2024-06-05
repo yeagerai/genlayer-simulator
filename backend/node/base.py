@@ -3,12 +3,14 @@ from backend.node.genvm.base import GenVM
 
 
 class Node:
-    def __init__(self, address, validator_mode, config, leader_outputs: Optional[dict]):
+    def __init__(
+        self, snapshot, address, validator_mode, config, leader_receipt: Optional[dict] = None
+    ):
         self.address = address
         self.validator_mode = validator_mode
         self.config = config
-        self.leader_outputs = leader_outputs
-        self.genvm = GenVM({}, self.validator_mode, self.config)
+        self.leader_receipt = leader_receipt
+        self.genvm = GenVM(snapshot, self.validator_mode, self.config)
 
     def deploy_contract(self, code_to_deploy, from_address, constructor_args):
         try:
@@ -20,10 +22,10 @@ class Node:
             # create error receipt
         return receipt
 
-    def exec_transaction(self, from_address, encoded_state, function_name):
+    def exec_transaction(self, from_address, encoded_state, function_name, args):
         try:
             receipt = self.genvm.run_contract(
-                from_address, encoded_state, function_name
+                from_address, encoded_state, function_name, args, self.leader_receipt
             )
         except Exception as e:
             ...

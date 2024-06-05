@@ -1,5 +1,5 @@
 # rpc/endpoints.py
-
+import asyncio
 import random
 import json
 from functools import partial
@@ -35,6 +35,8 @@ from backend.errors.errors import (
     InvalidAddressError,
     InvalidInputError,
 )
+
+from backend.consensus.base import consensus_algorithm
 
 
 def ping() -> dict:
@@ -126,9 +128,16 @@ def call_contract_function(
     if not address_is_in_correct_format(contract_address):
         raise InvalidAddressError(contract_address)
 
-    return state_domain.call_contract_function(
-        from_address, contract_address, function_name, args
+    ## prepare state
+    transaction_input = state_domain.write_transaction_input(function_name, args, ...)
+    snapshot = state_domain.get_snapshot(contract_address)
+
+    ## prepare transaction data
+    transaction_output = asyncio.run(
+        consensus_algorithm(from_address, transaction_input, snapshot)
     )
+
+    return transaction_output
 
 
 def get_contract_state(
