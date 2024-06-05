@@ -7,7 +7,8 @@ from flask_jsonrpc import JSONRPC
 from flask import Flask
 
 from backend.protocol_rpc.message_handler.base import MessageHandler
-
+from backend.database_handler.db_client import DBClient
+from backend.database_handler.snapshot import Snapshot
 from backend.database_handler.domain.state import State as StateDomain
 from backend.database_handler.domain.validators import Validators as ValidatorsDomain
 from backend.database_handler.initialization.init_db import (
@@ -117,7 +118,7 @@ def get_icontract_schema_for_code(
 
 
 def call_contract_function(
-    state_domain: StateDomain,
+    dbclient: DBClient,
     from_address: str,
     contract_address: str,
     function_name: str,
@@ -129,8 +130,8 @@ def call_contract_function(
         raise InvalidAddressError(contract_address)
 
     ## prepare state
-    transaction_input = state_domain.write_transaction_input(function_name, args, ...)
-    snapshot = state_domain.get_snapshot(contract_address)
+    transaction_input = dbclient.write_transaction_input(function_name, args, ...)
+    snapshot = Snapshot(contract_address, dbclient)
 
     ## prepare transaction data
     transaction_output = asyncio.run(

@@ -17,6 +17,7 @@ from backend.database_handler.services.validators_db_service import ValidatorsDB
 from backend.database_handler.services.transactions_db_service import (
     TransactionsDBService,
 )
+from backend.database_handler.snapshot import ChainSnapshot
 from backend.database_handler.domain.state import State
 from backend.database_handler.domain.validators import Validators
 from backend.consensus.base import ConsensusAlgorithm
@@ -46,7 +47,7 @@ def create_app():
         transactions_db_service,
         validators_db_service,
     )
-    consensus = ConsensusAlgorithm(state_domain)
+    consensus = ConsensusAlgorithm(ChainSnapshot(genlayer_db_client))
     return (
         app,
         jsonrpc,
