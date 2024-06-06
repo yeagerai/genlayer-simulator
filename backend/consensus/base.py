@@ -4,7 +4,8 @@ from backend.node.base import Node
 from backend.database_handler.db_client import DBClient
 from backend.database_handler.types import ConsensusData
 from backend.consensus.vrf import get_validators_for_transaction
-from backend.database_handler.snapshot import ChainSnapshot, ContractSnapshot
+from backend.database_handler.chain_snapshot import ChainSnapshot
+from backend.database_handler.contract_snapshot import ContractSnapshot
 
 
 class ConsensusAlgorithm:
@@ -51,7 +52,7 @@ class ConsensusAlgorithm:
     ) -> dict:
 
         # Select Leader and validators
-        all_validators = snapshot.validators_db_service.get_all_validators()
+        all_validators = snapshot.get_all_validators()
         leader, remaining_validators = get_validators_for_transaction(
             all_validators, snapshot.num_validators
         )

@@ -8,7 +8,7 @@ from flask import Flask
 
 from backend.protocol_rpc.message_handler.base import MessageHandler
 from backend.database_handler.db_client import DBClient
-from backend.database_handler.snapshot import Snapshot
+from backend.database_handler.chain_snapshot import ChainSnapshot
 from backend.database_handler.domain.state import State as StateDomain
 from backend.database_handler.domain.validators import Validators as ValidatorsDomain
 from backend.database_handler.initialization.init_db import (

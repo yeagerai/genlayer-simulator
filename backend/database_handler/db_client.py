@@ -1,6 +1,5 @@
 # database/client.py
 import psycopg2
-from psycopg2 import pool, extras
 from os import environ
 
 from dotenv import load_dotenv
@@ -38,7 +37,7 @@ class DBClient:
         """Execute a SQL query with optional parameters."""
         conn = self.get_connection()
         try:
-            with conn.cursor() as cursor:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 print("DBClient ~ ~ query:", query)
                 print("DBClient ~ ~ params:", params)
                 cursor.execute(query, params)
