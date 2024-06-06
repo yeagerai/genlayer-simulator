@@ -1,20 +1,18 @@
 # GenLayer Simulator
 
-## Introduction
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Discord](https://dcbadge.vercel.app/api/server/8Jm4v89VAu?compact=true&style=flat)](https://discord.gg/VpfmXEMN66) [![Twitter](https://img.shields.io/twitter/url/https/twitter.com/yeagerai.svg?style=social&label=Follow%20%40GenLayer)](https://x.com/GenLayer) [![GitHub star chart](https://img.shields.io/github/stars/yeagerai/genlayer-simulator?style=social)](https://star-history.com/#yeagerai/genlayer-simulator)
 
-This Simulator is an interactive sandbox designed for developers to explore the potential of GenLayer's Intelligent Contracts. It replicates the GenLayer network's execution environment and consensus algorithm, but offers a controlled and local environment to test different ideas and behaviors.
+## 👀 About
 
-## Simulator Components
+This Simulator is an interactive sandbox designed for developers to explore the potential of the [GenLayer Protocol](https://genlayer.com/). It replicates the GenLayer network's execution environment and consensus algorithm, but offers a controlled and local environment to test different ideas and behaviors.
 
-The GenLayer simulator consists of the following main components:
+## Prerequisites
+Before installing the GenLayer CLI, ensure you have the following prerequisites installed:
 
-- **State Storage (PostgreSQL):** We use a SQL database to maintain the blockchain's updated and persistent state.
-- **State Manager (JSON-RPC Server):** A backend that processes requests, either to read the state of the blockchain or to execute transactions involving intelligent contracts.
-- **Developer Interface:** CLI and some execution scripts to facilitate developers' interaction with the node, allowing the deployment and execution of intelligent contracts.
-- **The Consensus Algorithm:** A python routine that launches execution processes into the GenVM, following the approach defined in the whitepaper.
-- **Gen Virtual Machine (GenVM):** A Dockerized environment prepared to run intelligent contracts safely.
+- [Docker](https://docs.docker.com/engine/install/): Required to run the GenLayer environment. **Required version**: Docker 26+
+- [Node.js and npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm/): Needed for the GenLayer CLI tool. **Required version**: Node.js 18+
 
-## Quick Install
+## 🛠️ Installation and usage
 
 ```
 $ npm install -g genlayer
@@ -26,95 +24,19 @@ To run genlayer again just run:
 ```
 $ genlayer up
 ```
+After executing those commands a new tab will open in your browser with the GenLayer Simulator. Additional installation instructions can be found [here](https://docs.genlayer.com/simulator/installation)
 
-_(Additional installation instructions can be found [here](https://docs.genlayer.com/simulator/installation))_
+## 🚀 Key Features
+* 🖥️ **Test Locally:** Developers can test Intelligent Contracts in a local environment, replicating the GenLayer network without the need for deployment. This speeds up the development cycle and reduces the risk of errors in the live environment.
 
-Then visit [localhost:8080](http://localhost:8080/)
+* 🧪 **Versatile Scenario Testing:** The simulator allows developers to create and test contracts under various simulated network conditions. This includes stress testing under high transaction loads, simulating network delays, and testing different consensus outcomes.
 
-From here you will be able to create validators and intellegent contracts.
+* 🔄 **Changeable LLM Validators:** Developers can modify the large language models (LLMs) used by validators within the simulator. This allows for testing of security, efficiency, and accuracy by running different LLMs to validate transactions.
 
-## Installing Manually
 
-### Window One
+## 📖 The Docs
+Detailed information of how to use the simulator can be found at [GenLayer Docs](https://docs.genlayer.com/).
 
-```
-$ cp .env.example .env
-$ docker compose up
-```
 
-### Window Two
-
-#### 1. Installing the Ollama model
-
-```
-$ docker exec -it ollama ollama run llama3
-...
-```
-
-#### 2. Setup your environment
-
-Setup your environment [here](#set-up-an-environment)
-
-#### 3. Execute the Demo
-
-```
-(.venv) $ python scripts/debug_simulator.py
-```
-
-## CLI commands
-
-Use the following commands to run through a demo step-by-step.
-
-```
-(.venv) $ python cli/genlayer.py create-db
-...
-(.venv) $ python cli/genlayer.py create-tables
-...
-(.venv) # python cli/genlayer.py create-random-validators --count 10 --min-stake 1 --max-stake 10
-...
-(.venv) # python cli/genlayer.py create-eoa --balance 10
-...<your-new-address>...
-(.venv) # python cli/genlayer.py deploy --from-account <your-new-address> --initial-state {"have_coin": True} examples/contracts/wizard_of_coin.py
-...<contract-address>...
-(.venv) # python cli/genlayer.py contract --from-account <your-new-address> --contract-address <contract-address> --function WizardOfCoin.ask_for_coin --args {"request": "Can I have the coin please?"}
-...
-```
-
-_(NOTE: You can find the full list of CLI commands [here](https://github.com/yeagerai/genlayer-simulator/blob/main/cli/genlayer.py))_
-
-<a name="set-up-an-environment"></a>
-
-## Set up an environment
-
-### Linux / MacOS
-
-```
-$ virtualenv .venv
-$ source .venv/bin/activate
-(.venv) $ pip install -r requirements.txt
-(.venv) $ export PYTHONPATH="$(pwd)"
-```
-
-### Windows (cmd)
-
-```
-$ virtualenv .venv
-$  .\.venv\Scripts\activate
-(.venv) $ pip install -r requirements.txt
-(.venv) $ set PYTHONPATH=%cd%
-```
-
-### Windows (PowerShell)
-
-```
-$ virtualenv .venv
-$  .\.venv\Scripts\activate
-(.venv) $ pip install -r requirements.txt
-(.venv) $ $env:PYTHONPATH = (Get-Location).Path
-```
-
-## Documentation
-
-Additional documentation
-
-- https://docs.genlayer.com/
+## Contributing
+As an open-source project in a rapidly developing field, we are extremely open to contributions, whether it be in the form of a new feature, improved infrastructure, or better documentation. Please read our [CONTRIBUTING](https://github.com/yeagerai/genlayer-simulator/blob/main/CONTRIBUTING.md) for guidelines on how to submit your contributions.

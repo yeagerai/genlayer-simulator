@@ -38,7 +38,7 @@
                                 </a>, to understand natural language and be capable of complex decision making.
                             </li>
                             <li>
-                                <b>Code in Python:</b> Genlayer is the first platform where smart contracts don't need
+                                <b>Internet Access:</b> Genlayer is the first platform where smart contracts don't need
                                 oracles to access the internet.
 
                             </li>

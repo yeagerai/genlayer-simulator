@@ -49,9 +49,8 @@ output must be only the JSON object"""
         result_json = json.loads(final_result["output"])
         self.balances = result_json["updated_balances"]
 
-    
     def get_balances(self) -> dict[str, int]:
         return self.balances
-    
+
     def get_balance_of(self, address: str) -> int:
         return self.balances.get(address, 0)

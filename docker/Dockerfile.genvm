@@ -7,6 +7,7 @@ WORKDIR $path
 COPY ../.env .
 ADD genvm $path/genvm
 ADD common $path/common
+ADD message_handler $path/message_handler
 RUN ln genvm/base/llms.py /tmp/llms.py
 RUN ln genvm/base/context_wrapper.py /tmp/context_wrapper.py
 RUN ln genvm/base/contract_runner.py /tmp/contract_runner.py

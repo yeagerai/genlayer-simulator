@@ -80,9 +80,9 @@ services:
     tty: true
     restart: always
   postgres:
-    image: postgres:12.17
-    restart: always
-    # TODO: Remove in production
+    build:
+      context: ./
+      dockerfile: ./docker/Dockerfile.database
     ports:
       - "6000:5432"
     environment:

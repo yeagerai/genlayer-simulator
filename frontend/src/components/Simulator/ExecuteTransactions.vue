@@ -21,19 +21,27 @@ interface Props {
 const store = useMainStore()
 const props = defineProps<Props>()
 const emit = defineEmits(['callMethod'])
+const methodList = ref<ContractMethod[]>([])
+const method = ref<ContractMethod>()
 
-const methodList = computed<ContractMethod[]>(() => {
-  const list = Object.entries(props.abi?.methods || {})
+const inputs = computed<{ [k: string]: any }>(() => {
+  return methodList.value.reduce((prev: any, curr) => {
+    prev[curr.name] = {}
+    return prev
+  }, {})
+})
+
+
+watch(() => props.abi, (newValue) => {
+  method.value = undefined
+  methodList.value =  Object.entries(newValue?.methods || {})
     .filter((m) => !m[0].startsWith('_') && !m[0].startsWith('get_'))
     .map((m) => ({
       name: m[0],
       inputs: m[1].inputs
     }))
-  return list
 })
 
-const inputs = ref<{ [k: string]: any }>({})
-const method = ref<ContractMethod>()
 
 const handleMethodCall = () => {
   if (method.value) {
@@ -42,16 +50,6 @@ const handleMethodCall = () => {
   }
 }
 
-watch(
-  () => props.abi?.methods,
-  () => {
-    inputs.value = methodList.value.reduce((prev: any, curr) => {
-      prev[curr.name] = {}
-
-      return prev
-    }, {})
-  }
-)
 
 const onMethodChange = (event: Event) => {
   const selectedMethod = (event.target as HTMLSelectElement).value
