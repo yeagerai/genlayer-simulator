@@ -58,7 +58,9 @@ class ConsensusAlgorithm:
         )
         num_validators = len(remaining_validators) + 1
 
-        contract_snapshot = ContractSnapshot(transaction_input["to_address"])
+        contract_snapshot = ContractSnapshot(
+            transaction_input["to_address"], self.dbclient
+        )
 
         # Create Leader
         leader_node = Node(

@@ -6,6 +6,7 @@ import pickle
 import base64
 import sys
 
+from backend.database_handler.contract_snapshot import ContractSnapshot
 from backend.node.genvm.equivalence_principle import EquivalencePrinciple
 from backend.node.genvm.code_enforcement import code_enforcement_check
 
@@ -13,7 +14,7 @@ from backend.node.genvm.code_enforcement import code_enforcement_check
 class GenVM:
     def __init__(
         self,
-        snapshot,
+        snapshot: ContractSnapshot,
         validator_mode,
         node_config,
     ):
@@ -67,9 +68,7 @@ class GenVM:
             class_name, encoded_pickled_object, "__init__", [{constructor_args}]
         )
 
-    async def run_contract(
-        self, from_address, encoded_state, function_name, args, leader_receipt
-    ):
+    async def run_contract(self, from_address, function_name, args, leader_receipt):
         self.contract_runner["from_address"] = from_address
         contract_runner = (
             self.contract_runner
@@ -79,7 +78,8 @@ class GenVM:
         except (ImportError, UnboundLocalError):
             EquivalencePrinciple.contract_runner = self.contract_runner
 
-        decoded_pickled_object = base64.b64decode(encoded_state)
+        contract_encoded_state = self.snapshot.encoded_state
+        decoded_pickled_object = base64.b64decode(contract_encoded_state)
         current_contract = pickle.loads(decoded_pickled_object)
 
         if self.contract_runner["mode"] == "validator":
