@@ -9,6 +9,7 @@ import ConstructorParameters from '@/components/Simulator/ConstructorParameters.
 import type { DeployedContract } from '@/types'
 import type { IJsonRpcService } from '@/services'
 import { debounce } from 'vue-debounce'
+import { v4 as uuidv4 } from 'uuid'
 
 const store = useMainStore()
 const $jsonRpc = inject<IJsonRpcService>('$jsonRpc')!
@@ -20,7 +21,7 @@ const contract = computed(() =>
   store.contracts.find((contract) => contract.id === store.currentContractId)
 )
 const deployedContract = computed(() =>
-  store.deployedContracts.find((contract) => contract.contractId === store.currentContractId)
+  store.deployedContracts.find((c) => c.contractId === store.currentContractId)
 )
 const contractTransactions = computed(() => {
   if (deployedContract.value?.address && store.contractTransactions[deployedContract.value?.address]) {
@@ -72,10 +73,10 @@ const handleCallContractMethod = async ({ method, params }: { method: string; pa
 
     if (deployedContract.value?.address && result.status === 'success') {
       if (!store.contractTransactions[deployedContract.value?.address]) {
-        store.contractTransactions[deployedContract.value?.address] = [result.data?.execution_output]
-      } else {
-        store.contractTransactions[deployedContract.value?.address].push(result)
-      }
+        store.contractTransactions[deployedContract.value?.address] = []
+      } 
+
+      store.contractTransactions[deployedContract.value?.address].push({ id: uuidv4(), ...result})
     }
   } catch (error) {
     console.error(error)
@@ -174,7 +175,7 @@ const handleDeployContract = async ({
   }
 }
 
-const setDefaultState = async (contract: DeployedContract) => {
+const getContractAbi = async (contract: DeployedContract) => {
   try {
     // constructorInputs.value = JSON.parse(contract.defaultState || '{}')
     // TODO: check if we need to update again also we have an issue with conversion
@@ -223,24 +224,30 @@ const getConstructorInputs = async () => {
 
 const debouncedGetConstructorInputs = debounce(() => getConstructorInputs(), 3000)
 
-watch(() => deployedContract.value?.address, (newValue) => {
-  if (newValue && deployedContract.value) {
-    setDefaultState(deployedContract.value)
+watch(() => deployedContract.value?.contractId, (newValue) => {
+  if (newValue) {
+    getContractAbi(deployedContract.value!)
+  } 
+})
+
+
+watch(() => contract.value?.id, (newValue, oldValue) => {
+  if (newValue && newValue !== oldValue) {
+    getConstructorInputs()
   }
 })
 
-watch(() => contract.value, (newValue) => {
-  if (newValue && !loadingConstructorInputs.value) {
+watch(() => contract.value?.content, (newValue, oldValue) => {
+  if (newValue && newValue !== oldValue && !loadingConstructorInputs.value) {
     debouncedGetConstructorInputs()
   }
 })
 
 onMounted(() => {
   getConstructorInputs()
-
   if (deployedContract.value) {
-    setDefaultState(deployedContract.value)
-  }
+    getContractAbi(deployedContract.value)
+  } 
 })
 </script>
 
@@ -260,7 +267,7 @@ onMounted(() => {
         <ConstructorParameters :inputs="constructorInputs" :loading="loadingConstructorInputs"
           :error="errorConstructorInputs" @deploy-contract="handleDeployContract" :deploying="deployingContract" />
       </div>
-      <div class="flex flex-col" v-show="deployedContract">
+      <div class="flex flex-col" v-if="deployedContract">
         <div class="flex flex-col">
           <ContractState :abi="abi" :contract-state="contractState" :deployed-contract="deployedContract"
             :get-contract-state="handleGetContractState" :calling-state="callingContractState" />

@@ -10,7 +10,7 @@ from flask_jsonrpc import JSONRPC
 from flask_socketio import SocketIO
 from flask_cors import CORS
 
-from database.init_db import (
+from database.initialization.init_db import (
     create_db_if_it_doesnt_already_exists,
     create_tables_if_they_dont_already_exist,
     clear_db_tables,
@@ -37,7 +37,7 @@ load_dotenv()
 
 setup_logging_config()
 
-app = Flask('jsonrpc_api')
+app = Flask("jsonrpc_api")
 
 CORS(app, resources={r"/api/*": {"origins": "*"}}, intercept_exceptions=False)
 jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
@@ -45,11 +45,12 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 
 
 def create_new_address() -> str:
-    new_address = ''.join(random.choice(string.hexdigits) for _ in range(40))
-    return '0x' + new_address
+    new_address = "".join(random.choice(string.hexdigits) for _ in range(40))
+    return "0x" + new_address
 
-def address_is_in_correct_format(address:str) -> bool:
-    pattern = r'^0x['+string.hexdigits+']{40}$'
+
+def address_is_in_correct_format(address: str) -> bool:
+    pattern = r"^0x[" + string.hexdigits + "]{40}$"
     if re.fullmatch(pattern, address):
         return True
     return False
@@ -91,7 +92,6 @@ def create_tables() -> dict:
     return msg.success_response(result)
 
 
-
 @jsonrpc.method("clear_account_and_transactions_tables")
 def clear_account_and_transactions_tables() -> dict:
     clear_db_tables(["current_state", "transactions"])
@@ -130,7 +130,7 @@ def fund_account(account: string, balance: float) -> dict:
         cursor = connection.cursor()
 
         current_account = account
-        if account == 'create_account':
+        if account == "create_account":
             current_account = create_account()
 
         # Update current_state table with the new account and its balance
@@ -162,7 +162,7 @@ def fund_account(account: string, balance: float) -> dict:
         connection.close()
     except Exception as e:
         return msg.error_response(exception=e)
-    
+
     return msg.success_response({"address": current_account, "balance": balance})
 
 
@@ -175,7 +175,7 @@ def send_transaction(from_account: str, to_account: str, amount: float) -> dict:
 
     if not address_is_in_correct_format(to_account):
         return msg.error_response(message="to_account not in ethereum address format")
-    
+
     try:
         connection = get_genlayer_db_connection()
         cursor = connection.cursor()
@@ -192,7 +192,9 @@ def send_transaction(from_account: str, to_account: str, amount: float) -> dict:
             )
 
             # Update recipient's balance
-            cursor.execute("SELECT data FROM current_state WHERE id = %s;", (to_account,))
+            cursor.execute(
+                "SELECT data FROM current_state WHERE id = %s;", (to_account,)
+            )
             recipient_state = cursor.fetchone()
             if recipient_state:
                 new_recipient_balance = recipient_state[0].get("balance", 0) + amount
@@ -230,12 +232,10 @@ def send_transaction(from_account: str, to_account: str, amount: float) -> dict:
 
     except Exception as e:
         return msg.error_response(exception=e)
-    
-    return msg.success_response({
-        'from_account': from_account,
-        'to_account': to_account,
-        'amount': amount
-    })
+
+    return msg.success_response(
+        {"from_account": from_account, "to_account": to_account, "amount": amount}
+    )
 
 
 @jsonrpc.method("deploy_intelligent_contract")
@@ -246,7 +246,7 @@ def deploy_intelligent_contract(
 
     if not address_is_in_correct_format(from_account):
         return msg.error_response(message="from_account not in ethereum address format")
-    
+
     with DatabaseFunctions() as dbf:
         all_validators = dbf.all_validators()
         dbf.close()
@@ -260,7 +260,13 @@ def deploy_intelligent_contract(
     payload = {
         "jsonrpc": "2.0",
         "method": "deploy_contract",
-        "params": [from_account, contract_code, constructor_args, class_name, leader_config],
+        "params": [
+            from_account,
+            contract_code,
+            constructor_args,
+            class_name,
+            leader_config,
+        ],
         "id": 3,
     }
     response = requests.post(genvm_url() + "/api", json=payload).json()
@@ -272,7 +278,9 @@ def deploy_intelligent_contract(
         connection = get_genlayer_db_connection()
         cursor = connection.cursor()
         contract_id = create_new_address()
-        contract_data = ContractData(code=contract_code, state=response["result"]["data"]["contract_state"]).model_dump_json()
+        contract_data = ContractData(
+            code=contract_code, state=response["result"]["data"]["contract_state"]
+        ).model_dump_json()
         try:
             cursor.execute(
                 "INSERT INTO current_state (id, data) VALUES (%s, %s);",
@@ -302,8 +310,8 @@ def deploy_intelligent_contract(
 
     except Exception as e:
         return msg.error_response(exception=e)
-    
-    return msg.success_response({'contract_id': contract_id})
+
+    return msg.success_response({"contract_id": contract_id})
 
 
 @jsonrpc.method("count_validators")
@@ -324,7 +332,7 @@ def count_validators() -> dict:
 
     except Exception as e:
         return msg.error_response(exception=e)
-    
+
     return msg.success_response({"count": row[0]})
 
 
@@ -420,7 +428,9 @@ def delete_all_validators() -> dict:
 
 
 @jsonrpc.method("create_random_validators")
-def create_random_validators(count:int, min_stake:float, max_stake:float, providers: list=[]) -> dict:
+def create_random_validators(
+    count: int, min_stake: float, max_stake: float, providers: list = []
+) -> dict:
     msg = MessageHandler(app, socketio)
     try:
         for _ in range(count):
@@ -429,7 +439,7 @@ def create_random_validators(count:int, min_stake:float, max_stake:float, provid
             new_validator = create_validator(
                 stake, details["provider"], details["model"], details["config"]
             )
-            if new_validator['status'] == 'error':
+            if new_validator["status"] == "error":
                 return msg.error_response(message="Failed to create Validator")
     except Exception as e:
         return msg.error_response(exception=e)
@@ -460,7 +470,9 @@ async def call_contract_function(
         return msg.error_response(message="from_address not in ethereum address format")
 
     if not address_is_in_correct_format(contract_address):
-        return msg.error_response(message="contract_address not in ethereum address format")
+        return msg.error_response(
+            message="contract_address not in ethereum address format"
+        )
 
     try:
         connection = get_genlayer_db_connection()
@@ -470,13 +482,17 @@ async def call_contract_function(
         function_call_data = CallContractInputData(
             contract_address=contract_address, function_name=function_name, args=args
         ).model_dump_json()
-        msg.info_response('Data formatted')
+        msg.info_response("Data formatted")
 
-        msg.info_response(f"Transaction sent from {from_address} to {contract_address}...")
+        msg.info_response(
+            f"Transaction sent from {from_address} to {contract_address}..."
+        )
 
         # TODO: More logging needs to be done inside the consensus functionallity
         # call consensus
-        execution_output = await exec_transaction(from_address, json.loads(function_call_data), logger=log_status)
+        execution_output = await exec_transaction(
+            from_address, json.loads(function_call_data), logger=log_status
+        )
 
         cursor.close()
         connection.close()
@@ -484,9 +500,8 @@ async def call_contract_function(
 
     except Exception as e:
         return msg.error_response(exception=e)
-    
-    return msg.success_response({"execution_output": execution_output})
 
+    return msg.success_response({"execution_output": execution_output})
 
 
 @jsonrpc.method("get_last_contracts")
@@ -500,7 +515,7 @@ def get_last_contracts(number_of_contracts: int) -> dict:
         # Query the database for the last N deployed contracts
         cursor.execute(
             "SELECT to_address, data FROM transactions WHERE type = 1 ORDER BY created_at DESC LIMIT %s;",
-            (number_of_contracts,)
+            (number_of_contracts,),
         )
         contracts = cursor.fetchall()
 
@@ -515,13 +530,14 @@ def get_last_contracts(number_of_contracts: int) -> dict:
 
     except Exception as e:
         return msg.error_response(exception=e)
-    
+
     return msg.success_response(contracts_info)
 
 
-
 @jsonrpc.method("get_contract_state")
-def get_contract_state(contract_address: str, method_name: str, method_args: list) -> dict:
+def get_contract_state(
+    contract_address: str, method_name: str, method_args: list
+) -> dict:
     msg = MessageHandler(app, socketio)
 
     try:
@@ -530,15 +546,16 @@ def get_contract_state(contract_address: str, method_name: str, method_args: lis
 
         # Query the database for the current state of a deployed contract
         cursor.execute(
-            "SELECT id, data FROM current_state WHERE id = %s;",
-            (contract_address,)
+            "SELECT id, data FROM current_state WHERE id = %s;", (contract_address,)
         )
         row = cursor.fetchall()
         cursor.close()
         connection.close()
-        
+
         if not row:
-            return msg.error_response(message=contract_address + ' contract does not exist')
+            return msg.error_response(
+                message=contract_address + " contract does not exist"
+            )
 
         code = row[0][1]["code"]
         state = row[0][1]["state"]
@@ -550,11 +567,11 @@ def get_contract_state(contract_address: str, method_name: str, method_args: lis
         }
         result = requests.post(genvm_url() + "/api", json=payload).json()["result"]
 
-        if result['status'] == 'error':
-            return msg.error_response(result['message'])
-        
+        if result["status"] == "error":
+            return msg.error_response(result["message"])
+
         response = {"id": row[0][0]}
-        response[method_name] = result['data']
+        response[method_name] = result["data"]
 
     except Exception as e:
         return msg.error_response(exception=e)
@@ -579,7 +596,7 @@ def get_icontract_schema(contract_address: str) -> dict:
 
         if not tx:
             return msg.error_response(
-                message=contract_address + ' contract does not exist'
+                message=contract_address + " contract does not exist"
             )
 
         # 4 = data
@@ -587,15 +604,17 @@ def get_icontract_schema(contract_address: str) -> dict:
 
         if not tx_contract:
             return msg.error_response(
-                message='contract' + contract_address + ' does not contain any data'
+                message="contract" + contract_address + " does not contain any data"
             )
-        
-        if 'code' not in tx_contract:
+
+        if "code" not in tx_contract:
             return msg.error_response(
-                message='contract' + contract_address + ' does not contain any contract code'
+                message="contract"
+                + contract_address
+                + " does not contain any contract code"
             )
-        
-        contract = tx_contract['code']
+
+        contract = tx_contract["code"]
 
     except Exception as e:
         return msg.error_response(exception=e)
@@ -606,8 +625,8 @@ def get_icontract_schema(contract_address: str) -> dict:
         "params": [contract],
         "id": 2,
     }
-    
-    data = requests.post(genvm_url()+'/api', json=payload).json()['result']
+
+    data = requests.post(genvm_url() + "/api", json=payload).json()["result"]
 
     return msg.response_format(**data)
 
@@ -622,8 +641,8 @@ def get_icontract_schema_for_code(contract_code: str) -> dict:
         "params": [contract_code],
         "id": 2,
     }
-    
-    data = requests.post(genvm_url()+'/api', json=payload).json()['result']
+
+    data = requests.post(genvm_url() + "/api", json=payload).json()["result"]
 
     return msg.response_format(**data)
 
