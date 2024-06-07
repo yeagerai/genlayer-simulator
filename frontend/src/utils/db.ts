@@ -7,8 +7,8 @@ export class GenLayerSimulatorDB extends Dexie {
 
   constructor() {
     super('genLayerSimulatorDB')
-    this.version(1).stores({
-      contractFiles: 'id', 
+    this.version(2).stores({
+      contractFiles: 'id, name, content, example, updatedAt', 
       deployedContracts: '[contractId+address]',
       defaultContractStates: '[contractId+address]'
     })

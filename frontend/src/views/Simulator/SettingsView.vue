@@ -475,7 +475,6 @@ const handleResetStorage = async () => {
           Are you sure you want to reset the simulator storage?
         </div>
         <div class="flex flex-col p-2 mt-2">
-          <p class="text-md font-semibold">Address:</p>
 
           <div class="py-2 w-full">
             All the contracts examples that are not modified will be set to their initial state.

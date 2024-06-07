@@ -101,7 +101,7 @@ export const useMainStore = defineStore('mainStore', {
         const idsToDelete = contracts.filter((c) => c.example && !c.updatedAt).map((c) => c.id)
 
         await db.deployedContracts.where('contractId').anyOf(idsToDelete).delete()
-        await db.contractFiles.where('contractId').anyOf(idsToDelete).delete()
+        await db.contractFiles.where('id').anyOf(idsToDelete).delete()
 
         this.deployedContracts = [
           ...this.deployedContracts.filter((c) => !idsToDelete.includes(c.contractId))
