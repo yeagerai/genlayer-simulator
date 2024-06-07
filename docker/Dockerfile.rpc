@@ -1,26 +1,18 @@
-FROM python:3.12.2-slim as base
+FROM python:3.12.2-slim
 
 ARG path=/app
-  
+
 RUN mkdir $path
 WORKDIR $path
+
 COPY ../.env .
+
 ADD rpc $path/rpc
 ADD database $path/database
 ADD consensus $path/consensus
 ADD common $path/common
+
 RUN pip install --no-cache-dir -r rpc/requirements.txt
 
 ENV PYTHONPATH "${PYTHONPATH}:/${path}"
 ENV FLASK_APP=rpc/server.py
-
-###########START NEW IMAGE : DEBUGGER ###################
-FROM base as debug
-RUN pip install debugpy
-
-CMD python -m debugpy --listen 0.0.0.0:${RPCDEBUGPORT} -m flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}
-
-###########START NEW IMAGE: PRODUCTION ###################
-FROM base as prod
-
-CMD flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}

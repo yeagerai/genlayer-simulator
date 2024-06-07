@@ -29,16 +29,41 @@ Have ideas for new features or usecases? We're eager to hear them! But first:
 
 To contribute to feature development or bug fixes. Check our [issue tracker](https://github.com/yeagerai/genlayer-simulator/issues) for tasks labeled `help wanted`.
 
-#### Setup Simulator manually
+#### Code Live updating
 
-##### Window One
+If you want your code changes to be updated in the containers automatically.
+
+```
+$ cp docker-compose.dev.yml docker-compose.yml
+```
+
+#### VSCode Debugger
+
+Unfortunatly Flask can not live update when running the VSCode debugger. So If you want to run through your code make sure to do the following before first.
+
+```
+<stop docker>
+$ docker rm $(docker ps -a -f status=exited -q)
+$ vim .env
+...
+VSCODEDEBUG = "true"
+...
+$ docker compose up
+...
+```
+
+Then do the same but `VSCODEDEBUG = "false"` to go back to hot reloading your code.
+
+### Setup Simulator manually
+
+#### Window One
 
 ```
 $ cp .env.example .env
 $ docker compose up
 ```
 
-##### Window Two
+#### Window Two
 
 1. Installing the Ollama model
 

@@ -139,3 +139,6 @@ consensus/node_configs.json
 
 # don't include the nodes configuration
 consensus/nodes/nodes.json
+
+# So it doesn't accidently update the production docker-compose file
+docker-compose.yml
