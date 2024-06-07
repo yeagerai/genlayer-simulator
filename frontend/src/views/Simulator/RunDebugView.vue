@@ -281,7 +281,7 @@ onMounted(() => {
         <ConstructorParameters :inputs="constructorInputs" :loading="loadingConstructorInputs"
           :error="errorConstructorInputs" @deploy-contract="handleDeployContract" :deploying="deployingContract" />
       </div>
-      <div class="flex flex-col" v-if="deployedContract">
+      <div class="flex flex-col" v-show="deployedContract">
         <div class="flex flex-col">
           <ContractState :abi="abi" :contract-state="contractState" :deployed-contract="deployedContract"
             :get-contract-state="handleGetContractState" :calling-state="callingContractState" />
