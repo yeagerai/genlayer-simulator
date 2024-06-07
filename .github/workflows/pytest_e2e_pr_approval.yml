@@ -6,11 +6,10 @@ on:
       - staging
     types:
       - opened
-      - synchronize
   pull_request_review:
     branches:
       - staging
-    types: [submitted]
+    types: [approved]
 
 jobs:
   test:
