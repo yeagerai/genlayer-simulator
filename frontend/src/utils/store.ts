@@ -7,7 +7,7 @@ export const setupStores = async () => {
   const mainStore = useMainStore()
   const contracts = await db.contractFiles.toArray()
   if (
-    (contracts.filter((c) => c.example).map((c) => c.id).length) === 0 ) {
+    (contracts.filter((c) => c.example && !c.updatedAt).map((c) => c.id).length) === 0 ) {
       
     const contractsBlob = import.meta.glob('@/assets/examples/contracts/*.py', {
       query: '?raw',
