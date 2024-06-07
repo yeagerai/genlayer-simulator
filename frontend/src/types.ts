@@ -2,6 +2,7 @@ export interface ContractFile {
   id: string
   name: string
   content: string
+  example?: boolean
 }
 
 export interface OpenedFile {
@@ -16,7 +17,6 @@ export interface DeployedContract {
 }
 
 export interface MainStoreState {
-  contractsModified: string
   contracts: ContractFile[]
   openedFiles: string[]
   currentContractId?: string

@@ -2,14 +2,13 @@ import { useMainStore } from '@/stores'
 import { db } from './db'
 import { v4 as uuidv4 } from 'uuid'
 
+
 export const setupStores = async () => {
   const mainStore = useMainStore()
-  // await db.contractFiles.clear()
-  // localStorage.setItem('mainStore.contractsModified', '')
+  const contracts = await db.contractFiles.toArray()
   if (
-    (await db.contractFiles.count()) === 0 &&
-    !localStorage.getItem('mainStore.contractsModified')
-  ) {
+    (contracts.filter((c) => c.example).map((c) => c.id).length) === 0 ) {
+      
     const contractsBlob = import.meta.glob('@/assets/examples/contracts/*.py', {
       query: '?raw',
       import: 'default'
@@ -20,7 +19,8 @@ export const setupStores = async () => {
       const contract = {
         id: uuidv4(),
         name,
-        content: ((raw as string) || '').trim()
+        content: ((raw as string) || '').trim(),
+        example: true
       }
       mainStore.addContractFile(contract)
     }
@@ -29,13 +29,14 @@ export const setupStores = async () => {
   }
 
   mainStore.deployedContracts = await db.deployedContracts.toArray()
-  if ( mainStore.accounts.length < 1) {
+  if (mainStore.accounts.length < 1) {
     await mainStore.generateNewAccount()
   } else {
-    mainStore.accounts = localStorage.getItem('mainStore.accounts') ?  (localStorage.getItem('mainStore.accounts') || '').split(',') : []
+    mainStore.accounts = localStorage.getItem('mainStore.accounts')
+      ? (localStorage.getItem('mainStore.accounts') || '').split(',')
+      : []
   }
 }
-
 
 export const getContractFileName = (name: string) => {
   const tokens = name.split('.')

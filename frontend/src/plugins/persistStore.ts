@@ -36,10 +36,6 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
           case 'addContractFile':
             await db.contractFiles.add({...args[0] as ContractFile, name: getContractFileName(args[0].name)})
             break
-          case 'updateContractFile':
-            await db.contractFiles.update(args[0] as string, args[1] as ContractFile)
-            localStorage.setItem('mainStore.contractsModified', `${Date.now()}`)
-            break
           case 'removeContractFile':
             await db.contractFiles.delete(args[0] as string)
             await db.deployedContracts

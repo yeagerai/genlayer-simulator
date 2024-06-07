@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import type { ContractFile, MainStoreState, DeployedContract } from '@/types'
-import { rpcClient, getContractFileName, db } from '@/utils'
+import { rpcClient, getContractFileName, db, setupStores } from '@/utils'
 
 const getInitialOPenedFiles = (): string[] => {
   const storage = localStorage.getItem('mainStore.openedFiles')
@@ -11,7 +11,6 @@ const getInitialOPenedFiles = (): string[] => {
 export const useMainStore = defineStore('mainStore', {
   state: (): MainStoreState => {
     return {
-      contractsModified: localStorage.getItem('mainStore.contractsModified') || '',
       contracts: [],
       openedFiles: getInitialOPenedFiles(),
       currentContractId: localStorage.getItem('mainStore.currentContractId') || '',
@@ -98,16 +97,25 @@ export const useMainStore = defineStore('mainStore', {
     },
     async resetStorage(): Promise<void> {
       try {
-        localStorage.setItem('mainStore.contractsModified', '')
-        localStorage.setItem('mainStore.currentContractId', '')
-        localStorage.setItem('mainStore.openedFiles', '')
-        await db.deployedContracts.clear()
-        await db.contractFiles.clear()
+        const contracts = await db.contractFiles.toArray()
+        const idsToDelete = contracts.filter((c) => c.example).map((c) => c.id)
 
-        this.deployedContracts = []
-        this.contracts = []
-        this.currentContractId = ''
-        this.openedFiles = []
+        await db.deployedContracts.where('contractId').anyOf(idsToDelete).delete()
+        await db.contractFiles.where('contractId').anyOf(idsToDelete).delete()
+
+        this.deployedContracts = [
+          ...this.deployedContracts.filter((c) => !idsToDelete.includes(c.contractId))
+        ]
+        this.contracts = [...this.contracts.filter((c) => !idsToDelete.includes(c.id))]
+        this.openedFiles = [...this.openedFiles.filter((c) => !idsToDelete.includes(c))]
+        if (this.currentContractId && idsToDelete.includes(this.currentContractId)) {
+          this.currentContractId = ''
+        }
+
+        localStorage.setItem('mainStore.currentContractId', this.currentContractId || '')
+        localStorage.setItem('mainStore.openedFiles', this.openedFiles.join(','))
+
+        await setupStores()
       } catch (error) {
         console.error(error)
       }

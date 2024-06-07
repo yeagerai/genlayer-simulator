@@ -7,7 +7,6 @@ import Modal from '@/components/ModalComponent.vue'
 import { TrashIcon } from '@heroicons/vue/24/solid'
 import type { IJsonRPCService } from '@/services'
 import { useMainStore } from '@/stores'
-import { setupStores } from '@/utils'
 
 const mainStore = useMainStore()
 const nodeProviders = ref<Record<string, string[]>>({})
@@ -257,7 +256,6 @@ const handleResetStorage = async () => {
   resetingStorage.value = true
   try {
     await mainStore.resetStorage()
-    await setupStores()
     notify({
         title: 'Success',
         text: 'Storage reset successfully',
@@ -475,6 +473,13 @@ const handleResetStorage = async () => {
         </div>
         <div class="flex justify-between font-bold bg-slate-100 p-2 mt-4">
           Are you sure you want to reset the simulator storage?
+        </div>
+        <div class="flex flex-col p-2 mt-2">
+          <p class="text-md font-semibold">Address:</p>
+
+          <div class="py-2 w-full">
+            All the contracts examples that are not modified will be set to their initial state.
+          </div>
         </div>
       </div>
       <div class="flex flex-col mt-4 w-full">
