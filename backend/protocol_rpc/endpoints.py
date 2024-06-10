@@ -6,16 +6,10 @@ from functools import partial
 from flask_jsonrpc import JSONRPC
 from flask import Flask
 
+from backend.database_handler.db_client import DBClient
 from backend.protocol_rpc.message_handler.base import MessageHandler
-
-from backend.database_handler.domain.state import State as StateDomain
 from backend.database_handler.accounts_manager import AccountsManager
 from backend.database_handler.validators_registry import ValidatorsRegistry
-from backend.database_handler.initialization.init_db import (
-    create_db_if_it_doesnt_already_exists,
-    create_tables_if_they_dont_already_exist,
-    clear_db_tables,
-)
 
 from backend.node.create_nodes.create_nodes import (
     get_default_config_for_providers_and_nodes,
@@ -300,10 +294,15 @@ def count_validators(validators_registry: ValidatorsRegistry) -> dict:
     return validators_registry.count_validators()
 
 
+def clear_db_tables(db_client: DBClient, tables: list) -> dict:
+    db_client.clear_tables(tables)
+
+
 def register_all_rpc_endpoints(
     app: Flask,
     jsonrpc: JSONRPC,
     msg_handler: MessageHandler,
+    genlayer_db_client: DBClient,
     accounts_manager: AccountsManager,
     transactions_processor: TransactionsProcessor,
     validators_registry: ValidatorsRegistry,
@@ -314,12 +313,11 @@ def register_all_rpc_endpoints(
     )
 
     register_rpc_endpoint(ping)
-    register_rpc_endpoint(create_db_if_it_doesnt_already_exists)
     register_rpc_endpoint(get_providers_and_models)
     register_rpc_endpoint(get_contract_schema_for_code)
 
     register_rpc_endpoint_for_partial(
-        clear_db_tables, ["current_state", "transactions"]
+        clear_db_tables, genlayer_db_client, ["current_state", "transactions"]
     )
     register_rpc_endpoint_for_partial(create_validator, validators_registry)
     register_rpc_endpoint_for_partial(update_validator, validators_registry)
@@ -329,7 +327,6 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint_for_partial(get_all_validators, validators_registry)
     register_rpc_endpoint_for_partial(create_random_validator, validators_registry)
     register_rpc_endpoint_for_partial(create_random_validators, validators_registry)
-    register_rpc_endpoint_for_partial(create_tables_if_they_dont_already_exist, app)
     register_rpc_endpoint_for_partial(send_transaction, transactions_processor)
     register_rpc_endpoint_for_partial(
         deploy_intelligent_contract, transactions_processor

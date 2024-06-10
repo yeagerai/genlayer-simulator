@@ -7,15 +7,12 @@ from flask import Flask
 from flask_jsonrpc import JSONRPC
 from flask_socketio import SocketIO
 from flask_cors import CORS
-from message_handler.base import MessageHandler
+from backend.protocol_rpc.message_handler.base import MessageHandler
 from backend.protocol_rpc.endpoints import register_all_rpc_endpoints
 from dotenv import load_dotenv
 
 from backend.database_handler.db_client import DBClient
-from backend.database_handler.services.state_db_service import StateDBService
 from backend.database_handler.transactions_processor import TransactionsProcessor
-from backend.database_handler.chain_snapshot import ChainSnapshot
-from backend.database_handler.domain.state import State
 from backend.database_handler.validators_registry import ValidatorsRegistry
 from backend.database_handler.accounts_manager import AccountsManager
 from backend.consensus.base import ConsensusAlgorithm
@@ -38,6 +35,7 @@ def create_app():
         jsonrpc,
         socketio,
         msg_handler,
+        genlayer_db_client,
         accounts_manager,
         transactions_processor,
         validators_registry,
@@ -51,6 +49,7 @@ load_dotenv()
     jsonrpc,
     socketio,
     msg_handler,
+    genlayer_db_client,
     accounts_manager,
     transactions_processor,
     validators_registry,
@@ -60,6 +59,7 @@ register_all_rpc_endpoints(
     app,
     jsonrpc,
     msg_handler,
+    genlayer_db_client,
     accounts_manager,
     transactions_processor,
     validators_registry,
