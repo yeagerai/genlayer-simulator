@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import type { ContractFile, MainStoreState, DeployedContract } from '@/types'
-import { rpcClient, getContractFileName, db, setupStores } from '@/utils'
+import { RpcClient, db, getContractFileName, setupStores } from '@/utils'
 
+const rpcClient = new RpcClient()
 const getInitialOPenedFiles = (): string[] => {
   const storage = localStorage.getItem('mainStore.openedFiles')
   if (storage) return storage.split(',')

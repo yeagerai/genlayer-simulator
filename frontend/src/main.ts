@@ -5,7 +5,7 @@ import Notifications from '@kyvg/vue3-notification'
 import App from './App.vue'
 import router from './router'
 import { persistStorePlugin, createToolTipPlugin } from '@/plugins'
-import { rpcClient, setupStores } from '@/utils'
+import { RpcClient, setupStores } from '@/utils'
 import { JsonRpcService } from './services/JsonRpcService'
 
 import { VueSpinnersPlugin } from 'vue3-spinners'
@@ -22,7 +22,7 @@ app.use(
   })
 )
 app.use(Notifications)
-app.provide('$jsonRpc', new JsonRpcService(rpcClient))
+app.provide('$jsonRpc', new JsonRpcService(new RpcClient()))
 app.use(VueSpinnersPlugin)
 app.mount('#app')
 setupStores()
