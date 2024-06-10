@@ -7,11 +7,12 @@ import ExecuteTransactions from '@/components/Simulator/ExecuteTransactions.vue'
 import TransactionsList from '@/components/Simulator/TransactionsList.vue'
 import ConstructorParameters from '@/components/Simulator/ConstructorParameters.vue'
 import type { DeployedContract } from '@/types'
-import type { IJsonRPCService } from '@/services'
+import type { IJsonRpcService } from '@/services'
 import { debounce } from 'vue-debounce'
+import { v4 as uuidv4 } from 'uuid'
 
 const store = useMainStore()
-const $jsonRpc = inject<IJsonRPCService>('$jsonRpc')!
+const $jsonRpc = inject<IJsonRpcService>('$jsonRpc')!
 const constructorInputs = ref<{ [k: string]: string }>({})
 const errorConstructorInputs = ref<Error>()
 const abi = ref<any>()
@@ -42,10 +43,7 @@ const handleGetContractState = async (
 ) => {
   callingContractState.value = true
   try {
-    const { result } = await $jsonRpc.call({
-      method: 'get_contract_state',
-      params: [contractAddress, method, methodArguments]
-    })
+    const result = await $jsonRpc.getContractState({ contractAddress, method, methodArguments })
 
     contractState.value = {
       ...contractState.value,
@@ -66,22 +64,19 @@ const handleGetContractState = async (
 const handleCallContractMethod = async ({ method, params }: { method: string; params: any[] }) => {
   callingContractMethod.value = true
   try {
-    const { result } = await $jsonRpc.call({
-      method: 'call_contract_function',
-      params: [
-        store.currentUserAddress,
-        deployedContract.value?.address,
-        `${abi.value.class}.${method}`,
-        params
-      ]
+    const result = await $jsonRpc.callContractFunction({
+      userAccount: store.currentUserAddress || '',
+      contractAddress: deployedContract.value?.address || '',
+      method: `${abi.value.class}.${method}`,
+      params
     })
 
     if (deployedContract.value?.address && result.status === 'success') {
       if (!store.contractTransactions[deployedContract.value?.address]) {
-        store.contractTransactions[deployedContract.value?.address] = [result.data?.execution_output]
-      } else {
-        store.contractTransactions[deployedContract.value?.address].push(result)
-      }
+        store.contractTransactions[deployedContract.value?.address] = []
+      } 
+
+      store.contractTransactions[deployedContract.value?.address].push({ id: uuidv4(), ...result})
     }
   } catch (error) {
     console.error(error)
@@ -116,12 +111,10 @@ const handleDeployContract = async ({
       let contractSchema = null
       loadingConstructorInputs.value = true
       try {
-        const {
-          result: { data }
-        } = await $jsonRpc.call({
-          method: 'get_icontract_schema_for_code',
-          params: [contract.content]
-        })
+        const { data }
+          = await $jsonRpc.getContractSchema({
+            code: contract.content
+          })
 
         contractSchema = data
         errorConstructorInputs.value = undefined
@@ -142,14 +135,11 @@ const handleDeployContract = async ({
         deployingContract.value = true
         try {
           const constructorParamsAsString = JSON.stringify(constructorParams)
-          const { result } = await $jsonRpc.call({
-            method: 'deploy_intelligent_contract',
-            params: [
-              store.currentUserAddress,
-              contractSchema.class,
-              contract.content,
-              constructorParamsAsString
-            ]
+          const result = await $jsonRpc.deployContract({
+            userAccount: store.currentUserAddress || '',
+            className: contractSchema.class,
+            code: contract.content,
+            constructorParams: constructorParamsAsString
           })
           if (result?.status === 'success') {
             store.addDeployedContract({
@@ -190,10 +180,8 @@ const getContractAbi = async (contract: DeployedContract) => {
     // constructorInputs.value = JSON.parse(contract.defaultState || '{}')
     // TODO: check if we need to update again also we have an issue with conversion
     // between `bool` in Python with value `True` vs JSON boolean with value `true`
-
-    const { result } = await $jsonRpc.call({
-      method: 'get_icontract_schema',
-      params: [contract.address]
+    const result = await $jsonRpc.getDeployedContractSchema({
+      address: contract.address
     })
 
     abi.value = result.data
@@ -208,9 +196,8 @@ const getConstructorInputs = async () => {
     loadingConstructorInputs.value = true
     try {
 
-      const { result } = await $jsonRpc.call({
-        method: 'get_icontract_schema_for_code',
-        params: [contract.value.content]
+      const result = await $jsonRpc.getContractSchema({
+        code: contract.value.content
       })
       if (!constructorInputs.value) {
         constructorInputs.value = result.data?.methods['__init__']?.inputs
@@ -280,7 +267,7 @@ onMounted(() => {
         <ConstructorParameters :inputs="constructorInputs" :loading="loadingConstructorInputs"
           :error="errorConstructorInputs" @deploy-contract="handleDeployContract" :deploying="deployingContract" />
       </div>
-      <div class="flex flex-col" v-if="deployedContract">
+      <div class="flex flex-col" v-show="deployedContract">
         <div class="flex flex-col">
           <ContractState :abi="abi" :contract-state="contractState" :deployed-contract="deployedContract"
             :get-contract-state="handleGetContractState" :calling-state="callingContractState" />

@@ -73,7 +73,7 @@ const getInputPlaceholder = (methodInputs: { [k: string]: string }) => {
             label="Input"
           />
         </div>
-        <div class="flex mt-2 mb-6" :data-test-id="`contract-state-item-${method.name}`">{{ contractState[method.name] }}</div>
+        <div class="flex mt-2 mb-6" :data-testid="`contract-state-item-${method.name}`">{{ contractState[method.name] }}</div>
       </div>
     </div>
   </div>
