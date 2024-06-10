@@ -109,7 +109,7 @@ def call_contract_function(
     from_address: str,
     contract_address: str,
     function_name: str,
-    args: dict,
+    function_args: dict,
 ) -> dict:
     if not address_is_in_correct_format(from_address):
         raise InvalidAddressError(from_address)
@@ -118,7 +118,7 @@ def call_contract_function(
 
     transaction_data = {
         "function_name": function_name,
-        "args": args,
+        "function_args": function_args,
     }
     transaction_id = transactions_processor.insert_transaction(
         from_address, contract_address, transaction_data, 0, 2
