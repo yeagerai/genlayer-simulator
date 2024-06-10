@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import type { ContractFile, MainStoreState, DeployedContract } from '@/types'
-import { rpcClient, getContractFileName } from '@/utils'
+import { RpcClient, getContractFileName } from '@/utils'
 
+const rpcClient = new RpcClient()
 const getInitialOPenedFiles = (): string[] => {
   const storage = localStorage.getItem('mainStore.openedFiles')
   if (storage) return storage.split(',')
@@ -81,7 +82,7 @@ export const useMainStore = defineStore('mainStore', {
     },
     async generateNewAccount(): Promise<string | null> {
       try {
-        const { result } = await rpcClient.call({
+        const { result } = await rpcClient.call<any>({
           method: 'create_account',
           params: []
         })

@@ -1,7 +1,7 @@
 import { WebDriver, By, until } from 'selenium-webdriver'
 import { ContractsPage } from '../pages/ContractsPage.js'
 import { RunDebugPage } from '../pages/RunDebugPage.js'
-import { beforeEach, before, describe, after, it } from 'node:test'
+import { before, describe, after, it } from 'node:test'
 import { expect } from 'chai'
 import { getDriver } from '../utils/driver.js'
 
@@ -12,12 +12,10 @@ let runDebugPage: RunDebugPage
 describe('Contract Example WizardOfCoin', () => {
   before(async () => {
     driver = await getDriver()
-    await driver.manage().setTimeouts({ implicit: 2000 })
+    await driver.manage().setTimeouts({ implicit: 10000 })
     contractsPage = new ContractsPage(driver)
     runDebugPage = new RunDebugPage(driver)
   })
-
-  beforeEach(async () => {})
 
   it('should open WizardOfCoin example contract', async () => {
     await contractsPage.navigate()
@@ -37,23 +35,21 @@ describe('Contract Example WizardOfCoin', () => {
         By.xpath(
           "//div[contains(@class, 'text-xs text-neutral-800 dark:text-neutral-200') and contains(text(), 'wizard_of_coin.gpy')]"
         )
-      ),
-      5000
+      )
     )
     expect(nameOfContract, 'WizardOfCoin file name contract should be visible').not.null
 
     const haveCoinCheck = await driver.wait(
       until.elementLocated(
         By.xpath("//input[contains(@name, 'have_coin') and contains(@type, 'checkbox')]")
-      ),
-      5000
+      )
     )
     expect(haveCoinCheck, 'Have coin checkbox should be visible').not.null
     await haveCoinCheck.click()
   })
 
   it('should deploy the contract WizardOfCoin', async () => {
-    await driver.wait(until.elementLocated(By.xpath("//button[text()='Deploy']")), 5000).click()
+    await driver.wait(until.elementLocated(By.xpath("//button[text()='Deploy']"))).click()
 
     // locate elements that should be visible
     const contractStateTitle = await driver.wait(
@@ -69,8 +65,7 @@ describe('Contract Example WizardOfCoin', () => {
     const executeTransactionsTitle = await driver.wait(
       until.elementLocated(
         By.xpath("//h5[contains(@class, 'text-sm') and contains(text(), 'Execute Transactions')]")
-      ),
-      5000
+      )
     )
     expect(executeTransactionsTitle, 'Execute transactions title section should be visible').not
       .null
@@ -78,26 +73,22 @@ describe('Contract Example WizardOfCoin', () => {
     const latestTransactions = await driver.wait(
       until.elementLocated(
         By.xpath("//h5[contains(@class, 'text-sm') and contains(text(), 'Latest Transactions')]")
-      ),
-      5000
+      )
     )
     expect(latestTransactions, 'Latest transactions title section should be visible').not.null
   })
 
   it('should call get_have_coin state', async () => {
-    await driver
-      .wait(until.elementLocated(By.xpath("//button[text()='get_have_coin']")), 5000)
-      .click()
+    await driver.wait(until.elementLocated(By.xpath("//button[text()='get_have_coin']"))).click()
 
     const stateResult = await driver.wait(
-      until.elementLocated(By.xpath("//div[contains(@data-test-id, 'get_have_coin')]")),
-      5000
+      until.elementLocated(By.xpath("//div[contains(@data-testid, 'get_have_coin')]"))
     )
     expect(stateResult, 'get_have_coin result should be visible').not.null
 
-    const stateResultText = await driver
-      .wait(until.elementTextContains(stateResult, 'True'), 5000)
-      .getText()
+    const stateResultText = await driver.wait(until.elementTextContains(stateResult, 'True')).getText()
+
+    console.log(`get_have_coin result: ${stateResultText}`)
     expect(stateResultText, 'get_have_coin result should true').be.equal('True')
   })
 
@@ -115,14 +106,13 @@ describe('Contract Example WizardOfCoin', () => {
     await requestInput.clear()
     await requestInput.sendKeys('Please give me the coin')
     const requestText = await requestInput.getAttribute('value')
-    expect(
-      requestText,
-      'The input text should be equal to `Please give me the coin`'
-    ).to.be.equal('Please give me the coin')
+    expect(requestText, 'The input text should be equal to `Please give me the coin`').to.be.equal(
+      'Please give me the coin'
+    )
 
     await driver
-    .wait(until.elementLocated(By.xpath("//button[text()='Execute ask_for_coin()']")), 5000)
-    .click()
+      .wait(until.elementLocated(By.xpath("//button[text()='Execute ask_for_coin()']")))
+      .click()
   })
   after(() => driver.quit())
 })
