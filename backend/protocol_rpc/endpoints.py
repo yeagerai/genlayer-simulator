@@ -125,17 +125,7 @@ def call_contract_function(
     return {"transaction_id": transaction_id}
 
 
-def get_last_contracts(state_domain: StateDomain, number_of_contracts: int) -> dict:
-    if not number_of_contracts < 1:
-        raise InvalidInputError(
-            "number_of_contracts",
-            number_of_contracts,
-            "Number of contracts should be greater than 0.",
-        )
-    return state_domain.get_last_contracts(number_of_contracts)
-
-
-def get_icontract_schema(state_domain: StateDomain, contract_address: str) -> dict:
+def get_contract_schema(state_domain: StateDomain, contract_address: str) -> dict:
     if not address_is_in_correct_format(contract_address):
         raise InvalidAddressError(
             contract_address,
@@ -144,9 +134,7 @@ def get_icontract_schema(state_domain: StateDomain, contract_address: str) -> di
     return state_domain.get_contract_schema(contract_address)
 
 
-def get_icontract_schema_for_code(
-    state_domain: StateDomain, contract_code: str
-) -> dict:
+def get_contract_schema_for_code(state_domain: StateDomain, contract_code: str) -> dict:
     return state_domain.get_contract_schema_for_code(contract_code)
 
 
@@ -308,6 +296,6 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint_for_partial(create_account, state_domain)
     register_rpc_endpoint_for_partial(fund_account, state_domain)
     register_rpc_endpoint_for_partial(get_last_contracts, state_domain)
-    register_rpc_endpoint_for_partial(get_icontract_schema, state_domain)
-    register_rpc_endpoint_for_partial(get_icontract_schema_for_code, state_domain)
+    register_rpc_endpoint_for_partial(get_contract_schema, state_domain)
+    register_rpc_endpoint_for_partial(get_contract_schema_for_code, state_domain)
     register_rpc_endpoint_for_partial(get_contract_state, state_domain)

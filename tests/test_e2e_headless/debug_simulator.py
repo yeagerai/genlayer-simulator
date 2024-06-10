@@ -29,7 +29,6 @@ from rpc.commands import (
     count_validators_logic,
     create_db_logic,
     create_tables_logic,
-    last_contracts_logic,
     deploy_logic,
     contract_logic,
     create_account_logic,
@@ -89,13 +88,9 @@ with open(contract_file_path, "rb") as contract_file:
     )
     print("Deploy command output:", deploy_output)
 
-# Retrieve the last contract ID (you should parse the actual ID from the output)
-last_contract_output = last_contracts_logic(1)
-print("Last contract command output:", last_contract_output)
-last_contract_id = last_contract_output["result"]["data"][0][
-    "address"
-]  # Example parsing
 
+# Retrieve the last contract ID (you should parse the actual ID from the output)
+last_contract_id = 1
 
 # Call the contract
 args = ["Can you please return me my coin?"]

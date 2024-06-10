@@ -144,14 +144,3 @@ def delete_all_validators_logic() -> list:
     }
     responses = requests.post(json_rpc_url, json=payload).json()
     return responses
-
-
-def last_contracts_logic(number: int) -> dict:
-    payload = {
-        "jsonrpc": "2.0",
-        "method": "get_last_contracts",  # Assuming this is the correct method name on your JSON RPC server
-        "params": [number],
-        "id": 5,
-    }
-    response = requests.post(json_rpc_url, json=payload).json()
-    return response
