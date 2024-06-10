@@ -17,6 +17,7 @@ from backend.database_handler.transactions_processor import TransactionsProcesso
 from backend.database_handler.chain_snapshot import ChainSnapshot
 from backend.database_handler.domain.state import State
 from backend.database_handler.validators_registry import ValidatorsRegistry
+from backend.database_handler.accounts_manager import AccountsManager
 from backend.consensus.base import ConsensusAlgorithm
 
 
@@ -28,6 +29,7 @@ def create_app():
     msg_handler = MessageHandler(app, socketio)
     genlayer_db_client = DBClient("genlayer")
     transactions_processor = TransactionsProcessor(genlayer_db_client)
+    accounts_manager = AccountsManager(genlayer_db_client, transactions_processor)
     validators_registry = ValidatorsRegistry(genlayer_db_client)
 
     consensus = ConsensusAlgorithm(ChainSnapshot(genlayer_db_client))
@@ -36,6 +38,7 @@ def create_app():
         jsonrpc,
         socketio,
         msg_handler,
+        accounts_manager,
         transactions_processor,
         validators_registry,
         consensus,
@@ -48,12 +51,18 @@ load_dotenv()
     jsonrpc,
     socketio,
     msg_handler,
+    accounts_manager,
     transactions_processor,
     validators_registry,
     consensus,
 ) = create_app()
 register_all_rpc_endpoints(
-    app, jsonrpc, msg_handler, transactions_processor, validators_registry
+    app,
+    jsonrpc,
+    msg_handler,
+    accounts_manager,
+    transactions_processor,
+    validators_registry,
 )
 
 

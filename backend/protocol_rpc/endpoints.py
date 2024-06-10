@@ -7,9 +7,9 @@ from flask_jsonrpc import JSONRPC
 from flask import Flask
 
 from backend.protocol_rpc.message_handler.base import MessageHandler
-from backend.database_handler.db_client import DBClient
-from backend.database_handler.chain_snapshot import ChainSnapshot
+
 from backend.database_handler.domain.state import State as StateDomain
+from backend.database_handler.accounts_manager import AccountsManager
 from backend.database_handler.validators_registry import ValidatorsRegistry
 from backend.database_handler.initialization.init_db import (
     create_db_if_it_doesnt_already_exists,
@@ -45,17 +45,19 @@ def ping() -> dict:
     return {"status": "OK"}
 
 
-def create_account(state_domain: StateDomain) -> dict:
+def create_account(accounts_manager: AccountsManager) -> dict:
     account_address = create_new_address()
-    state_domain.create_account(account_address)
+    accounts_manager.create_new_account(account_address, 0)
     return {"account_address": account_address}
 
 
-def fund_account(state_domain: StateDomain, account_address: str, amount: int) -> dict:
+def fund_account(
+    accounts_manager: AccountsManager, account_address: str, amount: int
+) -> dict:
     if not address_is_in_correct_format(account_address):
         raise InvalidAddressError(account_address)
 
-    state_domain.fund_account(account_address, amount)
+    accounts_manager.fund_account(account_address, amount)
     return {"account_address": account_address, "amount": amount}
 
 
@@ -265,6 +267,7 @@ def register_all_rpc_endpoints(
     app: Flask,
     jsonrpc: JSONRPC,
     msg_handler: MessageHandler,
+    accounts_manager: AccountsManager,
     transactions_processor: TransactionsProcessor,
     validators_registry: ValidatorsRegistry,
 ):
@@ -293,8 +296,8 @@ def register_all_rpc_endpoints(
         deploy_intelligent_contract, transactions_processor
     )
     register_rpc_endpoint_for_partial(call_contract_function, transactions_processor)
-    register_rpc_endpoint_for_partial(create_account, state_domain)
-    register_rpc_endpoint_for_partial(fund_account, state_domain)
+    register_rpc_endpoint_for_partial(create_account, accounts_manager)
+    register_rpc_endpoint_for_partial(fund_account, accounts_manager)
     register_rpc_endpoint_for_partial(get_last_contracts, state_domain)
     register_rpc_endpoint_for_partial(get_contract_schema, state_domain)
     register_rpc_endpoint_for_partial(get_contract_schema_for_code, state_domain)
