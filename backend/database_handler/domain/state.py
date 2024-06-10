@@ -4,7 +4,7 @@ import os
 import json
 
 from backend.database_handler.services.state_db_service import StateDBService
-from backend.database_handler.services.transactions_db_service import (
+from backend.database_handler.transactions_processor import (
     TransactionsDBService,
 )
 from backend.database_handler.services.validators_db_service import ValidatorsDBService

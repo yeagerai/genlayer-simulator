@@ -159,7 +159,7 @@ def get_contract_schema_for_code(contract_code: str) -> dict:
 
 
 def get_contract_state(
-    state_domain: StateDomain,
+    accounts_manager: AccountsManager,
     contract_address: str,
     method_name: str,
     method_args: list,
@@ -167,7 +167,20 @@ def get_contract_state(
     if not address_is_in_correct_format(contract_address):
         raise InvalidAddressError(contract_address)
 
-    return state_domain.get_contract_state(contract_address, method_name, method_args)
+    contract_account = accounts_manager.get_account(contract_address)
+    node = Node(
+        contract_snapshot=None,
+        address="",
+        validator_mode="leader",
+        config=None,
+        leader_receipt=None,
+    )
+    return node.get_contract_data(
+        code=contract_account["data"]["code"],
+        state=contract_account["data"]["state"],
+        method_name=method_name,
+        method_args=method_args,
+    )
 
 
 def get_all_validators(validators_registry: ValidatorsRegistry) -> dict:
@@ -319,5 +332,4 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint_for_partial(create_account, accounts_manager)
     register_rpc_endpoint_for_partial(fund_account, accounts_manager)
     register_rpc_endpoint_for_partial(get_contract_schema, accounts_manager)
-
-    register_rpc_endpoint_for_partial(get_contract_state, state_domain)
+    register_rpc_endpoint_for_partial(get_contract_state, accounts_manager)
