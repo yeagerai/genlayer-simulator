@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api'
-import { ref, shallowRef, watch, computed } from 'vue'
+import { ref, shallowRef, watch, computed, nextTick } from 'vue'
 import { pythonSyntaxDefinition } from '@/utils'
 import { useMainStore, useUIStore } from '@/stores';
 import { type ContractFile } from '@/types';
@@ -10,16 +10,23 @@ const uiStore = useUIStore()
 const contractStore = useMainStore()
 const props = defineProps<{
   contract: ContractFile,
-  parentHeight: number,
-  parentWidth: number
+  shouldResize: boolean
 }>()
-
+const emit = defineEmits(['resized'])
 const editorElement = ref<HTMLDivElement | null>(null)
 const editorRef = shallowRef<monaco.editor.IStandaloneCodeEditor | null>(null)
 const theme = computed(() => uiStore.mode === 'light' ? 'vs' : 'vs-dark')
 const editorWidth = ref(0)
-const editorHeight = ref(props.parentHeight)
+const editorHeight = ref(0)
 
+const resizeEditor = () => {
+  nextTick(() => {
+    const height = editorElement.value?.parentNode?.parentElement?.clientHeight || 600
+    editorHeight.value = height - 40
+    editorWidth.value = editorElement.value?.parentNode?.parentElement?.clientWidth || 950
+    emit('resized', { width: editorWidth.value, height: editorHeight.value })
+  })
+}
 watch(
   () => editorElement.value,
   newValue => {
@@ -37,25 +44,16 @@ watch(
       editorRef.value.onDidChangeModelContent(() => {
         contractStore.updateContractFile(props.contract.id!, { content: editorRef.value?.getValue() || "" })
       })
-      const height = editorElement.value?.parentNode?.parentElement?.clientHeight || 600
-      editorHeight.value = height - 40
-      editorWidth.value = editorElement.value?.parentNode?.parentElement?.clientWidth || 950
+      resizeEditor()
     }
   },
 )
 
 watch(
-  () => props.parentHeight,
+  () => props.shouldResize,
   () => {
-  
-      editorHeight.value = editorElement.value?.parentNode?.parentElement?.clientHeight || 600 
-  },
-)
+    resizeEditor()
 
-watch(
-  () => props.parentWidth,
-  () => {
-      editorWidth.value = editorElement.value?.parentNode?.parentElement?.clientWidth || 950
   },
 )
 
@@ -70,9 +68,8 @@ watch(
 
 <template>
   <div class="flex flex-col">
-    <div ref="editorElement" :style="`width: ${editorWidth / 16}rem; height: ${editorHeight / 16}rem`"/>
+    <div ref="editorElement" :style="`width: ${editorWidth / 16}rem; height: ${editorHeight / 16}rem`" />
   </div>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>
