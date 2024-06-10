@@ -89,13 +89,17 @@ def deploy_intelligent_contract(
         raise InvalidAddressError(from_account)
 
     contract_address = create_new_address()
-    return state_domain.deploy_intelligent_contract(
-        from_account,
-        contract_address,
-        class_name,
-        contract_code,
-        constructor_args,
+
+    transaction_data = {
+        "class_name": class_name,
+        "contract_code": contract_code,
+        "constructor_args": constructor_args,
+    }
+
+    transaction_id = transactions_processor.insert_transaction(
+        from_account, contract_address, transaction_data, 0, 1
     )
+    return {"transaction_id": transaction_id, "contract_address": contract_address}
 
 
 def call_contract_function(
