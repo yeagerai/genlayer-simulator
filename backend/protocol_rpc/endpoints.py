@@ -114,16 +114,15 @@ def call_contract_function(
     if not address_is_in_correct_format(contract_address):
         raise InvalidAddressError(contract_address)
 
-    ## prepare state
-    transaction_input = dbclient.write_transaction_input(function_name, args, ...)
-    snapshot = ChainSnapshot(contract_address, dbclient)
-
-    ## prepare transaction data
-    transaction_output = asyncio.run(
-        consensus_algorithm(from_address, transaction_input, snapshot)
+    transaction_data = {
+        "function_name": function_name,
+        "args": args,
+    }
+    transaction_id = transactions_processor.insert_transaction(
+        from_address, contract_address, transaction_data, 0, 2
     )
 
-    return transaction_output
+    return {"transaction_id": transaction_id}
 
 
 def get_last_contracts(state_domain: StateDomain, number_of_contracts: int) -> dict:
