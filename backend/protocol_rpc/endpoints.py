@@ -10,7 +10,7 @@ from backend.protocol_rpc.message_handler.base import MessageHandler
 from backend.database_handler.db_client import DBClient
 from backend.database_handler.chain_snapshot import ChainSnapshot
 from backend.database_handler.domain.state import State as StateDomain
-from backend.database_handler.domain.validators import Validators as ValidatorsDomain
+from backend.database_handler.validators_registry import ValidatorsRegistry
 from backend.database_handler.initialization.init_db import (
     create_db_if_it_doesnt_already_exists,
     create_tables_if_they_dont_already_exist,
@@ -131,7 +131,7 @@ def call_contract_function(
 
     ## prepare state
     transaction_input = dbclient.write_transaction_input(function_name, args, ...)
-    snapshot = Snapshot(contract_address, dbclient)
+    snapshot = ChainSnapshot(contract_address, dbclient)
 
     ## prepare transaction data
     transaction_output = asyncio.run(
@@ -153,29 +153,31 @@ def get_contract_state(
     return state_domain.get_contract_state(contract_address, method_name, method_args)
 
 
-def get_all_validators(validators_domain: ValidatorsDomain) -> dict:
-    return validators_domain.get_all_validators()
+def get_all_validators(validators_registry: ValidatorsRegistry) -> dict:
+    return validators_registry.get_all_validators()
 
 
-def get_validator(validators_domain: ValidatorsDomain, validator_address: str) -> dict:
-    return validators_domain.get_validator(validator_address)
+def get_validator(
+    validators_registry: ValidatorsRegistry, validator_address: str
+) -> dict:
+    return validators_registry.get_validator(validator_address)
 
 
 def create_validator(
-    validators_domain: ValidatorsDomain,
+    validators_registry: ValidatorsRegistry,
     stake: int,
     provider: str,
     model: str,
     config: json,
 ) -> dict:
     new_address = create_new_address()
-    return validators_domain.create_validator(
+    return validators_registry.create_validator(
         new_address, stake, provider, model, config
     )
 
 
 def update_validator(
-    validators_domain: ValidatorsDomain,
+    validators_registry: ValidatorsRegistry,
     validator_address: str,
     stake: int,
     provider: str,
@@ -184,26 +186,26 @@ def update_validator(
 ) -> dict:
     if not address_is_in_correct_format(validator_address):
         raise InvalidAddressError(validator_address)
-    return validators_domain.update_validator(
+    return validators_registry.update_validator(
         validator_address, stake, provider, model, config
     )
 
 
 def delete_validator(
-    validators_domain: ValidatorsDomain, validator_address: str
+    validators_registry: ValidatorsRegistry, validator_address: str
 ) -> dict:
     if not address_is_in_correct_format(validator_address):
         raise InvalidAddressError(validator_address)
 
-    validators_domain.delete_validator(validator_address)
+    validators_registry.delete_validator(validator_address)
     return validator_address
 
 
 def delete_all_validators(
-    validators_domain: ValidatorsDomain,
+    validators_registry: ValidatorsRegistry,
 ) -> dict:
-    validators_domain.delete_all_validators()
-    return validators_domain.get_all_validators()
+    validators_registry.delete_all_validators()
+    return validators_registry.get_all_validators()
 
 
 def get_providers_and_models() -> dict:
@@ -220,7 +222,7 @@ def get_providers_and_models() -> dict:
 # TODO: Refactor this function to put the random config generator inside the domain
 # and reuse the generate single random validator function
 def create_random_validators(
-    validators_domain: ValidatorsDomain,
+    validators_registry: ValidatorsRegistry,
     count: int,
     min_stake: int,
     max_stake: int,
@@ -230,7 +232,7 @@ def create_random_validators(
         stake = random.uniform(min_stake, max_stake)
         validator_address = create_new_address()
         details = random_validator_config(providers=providers)
-        new_validator = validators_domain.create_validator(
+        new_validator = validators_registry.create_validator(
             validator_address,
             stake,
             details["provider"],
@@ -239,14 +241,16 @@ def create_random_validators(
         )
         if not "id" in new_validator:
             raise SystemError("Failed to create Validator")
-    response = validators_domain.get_all_validators()
+    response = validators_registry.get_all_validators()
     return response
 
 
-def create_random_validator(validators_domain: ValidatorsDomain, stake: int) -> dict:
+def create_random_validator(
+    validators_registry: ValidatorsRegistry, stake: int
+) -> dict:
     validator_address = create_new_address()
     details = random_validator_config()
-    response = validators_domain.create_validator(
+    response = validators_registry.create_validator(
         validator_address,
         stake,
         details["provider"],
@@ -256,8 +260,8 @@ def create_random_validator(validators_domain: ValidatorsDomain, stake: int) -> 
     return response
 
 
-def count_validators(validators_domain: ValidatorsDomain) -> dict:
-    return validators_domain.count_validators()
+def count_validators(validators_registry: ValidatorsRegistry) -> dict:
+    return validators_registry.count_validators()
 
 
 def register_all_rpc_endpoints(
@@ -265,7 +269,7 @@ def register_all_rpc_endpoints(
     jsonrpc: JSONRPC,
     msg_handler: MessageHandler,
     state_domain: StateDomain,
-    validators_domain: ValidatorsDomain,
+    validators_registry: ValidatorsRegistry,
 ):
     register_rpc_endpoint = partial(generate_rpc_endpoint, jsonrpc, msg_handler)
     register_rpc_endpoint_for_partial = partial(
@@ -278,14 +282,14 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint_for_partial(
         clear_db_tables, ["current_state", "transactions"]
     )
-    register_rpc_endpoint_for_partial(create_validator, validators_domain)
-    register_rpc_endpoint_for_partial(update_validator, validators_domain)
-    register_rpc_endpoint_for_partial(delete_validator, validators_domain)
-    register_rpc_endpoint_for_partial(get_validator, validators_domain)
-    register_rpc_endpoint_for_partial(delete_all_validators, validators_domain)
-    register_rpc_endpoint_for_partial(get_all_validators, validators_domain)
-    register_rpc_endpoint_for_partial(create_random_validator, validators_domain)
-    register_rpc_endpoint_for_partial(create_random_validators, validators_domain)
+    register_rpc_endpoint_for_partial(create_validator, validators_registry)
+    register_rpc_endpoint_for_partial(update_validator, validators_registry)
+    register_rpc_endpoint_for_partial(delete_validator, validators_registry)
+    register_rpc_endpoint_for_partial(get_validator, validators_registry)
+    register_rpc_endpoint_for_partial(delete_all_validators, validators_registry)
+    register_rpc_endpoint_for_partial(get_all_validators, validators_registry)
+    register_rpc_endpoint_for_partial(create_random_validator, validators_registry)
+    register_rpc_endpoint_for_partial(create_random_validators, validators_registry)
     register_rpc_endpoint_for_partial(create_tables_if_they_dont_already_exist, app)
     register_rpc_endpoint_for_partial(create_account, state_domain)
     register_rpc_endpoint_for_partial(fund_account, state_domain)

@@ -14,21 +14,13 @@ from dotenv import load_dotenv
 from backend.database_handler.db_client import DBClient
 from backend.database_handler.services.state_db_service import StateDBService
 from backend.database_handler.services.validators_db_service import ValidatorsDBService
-from backend.database_handler.services.transactions_db_service import (
+from backend.database_handler.transactions_processor import (
     TransactionsDBService,
 )
 from backend.database_handler.chain_snapshot import ChainSnapshot
 from backend.database_handler.domain.state import State
-from backend.database_handler.domain.validators import Validators
+from backend.database_handler.validators_registry import ValidatorsRegistry
 from backend.consensus.base import ConsensusAlgorithm
-
-GENVM_URL = (
-    os.environ["GENVMPROTOCOL"]
-    + "://"
-    + os.environ["GENVMHOST"]
-    + ":"
-    + os.environ["GENVMPORT"]
-)
 
 
 def create_app():
@@ -40,7 +32,7 @@ def create_app():
     genlayer_db_client = DBClient("genlayer")
     transactions_db_service = TransactionsDBService(genlayer_db_client)
     validators_db_service = ValidatorsDBService(genlayer_db_client)
-    validators_domain = Validators(validators_db_service)
+    validators_registry = ValidatorsRegistry(validators_db_service)
     state_db_service = StateDBService(genlayer_db_client)
     state_domain = State(
         state_db_service,
@@ -54,16 +46,16 @@ def create_app():
         socketio,
         msg_handler,
         state_domain,
-        validators_domain,
+        validators_registry,
         consensus,
     )
 
 
 load_dotenv()
-app, jsonrpc, socketio, msg_handler, state_domain, validators_domain, consensus = (
+app, jsonrpc, socketio, msg_handler, state_domain, validators_registry, consensus = (
     create_app()
 )
-register_all_rpc_endpoints(app, jsonrpc, msg_handler, state_domain, validators_domain)
+register_all_rpc_endpoints(app, jsonrpc, msg_handler, state_domain, validators_registry)
 
 
 def run_socketio():
