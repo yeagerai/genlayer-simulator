@@ -1,5 +1,6 @@
 # database/client.py
 import psycopg2
+from psycopg2 import pool, extras
 from os import environ
 
 from dotenv import load_dotenv

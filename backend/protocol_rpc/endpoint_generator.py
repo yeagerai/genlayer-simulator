@@ -3,7 +3,7 @@
 from functools import partial, wraps
 from typing import Callable
 from flask_jsonrpc import JSONRPC
-from message_handler.base import MessageHandler
+from backend.protocol_rpc.message_handler.base import MessageHandler
 
 
 def generate_rpc_endpoint(

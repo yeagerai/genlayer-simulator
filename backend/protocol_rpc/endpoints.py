@@ -30,7 +30,6 @@ from backend.errors.errors import (
     InvalidAddressError,
 )
 
-from backend.consensus.base import consensus_algorithm
 from backend.database_handler.transactions_processor import TransactionsProcessor
 from backend.node.base import Node
 

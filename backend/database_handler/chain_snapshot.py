@@ -16,7 +16,7 @@ class ChainSnapshot:
     def _load_pending_transactions(self):
         """Load and return the list of pending transactions from the database."""
         return self.dbclient.get(
-            self.db_transactions_table, f"status = {TransactionStatus.PENDING}"
+            self.db_transactions_table, f"status = '{TransactionStatus.PENDING.value}'"
         )
 
     def _load_all_validators(self):

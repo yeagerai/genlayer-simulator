@@ -1,7 +1,8 @@
+# backend/node/genvm/equivalence_principle.py
+
 from typing import Optional
 from backend.node.genvm.context_wrapper import enforce_with_context
-from backend.node.genvm.llms import llms
-from backend.node.genvm.contract_runner import ContractRunner
+from backend.node.genvm import llms
 from backend.node.genvm.webpage_utils import get_webpage_content
 
 

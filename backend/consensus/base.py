@@ -24,7 +24,7 @@ class ConsensusAlgorithm:
         while True:
             chain_snapshot = ChainSnapshot(self.dbclient)
             pending_transactions = chain_snapshot.get_pending_transactions()
-            if len(pending_transactions > 0):
+            if len(pending_transactions) > 0:
                 for transaction in pending_transactions:
                     contract_address = transaction["to_address"]
                     try:
