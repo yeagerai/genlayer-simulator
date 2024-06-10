@@ -21,9 +21,7 @@ class ContractSnapshot:
             self.db_status_table, f"id = '{self.contract_address}'", limit=1
         )
         if result:
-            return result[0][
-                "state"
-            ]  # Assuming 'state' is a column in the 'contracts' table
+            return result[0]["state"]
         return None
 
     def expire_queued_transactions(self):

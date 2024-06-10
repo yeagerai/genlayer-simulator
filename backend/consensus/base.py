@@ -6,11 +6,18 @@ from backend.database_handler.types import ConsensusData
 from backend.consensus.vrf import get_validators_for_transaction
 from backend.database_handler.chain_snapshot import ChainSnapshot
 from backend.database_handler.contract_snapshot import ContractSnapshot
+from backend.database_handler.transactions_processor import (
+    TransactionsProcessor,
+    TransactionStatus,
+)
 
 
 class ConsensusAlgorithm:
-    def __init__(self, dbclient: DBClient):
+    def __init__(
+        self, dbclient: DBClient, transactions_processor: TransactionsProcessor
+    ):
         self.dbclient = dbclient
+        self.transactions_processor = transactions_processor
         self.queues = {}
 
     def crawl_snapshot(self):
@@ -19,8 +26,7 @@ class ConsensusAlgorithm:
             pending_transactions = chain_snapshot.get_pending_transactions()
             if len(pending_transactions > 0):
                 for transaction in pending_transactions:
-                    transaction_input = transaction["input"]
-                    contract_address = transaction_input["contract_address"]
+                    contract_address = transaction["to_address"]
                     try:
                         self.queues[contract_address].put(transaction)
                     except KeyError:
@@ -47,10 +53,13 @@ class ConsensusAlgorithm:
 
     async def exec_transaction(
         self,
-        transaction_input: dict,
+        transaction: dict,
         snapshot: ChainSnapshot,
     ) -> dict:
-
+        # Update transaction status
+        self.transactions_processor.update_transaction_status(
+            transaction["id"], TransactionStatus.PROPOSING
+        )
         # Select Leader and validators
         all_validators = snapshot.get_all_validators()
         leader, remaining_validators = get_validators_for_transaction(
@@ -58,9 +67,7 @@ class ConsensusAlgorithm:
         )
         num_validators = len(remaining_validators) + 1
 
-        contract_snapshot = ContractSnapshot(
-            transaction_input["to_address"], self.dbclient
-        )
+        contract_snapshot = ContractSnapshot(transaction["to_address"], self.dbclient)
 
         # Create Leader
         leader_node = Node(
@@ -68,8 +75,12 @@ class ConsensusAlgorithm:
         )
 
         # Leader executes transaction
-        leader_receipt = leader_node.exec_transaction(transaction_input)
+        leader_receipt = leader_node.exec_transaction(transaction)
         votes = {leader["address"]: leader_receipt["vote"]}
+        # Update transaction status
+        self.transactions_processor.update_transaction_status(
+            transaction["id"], TransactionStatus.COMMITTING
+        )
 
         # Create Validators
         validator_nodes = [
@@ -88,7 +99,7 @@ class ConsensusAlgorithm:
         loop = asyncio.get_running_loop()
         validation_tasks = [
             loop.create_task(
-                validator.exec_transaction(transaction_input)
+                validator.exec_transaction(transaction)
             )  # watch out! as ollama uses GPU resources and webrequest aka selenium uses RAM
             for validator in validator_nodes
         ]
@@ -98,12 +109,20 @@ class ConsensusAlgorithm:
             votes[f"{validation_results[i]['validator']}"] = validation_results[i][
                 "vote"
             ]
+        self.transactions_processor.update_transaction_status(
+            transaction["id"], TransactionStatus.REVEALING
+        )
 
         if (
             len([vote for vote in votes.values() if vote == "agree"])
             < num_validators // 2
         ):
             raise Exception("Consensus not reached")
+
+        # Temporary to final status until we have appeals
+        self.transactions_processor.update_transaction_status(
+            transaction["id"], TransactionStatus.FINALIZED
+        )
 
         final = False
         consensus_data = ConsensusData(

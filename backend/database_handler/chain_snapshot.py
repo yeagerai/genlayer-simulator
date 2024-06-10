@@ -1,6 +1,7 @@
 # database_handler/chain_snapshot.py
 
 from backend.database_handler.db_client import DBClient
+from backend.database_handler.transactions_processor import TransactionStatus
 
 
 class ChainSnapshot:
@@ -14,7 +15,9 @@ class ChainSnapshot:
 
     def _load_pending_transactions(self):
         """Load and return the list of pending transactions from the database."""
-        return self.dbclient.get(self.db_transactions_table, "status = 'PENDING'")
+        return self.dbclient.get(
+            self.db_transactions_table, f"status = {TransactionStatus.PENDING}"
+        )
 
     def _load_all_validators(self):
         """Load and return the list of all validators from the database."""

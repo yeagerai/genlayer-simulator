@@ -52,7 +52,7 @@ class GenVM:
 
         return receipt
 
-    def deploy_contract(self, code_to_deploy, from_address, constructor_args):
+    def deploy_contract(self, from_address, code_to_deploy, constructor_args):
 
         code_enforcement_check(code_to_deploy)
         class_name = self._get_contract_class_name(code_to_deploy)

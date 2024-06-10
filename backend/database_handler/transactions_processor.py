@@ -20,7 +20,7 @@ class TransactionStatus(Enum):
 class TransactionsProcessor:
     def __init__(self, db_client: DBClient):
         self.db_client = db_client
-        self.db_state_table = "transactions"
+        self.db_transactions_table = "transactions"
         self.db_audits_table = "transactions_audit"
 
     def insert_transaction(
@@ -36,7 +36,7 @@ class TransactionsProcessor:
             "status": TransactionStatus.PENDING,
         }
         transaction_id = self.db_client.insert(
-            self.db_state_table, new_transaction, return_column="id"
+            self.db_transactions_table, new_transaction, return_column="id"
         )
 
         # Insert transaction audit record into the transactions_audit table
@@ -50,4 +50,11 @@ class TransactionsProcessor:
 
     def get_transaction_by_id(self, transaction_id: int) -> dict:
         condition = f"id = {transaction_id}"
-        return self.db_client.get(self.db_state_table, condition)
+        return self.db_client.get(self.db_transactions_table, condition)
+
+    def update_transaction_status(
+        self, transaction_id: int, new_status: TransactionStatus
+    ):
+        update_condition = f"id = {transaction_id}"
+        update_data = {"status": new_status}
+        self.db_client.update(self.db_transactions_table, update_data, update_condition)
