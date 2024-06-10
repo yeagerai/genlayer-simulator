@@ -16,14 +16,14 @@ class AccountsManager:
         self.transactions_processor = transactions_processor
         self.db_accounts_table = "current_state"
 
-    def _get_account(self, account_address: str):
+    def get_account(self, account_address: str):
         """Private method to retrieve if an account from the data base"""
         condition = f"id = {account_address}"
         return self.db_client.get(self.db_accounts_table, condition)
 
     def _get_account_or_fail(self, account_address: str):
         """Private method to check if an account exists, and raise an error if not."""
-        account_data = self._get_account(account_address)
+        account_data = self.get_account(account_address)
         if not account_data:
             raise AccountNotFoundError(
                 account_address, f"Account {account_address} does not exist."
@@ -39,7 +39,7 @@ class AccountsManager:
 
     def fund_account(self, account_address: str, amount: int):
         # account creation or balance update
-        account_data = self._get_account(account_address)
+        account_data = self.get_account(account_address)
         if account_data:
             # Account exists, update it
             update_condition = f"id = {account_address}"
