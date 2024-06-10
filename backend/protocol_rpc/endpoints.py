@@ -38,6 +38,7 @@ from backend.errors.errors import (
 )
 
 from backend.consensus.base import consensus_algorithm
+from backend.database_handler.transactions_processor import TransactionsProcessor
 
 
 def ping() -> dict:
@@ -59,7 +60,10 @@ def fund_account(state_domain: StateDomain, account_address: str, amount: int) -
 
 
 def send_transaction(
-    state_domain: StateDomain, from_account: str, to_account: str, amount: int
+    transactions_processor: TransactionsProcessor,
+    from_account: str,
+    to_account: str,
+    amount: int,
 ) -> dict:
     if not address_is_in_correct_format(from_account):
         raise InvalidAddressError(from_account)
@@ -67,13 +71,15 @@ def send_transaction(
     if not address_is_in_correct_format(to_account):
         raise InvalidAddressError(to_account)
 
-    state_domain.send_funds(from_account, to_account, amount)
+    transaction_id = transactions_processor.insert_transaction(
+        from_account, to_account, None, amount, 0
+    )
 
-    return {"from_account": from_account, "to_account": to_account, "amount": amount}
+    return {"transaction_id": transaction_id}
 
 
 def deploy_intelligent_contract(
-    state_domain: StateDomain,
+    transactions_processor: TransactionsProcessor,
     from_account: str,
     class_name: str,
     contract_code: str,
@@ -90,6 +96,30 @@ def deploy_intelligent_contract(
         contract_code,
         constructor_args,
     )
+
+
+def call_contract_function(
+    transactions_processor: TransactionsProcessor,
+    from_address: str,
+    contract_address: str,
+    function_name: str,
+    args: dict,
+) -> dict:
+    if not address_is_in_correct_format(from_address):
+        raise InvalidAddressError(from_address)
+    if not address_is_in_correct_format(contract_address):
+        raise InvalidAddressError(contract_address)
+
+    ## prepare state
+    transaction_input = dbclient.write_transaction_input(function_name, args, ...)
+    snapshot = ChainSnapshot(contract_address, dbclient)
+
+    ## prepare transaction data
+    transaction_output = asyncio.run(
+        consensus_algorithm(from_address, transaction_input, snapshot)
+    )
+
+    return transaction_output
 
 
 def get_last_contracts(state_domain: StateDomain, number_of_contracts: int) -> dict:
@@ -115,30 +145,6 @@ def get_icontract_schema_for_code(
     state_domain: StateDomain, contract_code: str
 ) -> dict:
     return state_domain.get_contract_schema_for_code(contract_code)
-
-
-def call_contract_function(
-    dbclient: DBClient,
-    from_address: str,
-    contract_address: str,
-    function_name: str,
-    args: dict,
-) -> dict:
-    if not address_is_in_correct_format(from_address):
-        raise InvalidAddressError(from_address)
-    if not address_is_in_correct_format(contract_address):
-        raise InvalidAddressError(contract_address)
-
-    ## prepare state
-    transaction_input = dbclient.write_transaction_input(function_name, args, ...)
-    snapshot = ChainSnapshot(contract_address, dbclient)
-
-    ## prepare transaction data
-    transaction_output = asyncio.run(
-        consensus_algorithm(from_address, transaction_input, snapshot)
-    )
-
-    return transaction_output
 
 
 def get_contract_state(
@@ -268,7 +274,7 @@ def register_all_rpc_endpoints(
     app: Flask,
     jsonrpc: JSONRPC,
     msg_handler: MessageHandler,
-    state_domain: StateDomain,
+    transactions_processor: TransactionsProcessor,
     validators_registry: ValidatorsRegistry,
 ):
     register_rpc_endpoint = partial(generate_rpc_endpoint, jsonrpc, msg_handler)
@@ -291,12 +297,14 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint_for_partial(create_random_validator, validators_registry)
     register_rpc_endpoint_for_partial(create_random_validators, validators_registry)
     register_rpc_endpoint_for_partial(create_tables_if_they_dont_already_exist, app)
+    register_rpc_endpoint_for_partial(send_transaction, transactions_processor)
+    register_rpc_endpoint_for_partial(
+        deploy_intelligent_contract, transactions_processor
+    )
+    register_rpc_endpoint_for_partial(call_contract_function, transactions_processor)
     register_rpc_endpoint_for_partial(create_account, state_domain)
     register_rpc_endpoint_for_partial(fund_account, state_domain)
-    register_rpc_endpoint_for_partial(send_transaction, state_domain)
-    register_rpc_endpoint_for_partial(deploy_intelligent_contract, state_domain)
     register_rpc_endpoint_for_partial(get_last_contracts, state_domain)
     register_rpc_endpoint_for_partial(get_icontract_schema, state_domain)
     register_rpc_endpoint_for_partial(get_icontract_schema_for_code, state_domain)
-    register_rpc_endpoint_for_partial(call_contract_function, state_domain)
     register_rpc_endpoint_for_partial(get_contract_state, state_domain)
