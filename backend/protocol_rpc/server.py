@@ -32,7 +32,7 @@ def create_app():
     accounts_manager = AccountsManager(genlayer_db_client, transactions_processor)
     validators_registry = ValidatorsRegistry(genlayer_db_client)
 
-    consensus = ConsensusAlgorithm(ChainSnapshot(genlayer_db_client))
+    consensus = ConsensusAlgorithm(genlayer_db_client)
     return (
         app,
         jsonrpc,

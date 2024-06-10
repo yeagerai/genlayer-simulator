@@ -34,11 +34,11 @@ from backend.protocol_rpc.address_utils import (
 )
 from backend.errors.errors import (
     InvalidAddressError,
-    InvalidInputError,
 )
 
 from backend.consensus.base import consensus_algorithm
 from backend.database_handler.transactions_processor import TransactionsProcessor
+from backend.node.base import Node
 
 
 def ping() -> dict:
@@ -127,17 +127,35 @@ def call_contract_function(
     return {"transaction_id": transaction_id}
 
 
-def get_contract_schema(state_domain: StateDomain, contract_address: str) -> dict:
+def get_contract_schema(
+    accounts_manager: AccountsManager, contract_address: str
+) -> dict:
     if not address_is_in_correct_format(contract_address):
         raise InvalidAddressError(
             contract_address,
             "Incorrect address format. Please provide a valid address.",
         )
-    return state_domain.get_contract_schema(contract_address)
+    contract_account = accounts_manager.get_account(contract_address)
+
+    node = Node(
+        contract_snapshot=None,
+        address="",
+        validator_mode="leader",
+        config=None,
+        leader_receipt=None,
+    )
+    return node.get_contract_schema(contract_account["data"]["code"])
 
 
-def get_contract_schema_for_code(state_domain: StateDomain, contract_code: str) -> dict:
-    return state_domain.get_contract_schema_for_code(contract_code)
+def get_contract_schema_for_code(contract_code: str) -> dict:
+    node = Node(
+        contract_snapshot=None,
+        address="",
+        validator_mode="leader",
+        config=None,
+        leader_receipt=None,
+    )
+    return node.get_contract_schema(contract_code)
 
 
 def get_contract_state(
@@ -279,6 +297,8 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint(ping)
     register_rpc_endpoint(create_db_if_it_doesnt_already_exists)
     register_rpc_endpoint(get_providers_and_models)
+    register_rpc_endpoint(get_contract_schema_for_code)
+
     register_rpc_endpoint_for_partial(
         clear_db_tables, ["current_state", "transactions"]
     )
@@ -298,7 +318,6 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint_for_partial(call_contract_function, transactions_processor)
     register_rpc_endpoint_for_partial(create_account, accounts_manager)
     register_rpc_endpoint_for_partial(fund_account, accounts_manager)
-    register_rpc_endpoint_for_partial(get_last_contracts, state_domain)
-    register_rpc_endpoint_for_partial(get_contract_schema, state_domain)
-    register_rpc_endpoint_for_partial(get_contract_schema_for_code, state_domain)
+    register_rpc_endpoint_for_partial(get_contract_schema, accounts_manager)
+
     register_rpc_endpoint_for_partial(get_contract_state, state_domain)
