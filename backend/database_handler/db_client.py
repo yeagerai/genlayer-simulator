@@ -33,6 +33,15 @@ class DBClient:
         """Return a connection to the pool."""
         self.connection_pool.putconn(conn)
 
+    def clear_tables(self, tables: list) -> None:
+        """Remove all rows from a list of tables."""
+        for table in tables:
+            exists = self.execute_query(
+                f"SELECT 1 FROM pg_catalog.pg_database WHERE datname = '{table}'"
+            )
+            if exists:
+                self.execute_query(f"TRUNCATE TABLE {table} RESTART IDENTITY")
+
     def execute_query(self, query: str, params=None) -> list:
         """Execute a SQL query with optional parameters."""
         conn = self.get_connection()
