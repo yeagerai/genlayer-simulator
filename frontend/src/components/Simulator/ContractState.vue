@@ -47,8 +47,8 @@ const getInputPlaceholder = (methodInputs: { [k: string]: string }) => {
       <span class="text-xs dark:text-white text-primary">{{ deployedContract?.address }}</span>
     </div>
     <div v-if="deployedContract" class="flex flex-col w-full px-1 mt-2">
-      <div v-for="method in methodList" :key="method.name">
-        <div class="flex justify-between">
+      <div v-for="method in methodList" :key="method.name" class="flex">
+        <div class="flex justify-between flex-1">
           <button
             @click="
               getContractState(
@@ -61,7 +61,7 @@ const getInputPlaceholder = (methodInputs: { [k: string]: string }) => {
           >
             <LoadingIndicator v-if="props.callingState" :color="'white'">
           </LoadingIndicator>
-          <span v-else>{{ method.name }}</span>
+          <template v-else>{{ method.name }}</template>
           </button>
           <input
             v-if="Object.keys(method.inputs).length > 0"
@@ -73,7 +73,7 @@ const getInputPlaceholder = (methodInputs: { [k: string]: string }) => {
             label="Input"
           />
         </div>
-        <div class="flex mt-2 mb-6">{{ contractState[method.name] }}</div>
+        <div class="flex mt-2 mb-6" :data-testid="`contract-state-item-${method.name}`">{{ contractState[method.name] }}</div>
       </div>
     </div>
   </div>

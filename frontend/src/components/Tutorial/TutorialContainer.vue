@@ -1,10 +1,11 @@
 <script lang="ts">
-import { rpcClient } from '@/utils'
+import { RpcClient } from '@/utils'
 import { DEFAULT_CALLBACKS, DEFAULT_OPTIONS, KEYS } from './constants'
 import TutorialStep from './TutorialStep.vue'
 import { useMainStore, useUIStore } from '@/stores'
 import { notify } from '@kyvg/vue3-notification'
 
+const rpcClient = new RpcClient()
 const loadExample = async (mainStore: any) => {
   if (mainStore.contracts.find((c: any) => c.id === 'tutorial-example')) return
   const contractsBlob = import.meta.glob('./wizard_of_coin.py', {
@@ -49,7 +50,7 @@ const steps = [
     content: "Click “Next” to automatically deploy your Intelligent Contract to the GenLayer network.",
     onNextStep: async (store: any, router: any) => {
       const contract = store.contracts.find((c: any) => c.id === 'tutorial-example')
-      const { result } = await rpcClient.call({
+      const { result } = await rpcClient.call<any>({
         method: 'deploy_intelligent_contract',
         params: [
           store.currentUserAddress,
