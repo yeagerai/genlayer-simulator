@@ -1,10 +1,11 @@
 <script lang="ts">
-import { rpcClient } from '@/utils'
+import { RpcClient } from '@/utils'
 import { DEFAULT_CALLBACKS, DEFAULT_OPTIONS, KEYS } from './constants'
 import TutorialStep from './TutorialStep.vue'
 import { useMainStore, useUIStore } from '@/stores'
 import { notify } from '@kyvg/vue3-notification'
 
+const rpcClient = new RpcClient()
 const loadExample = async (mainStore: any) => {
   if (mainStore.contracts.find((c: any) => c.id === 'tutorial-example')) return
   const contractsBlob = import.meta.glob('./wizard_of_coin.py', {
