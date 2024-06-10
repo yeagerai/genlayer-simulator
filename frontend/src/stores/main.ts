@@ -81,7 +81,7 @@ export const useMainStore = defineStore('mainStore', {
     },
     async generateNewAccount(): Promise<string | null> {
       try {
-        const { result } = await rpcClient.call({
+        const { result } = await rpcClient.call<any>({
           method: 'create_account',
           params: []
         })
