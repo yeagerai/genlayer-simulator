@@ -47,3 +47,7 @@ class TransactionsProcessor:
         self.db_client.insert(self.db_audits_table, transaction_audit_record)
 
         return transaction_id
+
+    def get_transaction_by_id(self, transaction_id: int) -> dict:
+        condition = f"id = {transaction_id}"
+        return self.db_client.get(self.db_state_table, condition)

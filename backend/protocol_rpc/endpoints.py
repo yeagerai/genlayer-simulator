@@ -127,6 +127,12 @@ def call_contract_function(
     return {"transaction_id": transaction_id}
 
 
+def get_transaction_by_id(
+    transactions_processor: TransactionsProcessor, transaction_id: str
+) -> dict:
+    return transactions_processor.get_transaction_by_id(transaction_id)
+
+
 def get_contract_schema(
     accounts_manager: AccountsManager, contract_address: str
 ) -> dict:
