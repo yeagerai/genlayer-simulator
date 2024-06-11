@@ -12,7 +12,6 @@ def assert_dict_struct(data, structure):
     else:
         isinstance(data, structure)
 
-
 def has_error_status(result: dict) -> bool:
     return result['result']['status'] == 'error'
 

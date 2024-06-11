@@ -1,7 +1,8 @@
-from common.testing.requests import payload, post_request
-import os
+from tests.common.requests import payload, post_request
 from dotenv import load_dotenv
+
 load_dotenv()
+
 
 validator_keys = ['id', 'address', 'stake', 'provider','model', 'config', 'updated_at']
 

@@ -1,6 +1,6 @@
-from common.testing.requests import payload, post_request_localhost
-from common.testing.structure import execute_icontract_function_response_structure
-from common.testing.response import (
+from tests.common.requests import payload, post_request_localhost
+from tests.common.structure import execute_icontract_function_response_structure
+from tests.common.response import (
     assert_dict_struct,
     has_success_status,
 )
