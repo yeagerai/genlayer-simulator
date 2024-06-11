@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import Modal from '@/components/ModalComponent.vue'
 import { ref } from 'vue';
-
+import JsonViewer from '@/components/JsonViewer/json-viewer.vue'
+import { useUIStore } from '@/stores';
 const props = defineProps<{
   transactions: any[]
 }>()
-
+const uiStore = useUIStore()
 const selectedTransaction = ref<any>(null)
 
 const handleSelectTransaction = (transaction: any) => {
@@ -37,16 +38,25 @@ const handleCloseModal = () => {
         <div class=" dark:text-white text-primary">ID: {{ selectedTransaction?.id }}</div>
       </div>
       <div class="flex flex-col p-2 mt-2">
-        <p class="text-md font-semibold">Result:</p>
+        <p class="text-md font-semibold">Status:</p>
 
         <div class="p-2 w-full bg-slate-100 overflow-y-auto">
-          {{ selectedTransaction?.result.message }}
+          {{ selectedTransaction?.status }}
         </div>
+        <div class="flex flex-col p-2 mt-2" v-if="selectedTransaction?.message">
+        <p class="text-md font-semibold">Message:</p>
+
+        <div class="p-2 w-full bg-slate-100 overflow-y-auto">
+          {{ selectedTransaction?.message }}
+        </div>
+      </div>
       </div>
       <div class="flex flex-col p-2 mt-2">
         <p class="text-md font-semibold">Ouput:</p>
-        <div class="p-2 max-h-64 w-full bg-slate-100 overflow-y-auto">{{
-        JSON.stringify(selectedTransaction?.result?.execution_output || {}, null, 2) }}</div>
+        <div class="p-2 max-h-64 w-full bg-slate-100 overflow-y-auto">
+      <JsonViewer class="ml-2" :value="selectedTransaction?.data?.execution_output || {}"
+                :theme="uiStore.mode === 'light' ? 'light' : 'dark'" :expand="true" sort />  
+      </div>
       </div>
     </div>
   </Modal>
