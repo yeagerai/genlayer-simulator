@@ -18,10 +18,10 @@ class AccountsManager:
 
     def get_account(self, account_address: str):
         """Private method to retrieve if an account from the data base"""
-        condition = f"id = {account_address}"
+        condition = f"id = '{account_address}'"
         return self.db_client.get(self.db_accounts_table, condition)
 
-    def _get_account_or_fail(self, account_address: str):
+    def get_account_or_fail(self, account_address: str):
         """Private method to check if an account exists, and raise an error if not."""
         account_data = self.get_account(account_address)
         if not account_data:

@@ -12,6 +12,17 @@ class ValidatorsRegistry:
         self.db_client = db_client
         self.db_validators_table = "validators"
 
+    def _parse_validator_data(self, validator_data: dict) -> dict:
+        return {
+            "id": validator_data["id"],
+            "address": validator_data["address"],
+            "stake": float(validator_data["stake"]),
+            "provider": validator_data["provider"],
+            "model": validator_data["model"],
+            "config": validator_data["config"],
+            "created_at": validator_data["created_at"].isoformat(),
+        }
+
     def _get_validator_or_fail(self, validator_address: str):
         """Private method to check if an account exists, and raise an error if not."""
         condition = f"address = '{validator_address}'"
@@ -21,13 +32,14 @@ class ValidatorsRegistry:
 
         if not validator_data:
             raise ValidatorNotFound(validator_address)
-        return validator_data
+        return self._parse_validator_data(validator_data)
 
     def count_validators(self):
         return self.db_client.count(self.db_validators_table)
 
     def get_all_validators(self) -> list:
-        return self.db_client.get(self.db_validators_table)
+        validators_data = self.db_client.get(self.db_validators_table)
+        return [self._parse_validator_data(validator) for validator in validators_data]
 
     def get_validator(self, validator_address: str) -> dict:
         return self._get_validator_or_fail(validator_address)
@@ -61,7 +73,7 @@ class ValidatorsRegistry:
     ):
         validator = self._get_validator_or_fail(validator_address)
 
-        update_condition = f"address = '{validator_address['address']}'"
+        update_condition = f"address = '{validator_address}'"
         validator = {
             "stake": stake,
             "provider": provider,
@@ -70,7 +82,7 @@ class ValidatorsRegistry:
         }
 
         self.db_client.update(self.db_validators_table, validator, update_condition)
-        return validator
+        return self._get_validator_or_fail(validator_address)
 
     def delete_validator(self, validator_address):
         self._get_validator_or_fail(validator_address)
