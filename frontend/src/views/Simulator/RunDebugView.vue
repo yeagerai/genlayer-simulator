@@ -119,7 +119,7 @@ const handleDeployContract = async ({
         const {
           result: { data }
         } = await $jsonRpc.call({
-          method: 'get_icontract_schema_for_code',
+          method: 'get_contract_schema_for_code',
           params: [contract.content]
         })
 
@@ -192,7 +192,7 @@ const getContractAbi = async (contract: DeployedContract) => {
     // between `bool` in Python with value `True` vs JSON boolean with value `true`
 
     const { result } = await $jsonRpc.call({
-      method: 'get_icontract_schema',
+      method: 'get_contract_schema',
       params: [contract.address]
     })
 
@@ -209,7 +209,7 @@ const getConstructorInputs = async () => {
     try {
 
       const { result } = await $jsonRpc.call({
-        method: 'get_icontract_schema_for_code',
+        method: 'get_contract_schema_for_code',
         params: [contract.value.content]
       })
       if (!constructorInputs.value) {

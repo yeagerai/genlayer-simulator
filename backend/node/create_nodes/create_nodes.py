@@ -67,7 +67,7 @@ def get_providers() -> list:
 
 def get_default_config_for_providers_and_nodes() -> dict:
     cwd = os.path.abspath(os.getcwd())
-    nodes_dir = "/node/nodes"
+    nodes_dir = "/backend/node/create_nodes"
     file = open(cwd + nodes_dir + "/defaults.json", "r")
     config = json.load(file)[0]
     file.close()

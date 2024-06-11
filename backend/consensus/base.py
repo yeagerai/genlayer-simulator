@@ -1,5 +1,4 @@
 import asyncio
-from time import sleep
 from backend.node.base import Node
 from backend.database_handler.db_client import DBClient
 from backend.database_handler.types import ConsensusData
@@ -20,36 +19,41 @@ class ConsensusAlgorithm:
         self.transactions_processor = transactions_processor
         self.queues = {}
 
-    def crawl_snapshot(self):
+    async def crawl_snapshot(self):
+        asyncio.set_event_loop(asyncio.new_event_loop())
+
         while True:
             chain_snapshot = ChainSnapshot(self.dbclient)
             pending_transactions = chain_snapshot.get_pending_transactions()
             if len(pending_transactions) > 0:
                 for transaction in pending_transactions:
                     contract_address = transaction["to_address"]
-                    try:
-                        self.queues[contract_address].put(transaction)
-                    except KeyError:
+                    if contract_address not in self.queues:
                         self.queues[contract_address] = asyncio.Queue()
-                        self.queues[contract_address].put(transaction)
-            sleep(10)
+                    await self.queues[contract_address].put(transaction)
+            await asyncio.sleep(10)
 
-    def run_consensus(self):
+    async def run_consensus(self):
+        asyncio.set_event_loop(asyncio.new_event_loop())
+
+        # watch out! as ollama uses GPU resources and webrequest aka selenium uses RAM
         while True:
-            # watch out! as ollama uses GPU resources and webrequest aka selenium uses RAM
             chain_snapshot = ChainSnapshot(self.dbclient)
-            loop = asyncio.get_running_loop()
-            [
-                loop.create_task(
-                    self.exec_transaction(self.queues[key].get(), chain_snapshot)
-                    if len(self.queues[key]) > 0
-                    else ContractSnapshot(
-                        key, self.dbclient
-                    ).expire_queued_transactions()
-                )
-                for key in self.queues.keys()
-            ]
-            sleep(10)
+            if self.queues:
+                tasks = [
+                    (
+                        self.exec_transaction(self.queues[key].get(), chain_snapshot)
+                        if self.queues[key]
+                        else ContractSnapshot(
+                            key, self.dbclient
+                        ).expire_queued_transactions()
+                    )
+                    for key in self.queues.keys()
+                ]
+                if tasks:
+                    await asyncio.gather(*tasks)
+                else:
+                    await asyncio.sleep(10)
 
     async def exec_transaction(
         self,

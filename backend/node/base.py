@@ -7,7 +7,7 @@ from backend.database_handler.transactions_processor import TransactionStatus
 class Node:
     def __init__(
         self,
-        snapshot,
+        contract_snapshot,
         address,
         validator_mode,
         config,
@@ -17,7 +17,7 @@ class Node:
         self.validator_mode = validator_mode
         self.config = config
         self.leader_receipt = leader_receipt
-        self.genvm = GenVM(snapshot, self.validator_mode, self.config)
+        self.genvm = GenVM(contract_snapshot, self.validator_mode, self.config)
 
     def exec_transaction(self, transaction: dict):
         transaction_data = transaction["data"]
@@ -57,16 +57,10 @@ class Node:
             # create error receipt
         return {"vote": "agree", "result": receipt}
 
-    def get_contract_data(code: str, state: str, method_name: str, method_args: list):
-        try:
-            return GenVM.get_contract_data(code, state, method_name, method_args)
-        except Exception as e:
-            ...
-            # create error receipt
+    def get_contract_data(
+        self, code: str, state: str, method_name: str, method_args: list
+    ):
+        return GenVM.get_contract_data(code, state, method_name, method_args)
 
-    def get_contract_schema(code: str):
-        try:
-            return GenVM.get_contract_schema(code)
-        except Exception as e:
-            ...
-            # create error receipt
+    def get_contract_schema(self, code: str):
+        return GenVM.get_contract_schema(code)

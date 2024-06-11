@@ -47,7 +47,7 @@ class DBClient:
         """Execute a SQL query with optional parameters."""
         conn = self.get_connection()
         try:
-            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+            with conn.cursor(cursor_factory=extras.DictCursor) as cursor:
                 print("DBClient ~ ~ query:", query)
                 print("DBClient ~ ~ params:", params)
                 cursor.execute(query, params)

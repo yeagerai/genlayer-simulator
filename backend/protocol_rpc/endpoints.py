@@ -134,7 +134,7 @@ def get_contract_schema(
             contract_address,
             "Incorrect address format. Please provide a valid address.",
         )
-    contract_account = accounts_manager.get_account(contract_address)
+    contract_account = accounts_manager.get_account_or_fail(contract_address)
 
     node = Node(
         contract_snapshot=None,
