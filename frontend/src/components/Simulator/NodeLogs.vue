@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { webSocketClient } from '@/utils'
 import { useMainStore, useUIStore } from '@/stores'
 import JsonViewer from '@/components/JsonViewer/json-viewer.vue'
@@ -16,23 +16,18 @@ const colorMap: Record<string, string> = {
 }
 
 onMounted(() => {
-  webSocketClient.on('status_update', (event) => {
-    console.log('webSocketClient.details', event)
-    mainStore.$patch((state) => {
-      state.nodeLogs.push({ date: new Date().toISOString(), message: event.message })
-    })
-
-    nextTick(() => {
-      scrollContainer.value?.scrollTo({ top: scrollContainer.value.scrollHeight, behavior: 'smooth' })
-  })
-
-  })
+  if (!webSocketClient.connected) webSocketClient.connect()
 })
 
 onUnmounted(() => {
   if (webSocketClient.connected) webSocketClient.close()
 })
 
+watch(() => mainStore.nodeLogs, () => {
+  nextTick(() => {
+    scrollContainer.value?.scrollTo({ top: scrollContainer.value.scrollHeight, behavior: 'smooth' })
+  })
+})
 </script>
 
 <template>

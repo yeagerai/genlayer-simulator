@@ -4,15 +4,15 @@ import { createPinia } from 'pinia'
 import Notifications from '@kyvg/vue3-notification'
 import App from './App.vue'
 import router from './router'
-import { persistStorePlugin, createToolTipPlugin } from '@/plugins'
+import { persistStorePlugin, createToolTipPlugin, webSocketNodeLogsPlugin } from '@/plugins'
 import { RpcClient, setupStores } from '@/utils'
 import { JsonRpcService } from './services/JsonRpcService'
-
 import { VueSpinnersPlugin } from 'vue3-spinners'
+
 const app = createApp(App)
 const pinia = createPinia()
 
-pinia.use(persistStorePlugin)
+pinia.use(persistStorePlugin).use(webSocketNodeLogsPlugin)
 app.use(pinia)
 
 app.use(router)
