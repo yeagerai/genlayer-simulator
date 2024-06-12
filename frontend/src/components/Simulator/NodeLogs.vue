@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
-import { webSocketClient } from '@/utils'
-import { useMainStore, useUIStore } from '@/stores'
+import { nextTick, ref, watch } from 'vue'
+import { useNodeStore, useUIStore } from '@/stores'
 import JsonViewer from '@/components/JsonViewer/json-viewer.vue'
 
 
-const mainStore = useMainStore()
+const nodeStore = useNodeStore()
 const uiStore = useUIStore()
 const scrollContainer = ref<HTMLDivElement>()
 const colorMap: Record<string, string> = {
@@ -15,15 +14,8 @@ const colorMap: Record<string, string> = {
   'success': 'text-green-500'
 }
 
-onMounted(() => {
-  if (!webSocketClient.connected) webSocketClient.connect()
-})
 
-onUnmounted(() => {
-  if (webSocketClient.connected) webSocketClient.close()
-})
-
-watch(() => mainStore.nodeLogs, () => {
+watch(() => nodeStore.logs, () => {
   nextTick(() => {
     scrollContainer.value?.scrollTo({ top: scrollContainer.value.scrollHeight, behavior: 'smooth' })
   })
@@ -36,9 +28,9 @@ watch(() => mainStore.nodeLogs, () => {
     </div>
     <div id="tutorial-node-output"
       class="flex flex-col w-full overflow-y-auto h-full p-1 bg-white dark:bg-zinc-800 dark:text-white cursor-text">
-      <div v-show="mainStore.nodeLogs.length > 0" class="flex flex-col overflow-y-auto scroll-smooth p-0"
+      <div v-show="nodeStore.logs.length > 0" class="flex flex-col overflow-y-auto scroll-smooth p-0"
         ref="scrollContainer">
-        <div v-for="({ message, date }, index) in mainStore.nodeLogs" :key="index" class="flex items-center">
+        <div v-for="({ message, date }, index) in nodeStore.logs" :key="index" class="flex items-center">
           <div class="flex items-start" :class="colorMap[message?.response?.status] || 'text-black-500'">
 
             <div class="flex text-xs font-light"><span class="flex flex-col items-center w-8">{{ index + 1 }}</span> {{
@@ -55,7 +47,7 @@ watch(() => mainStore.nodeLogs, () => {
           </div>
         </div>
       </div>
-      <div v-show="mainStore.nodeLogs.length < 1" class="flex flex-col justify-center items-center h-full">
+      <div v-show="nodeStore.logs.length < 1" class="flex flex-col justify-center items-center h-full">
         <div class="flex text-xl">Logs</div>
         <div class="flex">Here you will see every log produced by the simulator</div>
       </div>
