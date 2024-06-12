@@ -76,24 +76,16 @@ def run_socketio():
     )
 
 
-def run_crawl_snapshot():
-    consensus.crawl_snapshot()
-
-
-def run_consensus_algorithm():
-    consensus.run_consensus()
-
-
 # Thread for the Flask-SocketIO server
 thread_socketio = threading.Thread(target=run_socketio)
 thread_socketio.start()
 
 # Thread for the crawl_snapshot method
-thread_crawl_snapshot = threading.Thread(target=run_crawl_snapshot)
+thread_crawl_snapshot = threading.Thread(target=consensus.run_crawl_snapshot_loop)
 thread_crawl_snapshot.start()
 
 # Thread for the run_consensus method
-thread_consensus = threading.Thread(target=run_consensus_algorithm)
+thread_consensus = threading.Thread(target=consensus.run_consensus_loop)
 thread_consensus.start()
 
 # Join threads to the main thread to keep them running

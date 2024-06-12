@@ -1,3 +1,5 @@
+# backend/consensus/base.py
+
 import asyncio
 from backend.node.base import Node
 from backend.database_handler.db_client import DBClient
@@ -19,12 +21,17 @@ class ConsensusAlgorithm:
         self.transactions_processor = transactions_processor
         self.queues = {}
 
-    async def crawl_snapshot(self):
-        asyncio.set_event_loop(asyncio.new_event_loop())
+    def run_crawl_snapshot_loop(self):
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(self._crawl_snapshot())
+        loop.close()
 
+    async def _crawl_snapshot(self):
         while True:
             chain_snapshot = ChainSnapshot(self.dbclient)
             pending_transactions = chain_snapshot.get_pending_transactions()
+            print("pending_transactions", pending_transactions)
             if len(pending_transactions) > 0:
                 for transaction in pending_transactions:
                     contract_address = transaction["to_address"]
@@ -33,16 +40,25 @@ class ConsensusAlgorithm:
                     await self.queues[contract_address].put(transaction)
             await asyncio.sleep(10)
 
-    async def run_consensus(self):
+    def run_consensus_loop(self):
+        ...
+        # loop = asyncio.new_event_loop()
+        # asyncio.set_event_loop(loop)
+        # loop.run_until_complete(self._run_consensus())
+        # loop.close()
+
+    async def _run_consensus(self):
         asyncio.set_event_loop(asyncio.new_event_loop())
 
         # watch out! as ollama uses GPU resources and webrequest aka selenium uses RAM
         while True:
-            chain_snapshot = ChainSnapshot(self.dbclient)
             if self.queues:
+                chain_snapshot = ChainSnapshot(self.dbclient)
                 tasks = [
                     (
-                        self.exec_transaction(self.queues[key].get(), chain_snapshot)
+                        self.exec_transaction(
+                            (await self.queues[key].get()), chain_snapshot
+                        )
                         if self.queues[key]
                         else ContractSnapshot(
                             key, self.dbclient
@@ -60,9 +76,10 @@ class ConsensusAlgorithm:
         transaction: dict,
         snapshot: ChainSnapshot,
     ) -> dict:
+        print("trasaction", transaction)
         # Update transaction status
         self.transactions_processor.update_transaction_status(
-            transaction["id"], TransactionStatus.PROPOSING
+            transaction["id"], TransactionStatus.PROPOSING.value
         )
         # Select Leader and validators
         all_validators = snapshot.get_all_validators()
@@ -83,7 +100,7 @@ class ConsensusAlgorithm:
         votes = {leader["address"]: leader_receipt["vote"]}
         # Update transaction status
         self.transactions_processor.update_transaction_status(
-            transaction["id"], TransactionStatus.COMMITTING
+            transaction["id"], TransactionStatus.COMMITTING.value
         )
 
         # Create Validators
@@ -114,7 +131,7 @@ class ConsensusAlgorithm:
                 "vote"
             ]
         self.transactions_processor.update_transaction_status(
-            transaction["id"], TransactionStatus.REVEALING
+            transaction["id"], TransactionStatus.REVEALING.value
         )
 
         if (
