@@ -32,13 +32,6 @@ const handleContractsPanelResize = () => {
   editorContainerResized.value = false
 }
 
-onMounted(() => {
-  window.addEventListener('resize', resizeEditorHandler)
-})
-onUnmounted(() => {
-  window.removeEventListener('resize', resizeEditorHandler)
-})
-
 </script>
 
 <template>

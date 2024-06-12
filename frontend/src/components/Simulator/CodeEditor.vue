@@ -4,16 +4,19 @@ import { ref, shallowRef, watch, computed, nextTick } from 'vue'
 import { pythonSyntaxDefinition } from '@/utils'
 import { useMainStore, useUIStore } from '@/stores';
 import { type ContractFile } from '@/types';
+import { useElementResize, useWindowResize } from '@/hooks';
 
 
 const uiStore = useUIStore()
 const contractStore = useMainStore()
 const props = defineProps<{
   contract: ContractFile,
-  shouldResize: boolean
 }>()
-const emit = defineEmits(['resized'])
+
 const editorElement = ref<HTMLDivElement | null>(null)
+const containerElement = ref<HTMLElement | null | undefined>(null)
+const { width: windowWidth, height: windowHeight } = useWindowResize()
+const { width: containerWidth, height: containerHeight } = useElementResize(containerElement)
 const editorRef = shallowRef<monaco.editor.IStandaloneCodeEditor | null>(null)
 const theme = computed(() => uiStore.mode === 'light' ? 'vs' : 'vs-dark')
 const editorWidth = ref(0)
@@ -24,13 +27,13 @@ const resizeEditor = () => {
     const height = editorElement.value?.parentNode?.parentElement?.clientHeight || 600
     editorHeight.value = height - 40
     editorWidth.value = editorElement.value?.parentNode?.parentElement?.clientWidth || 950
-    emit('resized', { width: editorWidth.value, height: editorHeight.value })
   })
 }
 watch(
   () => editorElement.value,
   newValue => {
     if (!editorRef.value && newValue) {
+      containerElement.value = editorElement.value?.parentNode?.parentElement
       monaco.languages.register({ id: 'python' })
       monaco.languages.setMonarchTokensProvider('python', pythonSyntaxDefinition)
       editorRef.value = monaco.editor.create(editorElement.value!, {
@@ -49,13 +52,6 @@ watch(
   },
 )
 
-watch(
-  () => props.shouldResize,
-  () => {
-    resizeEditor()
-
-  },
-)
 
 watch(
   () => uiStore.mode,
@@ -64,6 +60,33 @@ watch(
       editorRef.value.updateOptions({ theme: newValue === 'light' ? 'vs' : 'vs-dark' })
   },
 )
+//resize watchers
+watch(
+  () => windowWidth.value,
+  () => {
+    resizeEditor()
+  },
+)
+watch(
+  () => windowHeight.value,
+  () => {
+    resizeEditor()
+  },
+)
+
+watch(
+  () => containerWidth.value,
+  () => {
+    resizeEditor()
+  },
+)
+watch(
+  () => containerHeight.value,
+  () => {
+    resizeEditor()
+  },
+)
+
 </script>
 
 <template>
