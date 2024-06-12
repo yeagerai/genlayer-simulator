@@ -33,7 +33,7 @@ class TransactionsProcessor:
             "data": json.dumps(data),
             "value": value,
             "type": type,
-            "status": TransactionStatus.PENDING,
+            "status": TransactionStatus.PENDING.value,
         }
         transaction_id = self.db_client.insert(
             self.db_transactions_table, new_transaction, return_column="id"
@@ -41,8 +41,8 @@ class TransactionsProcessor:
 
         # Insert transaction audit record into the transactions_audit table
         transaction_audit_record = {
-            transaction_id: transaction_id,
-            data: json.dumps(new_transaction),
+            "transaction_id": transaction_id,
+            "data": json.dumps(new_transaction),
         }
         self.db_client.insert(self.db_audits_table, transaction_audit_record)
 
@@ -57,4 +57,12 @@ class TransactionsProcessor:
     ):
         update_condition = f"id = {transaction_id}"
         update_data = {"status": new_status}
+        self.db_client.update(self.db_transactions_table, update_data, update_condition)
+
+    def set_transaction_result(self, transaction_id: int, consensus_data: dict):
+        update_condition = f"id = {transaction_id}"
+        update_data = {
+            "status": TransactionStatus.FINALIZED.value,
+            "consensus_data": json.dumps(consensus_data),
+        }
         self.db_client.update(self.db_transactions_table, update_data, update_condition)

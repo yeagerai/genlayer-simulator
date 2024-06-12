@@ -123,11 +123,6 @@ class ConsensusAlgorithm:
         ):
             raise Exception("Consensus not reached")
 
-        # Temporary to final status until we have appeals
-        self.transactions_processor.update_transaction_status(
-            transaction["id"], TransactionStatus.FINALIZED
-        )
-
         final = False
         consensus_data = ConsensusData(
             final=final,
@@ -139,4 +134,6 @@ class ConsensusAlgorithm:
         execution_output = {}
         execution_output["leader_data"] = leader_receipt
         execution_output["consensus_data"] = consensus_data
-        return execution_output
+        self.transactions_processor.set_transaction_result(
+            transaction["id"], execution_output
+        )
