@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { ref } from 'vue'
 import { RouterView } from 'vue-router'
 import SimulatorMenu from '@/components/SimulatorMenu.vue'
 import NodeLogs from '@/components/Simulator/NodeLogs.vue'
@@ -8,28 +8,13 @@ import { Splitpanes, Pane } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
 
 const showLogsTerminal = ref<boolean>(true)
-const editorContainerResized = ref<boolean>(false)
 
 const handleLogsResize = (event: any) => {
-  editorContainerResized.value = true
   if (event[1]?.size <= 4) {
     showLogsTerminal.value = false
   } else {
     showLogsTerminal.value = true
   }
-}
-
-const handlePanelWidthResize = () => {
-  editorContainerResized.value = true
-}
-
-const resizeEditorHandler = () => {
-  editorContainerResized.value = true
-}
-
-
-const handleContractsPanelResize = () => {
-  editorContainerResized.value = false
 }
 
 </script>
@@ -38,8 +23,7 @@ const handleContractsPanelResize = () => {
   <div class="flex w-full">
     <SimulatorMenu />
     <div class="flex w-full relative">
-      <Splitpanes class="default-theme relative w-full bg-white dark:bg-zinc-800 dark:text-white text-primary "
-        @resize="handlePanelWidthResize">
+      <Splitpanes class="default-theme relative w-full bg-white dark:bg-zinc-800 dark:text-white text-primary ">
         <Pane min-size="18" size="18" max-size="60" class="flex w-full">
           <div class="overflow-y-auto flex w-full">
             <RouterView v-slot="{ Component }">
@@ -52,8 +36,7 @@ const handleContractsPanelResize = () => {
         <Pane>
           <Splitpanes class="default-theme" horizontal @resize="handleLogsResize">
             <Pane class="flex flex-col w-full h-full" min-size="20" size="80" max-size="80">
-              <ContractsPanel @resized="handleContractsPanelResize" :container-resized="editorContainerResized"
-                class="w-full h-full" />
+              <ContractsPanel class="w-full h-full" />
             </Pane>
             <Pane class="flex flex-col w-full" min-size="20" :size="20" max-size="80">
               <NodeLogs />
