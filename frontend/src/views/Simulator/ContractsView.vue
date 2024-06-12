@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { useMainStore } from "@/stores"
+import { useContractsStore } from "@/stores"
 import { DocumentCheckIcon, ArrowUpTrayIcon, PlusIcon, TrashIcon, PencilIcon } from '@heroicons/vue/24/solid'
 import { nextTick, ref, watchEffect } from "vue";
 import { v4 as uuidv4 } from 'uuid'
 import type { ContractFile } from "@/types";
 import Modal from '@/components/ModalComponent.vue'
 
-const store = useMainStore()
+const store = useContractsStore()
 const showFileOptionsId = ref('')
 const editingFileId = ref('')
 const newFileName = ref('.gpy')

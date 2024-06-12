@@ -21,7 +21,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
     localStorage.getItem('contracts.currentContractId') || ''
   )
   const deployedContracts = ref<DeployedContract[]>([])
-  const transactions = -ref<Record<string, any>>({})
+  const transactions = ref<Record<string, any[]>>({})
 
   function addContractFile(contract: ContractFile): void {
     const name = getContractFileName(contract.name)

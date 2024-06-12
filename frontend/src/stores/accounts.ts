@@ -7,8 +7,8 @@ export const useAccountsStore = defineStore('accountsStore', () => {
   const currentUserAddress = ref<string>(localStorage.getItem('mainStore.currentUserAddress') || '')
 
   const accounts = ref<string[]>(
-    localStorage.getItem('mainStore.accounts')
-      ? (localStorage.getItem('mainStore.accounts') || '').split(',')
+    localStorage.getItem('accountsStore.accounts')
+      ? (localStorage.getItem('accountsStore.accounts') || '').split(',')
       : []
   )
 

@@ -15,15 +15,6 @@ export interface DeployedContract {
   defaultState: string
 }
 
-export interface ContractsStoreState {
-  contractsModified: string
-  contracts: ContractFile[]
-  openedFiles: string[]
-  currentContractId?: string
-  deployedContracts: DeployedContract[]
-  transactions: Record<string, any>
-}
-
 export interface NodeLog {
   date: string
   message: {
@@ -36,11 +27,6 @@ export interface NodeLog {
     }
   }
   mock?: boolean
-}
-
-export interface AccountStoreState {
-  accounts: string[]
-  currentUserAddress?: string
 }
 
 export interface MainStoreState {

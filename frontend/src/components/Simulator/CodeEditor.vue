@@ -2,12 +2,12 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api'
 import { ref, shallowRef, watch, computed } from 'vue'
 import { pythonSyntaxDefinition } from '@/utils'
-import { useMainStore, useUIStore } from '@/stores';
+import { useContractsStore, useUIStore } from '@/stores';
 import { type ContractFile } from '@/types';
 
 
 const uiStore = useUIStore()
-const contractStore = useMainStore()
+const contractStore = useContractsStore()
 const props = defineProps<{
   contract: ContractFile,
   parentHeight: number,
