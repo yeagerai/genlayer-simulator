@@ -1,3 +1,4 @@
+import type { IJsonRpcService } from '@/services'
 import type { ContractFile, DeployedContract } from '@/types'
 import { getContractFileName } from '@/utils'
 import { defineStore } from 'pinia'
@@ -10,7 +11,7 @@ const getInitialOPenedFiles = (): string[] => {
 }
 
 export const useContractsStore = defineStore('contractsStore', () => {
-  const $jsonRpc = inject('$jsonRpc') // TODO: will be used in actions
+  const $jsonRpc = inject<IJsonRpcService>('$jsonRpc') // TODO: will be used in actions
 
   const contractsModified = ref<string>(localStorage.getItem('contracts.contractsModified') || '')
   const contracts = ref<ContractFile[]>([])
@@ -26,10 +27,12 @@ export const useContractsStore = defineStore('contractsStore', () => {
     const name = getContractFileName(contract.name)
     contracts.value.push({ ...contract, name })
   }
+
   function removeContractFile(id: string): void {
     contracts.value = [...contracts.value.filter((c) => c.id !== id)]
     deployedContracts.value = [...deployedContracts.value.filter((c) => c.contractId !== id)]
   }
+
   function updateContractFile(id: string, { name, content }: { name?: string; content?: string }) {
     contracts.value = [
       ...contracts.value.map((c) => {
