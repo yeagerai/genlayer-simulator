@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     nonce INT,
     value NUMERIC,
     type INT CHECK (type IN (0, 1, 2)),
-    gasLimit BIGINT,
+    gaslimit BIGINT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     r INT,
     s INT,
