@@ -3,6 +3,7 @@ import type { ContractFile, DeployedContract } from '@/types'
 import { getContractFileName } from '@/utils'
 import { defineStore } from 'pinia'
 import { ref, inject } from 'vue'
+import { v4 as uuidv4 } from 'uuid'
 
 const getInitialOPenedFiles = (): string[] => {
   const storage = localStorage.getItem('contracts.openedFiles')
@@ -22,7 +23,9 @@ export const useContractsStore = defineStore('contractsStore', () => {
   )
   const deployedContracts = ref<DeployedContract[]>([])
   const transactions = ref<Record<string, any[]>>({})
-
+  const callingContractMethod = ref<boolean>(false)
+  const callingContractState = ref<boolean>(false)
+  const currentContractState = ref<Record<string, any>>({})
   function addContractFile(contract: ContractFile): void {
     const name = getContractFileName(contract.name)
     contracts.value.push({ ...contract, name })
@@ -81,6 +84,63 @@ export const useContractsStore = defineStore('contractsStore', () => {
     currentContractId.value = id || ''
   }
 
+  async function callContractMethod({
+    userAccount,
+    contractAddress,
+    method,
+    params
+  }: {
+    userAccount: string
+    contractAddress: string
+    method: string
+    params: any[]
+  }) {
+    callingContractMethod.value = true
+    try {
+      const result = await $jsonRpc?.callContractFunction({
+        userAccount,
+        contractAddress,
+        method,
+        params
+      })
+
+      callingContractMethod.value = false
+      if (result?.status === 'success') {
+        if (!transactions.value[contractAddress]) {
+          transactions.value[contractAddress] = []
+        }
+
+        return result
+      }
+      return null
+    } catch (error) {
+      console.error(error)
+      callingContractMethod.value = false
+      return null
+    }
+  }
+
+  async function getContractState(
+    contractAddress: string,
+    method: string,
+    methodArguments: string[]
+  ) {
+    callingContractState.value = true
+    try {
+      const result = await $jsonRpc?.getContractState({ contractAddress, method, methodArguments })
+
+      currentContractState.value = {
+        ...currentContractState.value,
+        [method]: result?.data[method]
+      }
+      callingContractState.value = false
+    } catch (error) {
+      console.error(error)
+      callingContractState.value = false
+      return null
+    }
+  }
+
   return {
     // state
     contractsModified,
@@ -98,6 +158,9 @@ export const useContractsStore = defineStore('contractsStore', () => {
     closeFile,
     addDeployedContract,
     removeDeployedContract,
-    setCurrentContractId
+    setCurrentContractId,
+
+    callContractMethod,
+    getContractState
   }
 })
