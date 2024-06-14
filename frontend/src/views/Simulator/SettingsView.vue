@@ -333,7 +333,7 @@ const handleCreateNewValidator = async () => {
       </div>
       <div class="flex flex-col mt-4 w-full">
         <button @click="handleUpdateValidator" :disabled="!updateValidatorModelValid"
-          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
+          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded disabled:opacity-80">
           Save
         </button>
       </div>
