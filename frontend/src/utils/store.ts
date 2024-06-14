@@ -2,6 +2,7 @@ import { useMainStore } from '@/stores'
 import { db } from './db'
 import { v4 as uuidv4 } from 'uuid'
 
+// for old version and local storage
 export const examplesNames = [
   'football_prediction_market.py',
   'llm_erc20.py',
@@ -15,8 +16,7 @@ export const setupStores = async () => {
   const contracts = await db.contractFiles.toArray()
   if (
     contracts
-      .filter((c) => (c.example && !c.updatedAt) || examplesNames.includes(c.name))
-      .map((c) => c.id).length === 0
+      .filter(c => c.example || examplesNames.includes(c.name)).length === 0
   ) {
     const contractsBlob = import.meta.glob('@/assets/examples/contracts/*.py', {
       query: '?raw',

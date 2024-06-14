@@ -99,7 +99,7 @@ export const useMainStore = defineStore('mainStore', {
     async resetStorage(): Promise<void> {
       try {
         const contracts = await db.contractFiles.toArray()
-        const idsToDelete = contracts.filter((c) => c.example && !c.updatedAt).map((c) => c.id)
+        const idsToDelete = contracts.filter((c) => !c.example && !c.updatedAt).map((c) => c.id)
 
         await db.deployedContracts.where('contractId').anyOf(idsToDelete).delete()
         await db.contractFiles.where('id').anyOf(idsToDelete).delete()
