@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ValidatorModel, UpdateValidatorModel, CreateValidatorModel } from '@/types'
 
-import { inject, onMounted, ref } from 'vue'
+import { computed, inject, onMounted, ref } from 'vue'
 import { notify } from '@kyvg/vue3-notification'
 import Modal from '@/components/ModalComponent.vue'
 import { TrashIcon } from '@heroicons/vue/24/solid'
@@ -18,6 +18,13 @@ const createValidatorModalOpen = ref<boolean>(false)
 const deleteValidatorModalOpen = ref<boolean>(false)
 const resetStorageModalOpen = ref<boolean>(false)
 const resetingStorage = ref<boolean>(false)
+const createValidatorModelValid = computed(() => {
+  return validatorToCreate.value?.model !== '' && validatorToCreate.value?.provider !== '' && validatorToCreate.value?.stake
+})
+const updateValidatorModelValid = computed(() => {
+  return validatorToUpdate.value?.model !== '' && validatorToUpdate.value?.provider !== '' && validatorToUpdate.value?.stake
+})
+
 const selectedValidator = ref<ValidatorModel>()
 const validatorToUpdate = ref<UpdateValidatorModel>({
   model: '',
@@ -332,8 +339,9 @@ const handleResetStorage = async () => {
         </div>
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Provider:</p>
-          <select class="p-2 w-full bg-slate-100 dark:bg-zinc-700 overflow-y-auto" name="" id=""
-            v-model="validatorToUpdate.provider">
+          <select :class="validatorToUpdate.provider ? '' : 'border border-red-500'"
+            class="p-2 w-full bg-slate-100 dark:bg-zinc-700 overflow-y-auto" name="" id=""
+            v-model="validatorToUpdate.provider" required>
             <option v-for="(_, provider) in nodeProviders" :key="provider" :value="provider"
               :selected="provider === validatorToUpdate.provider">
               {{ provider }}
@@ -342,8 +350,9 @@ const handleResetStorage = async () => {
         </div>
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Model:</p>
-          <select class="p-2 w-full bg-slate-100 overflow-y-auto dark:bg-zinc-700" name="" id=""
-            v-model="validatorToUpdate.model">
+          <select :class="validatorToUpdate.model ? '' : 'border border-red-500'"
+            class="p-2 w-full bg-slate-100 overflow-y-auto dark:bg-zinc-700" name="" id=""
+            v-model="validatorToUpdate.model" required>
             <option v-for="model in nodeProviders[validatorToUpdate.provider]" :key="model" :value="model"
               :selected="model === validatorToUpdate.model">
               {{ model }}
@@ -353,6 +362,7 @@ const handleResetStorage = async () => {
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Stake:</p>
           <input type="number" min="0.01" v-model="validatorToUpdate.stake"
+            :class="validatorToUpdate.stake ? '' : 'border border-red-500'"
             class="p-2 w-full bg-slate-100 dark:bg-zinc-700" required />
         </div>
         <div class="flex flex-col p-2 mt-2">
@@ -364,8 +374,8 @@ const handleResetStorage = async () => {
         </div>
       </div>
       <div class="flex flex-col mt-4 w-full">
-        <button @click="handleUpdateValidator"
-          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
+        <button @click="handleUpdateValidator" :disabled="!updateValidatorModelValid"
+          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded disabled:opacity-80">
           Save
         </button>
       </div>
@@ -378,8 +388,9 @@ const handleResetStorage = async () => {
         </div>
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Provider:</p>
-          <select class="p-2 w-full bg-slate-100 dark:bg-zinc-700 overflow-y-auto" name="" id=""
-            v-model="validatorToCreate.provider">
+          <select :class="validatorToCreate.provider ? '' : 'border border-red-500'"
+            class="p-2 w-full bg-slate-100 dark:bg-zinc-700 overflow-y-auto" name="" id=""
+            v-model="validatorToCreate.provider" required>
             <option v-for="(_, provider) in nodeProviders" :key="provider" :value="provider"
               :selected="provider === validatorToCreate.provider">
               {{ provider }}
@@ -388,8 +399,9 @@ const handleResetStorage = async () => {
         </div>
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Model:</p>
-          <select class="p-2 w-full bg-slate-100 overflow-y-auto dark:bg-zinc-700" name="" id=""
-            v-model="validatorToCreate.model">
+          <select :class="validatorToCreate.model ? '' : 'border border-red-500'"
+            class="p-2 w-full bg-slate-100 overflow-y-auto dark:bg-zinc-700" name="" id=""
+            v-model="validatorToCreate.model" required>
             <option v-for="model in nodeProviders[validatorToCreate.provider]" :key="model" :value="model"
               :selected="model === validatorToCreate.model">
               {{ model }}
@@ -399,6 +411,7 @@ const handleResetStorage = async () => {
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Stake:</p>
           <input type="number" min="0.01" v-model="validatorToCreate.stake"
+            :class="validatorToCreate.stake ? '' : 'border border-red-500'"
             class="p-2 w-full bg-slate-100 dark:bg-zinc-700" required />
         </div>
         <div class="flex flex-col p-2 mt-2">
@@ -410,8 +423,8 @@ const handleResetStorage = async () => {
         </div>
       </div>
       <div class="flex flex-col mt-4 w-full">
-        <button @click="handleCreateNewValidator"
-          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
+        <button @click="handleCreateNewValidator" :disabled="!createValidatorModelValid"
+          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded disabled:opacity-80">
           Create
         </button>
       </div>
