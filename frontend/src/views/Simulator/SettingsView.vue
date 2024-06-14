@@ -463,7 +463,7 @@ const handleResetStorage = async () => {
         <div class="flex flex-col p-2 mt-2">
 
           <div class="py-2 w-full">
-            All the contracts examples and created contracts not updated will be set to their initial state.
+            All the examples of contracts and created contracts by you that have not been updated will be set to their initial state.
           </div>
         </div>
       </div>
