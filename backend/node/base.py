@@ -19,15 +19,16 @@ class Node:
         self.leader_receipt = leader_receipt
         self.genvm = GenVM(contract_snapshot, self.validator_mode, self.config)
 
-    def exec_transaction(self, transaction: dict):
+    async def exec_transaction(self, transaction: dict):
         transaction_data = transaction["data"]
-        if transaction.type == 1:
+        if transaction["type"] == 1:
             receipt = self.deploy_contract(
                 transaction["from_address"],
+                transaction_data["class_name"],
                 transaction_data["contract_code"],
                 transaction_data["constructor_args"],
             )
-        elif transaction.type == 2:
+        elif transaction["type"] == 2:
             receipt = self.run_contract(
                 transaction["from_address"],
                 transaction_data["function_name"],
@@ -37,23 +38,31 @@ class Node:
             receipt = ...
         return receipt
 
-    def deploy_contract(self, from_address, code_to_deploy, constructor_args):
+    def deploy_contract(
+        self,
+        from_address: str,
+        class_name: str,
+        code_to_deploy: str,
+        constructor_args: dict,
+    ):
+        receipt = None
         try:
             receipt = self.genvm.deploy_contract(
-                from_address, code_to_deploy, constructor_args
+                class_name, from_address, code_to_deploy, constructor_args
             )
         except Exception as e:
-            ...
+            print("Error deploying contract", e)
             # create error receipt
-        return receipt
+        return {"vote": "agree", "result": receipt}
 
     def run_contract(self, from_address, function_name, args):
+        receipt = None
         try:
             receipt = self.genvm.run_contract(
                 from_address, function_name, args, self.leader_receipt
             )
         except Exception as e:
-            ...
+            print("Error running contract", e)
             # create error receipt
         return {"vote": "agree", "result": receipt}
 

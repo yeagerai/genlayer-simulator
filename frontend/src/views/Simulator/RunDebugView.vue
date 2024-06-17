@@ -153,7 +153,7 @@ const handleDeployContract = async ({
           })
           if (result?.status === 'success') {
             store.addDeployedContract({
-              address: result?.data.contract_id,
+              address: result?.data.contract_address,
               contractId: contract.id,
               defaultState: constructorParamsAsString
             })

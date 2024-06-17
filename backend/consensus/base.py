@@ -34,18 +34,22 @@ class ConsensusAlgorithm:
             print("pending_transactions", pending_transactions)
             if len(pending_transactions) > 0:
                 for transaction in pending_transactions:
-                    contract_address = transaction["to_address"]
+                    contract_address = (
+                        transaction["to_address"]
+                        if transaction["to_address"] is not None
+                        else "deploy_contracts"
+                    )
+                    print("contract_address", contract_address)
                     if contract_address not in self.queues:
                         self.queues[contract_address] = asyncio.Queue()
                     await self.queues[contract_address].put(transaction)
             await asyncio.sleep(10)
 
     def run_consensus_loop(self):
-        ...
-        # loop = asyncio.new_event_loop()
-        # asyncio.set_event_loop(loop)
-        # loop.run_until_complete(self._run_consensus())
-        # loop.close()
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(self._run_consensus())
+        loop.close()
 
     async def _run_consensus(self):
         asyncio.set_event_loop(asyncio.new_event_loop())
@@ -88,7 +92,8 @@ class ConsensusAlgorithm:
         )
         num_validators = len(remaining_validators) + 1
 
-        contract_snapshot = ContractSnapshot(transaction["to_address"], self.dbclient)
+        contract_address = transaction.get("to_address", None)
+        contract_snapshot = ContractSnapshot(contract_address, self.dbclient)
 
         # Create Leader
         leader_node = Node(
@@ -96,7 +101,7 @@ class ConsensusAlgorithm:
         )
 
         # Leader executes transaction
-        leader_receipt = leader_node.exec_transaction(transaction)
+        leader_receipt = await leader_node.exec_transaction(transaction)
         votes = {leader["address"]: leader_receipt["vote"]}
         # Update transaction status
         self.transactions_processor.update_transaction_status(
@@ -117,9 +122,8 @@ class ConsensusAlgorithm:
 
         # Validators execute transaction
         validators_results = []
-        loop = asyncio.get_running_loop()
         validation_tasks = [
-            loop.create_task(
+            (
                 validator.exec_transaction(transaction)
             )  # watch out! as ollama uses GPU resources and webrequest aka selenium uses RAM
             for validator in validator_nodes
@@ -127,9 +131,7 @@ class ConsensusAlgorithm:
         validation_results = await asyncio.gather(*validation_tasks)
 
         for i in range(len(validation_results)):
-            votes[f"{validation_results[i]['validator']}"] = validation_results[i][
-                "vote"
-            ]
+            votes[f"{validator_nodes[i].address}"] = validation_results[i]["vote"]
         self.transactions_processor.update_transaction_status(
             transaction["id"], TransactionStatus.REVEALING.value
         )
@@ -151,6 +153,27 @@ class ConsensusAlgorithm:
         execution_output = {}
         execution_output["leader_data"] = leader_receipt
         execution_output["consensus_data"] = consensus_data
+
+        print("leader_receipt", leader_receipt)
+
+        # Register contract if it is a new contract
+        if transaction["type"] == 1:
+            new_contract = {
+                "id": transaction["data"]["contract_address"],
+                "data": {
+                    "state": leader_receipt["result"]["contract_state"],
+                    "code": transaction["data"]["contract_code"],
+                },
+            }
+            contract_snapshot.register_contract(new_contract)
+
+        # Update contract state if it is an existing contract
+        else:
+            contract_snapshot.update_contract_state(
+                leader_receipt["result"]["contract_state"]
+            )
+
+        # Finalize transaction
         self.transactions_processor.set_transaction_result(
             transaction["id"], execution_output
         )

@@ -86,13 +86,14 @@ def deploy_intelligent_contract(
     contract_address = create_new_address()
 
     transaction_data = {
+        "contract_address": contract_address,
         "class_name": class_name,
         "contract_code": contract_code,
         "constructor_args": constructor_args,
     }
 
     transaction_id = transactions_processor.insert_transaction(
-        from_account, contract_address, transaction_data, 0, 1
+        from_account, None, transaction_data, 0, 1
     )
     return {"transaction_id": transaction_id, "contract_address": contract_address}
 

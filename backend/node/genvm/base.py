@@ -54,18 +54,27 @@ class GenVM:
 
         return receipt
 
-    def deploy_contract(self, from_address, code_to_deploy, constructor_args):
+    def deploy_contract(
+        self,
+        class_name: str,
+        from_address: str,
+        code_to_deploy: str,
+        constructor_args: dict,
+    ):
 
-        code_enforcement_check(code_to_deploy)
+        code_enforcement_check(code_to_deploy, class_name)
         class_name = self._get_contract_class_name(code_to_deploy)
+        print("class_name", class_name)
 
         self.contract_runner["from_address"] = from_address
+        print("from_address", from_address)
         eval(code_to_deploy)
         contract_class = locals()[class_name]  ## en teoria
         current_contract = contract_class(**constructor_args)
 
         pickled_object = pickle.dumps(current_contract)
         encoded_pickled_object = base64.b64encode(pickled_object).decode("utf-8")
+        print("encoded_pickled_object", encoded_pickled_object)
         return self._generate_receipt(
             class_name, encoded_pickled_object, "__init__", [{constructor_args}]
         )
