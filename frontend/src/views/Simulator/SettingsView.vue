@@ -6,9 +6,10 @@ import { notify } from '@kyvg/vue3-notification'
 import Modal from '@/components/ModalComponent.vue'
 import { TrashIcon } from '@heroicons/vue/24/solid'
 import type { IJsonRpcService } from '@/services'
-import { useMainStore } from '@/stores'
+import { useContractsStore } from '@/stores'
+import { storeToRefs } from 'pinia'
 
-const mainStore = useMainStore()
+const contracts = useContractsStore()
 const nodeProviders = ref<Record<string, string[]>>({})
 // state
 const $jsonRpc = inject<IJsonRpcService>('$jsonRpc')!
@@ -24,7 +25,9 @@ const createValidatorModelValid = computed(() => {
 const updateValidatorModelValid = computed(() => {
   return validatorToUpdate.value?.model !== '' && validatorToUpdate.value?.provider !== '' && validatorToUpdate.value?.stake
 })
-
+const contractsToDelete = computed(() =>
+  contracts.contracts
+    .filter((c) => c.example || (!c.example && !c.updatedAt)))
 const selectedValidator = ref<ValidatorModel>()
 const validatorToUpdate = ref<UpdateValidatorModel>({
   model: '',
@@ -248,12 +251,12 @@ const closeResetStorageModal = () => {
 const handleResetStorage = async () => {
   resetingStorage.value = true
   try {
-    await mainStore.resetStorage()
+    await contracts.resetStorage()
     notify({
-        title: 'Success',
-        text: 'Storage reset successfully',
-        type: 'success'
-      })
+      title: 'Success',
+      text: 'Storage reset successfully',
+      type: 'success'
+    })
   } catch (error) {
     console.error(error)
     notify({
@@ -279,7 +282,7 @@ const handleResetStorage = async () => {
         {{ validators.length }}
       </div>
     </div>
-    
+
     <div class="flex flex-col p-2 w-full bg-slate-100 dark:dark:bg-zinc-700">
       <h4 class="text-md" id="tutorial-validators">Validators Configuration</h4>
     </div>
@@ -474,10 +477,17 @@ const handleResetStorage = async () => {
           Are you sure you want to reset the simulator storage?
         </div>
         <div class="flex flex-col p-2 mt-2">
-
           <div class="py-2 w-full">
-            All the contract examples will be reset, and all contracts created by you that have not been updated recently will be removed.
+            All the contract examples will be reset, and all contracts created by you that have not been updated
+            recently will be removed.
           </div>
+        </div>
+        <div class="flex flex-col p-2 mt-2 overflow-y-auto">
+          <ul class="list-disc list-inside">
+            <li class="text-md font-semibold" v-for="contract in contractsToDelete" :key="contract.id">
+              {{ contract.name }}
+            </li>
+          </ul>
         </div>
       </div>
       <div class="flex flex-col mt-4 w-full">

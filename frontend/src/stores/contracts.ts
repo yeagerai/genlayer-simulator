@@ -83,8 +83,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
 
   async function resetStorage(): Promise<void> {
     try {
-      const _contracts = await db.contractFiles.toArray()
-      const idsToDelete = _contracts
+      const idsToDelete = contracts.value
         .filter((c) => c.example || (!c.example && !c.updatedAt))
         .map((c) => c.id)
 
@@ -94,7 +93,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
       deployedContracts.value = [
         ...deployedContracts.value.filter((c) => !idsToDelete.includes(c.contractId))
       ]
-      contracts.value = [..._contracts.filter((c) => !idsToDelete.includes(c.id))]
+      contracts.value = [...contracts.value.filter((c) => !idsToDelete.includes(c.id))]
       openedFiles.value = [...openedFiles.value.filter((c) => !idsToDelete.includes(c))]
       if (currentContractId.value && idsToDelete.includes(currentContractId.value)) {
         currentContractId.value = ''
