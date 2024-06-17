@@ -1,5 +1,7 @@
 # backend/consensus/base.py
 
+DEPLOY_CONTRACTS_QUEUE_KEY = "deploy_contracts"
+
 import asyncio
 from backend.node.base import Node
 from backend.database_handler.db_client import DBClient
@@ -37,9 +39,8 @@ class ConsensusAlgorithm:
                     contract_address = (
                         transaction["to_address"]
                         if transaction["to_address"] is not None
-                        else "deploy_contracts"
+                        else DEPLOY_CONTRACTS_QUEUE_KEY
                     )
-                    print("contract_address", contract_address)
                     if contract_address not in self.queues:
                         self.queues[contract_address] = asyncio.Queue()
                     await self.queues[contract_address].put(transaction)
@@ -56,24 +57,26 @@ class ConsensusAlgorithm:
 
         # watch out! as ollama uses GPU resources and webrequest aka selenium uses RAM
         while True:
+            print("self.queues", self.queues)
+            print("self.queues.keys()", self.queues.keys())
             if self.queues:
                 chain_snapshot = ChainSnapshot(self.dbclient)
-                tasks = [
-                    (
-                        self.exec_transaction(
-                            (await self.queues[key].get()), chain_snapshot
+                tasks = []
+
+                for key in self.queues.keys():
+                    if not self.queues[key].empty():
+                        transaction = await self.queues[key].get()
+                        tasks.append(self.exec_transaction(transaction, chain_snapshot))
+
+                    elif key != DEPLOY_CONTRACTS_QUEUE_KEY:
+                        tasks.append(
+                            ContractSnapshot(
+                                key, self.dbclient
+                            ).expire_queued_transactions()
                         )
-                        if self.queues[key]
-                        else ContractSnapshot(
-                            key, self.dbclient
-                        ).expire_queued_transactions()
-                    )
-                    for key in self.queues.keys()
-                ]
                 if tasks:
                     await asyncio.gather(*tasks)
-                else:
-                    await asyncio.sleep(10)
+            await asyncio.sleep(10)
 
     async def exec_transaction(
         self,
