@@ -1,4 +1,4 @@
-# rpc/server.py
+# backend/protocol_rpc/server.py
 
 import os
 import threading
@@ -87,8 +87,3 @@ thread_crawl_snapshot.start()
 # Thread for the run_consensus method
 thread_consensus = threading.Thread(target=consensus.run_consensus_loop)
 thread_consensus.start()
-
-# Join threads to the main thread to keep them running
-thread_socketio.join()
-thread_crawl_snapshot.join()
-thread_consensus.join()
