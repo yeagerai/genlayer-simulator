@@ -7,12 +7,9 @@ import HomeTab from './HomeTab.vue'
 import { useRouter } from 'vue-router';
 
 
-defineProps<{
-    parentHeight: number,
-    parentWidth: number
-}>()
 const store = useContractsStore()
 const router = useRouter()
+
 const handleRunDebug = () => {
     router.push({ name: 'simulator.run-debug' })
 }
@@ -68,8 +65,7 @@ const showHome = computed(() => store.currentContractId === '')
         </div>
         <div v-for="contract in contracts" :key="contract.id" class="flex w-full h-full relative"
             v-show="contract.id === store.currentContractId">
-            <CodeEditor :contract="contract" @run-debug="handleRunDebug" :parent-height="parentHeight"
-                :parent-width="parentWidth" />
+            <CodeEditor :contract="contract" @run-debug="handleRunDebug"/>
         </div>
     </div>
 </template>
