@@ -1,4 +1,4 @@
-from genvm.base.icontract import IContract
+from backend.node.genvm.icontract import IContract
 
 
 # contract class

@@ -1,6 +1,6 @@
 import json
-from genvm.base.equivalence_principle import EquivalencePrinciple
-from genvm.base.icontract import IContract
+from backend.node.genvm.icontract import IContract
+from backend.node.genvm.equivalence_principle import EquivalencePrinciple
 
 
 class PredictionMarket(IContract):

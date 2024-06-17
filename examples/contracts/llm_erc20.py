@@ -1,12 +1,12 @@
 import json
-from genvm.base.icontract import IContract
-from genvm.base.equivalence_principle import EquivalencePrinciple
+from backend.node.genvm.icontract import IContract
+from backend.node.genvm.equivalence_principle import EquivalencePrinciple
 
 
 class LlmErc20(IContract):
     def __init__(self, total_supply: int) -> None:
         self.balances = {}
-        self.balances[contract_runner.from_address] = total_supply
+        self.balances[contract_runner["from_address"]] = total_supply
 
     async def transfer(self, amount: int, to_address: str) -> None:
         prompt = f"""
