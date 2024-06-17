@@ -61,29 +61,37 @@ class GenVM:
         code_to_deploy: str,
         constructor_args: dict,
     ):
-
         code_enforcement_check(code_to_deploy, class_name)
-        class_name = self._get_contract_class_name(code_to_deploy)
-        print("class_name", class_name)
-
         self.contract_runner["from_address"] = from_address
-        print("from_address", from_address)
-        eval(code_to_deploy)
-        contract_class = locals()[class_name]  ## en teoria
+
+        local_namespace = {}
+        globals()["contract_runner"] = self.contract_runner
+        exec(code_to_deploy, globals(), local_namespace)
+
+        class_name = self._get_contract_class_name(code_to_deploy)
+        contract_class = local_namespace[class_name]
+
+        module = sys.modules[__name__]
+        setattr(module, class_name, contract_class)
+
         current_contract = contract_class(**constructor_args)
 
         pickled_object = pickle.dumps(current_contract)
         encoded_pickled_object = base64.b64encode(pickled_object).decode("utf-8")
-        print("encoded_pickled_object", encoded_pickled_object)
+
+        ## Clean up
+        del globals()["contract_runner"]
+        delattr(module, class_name)
+
         return self._generate_receipt(
-            class_name, encoded_pickled_object, "__init__", [{constructor_args}]
+            class_name, encoded_pickled_object, "__init__", [constructor_args]
         )
 
     async def run_contract(self, from_address, function_name, args, leader_receipt):
         self.contract_runner["from_address"] = from_address
-        contract_runner = (
-            self.contract_runner
-        )  # is being used in function_to_run(*args)
+
+        # is being used in function_to_run(*args)
+        contract_runner = self.contract_runner
         try:
             EquivalencePrinciple.contract_runner = self.contract_runner
         except (ImportError, UnboundLocalError):

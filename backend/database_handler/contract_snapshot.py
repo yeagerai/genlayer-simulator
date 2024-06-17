@@ -35,9 +35,10 @@ class ContractSnapshot:
             self.db_transactions_table, {"status": "CANCELED"}, condition
         )
 
-    def register_contract(self, contract_data: dict):
+    def register_contract(self, contract: dict):
         """Register a new contract in the database."""
-        self.dbclient.insert(self.db_state_table, contract_data)
+        parsed_contract = {"id": contract["id"], "data": json.dumps(contract["data"])}
+        self.dbclient.insert(self.db_state_table, parsed_contract)
 
     def update_contract_state(self, new_state: str):
         """Update the state of the contract in the database."""

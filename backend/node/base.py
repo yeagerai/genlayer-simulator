@@ -1,3 +1,4 @@
+import json
 from typing import Optional
 from backend.node.genvm.base import GenVM
 
@@ -47,9 +48,11 @@ class Node:
     ):
         receipt = None
         try:
+            parsed_construction_args = json.loads(constructor_args)
             receipt = self.genvm.deploy_contract(
-                class_name, from_address, code_to_deploy, constructor_args
+                class_name, from_address, code_to_deploy, parsed_construction_args
             )
+
         except Exception as e:
             print("Error deploying contract", e)
             # create error receipt
