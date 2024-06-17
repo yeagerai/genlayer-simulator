@@ -52,7 +52,8 @@ class DBClient:
                 print("DBClient ~ ~ params:", params)
                 cursor.execute(query, params)
                 conn.commit()
-                return cursor.fetchall()  # Return data
+                if cursor.description:
+                    return cursor.fetchall()  # Return results if any
         except psycopg2.DatabaseError as e:
             conn.rollback()  # Rollback on exceptions
             print(f"Database error: {e}")
