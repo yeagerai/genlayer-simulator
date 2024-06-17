@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { HomeIcon, XMarkIcon, DocumentCheckIcon, PlayIcon } from '@heroicons/vue/24/solid'
 import CodeEditor from '@/components/Simulator/CodeEditor.vue'
-import { useMainStore } from '@/stores';
+import { useContractsStore } from '@/stores';
 import { computed } from 'vue';
 import HomeTab from './HomeTab.vue'
 import { useRouter } from 'vue-router';
 
 
-const store = useMainStore()
+const store = useContractsStore()
 const router = useRouter()
 
 const handleRunDebug = () => {

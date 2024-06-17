@@ -17,6 +17,20 @@ export interface DeployedContract {
   defaultState: string
 }
 
+export interface NodeLog {
+  date: string
+  message: {
+    function: string
+    trace_id: string
+    response: {
+      status: string
+      message: string
+      data: any
+    }
+  }
+  mock?: boolean
+}
+
 export interface MainStoreState {
   contracts: ContractFile[]
   openedFiles: string[]

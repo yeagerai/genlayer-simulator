@@ -201,6 +201,15 @@ export class JsonRpcService implements IJsonRpcService {
     return result
   }
 
+
+  async createAccount(): Promise<JsonRpcResult<any>> {
+    const { result } = await this.rpcClient.call({
+      method: 'create_account',
+      params: []
+    })
+    return result
+  }
+
   /**
    * Calls a JSON-RPC method with the specified parameters and returns a promise that resolves to the JSON-RPC response.
    *
