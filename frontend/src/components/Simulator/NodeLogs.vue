@@ -15,7 +15,7 @@ const colorMap: Record<string, string> = {
 }
 
 
-watch(() => nodeStore.logs, () => {
+watch(nodeStore.logs, () => {
   nextTick(() => {
     scrollContainer.value?.scrollTo({ top: scrollContainer.value.scrollHeight, behavior: 'smooth' })
   })
