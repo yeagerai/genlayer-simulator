@@ -17,16 +17,10 @@ const $jsonRpc = inject<IJsonRpcService>('$jsonRpc')!
 const constructorInputs = ref<{ [k: string]: string }>({})
 const errorConstructorInputs = ref<Error>()
 const abi = ref<any>()
-const contractState = ref<any>({})
-const contract = computed(() =>
-  store.contracts.find((contract) => contract.id === store.currentContractId)
-)
-const deployedContract = computed(() =>
-  store.deployedContracts.find((c) => c.contractId === store.currentContractId)
-)
+
 const contractTransactions = computed(() => {
-  if (deployedContract.value?.address && store.transactions[deployedContract.value?.address]) {
-    return store.transactions[deployedContract.value?.address]
+  if (store.deployedContract?.address && store.transactions[store.deployedContract?.address]) {
+    return store.transactions[store.deployedContract?.address]
   }
   return []
 })
@@ -34,7 +28,6 @@ const contractTransactions = computed(() => {
 //loadings
 const loadingConstructorInputs = ref(false)
 const callingContractMethod = ref(false)
-const callingContractState = ref(false)
 const deployingContract = ref(false)
 
 const handleGetContractState = async (
@@ -42,53 +35,29 @@ const handleGetContractState = async (
   method: string,
   methodArguments: string[]
 ) => {
-  callingContractState.value = true
-  try {
-    const result = await $jsonRpc.getContractState({ contractAddress, method, methodArguments })
-
-    contractState.value = {
-      ...contractState.value,
-      [method]: result.data[method]
-    }
-  } catch (error) {
-    console.error(error)
+  const result = await store.getContractState(contractAddress, method, methodArguments)
+  if (!result) {
     notify({
       title: 'Error',
       text: 'Error getting contract state',
       type: 'error'
     })
-  } finally {
-    callingContractState.value = false
   }
 }
 
 const handleCallContractMethod = async ({ method, params }: { method: string; params: any[] }) => {
-  callingContractMethod.value = true
-  try {
-    const result = await $jsonRpc.callContractFunction({
-      userAccount: accounts.currentUserAddress || '',
-      contractAddress: deployedContract.value?.address || '',
-      method: `${abi.value.class}.${method}`,
-      params
-    })
-
-    if (deployedContract.value?.address && result.status === 'success') {
-      if (!store.transactions[deployedContract.value?.address]) {
-        store.transactions[deployedContract.value?.address] = []
-      }
-
-      store.transactions[deployedContract.value?.address].push({ id: uuidv4(), ...result })
-    }
-  } catch (error) {
-    console.error(error)
+  const result = await store.callContractMethod({
+    userAccount: accounts.currentUserAddress || '',
+    contractAddress: store.deployedContract?.address || '',
+    method: `${abi.value.class}.${method}`,
+    params
+  })
+  if (!result) {
     notify({
       title: 'Error',
       text: 'Error calling contract method',
       type: 'error'
     })
-  } finally {
-
-    callingContractMethod.value = false
   }
 }
 
@@ -193,12 +162,12 @@ const getContractAbi = async (contract: DeployedContract) => {
 }
 
 const getConstructorInputs = async () => {
-  if (contract.value) {
+  if (store.currentContract) {
     loadingConstructorInputs.value = true
     try {
 
       const result = await $jsonRpc.getContractSchema({
-        code: contract.value.content
+        code: store.currentContract.content
       })
       if (!constructorInputs.value) {
         constructorInputs.value = result.data?.methods['__init__']?.inputs
@@ -225,20 +194,20 @@ const getConstructorInputs = async () => {
 
 const debouncedGetConstructorInputs = debounce(() => getConstructorInputs(), 3000)
 
-watch(() => deployedContract.value?.contractId, (newValue) => {
+watch(() => store.deployedContract?.contractId, (newValue) => {
   if (newValue) {
-    getContractAbi(deployedContract.value!)
+    getContractAbi(store.deployedContract!)
   }
 })
 
 
-watch(() => contract.value?.id, (newValue, oldValue) => {
+watch(() => store.currentContract?.id, (newValue, oldValue) => {
   if (newValue && newValue !== oldValue) {
     getConstructorInputs()
   }
 })
 
-watch(() => contract.value?.content, (newValue, oldValue) => {
+watch(() => store.currentContract?.content, (newValue, oldValue) => {
   if (newValue && newValue !== oldValue && !loadingConstructorInputs.value) {
     debouncedGetConstructorInputs()
   }
@@ -246,8 +215,8 @@ watch(() => contract.value?.content, (newValue, oldValue) => {
 
 onMounted(() => {
   getConstructorInputs()
-  if (deployedContract.value) {
-    getContractAbi(deployedContract.value)
+  if (store.deployedContract) {
+    getContractAbi(store.deployedContract)
   }
 })
 </script>
@@ -262,16 +231,17 @@ onMounted(() => {
         <div class="flex flex-col px-2 py-2 w-full bg-slate-100 dark:bg-zinc-700">
           <div class="text-sm">Intelligent Contract:</div>
           <div class="text-xs text-neutral-800 dark:text-neutral-200">
-            {{ contract?.name }}
+            {{ store.currentContract?.name }}
           </div>
         </div>
         <ConstructorParameters :inputs="constructorInputs" :loading="loadingConstructorInputs"
           :error="errorConstructorInputs" @deploy-contract="handleDeployContract" :deploying="deployingContract" />
       </div>
-      <div class="flex flex-col" v-show="deployedContract">
+      <div class="flex flex-col" v-show="store.deployedContract">
         <div class="flex flex-col">
-          <ContractState :abi="abi" :contract-state="contractState" :deployed-contract="deployedContract"
-            :get-contract-state="handleGetContractState" :calling-state="callingContractState" />
+          <ContractState :abi="abi" :contract-state="store.currentContractState"
+            :deployed-contract="store.deployedContract" :get-contract-state="handleGetContractState"
+            :calling-state="store.callingContractState" />
         </div>
 
         <div class="flex flex-col">

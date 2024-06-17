@@ -2,7 +2,7 @@ import type { IJsonRpcService } from '@/services'
 import type { ContractFile, DeployedContract } from '@/types'
 import { getContractFileName } from '@/utils'
 import { defineStore } from 'pinia'
-import { ref, inject } from 'vue'
+import { ref, inject, computed } from 'vue'
 import { v4 as uuidv4 } from 'uuid'
 
 const getInitialOPenedFiles = (): string[] => {
@@ -26,6 +26,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
   const callingContractMethod = ref<boolean>(false)
   const callingContractState = ref<boolean>(false)
   const currentContractState = ref<Record<string, any>>({})
+
   function addContractFile(contract: ContractFile): void {
     const name = getContractFileName(contract.name)
     contracts.value.push({ ...contract, name })
@@ -141,6 +142,13 @@ export const useContractsStore = defineStore('contractsStore', () => {
     }
   }
 
+  const currentContract = computed(() => {
+    return contracts.value.find((c) => c.id === currentContractId.value)
+  })
+  const deployedContract = computed(() => {
+    return deployedContracts.value.find((c) => c.contractId === currentContractId.value)
+  })
+
   return {
     // state
     contractsModified,
@@ -149,6 +157,13 @@ export const useContractsStore = defineStore('contractsStore', () => {
     currentContractId,
     deployedContracts,
     transactions,
+    currentContractState,
+    callingContractState,
+    callingContractMethod,
+
+    //getters
+    deployedContract,
+    currentContract,
 
     //actions
     addContractFile,
