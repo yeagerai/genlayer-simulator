@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useMainStore } from '@/stores'
+import { useAccountsStore, useContractsStore } from '@/stores'
 import { computed, onMounted, ref, watch, inject } from 'vue'
 import { notify } from '@kyvg/vue3-notification'
 import ContractState from '@/components/Simulator/ContractState.vue'
@@ -11,7 +11,8 @@ import type { IJsonRpcService } from '@/services'
 import { debounce } from 'vue-debounce'
 import { v4 as uuidv4 } from 'uuid'
 
-const store = useMainStore()
+const store = useContractsStore()
+const accounts = useAccountsStore()
 const $jsonRpc = inject<IJsonRpcService>('$jsonRpc')!
 const constructorInputs = ref<{ [k: string]: string }>({})
 const errorConstructorInputs = ref<Error>()
@@ -24,8 +25,8 @@ const deployedContract = computed(() =>
   store.deployedContracts.find((c) => c.contractId === store.currentContractId)
 )
 const contractTransactions = computed(() => {
-  if (deployedContract.value?.address && store.contractTransactions[deployedContract.value?.address]) {
-    return store.contractTransactions[deployedContract.value?.address]
+  if (deployedContract.value?.address && store.transactions[deployedContract.value?.address]) {
+    return store.transactions[deployedContract.value?.address]
   }
   return []
 })
@@ -65,18 +66,18 @@ const handleCallContractMethod = async ({ method, params }: { method: string; pa
   callingContractMethod.value = true
   try {
     const result = await $jsonRpc.callContractFunction({
-      userAccount: store.currentUserAddress || '',
+      userAccount: accounts.currentUserAddress || '',
       contractAddress: deployedContract.value?.address || '',
       method: `${abi.value.class}.${method}`,
       params
     })
 
     if (deployedContract.value?.address && result.status === 'success') {
-      if (!store.contractTransactions[deployedContract.value?.address]) {
-        store.contractTransactions[deployedContract.value?.address] = []
-      } 
+      if (!store.transactions[deployedContract.value?.address]) {
+        store.transactions[deployedContract.value?.address] = []
+      }
 
-      store.contractTransactions[deployedContract.value?.address].push({ id: uuidv4(), ...result})
+      store.transactions[deployedContract.value?.address].push({ id: uuidv4(), ...result })
     }
   } catch (error) {
     console.error(error)
@@ -136,7 +137,7 @@ const handleDeployContract = async ({
         try {
           const constructorParamsAsString = JSON.stringify(constructorParams)
           const result = await $jsonRpc.deployContract({
-            userAccount: store.currentUserAddress || '',
+            userAccount: accounts.currentUserAddress || '',
             className: contractSchema.class,
             code: contract.content,
             constructorParams: constructorParamsAsString
@@ -227,7 +228,7 @@ const debouncedGetConstructorInputs = debounce(() => getConstructorInputs(), 300
 watch(() => deployedContract.value?.contractId, (newValue) => {
   if (newValue) {
     getContractAbi(deployedContract.value!)
-  } 
+  }
 })
 
 
@@ -247,7 +248,7 @@ onMounted(() => {
   getConstructorInputs()
   if (deployedContract.value) {
     getContractAbi(deployedContract.value)
-  } 
+  }
 })
 </script>
 

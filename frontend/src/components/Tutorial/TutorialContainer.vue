@@ -2,7 +2,7 @@
 import { RpcClient } from '@/utils'
 import { DEFAULT_CALLBACKS, DEFAULT_OPTIONS, KEYS } from './constants'
 import TutorialStep from './TutorialStep.vue'
-import { useMainStore, useUIStore } from '@/stores'
+import { useContractsStore, useUIStore } from '@/stores'
 import { notify } from '@kyvg/vue3-notification'
 
 const rpcClient = new RpcClient()
@@ -194,7 +194,7 @@ export default {
     }
   },
   async mounted() {
-    const store = useMainStore()
+    const store = useContractsStore()
     if (!localStorage.getItem('genlayer.tutorial')) {
       await loadExample(store)
       localStorage.setItem('genlayer.tutorial', new Date().getTime().toString())
@@ -244,7 +244,7 @@ export default {
   methods: {
     async start(startStep?: number) {
       this.$router.replace({ name: 'simulator.contracts' })
-      const store = useMainStore()
+      const store = useContractsStore()
       store.openFile('tutorial-example')
       store.setCurrentContractId('')
       // Register keyup listeners for this tour
@@ -284,7 +284,7 @@ export default {
           this.callbacks.onPreviousStep(this.currentStep)
           const cb = this.steps[futureStep].onNextStep
           if (cb) {
-            cb(useMainStore(), this.$router).then(() => {
+            cb(useContractsStore(), this.$router).then(() => {
               this.currentStep = futureStep
               setTimeout(() => {
                 resolve(0)
@@ -318,7 +318,7 @@ export default {
           this.callbacks.onNextStep(this.currentStep)
           const cb = this.steps[this.currentStep].onNextStep
           if (cb) {
-            cb(useMainStore(), this.$router).then(() => {
+            cb(useContractsStore(), this.$router).then(() => {
               this.currentStep = futureStep
               setTimeout(() => {
                 resolve(0)

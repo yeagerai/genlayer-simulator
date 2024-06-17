@@ -7,8 +7,8 @@ import router from './router'
 import { persistStorePlugin, createToolTipPlugin } from '@/plugins'
 import { RpcClient, setupStores } from '@/utils'
 import { JsonRpcService } from './services/JsonRpcService'
-
 import { VueSpinnersPlugin } from 'vue3-spinners'
+
 const app = createApp(App)
 const pinia = createPinia()
 
