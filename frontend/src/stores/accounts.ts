@@ -4,7 +4,7 @@ import type { IJsonRpcService } from '@/services'
 
 export const useAccountsStore = defineStore('accountsStore', () => {
   const $jsonRpc = inject<IJsonRpcService>('$jsonRpc')
-  const currentUserAddress = ref<string>(localStorage.getItem('mainStore.currentUserAddress') || '')
+  const currentUserAddress = ref<string>(localStorage.getItem('accountsStore.currentUserAddress') || '')
 
   const accounts = ref<string[]>(
     localStorage.getItem('accountsStore.accounts')

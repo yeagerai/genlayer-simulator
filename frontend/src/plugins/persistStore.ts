@@ -60,6 +60,9 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
           case 'addDeployedContract':
             await upsertDeployedContract(args[0] as DeployedContract)
             break
+          case 'deployContract':
+            await upsertDeployedContract(result as DeployedContract)
+            break
           case 'setCurrentContractId':
             localStorage.setItem('contractsStore.currentContractId', args[0] as string)
             break
