@@ -478,8 +478,7 @@ const handleResetStorage = async () => {
         </div>
         <div class="flex flex-col p-2 mt-2">
           <div class="py-2 w-full">
-            All the contract examples will be reset, and all contracts created by you that have not been updated
-            recently will be removed.
+            All the examples will be restored, and the following intelligent contracts will be removed.
           </div>
         </div>
         <div class="flex flex-col p-2 mt-2 overflow-y-auto">
@@ -488,6 +487,9 @@ const handleResetStorage = async () => {
               {{ contract.name }}
             </li>
           </ul>
+        </div>
+        <div class="flex flex-col p-2 mt-2">
+         <div class="text-md italic"><span class="font-semibold">Note:</span> if you want to preserve any of these contracts, make a copy of them in the files section</div>
         </div>
       </div>
       <div class="flex flex-col mt-4 w-full">
