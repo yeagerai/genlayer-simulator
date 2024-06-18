@@ -13,7 +13,7 @@ const getInitialOPenedFiles = (): string[] => {
 
 export const useContractsStore = defineStore('contractsStore', () => {
   const $jsonRpc = inject<IJsonRpcService>('$jsonRpc') // TODO: will be used in actions
-
+  const accountsStore = useAccountsStore()
   const contracts = ref<ContractFile[]>([])
   const openedFiles = ref<string[]>(getInitialOPenedFiles())
 
@@ -185,7 +185,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
           // Deploy the contract
           deployingContract.value = true
           try {
-            const accountsStore = useAccountsStore()
             const constructorParamsAsString = JSON.stringify(constructorParams)
             const result = await $jsonRpc?.deployContract({
               userAccount: accountsStore.currentUserAddress || '',
