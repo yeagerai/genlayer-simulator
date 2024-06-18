@@ -1,22 +1,16 @@
 <script setup lang="ts">
 import { useAccountsStore, useContractsStore } from '@/stores'
-import { computed, onMounted, ref, watch, inject } from 'vue'
+import { computed, onMounted, watch } from 'vue'
 import { notify } from '@kyvg/vue3-notification'
 import ContractState from '@/components/Simulator/ContractState.vue'
 import ExecuteTransactions from '@/components/Simulator/ExecuteTransactions.vue'
 import TransactionsList from '@/components/Simulator/TransactionsList.vue'
 import ConstructorParameters from '@/components/Simulator/ConstructorParameters.vue'
-import type { DeployedContract } from '@/types'
-import type { IJsonRpcService } from '@/services'
 import { debounce } from 'vue-debounce'
-import { v4 as uuidv4 } from 'uuid'
+
 
 const store = useContractsStore()
 const accounts = useAccountsStore()
-const $jsonRpc = inject<IJsonRpcService>('$jsonRpc')!
-const constructorInputs = ref<{ [k: string]: string }>({})
-const errorConstructorInputs = ref<Error>()
-const abi = ref<any>()
 
 const contractTransactions = computed(() => {
   if (store.deployedContract?.address && store.transactions[store.deployedContract?.address]) {
@@ -25,21 +19,17 @@ const contractTransactions = computed(() => {
   return []
 })
 
-//loadings
-const loadingConstructorInputs = ref(false)
-const callingContractMethod = ref(false)
-const deployingContract = ref(false)
-
 const handleGetContractState = async (
   contractAddress: string,
   method: string,
   methodArguments: string[]
 ) => {
-  const result = await store.getContractState(contractAddress, method, methodArguments)
-  if (!result) {
+  try {
+    await store.getContractState(contractAddress, method, methodArguments)
+  } catch (error) {
     notify({
       title: 'Error',
-      text: 'Error getting contract state',
+      text: (error as Error)?.message || 'Error getting contract state',
       type: 'error'
     })
   }
@@ -49,7 +39,7 @@ const handleCallContractMethod = async ({ method, params }: { method: string; pa
   const result = await store.callContractMethod({
     userAccount: accounts.currentUserAddress || '',
     contractAddress: store.deployedContract?.address || '',
-    method: `${abi.value.class}.${method}`,
+    method: `${store.currentDeployedContractAbi?.class}.${method}`,
     params
   })
   if (!result) {
@@ -66,157 +56,59 @@ const handleDeployContract = async ({
 }: {
   params: { [k: string]: string }
 }) => {
-  const contract = store.contracts.find((c) => c.id === store.currentContractId)
-  if (contract) {
-    if (
-      Object.keys({ ...constructorInputs.value }).length !== Object.keys(constructorParams).length
-    ) {
-      notify({
-        title: 'Error',
-        text: 'You should provide a valid default state',
-        type: 'error'
-      })
-    } else {
-      // Getting the ABI to check the class name
-      let contractSchema = null
-      loadingConstructorInputs.value = true
-      try {
-        const { data }
-          = await $jsonRpc.getContractSchema({
-            code: contract.content
-          })
-
-        contractSchema = data
-        errorConstructorInputs.value = undefined
-      } catch (error) {
-        console.error(error)
-        errorConstructorInputs.value = error as Error
-        notify({
-          title: 'Error',
-          text: 'Error getting the contract schema',
-          type: 'error'
-        })
-      } finally {
-        loadingConstructorInputs.value = false
-      }
-
-      if (contractSchema) {
-        // Deploy the contract
-        deployingContract.value = true
-        try {
-          const constructorParamsAsString = JSON.stringify(constructorParams)
-          const result = await $jsonRpc.deployContract({
-            userAccount: accounts.currentUserAddress || '',
-            className: contractSchema.class,
-            code: contract.content,
-            constructorParams: constructorParamsAsString
-          })
-          if (result?.status === 'success') {
-            store.addDeployedContract({
-              address: result?.data.contract_id,
-              contractId: contract.id,
-              defaultState: constructorParamsAsString
-            })
-            notify({
-              title: 'OK',
-              text: 'Contract deployed',
-              type: 'success'
-            })
-          } else {
-            notify({
-              title: 'Error',
-              text:
-                typeof result.message === 'string' ? result.message : 'Error Deploying the contract',
-              type: 'error'
-            })
-          }
-        } catch (error) {
-          notify({
-            title: 'Error',
-            text: 'Error Deploying the contract',
-            type: 'error'
-          })
-        }
-        finally {
-          deployingContract.value = false
-        }
-      }
-    }
-  }
-}
-
-const getContractAbi = async (contract: DeployedContract) => {
   try {
-    // constructorInputs.value = JSON.parse(contract.defaultState || '{}')
-    // TODO: check if we need to update again also we have an issue with conversion
-    // between `bool` in Python with value `True` vs JSON boolean with value `true`
-    const result = await $jsonRpc.getDeployedContractSchema({
-      address: contract.address
+    await store.deployContract({
+      constructorParams
     })
-
-    abi.value = result.data
-  } catch (error) {
-    console.error(error)
-    store.removeDeployedContract(contract.contractId)
+    notify({
+      title: 'OK',
+      text: 'Contract deployed',
+      type: 'success'
+    })
+  } catch (err) {
+    notify({
+      title: 'Error',
+      text: (err as Error)?.message || 'Error deploying contract',
+      type: 'error'
+    })
   }
 }
 
-const getConstructorInputs = async () => {
-  if (store.currentContract) {
-    loadingConstructorInputs.value = true
-    try {
 
-      const result = await $jsonRpc.getContractSchema({
-        code: store.currentContract.content
-      })
-      if (!constructorInputs.value) {
-        constructorInputs.value = result.data?.methods['__init__']?.inputs
-      } else {
-        //compare existing inputs with new ones
-        if (JSON.stringify(constructorInputs.value) !== JSON.stringify(result.data?.methods['__init__']?.inputs)) {
-          constructorInputs.value = result.data?.methods['__init__']?.inputs
-        }
-      }
-      errorConstructorInputs.value = undefined
-    } catch (error) {
-      console.error(error)
-      errorConstructorInputs.value = error as Error
-      notify({
-        title: 'Error',
-        text: 'Error getting the contract schema',
-        type: 'error'
-      })
-    } finally {
-      loadingConstructorInputs.value = false
-    }
-  }
-}
-
-const debouncedGetConstructorInputs = debounce(() => getConstructorInputs(), 3000)
+const debouncedGetConstructorInputs = debounce(() => store.getConstructorInputs(), 3000)
 
 watch(() => store.deployedContract?.contractId, (newValue) => {
   if (newValue) {
-    getContractAbi(store.deployedContract!)
+    store.getCurrentContractAbi()
   }
 })
 
 
 watch(() => store.currentContract?.id, (newValue, oldValue) => {
   if (newValue && newValue !== oldValue) {
-    getConstructorInputs()
+    store.getConstructorInputs()
   }
 })
 
 watch(() => store.currentContract?.content, (newValue, oldValue) => {
-  if (newValue && newValue !== oldValue && !loadingConstructorInputs.value) {
+  if (newValue && newValue !== oldValue && !store.loadingConstructorInputs) {
     debouncedGetConstructorInputs()
   }
 })
+watch(() => store.currentErrorConstructorInputs, (newValue, oldValue) => {
+  if (newValue && newValue !== oldValue) {
+    notify({
+      title: 'Error',
+      text: 'Error getting the contract schema',
+      type: 'error'
+    })
+  }
+})
 
-onMounted(() => {
-  getConstructorInputs()
+onMounted(async () => {
+  await store.getConstructorInputs()
   if (store.deployedContract) {
-    getContractAbi(store.deployedContract)
+    store.getCurrentContractAbi()
   }
 })
 </script>
@@ -234,19 +126,20 @@ onMounted(() => {
             {{ store.currentContract?.name }}
           </div>
         </div>
-        <ConstructorParameters :inputs="constructorInputs" :loading="loadingConstructorInputs"
-          :error="errorConstructorInputs" @deploy-contract="handleDeployContract" :deploying="deployingContract" />
+        <ConstructorParameters :inputs="store.currentConstructorInputs" :loading="store.loadingConstructorInputs"
+          :error="store.currentErrorConstructorInputs" @deploy-contract="handleDeployContract"
+          :deploying="store.deployingContract" />
       </div>
       <div class="flex flex-col" v-show="store.deployedContract">
         <div class="flex flex-col">
-          <ContractState :abi="abi" :contract-state="store.currentContractState"
+          <ContractState :abi="store.currentDeployedContractAbi" :contract-state="store.currentContractState"
             :deployed-contract="store.deployedContract" :get-contract-state="handleGetContractState"
             :calling-state="store.callingContractState" />
         </div>
 
         <div class="flex flex-col">
-          <ExecuteTransactions :abi="abi" @call-method="handleCallContractMethod"
-            :calling-method="callingContractMethod" />
+          <ExecuteTransactions :abi="store.currentDeployedContractAbi" @call-method="handleCallContractMethod"
+            :calling-method="store.callingContractMethod" />
         </div>
         <div class="flex flex-col">
           <TransactionsList :transactions="contractTransactions" />

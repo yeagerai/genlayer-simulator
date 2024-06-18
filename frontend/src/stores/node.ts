@@ -10,7 +10,6 @@ export const useNodeStore = defineStore('nodeStore', () => {
   if (!webSocketClient.connected) webSocketClient.connect()
   webSocketClient.on('status_update', (event) => {
     if (listenWebsocket.value) {
-      console.log('node status update', event)
       logs.value.push({ date: new Date().toISOString(), message: event.message })
     }
   })
