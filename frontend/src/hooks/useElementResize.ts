@@ -1,25 +1,27 @@
-import { ref, onMounted, onUnmounted } from 'vue'
+import { watch, ref, onUnmounted, type Ref } from 'vue'
 
-export function useElementResize(el: HTMLDivElement) {
-  const width = ref(el.offsetWidth)
-  const height = ref(el.offsetHeight)
+export function useElementResize(el: Ref<HTMLElement | null | undefined>) {
+  const width = ref(el?.value?.offsetWidth || 0)
+  const height = ref(el?.value?.offsetHeight || 0)
+  let ro: ResizeObserver
 
-  function handler() {
-    console.log('handler', el.offsetWidth, el.clientWidth)
-    width.value = el.offsetWidth
-    height.value = el.offsetHeight
-  }
-
-  onMounted(() => el.addEventListener('resize', handler))
-  onUnmounted(() => el.removeEventListener('resize', handler))
-  // const ro = new ResizeObserver(entries => {
-  //   for (let entry of entries) {
-  //     entry.target.style.borderRadius =
-  //         Math.max(0, 250 - entry.contentRect.width) + 'px';
-  //   }
-  // });
-  // // Only observe the second box
-  // ro.observe(el);
+  watch(
+    () => el?.value,
+    () => {
+      if (!ro) {
+        ro = new ResizeObserver((entries) => {
+          for (const entry of entries) {
+            width.value = entry.target.clientWidth || 0
+            height.value = entry.target.clientHeight || 0
+          }
+        })
+        ro.observe(el.value!)
+      }
+    }
+  )
+  onUnmounted(() => {
+    if (el.value) ro.unobserve(el.value!)
+  })
 
   return { width, height }
 }

@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { useMainStore } from "@/stores"
+import { useContractsStore } from "@/stores"
 import { DocumentCheckIcon, ArrowUpTrayIcon, PlusIcon, TrashIcon, PencilIcon } from '@heroicons/vue/24/solid'
 import { nextTick, ref, watchEffect } from "vue";
 import { v4 as uuidv4 } from 'uuid'
 import type { ContractFile } from "@/types";
 import Modal from '@/components/ModalComponent.vue'
 
-const store = useMainStore()
+const store = useContractsStore()
 const showFileOptionsId = ref('')
 const editingFileId = ref('')
 const newFileName = ref('.gpy')
@@ -134,8 +134,8 @@ const closeDeleteFileModal = () => {
           <input type="text" class="bg-slate-100 dark:bg-zinc-700 w-full" v-model="editingFileName"
             @blur="handleSaveFile" @keyup.enter="handleSaveFile">
         </div>
-        <div class="truncate flex items-center justify-between w-full" v-else>
-          <div class="truncate ..." @click="openContract(contract.id)">
+        <div v-else class="truncate flex items-center justify-between w-full">
+          <div class="truncate ... cursor-pointer" @click="openContract(contract.id)">
             {{ contract.name }}
           </div>
           <div class="flex" v-show="showFileOptionsId === contract.id">
