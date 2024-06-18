@@ -489,7 +489,7 @@ const handleResetStorage = async () => {
           </ul>
         </div>
         <div class="flex flex-col p-2 mt-2">
-         <div class="text-md italic"><span class="font-semibold">Note:</span> if you want to preserve any of these contracts, make a copy of them in the files section</div>
+         <div class="text-md italic"><span class="font-semibold">Note:</span> if you want to preserve any of these contracts, make a copy of them in the files section.</div>
         </div>
       </div>
       <div class="flex flex-col mt-4 w-full">
