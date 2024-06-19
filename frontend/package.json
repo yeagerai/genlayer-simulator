@@ -41,7 +41,6 @@
     "vite-svg-loader": "^5.1.0",
     "vue": "^3.4.21",
     "vue-debounce": "^5.0.0",
-    "vue-gtm": "^3.5.0",
     "vue-router": "^4.0.13",
     "vue3-spinners": "^1.2.2"
   },
