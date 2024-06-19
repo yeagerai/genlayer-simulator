@@ -1,0 +1,44 @@
+name: Check Version Difference
+
+# Switch push and pull_request around to run the workflow with Act
+on:
+#  push:
+  pull_request:
+    types: [opened, synchronize]
+    branches:
+      - main
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    # Comment out the below line to run the workflow with Act
+    if: github.base_ref == 'main' && github.head_ref == 'staging'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Get version from staging
+      id: get-version-staging
+      run: |
+        git fetch origin staging:staging
+        git checkout staging
+        VERSION_STAGING=$(cat version.txt)
+        echo "::set-output name=version_staging::$VERSION_STAGING"
+
+    - name: Get version from main
+      id: get-version-main
+      run: |
+        git checkout main
+        VERSION_MAIN=$(cat version.txt)
+        echo "::set-output name=version_main::$VERSION_MAIN"
+
+    - name: Check version difference
+      id: check-version
+      run: |
+        if [ "${{ steps.get-version-staging.outputs.version_staging }}" == "${{ steps.get-version-main.outputs.version_main }}" ]; then
+          echo "ERROR: (main) version.txt == (staging) version.txt"
+          exit 1
+        fi

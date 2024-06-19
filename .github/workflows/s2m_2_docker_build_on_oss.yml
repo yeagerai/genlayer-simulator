@@ -1,0 +1,65 @@
+name: Build Docker Images on Multiple OS
+
+on:
+  workflow_run:
+    workflows: ["Check Version Difference"]
+    types:
+      - completed
+
+jobs:
+  build-docker:
+    # Remove the below line to run the workflow with Act
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Copy .env file
+      run: cp .env.example .env
+
+    - name: Changing URL for rpc server to localhost
+      run: sed -i "s/'jsonrpc'/'localhost'/g" .env
+
+    - name: Adding OPENAIKEY to the .env file
+      env:
+        OPENAIKEY: ${{ secrets.OPENAIKEY }}
+      run: printf "\nOPENAIKEY='$OPENAIKEY'\n" >> .env
+
+    - name: Set up Docker - Windows
+      if: matrix.os == 'windows-latest'
+      run: |
+        choco install docker-cli
+        Start-Service com.docker.service
+      shell: powershell
+
+    - name: Set up Docker for macOS
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install --cask docker
+        open /Applications/Docker.app &  # Start Docker in background
+        # Wait for Docker to start
+        timeout=300  # Timeout after 300 seconds (5 minutes)
+        until docker info >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+          echo "Waiting for Docker to start..."
+          sleep 5
+          ((timeout-=5))
+        done
+        if [ $timeout -eq 0 ]; then
+          echo "Timed out waiting for Docker to start"
+          exit 1
+        else
+          echo "Docker is up and running!"
+        fi
+      shell: bash
+
+    - name: Build Docker images
+      run: |
+        for DOCKERFILE in docker/*; do
+          docker build -f $DOCKERFILE -t os-builds-$DOCKERFILE .
+        done

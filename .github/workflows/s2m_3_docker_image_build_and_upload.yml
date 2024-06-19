@@ -1,0 +1,48 @@
+name: Build and Deploy Docker Images
+
+on:
+  workflow_run:
+    workflows: ["Build Docker Images on Multiple OS"]
+    types:
+      - completed
+
+jobs:
+  build-and-deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Get version from staging
+      id: get-version-staging
+      run: |
+        git fetch origin staging:staging
+        git checkout staging
+        VERSION_STAGING=$(cat version.txt)
+        echo "::set-output name=version_staging::$VERSION_STAGING"
+
+    - name: Log in to DockerHub
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_REGISTARY_USER }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_REGISTARY_PASS }}
+      run: echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin
+
+    - name: Build and tag Docker images
+      run: |
+        VERSION=${{ steps.get-version-staging.outputs.version_staging }}
+        for DOCKERFILE in docker/*; do
+          IMAGE_NAME=$(basename $DOCKERFILE | sed 's/Dockerfile.//')
+          docker build -f $DOCKERFILE -t yeagerai/$IMAGE_NAME:$VERSION .
+        done
+
+    - name: Push Docker images
+      run: |
+        VERSION=${{ steps.get-version-staging.outputs.version_staging }}
+        for DOCKERFILE in docker/*; do
+          IMAGE_NAME=$(basename $DOCKERFILE | sed 's/Dockerfile.//')
+          docker push yeagerai/$IMAGE_NAME:$VERSION
+        done
