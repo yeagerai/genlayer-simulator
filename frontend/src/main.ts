@@ -7,7 +7,6 @@ import router from './router'
 import { persistStorePlugin, createToolTipPlugin } from '@/plugins'
 import { RpcClient, setupStores } from '@/utils'
 import { JsonRpcService } from './services/JsonRpcService'
-
 import { VueSpinnersPlugin } from 'vue3-spinners'
 import { createGtm } from '@gtm-support/vue-gtm';
 const app = createApp(App)
