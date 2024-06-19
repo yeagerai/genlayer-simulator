@@ -336,3 +336,4 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint_for_partial(fund_account, accounts_manager)
     register_rpc_endpoint_for_partial(get_contract_schema, accounts_manager)
     register_rpc_endpoint_for_partial(get_contract_state, accounts_manager)
+    register_rpc_endpoint_for_partial(get_transaction_by_id, transactions_processor)

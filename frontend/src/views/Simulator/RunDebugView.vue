@@ -12,12 +12,7 @@ import { debounce } from 'vue-debounce'
 const store = useContractsStore()
 const accounts = useAccountsStore()
 
-const contractTransactions = computed(() => {
-  if (store.deployedContract?.address && store.transactions[store.deployedContract?.address]) {
-    return store.transactions[store.deployedContract?.address]
-  }
-  return []
-})
+const contractTransactions = computed(() => store.transactions.filter((t) => t.localContractId === store.currentContractId))
 
 const handleGetContractState = async (
   contractAddress: string,
@@ -38,7 +33,7 @@ const handleGetContractState = async (
 const handleCallContractMethod = async ({ method, params }: { method: string; params: any[] }) => {
   const result = await store.callContractMethod({
     userAccount: accounts.currentUserAddress || '',
-    contractAddress: store.deployedContract?.address || '',
+    localContractId: store.deployedContract?.contractId || '',
     method: `${store.currentDeployedContractAbi?.class}.${method}`,
     params
   })
@@ -130,14 +125,14 @@ onMounted(async () => {
           :error="store.currentErrorConstructorInputs" @deploy-contract="handleDeployContract"
           :deploying="store.deployingContract" />
       </div>
-      <div class="flex flex-col" v-show="store.deployedContract">
-        <div class="flex flex-col">
+      <div class="flex flex-col">
+        <div class="flex flex-col" v-show="store.deployedContract">
           <ContractState :abi="store.currentDeployedContractAbi" :contract-state="store.currentContractState"
             :deployed-contract="store.deployedContract" :get-contract-state="handleGetContractState"
             :calling-state="store.callingContractState" />
         </div>
 
-        <div class="flex flex-col">
+        <div class="flex flex-col" v-show="store.deployedContract">
           <ExecuteTransactions :abi="store.currentDeployedContractAbi" @call-method="handleCallContractMethod"
             :calling-method="store.callingContractMethod" />
         </div>

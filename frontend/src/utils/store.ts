@@ -5,11 +5,8 @@ import { v4 as uuidv4 } from 'uuid'
 export const setupStores = async () => {
   const contracts = useContractsStore()
   const accounts = useAccountsStore()
-  // await db.contractFiles.clear()
-  // localStorage.setItem('mainStore.contractsModified', '')
   if (
-    (await db.contractFiles.count()) === 0 &&
-    !localStorage.getItem('mainStore.contractsModified')
+    (await db.contractFiles.count()) === 0
   ) {
     const contractsBlob = import.meta.glob('@/assets/examples/contracts/*.py', {
       query: '?raw',
@@ -30,6 +27,7 @@ export const setupStores = async () => {
   }
 
   contracts.deployedContracts = await db.deployedContracts.toArray()
+  contracts.transactions = await db.transactions.toArray()
   if ( accounts.accounts.length < 1) {
     await accounts.generateNewAccount()
   } else {

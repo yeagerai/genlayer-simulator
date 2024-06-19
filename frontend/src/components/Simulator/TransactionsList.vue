@@ -3,11 +3,12 @@ import Modal from '@/components/ModalComponent.vue'
 import { ref } from 'vue';
 import JsonViewer from '@/components/JsonViewer/json-viewer.vue'
 import { useUIStore } from '@/stores';
+import type { TransactionItem } from '@/types';
 const props = defineProps<{
-  transactions: any[]
+  transactions: TransactionItem[]
 }>()
 const uiStore = useUIStore()
-const selectedTransaction = ref<any>(null)
+const selectedTransaction = ref<TransactionItem | null>(null)
 
 const handleSelectTransaction = (transaction: any) => {
   selectedTransaction.value = transaction
@@ -24,10 +25,11 @@ const handleCloseModal = () => {
   </div>
   <div class="flex flex-col p-2">
     <div
-      class="flex flex-col text-xs w-full max-h-[98%] overflow-y-auto px-1 mt-2 scroll-smooth overscroll-contain snap-y  snap-start">
-      <div class="flex flex-col m-1" v-for="transaction in props.transactions" :key="transaction.id">
-        <div class="flex cursor-pointer  dark:text-white text-primary hover:underline" @click="handleSelectTransaction(transaction)">{{
-        transaction.id }}</div>
+      class="flex flex-col text-xs w-full max-h-[98%] overflow-y-auto mt-2 scroll-smooth overscroll-contain snap-y  snap-start">
+      <div class="flex flex-col p-1" v-for="transaction in props.transactions" :key="transaction.txId">
+        <div class="flex cursor-pointer dark:text-white text-primary hover:bg-slate-100 items-center justify-between"
+          @click="handleSelectTransaction(transaction)">#{{
+        transaction.txId }} <span class="text-xs ml-1 font-semibold p-1">{{ transaction.status }}</span></div>
       </div>
     </div>
   </div>
@@ -35,7 +37,7 @@ const handleCloseModal = () => {
     <div class="flex flex-col">
       <div class="flex justify-between">
         <div class="text-xl">Transaction details</div>
-        <div class=" dark:text-white text-primary">ID: {{ selectedTransaction?.id }}</div>
+        <div class=" dark:text-white text-primary">ID: {{ selectedTransaction?.txId }}</div>
       </div>
       <div class="flex flex-col p-2 mt-2">
         <p class="text-md font-semibold">Status:</p>
@@ -43,20 +45,13 @@ const handleCloseModal = () => {
         <div class="p-2 w-full bg-slate-100 overflow-y-auto">
           {{ selectedTransaction?.status }}
         </div>
-        <div class="flex flex-col p-2 mt-2" v-if="selectedTransaction?.message">
-        <p class="text-md font-semibold">Message:</p>
-
-        <div class="p-2 w-full bg-slate-100 overflow-y-auto">
-          {{ selectedTransaction?.message }}
-        </div>
-      </div>
       </div>
       <div class="flex flex-col p-2 mt-2">
         <p class="text-md font-semibold">Ouput:</p>
         <div class="p-2 max-h-64 w-full bg-slate-100 overflow-y-auto">
-      <JsonViewer class="ml-2" :value="selectedTransaction?.data?.execution_output || {}"
-                :theme="uiStore.mode === 'light' ? 'light' : 'dark'" :expand="true" sort />  
-      </div>
+          <JsonViewer class="ml-2" :value="selectedTransaction?.data || {}"
+            :theme="uiStore.mode === 'light' ? 'light' : 'dark'" :expand="true" sort />
+        </div>
       </div>
     </div>
   </Modal>
