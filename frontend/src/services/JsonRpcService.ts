@@ -12,7 +12,8 @@ import type {
   GetContractSchemaRequest,
   GetDeployedContractSchemaRequest,
   CreateValidatorRequest,
-  UpdateValidatorRequest
+  UpdateValidatorRequest,
+  TransactionItem
 } from '@/types'
 
 export class JsonRpcService implements IJsonRpcService {
@@ -208,8 +209,8 @@ export class JsonRpcService implements IJsonRpcService {
     return result
   }
 
-  async getTransactionById(txId: number): Promise<JsonRpcResult<any>> {
-    const { result } = await this.rpcClient.call({
+  async getTransactionById(txId: number): Promise<JsonRpcResult<TransactionItem>> {
+    const { result } = await this.rpcClient.call<TransactionItem>({
       method: 'get_transaction_by_id',
       params: [`${txId}`]
     })

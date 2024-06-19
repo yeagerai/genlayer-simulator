@@ -18,7 +18,7 @@ export class GenLayerSimulatorDB extends Dexie {
       contractFiles: 'id', // Primary key and indexed props
       deployedContracts: '[contractId+address]',
       defaultContractStates: null,
-      transactions: '++id, type, status, contractAddress, localContractId, txId, data'
+      transactions: '++id, type, status, contractAddress, localContractId, txId'
     })
 
   }

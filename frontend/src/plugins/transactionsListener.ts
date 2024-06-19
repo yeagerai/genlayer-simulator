@@ -1,25 +1,38 @@
-import { useContractsStore } from '@/stores'
+import { useContractsStore, useTransactionsStore } from '@/stores'
 import type { TransactionItem } from '@/types'
 import type { App } from 'vue'
 
-const queue: TransactionItem[] = []
 export const TransactionsListenerPlugin = {
   install(app: App, { interval = 5000 }: { interval: number }) {
+    const contractsStore = useContractsStore()
+    const transactionsStore = useTransactionsStore()
+
     const listener = async () => {
-      const store = useContractsStore()
-
-      const pendingTxs = store.transactions.filter(
+ 
+      const pendingTxs = transactionsStore.transactions.filter(
         (tx: TransactionItem) =>
-          tx.status === 'PENDING' && queue.findIndex((q) => q.txId !== tx.txId) === -1
+          tx.status === 'PENDING' && transactionsStore.processingQueue.findIndex((q) => q.txId !== tx.txId) === -1
       ) as TransactionItem[]
-      if (pendingTxs.length > 0) {
-        queue.push(...pendingTxs)
-        const requests = queue.map((tx) => store.getTransaction(tx.txId))
-        const results = await Promise.all(requests)
-        queue.splice(0, queue.length)
+      
 
-        console.log(`There are ${pendingTxs.length} pending transactions`, results)
+      transactionsStore.processingQueue.push(...pendingTxs)
+      if (transactionsStore.processingQueue.length > 0) {
+        const requests = transactionsStore.processingQueue.map((tx) => transactionsStore.getTransaction(tx.txId))
+      const results = await Promise.all(requests)
+      results.forEach(tx => {
+        const currentTx = transactionsStore.processingQueue.find((t) => t.txId === tx?.data?.id)
+        transactionsStore.updateTransaction(tx?.data)
+        transactionsStore.processingQueue = transactionsStore.processingQueue.filter((t) => t.txId !== tx?.data?.id)
+                // if finalized and is contract add to the contract store dpeloyed
+        if(tx?.data?.status === 'FINALIZED' && currentTx?.type === 'deploy') {
+          contractsStore.addDeployedContract({ contractId: currentTx.localContractId, address: currentTx.contractAddress, defaultState: '{}' })
+        }
+
+      });
+      console.log(`There are ${pendingTxs.length} pending transactions`, results)
       }
+
+      
     }
     setInterval(listener, interval)
   }

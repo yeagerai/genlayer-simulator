@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useAccountsStore, useContractsStore } from '@/stores'
+import { useAccountsStore, useContractsStore, useTransactionsStore } from '@/stores'
 import { computed, onMounted, watch } from 'vue'
 import { notify } from '@kyvg/vue3-notification'
 import ContractState from '@/components/Simulator/ContractState.vue'
@@ -9,10 +9,11 @@ import ConstructorParameters from '@/components/Simulator/ConstructorParameters.
 import { debounce } from 'vue-debounce'
 
 
-const store = useContractsStore()
-const accounts = useAccountsStore()
+const contractsStore = useContractsStore()
+const accountsStore = useAccountsStore()
+const transactionsStore = useTransactionsStore()
 
-const contractTransactions = computed(() => store.transactions.filter((t) => t.localContractId === store.currentContractId))
+const contractTransactions = computed(() => transactionsStore.transactions.filter((t) => t.localContractId === contractsStore.currentContractId))
 
 const handleGetContractState = async (
   contractAddress: string,
@@ -20,7 +21,7 @@ const handleGetContractState = async (
   methodArguments: string[]
 ) => {
   try {
-    await store.getContractState(contractAddress, method, methodArguments)
+    await contractsStore.getContractState(contractAddress, method, methodArguments)
   } catch (error) {
     notify({
       title: 'Error',
@@ -31,10 +32,10 @@ const handleGetContractState = async (
 }
 
 const handleCallContractMethod = async ({ method, params }: { method: string; params: any[] }) => {
-  const result = await store.callContractMethod({
-    userAccount: accounts.currentUserAddress || '',
-    localContractId: store.deployedContract?.contractId || '',
-    method: `${store.currentDeployedContractAbi?.class}.${method}`,
+  const result = await contractsStore.callContractMethod({
+    userAccount: accountsStore.currentUserAddress || '',
+    localContractId: contractsStore.deployedContract?.contractId || '',
+    method: `${contractsStore.currentDeployedContractAbi?.class}.${method}`,
     params
   })
   if (!result) {
@@ -52,7 +53,7 @@ const handleDeployContract = async ({
   params: { [k: string]: string }
 }) => {
   try {
-    await store.deployContract({
+    await contractsStore.deployContract({
       constructorParams
     })
     notify({
@@ -70,27 +71,27 @@ const handleDeployContract = async ({
 }
 
 
-const debouncedGetConstructorInputs = debounce(() => store.getConstructorInputs(), 3000)
+const debouncedGetConstructorInputs = debounce(() => contractsStore.getConstructorInputs(), 3000)
 
-watch(() => store.deployedContract?.contractId, (newValue) => {
+watch(() => contractsStore.deployedContract?.contractId, (newValue) => {
   if (newValue) {
-    store.getCurrentContractAbi()
+    contractsStore.getCurrentContractAbi()
   }
 })
 
 
-watch(() => store.currentContract?.id, (newValue, oldValue) => {
+watch(() => contractsStore.currentContract?.id, (newValue, oldValue) => {
   if (newValue && newValue !== oldValue) {
-    store.getConstructorInputs()
+    contractsStore.getConstructorInputs()
   }
 })
 
-watch(() => store.currentContract?.content, (newValue, oldValue) => {
-  if (newValue && newValue !== oldValue && !store.loadingConstructorInputs) {
+watch(() => contractsStore.currentContract?.content, (newValue, oldValue) => {
+  if (newValue && newValue !== oldValue && !contractsStore.loadingConstructorInputs) {
     debouncedGetConstructorInputs()
   }
 })
-watch(() => store.currentErrorConstructorInputs, (newValue, oldValue) => {
+watch(() => contractsStore.currentErrorConstructorInputs, (newValue, oldValue) => {
   if (newValue && newValue !== oldValue) {
     notify({
       title: 'Error',
@@ -101,9 +102,9 @@ watch(() => store.currentErrorConstructorInputs, (newValue, oldValue) => {
 })
 
 onMounted(async () => {
-  await store.getConstructorInputs()
-  if (store.deployedContract) {
-    store.getCurrentContractAbi()
+  await contractsStore.getConstructorInputs()
+  if (contractsStore.deployedContract) {
+    contractsStore.getCurrentContractAbi()
   }
 })
 </script>
@@ -113,28 +114,31 @@ onMounted(async () => {
     <div class="flex flex-col p-2 w-full">
       <h3 class="text-xl">Run and Debug</h3>
     </div>
-    <div class="flex flex-col overflow-y-auto" v-if="!!store.currentContractId">
+    <div class="flex flex-col overflow-y-auto" v-if="!!contractsStore.currentContractId">
       <div class="flex flex-col">
         <div class="flex flex-col px-2 py-2 w-full bg-slate-100 dark:bg-zinc-700">
           <div class="text-sm">Intelligent Contract:</div>
           <div class="text-xs text-neutral-800 dark:text-neutral-200">
-            {{ store.currentContract?.name }}
+            {{ contractsStore.currentContract?.name }}
           </div>
         </div>
-        <ConstructorParameters :inputs="store.currentConstructorInputs" :loading="store.loadingConstructorInputs"
-          :error="store.currentErrorConstructorInputs" @deploy-contract="handleDeployContract"
-          :deploying="store.deployingContract" />
+        <ConstructorParameters :inputs="contractsStore.currentConstructorInputs"
+          :loading="contractsStore.loadingConstructorInputs" :error="contractsStore.currentErrorConstructorInputs"
+          @deploy-contract="handleDeployContract" :deploying="contractsStore.deployingContract" />
       </div>
       <div class="flex flex-col">
-        <div class="flex flex-col" v-show="store.deployedContract">
-          <ContractState :abi="store.currentDeployedContractAbi" :contract-state="store.currentContractState"
-            :deployed-contract="store.deployedContract" :get-contract-state="handleGetContractState"
-            :calling-state="store.callingContractState" />
+        <div class="flex flex-col" v-show="contractsStore.deployedContract">
+          <ContractState :abi="contractsStore.currentDeployedContractAbi"
+            :contract-state="contractsStore.currentContractState" 
+            :deployed-contract="contractsStore.deployedContract"
+            :get-contract-state="handleGetContractState" 
+            :calling-state="contractsStore.callingContractState" />
         </div>
 
-        <div class="flex flex-col" v-show="store.deployedContract">
-          <ExecuteTransactions :abi="store.currentDeployedContractAbi" @call-method="handleCallContractMethod"
-            :calling-method="store.callingContractMethod" />
+        <div class="flex flex-col" v-show="contractsStore.deployedContract">
+          <ExecuteTransactions :abi="contractsStore.currentDeployedContractAbi" 
+            @call-method="handleCallContractMethod"
+            :calling-method="contractsStore.callingContractMethod" />
         </div>
         <div class="flex flex-col">
           <TransactionsList :transactions="contractTransactions" />

@@ -69,21 +69,6 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
               .equals(args[0] as string)
               .delete()
             break
-          case 'addTransaction':
-            await db.transactions.add(args[0])
-            break
-          case 'removeTransaction':
-            await db.transactions
-              .where('txId')
-              .equals(args[0] as string)
-              .delete()
-            break
-          case 'updateTransaction':
-            await db.transactions
-              .where('txId')
-              .equals(args[0] as string)
-              .modify(args[1])
-            break
           default:
             break
         }
@@ -96,8 +81,27 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
           default:
             break
         }
+      } else if (store.$id === 'transactionsStore') {
+        switch (name) {
+          case 'addTransaction':
+            await db.transactions.add(args[0])
+            break
+          case 'removeTransaction':
+            await db.transactions
+              .where('txId')
+              .equals(args[0] as string)
+              .delete()
+            break
+          case 'updateTransaction':
+            await db.transactions
+              .where('txId')
+              .equals((args[0] as any).id)
+              .modify({ data: args[0], status: args[0].status })
+            break
+          default:
+            break
+        }
       }
-
       console.log('PersistStorePlugin:::', { name, args, result })
     })
   })
