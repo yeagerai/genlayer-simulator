@@ -25,6 +25,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
   const callingContractMethod = ref<boolean>(false)
   const callingContractState = ref<boolean>(false)
   const currentContractState = ref<Record<string, any>>({})
+  const pendingTransactions = ref<any[]>([])
 
   const currentConstructorInputs = ref<{ [k: string]: string }>({})
   const currentErrorConstructorInputs = ref<Error>()
@@ -200,6 +201,10 @@ export const useContractsStore = defineStore('contractsStore', () => {
                 defaultState: constructorParamsAsString
               }
               addDeployedContract(deployed)
+              pendingTransactions.value.push({
+                id: uuidv4(),
+                ...deployed
+              })
               return deployed
             } else {
               throw new Error(

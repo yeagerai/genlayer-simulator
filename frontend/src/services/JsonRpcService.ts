@@ -95,7 +95,7 @@ export class JsonRpcService implements IJsonRpcService {
    */
   async getContractSchema({ code }: GetContractSchemaRequest): Promise<JsonRpcResult<any>> {
     const { result } = await this.rpcClient.call({
-      method: 'get_icontract_schema_for_code',
+      method: 'get_contract_schema_for_code',
       params: [code]
     })
     return result
@@ -109,7 +109,7 @@ export class JsonRpcService implements IJsonRpcService {
    */
   async getDeployedContractSchema({ address }: GetDeployedContractSchemaRequest): Promise<JsonRpcResult<any>> {
     const { result } = await this.rpcClient.call({
-      method: 'get_icontract_schema',
+      method: 'get_contract_schema',
       params: [address]
     })
     return result
