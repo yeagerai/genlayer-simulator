@@ -3,7 +3,7 @@ import type { TransactionItem } from '@/types'
 import type { App } from 'vue'
 
 export const TransactionsListenerPlugin = {
-  install(app: App, { interval = 5000 }: { interval: number }) {
+  install(_app: App, { interval = 5000 }: { interval: number }) {
     const contractsStore = useContractsStore()
     const transactionsStore = useTransactionsStore()
 

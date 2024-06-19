@@ -232,12 +232,8 @@ export const useContractsStore = defineStore('contractsStore', () => {
 
   async function getCurrentContractAbi() {
     try {
-      // const result = await $jsonRpc?.getDeployedContractSchema({
-      //   address: deployedContract.value?.address || ''
-      // })
-      // TODO: the endpoint is failing for some reason we need to switch back later
-      const result = await $jsonRpc?.getContractSchema({
-        code: currentContract.value?.content  || ''
+      const result = await $jsonRpc?.getDeployedContractSchema({
+        address: deployedContract.value?.address || ''
       })
       currentDeployedContractAbi.value = result?.data
     } catch (error) {
