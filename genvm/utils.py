@@ -59,8 +59,8 @@ def get_webpage_content(url: str) -> str:
 
     result = requests.post(webrequest_url() + "/api", json=payload).json()
 
-    if result["result"]["status"] == "error":
-        raise Exception(result["result"])
+    if ("result" not in result) or (result["result"]["status"] == "error"):
+        raise Exception(result)
 
     return result["result"]
 
