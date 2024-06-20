@@ -16,6 +16,8 @@ services:
       context: ./
       dockerfile: ./docker/Dockerfile.rpc
       target: prod
+    environment:
+      - FLASK_SERVER_PORT=${RPCPORT}
     ports:
       - "${RPCPORT}:${RPCPORT}"
     depends_on:
@@ -40,6 +42,8 @@ services:
       context: ./
       dockerfile: ./docker/Dockerfile.genvm
       target: prod
+    environment:
+      - FLASK_SERVER_PORT=${GENVMPORT}
     expose:
       - "${GENVMPORT}"
     command: python genvm/server.py
