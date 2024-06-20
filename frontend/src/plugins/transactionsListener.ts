@@ -11,7 +11,7 @@ export const TransactionsListenerPlugin = {
     const listener = async () => {
       const pendingTxs = transactionsStore.transactions.filter(
         (tx: TransactionItem) =>
-          tx.status === 'PENDING' &&
+          tx.status !== 'FINALIZED' &&
           transactionsStore.processingQueue.findIndex((q) => q.txId !== tx.txId) === -1
       ) as TransactionItem[]
 
