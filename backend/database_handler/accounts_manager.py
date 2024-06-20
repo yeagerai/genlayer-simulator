@@ -16,10 +16,18 @@ class AccountsManager:
         self.transactions_processor = transactions_processor
         self.db_accounts_table = "current_state"
 
+    def _parse_account_data(self, account_data: dict) -> dict:
+        return {
+            "id": account_data["id"],
+            "data": account_data["data"],
+            "updated_at": account_data["updated_at"].isoformat(),
+        }
+
     def get_account(self, account_address: str):
         """Private method to retrieve if an account from the data base"""
         condition = f"id = '{account_address}'"
-        return self.db_client.get(self.db_accounts_table, condition)
+        account_data = self.db_client.get(self.db_accounts_table, condition)
+        return self._parse_account_data(account_data[0]) if account_data else None
 
     def get_account_or_fail(self, account_address: str):
         """Private method to check if an account exists, and raise an error if not."""

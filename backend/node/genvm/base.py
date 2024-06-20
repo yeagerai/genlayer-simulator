@@ -176,13 +176,21 @@ class GenVM:
         code: str, state: str, method_name: str, method_args: list
     ) -> dict:
         namespace = {}
-        exec(code, namespace)
+        # Execute the code to ensure all classes are defined in the namespace
+        exec(code, globals(), namespace)
 
-        target_module = sys.modules["__main__"]
+        # Ensure the class and other necessary elements are in the global namespace if needed
         for name, value in namespace.items():
-            setattr(target_module, name, value)
+            globals()[name] = value
 
         decoded_pickled_object = base64.b64decode(state)
         contract_state = pickle.loads(decoded_pickled_object)
+
         method_to_call = getattr(contract_state, method_name)
-        return method_to_call(*method_args)
+        result = method_to_call(*method_args)
+
+        # Clean up
+        for name in namespace.keys():
+            del globals()[name]
+
+        return result
