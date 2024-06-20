@@ -58,7 +58,7 @@ const handleDeployContract = async ({
     })
     notify({
       title: 'OK',
-      text: 'Contract deployed',
+      text: 'Started deploying contract successfully',
       type: 'success'
     })
   } catch (err) {

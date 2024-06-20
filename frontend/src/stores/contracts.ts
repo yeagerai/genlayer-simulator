@@ -145,7 +145,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
 
       currentContractState.value = {
         ...currentContractState.value,
-        [method]: result?.data[method]
+        [method]: result?.data
       }
       callingContractState.value = false
     } catch (error) {
