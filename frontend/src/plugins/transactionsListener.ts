@@ -34,11 +34,6 @@ export const TransactionsListenerPlugin = {
               address: currentTx.contractAddress,
               defaultState: '{}'
             })
-            notify({
-              title: 'Contract deployed',
-              text: `to ${currentTx.contractAddress}`,
-              type: 'success'
-            })
           }
         })
         console.log(`There are ${pendingTxs.length} pending transactions`, results)

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useAccountsStore, useContractsStore, useTransactionsStore } from '@/stores'
-import { computed, onMounted, watch } from 'vue'
+import { computed, onMounted, onUnmounted, watch } from 'vue'
 import { notify } from '@kyvg/vue3-notification'
 import ContractState from '@/components/Simulator/ContractState.vue'
 import ExecuteTransactions from '@/components/Simulator/ExecuteTransactions.vue'
@@ -12,7 +12,7 @@ import { debounce } from 'vue-debounce'
 const contractsStore = useContractsStore()
 const accountsStore = useAccountsStore()
 const transactionsStore = useTransactionsStore()
-
+let deploymentSubscription: () => void
 const contractTransactions = computed(() => transactionsStore.transactions.filter((t) => t.localContractId === contractsStore.currentContractId))
 
 const handleGetContractState = async (
@@ -58,7 +58,7 @@ const handleDeployContract = async ({
     })
     notify({
       title: 'OK',
-      text: 'Started deploying contract successfully',
+      text: 'Started deploying the contract',
       type: 'success'
     })
   } catch (err) {
@@ -106,6 +106,23 @@ onMounted(async () => {
   if (contractsStore.deployedContract) {
     contractsStore.getCurrentContractAbi()
   }
+  deploymentSubscription = contractsStore.$onAction(({ name, store, args, after }) => {
+    if (name === 'addDeployedContract' && store.$id === contractsStore.$id) {
+      after(() => {
+        notify({
+          title: 'Contract deployed',
+          text: `to ${args[0]?.address}`,
+          type: 'success'
+        })
+      })
+    }
+  })
+})
+
+onUnmounted(() => {
+  if (deploymentSubscription) {
+    deploymentSubscription()
+  }
 })
 </script>
 
@@ -129,15 +146,12 @@ onMounted(async () => {
       <div class="flex flex-col">
         <div class="flex flex-col" v-show="contractsStore.deployedContract">
           <ContractState :abi="contractsStore.currentDeployedContractAbi"
-            :contract-state="contractsStore.currentContractState" 
-            :deployed-contract="contractsStore.deployedContract"
-            :get-contract-state="handleGetContractState" 
-            :calling-state="contractsStore.callingContractState" />
+            :contract-state="contractsStore.currentContractState" :deployed-contract="contractsStore.deployedContract"
+            :get-contract-state="handleGetContractState" :calling-state="contractsStore.callingContractState" />
         </div>
 
         <div class="flex flex-col" v-show="contractsStore.deployedContract">
-          <ExecuteTransactions :abi="contractsStore.currentDeployedContractAbi" 
-            @call-method="handleCallContractMethod"
+          <ExecuteTransactions :abi="contractsStore.currentDeployedContractAbi" @call-method="handleCallContractMethod"
             :calling-method="contractsStore.callingContractMethod" />
         </div>
         <div class="flex flex-col">
