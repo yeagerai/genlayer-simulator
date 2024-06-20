@@ -37,7 +37,6 @@ services:
       - genvm
     expose:
       - "${RPCPORT}"
-    command: sh -c '/app/rpc/server.sh'
 
   webrequest:
     build:
@@ -69,7 +68,6 @@ services:
     volumes:
       - ./genvm:/app/genvm
       - ./common:/app/common
-    command: sh -c '/app/genvm/server.sh'
 
   ollama:
     image: ollama/ollama:latest
@@ -81,6 +79,7 @@ services:
     pull_policy: always
     tty: true
     restart: always
+
   postgres:
     build:
       context: ./

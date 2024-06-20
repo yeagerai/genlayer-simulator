@@ -1,18 +1,17 @@
 FROM python:3.12.2-slim
 
 ARG path=/app
-
+  
 RUN mkdir $path
 WORKDIR $path
-
 COPY ../.env .
-
 ADD rpc $path/rpc
 ADD database $path/database
 ADD consensus $path/consensus
 ADD common $path/common
-
 RUN pip install --no-cache-dir -r rpc/requirements.txt
 
 ENV PYTHONPATH "${PYTHONPATH}:/${path}"
 ENV FLASK_APP=rpc/server.py
+
+CMD ["/bin/bash", "-c", "source rpc/.env && rpc/server.sh"]
