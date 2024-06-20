@@ -1,25 +1,33 @@
 import json
 import traceback
 from typing import Optional
-from backend.node.genvm.base import GenVM
 
-from backend.database_handler.transactions_processor import TransactionStatus
+from backend.node.genvm.base import GenVM
+from backend.database_handler.contract_snapshot import ContractSnapshot
 
 
 class Node:
     def __init__(
         self,
-        contract_snapshot,
-        address,
-        validator_mode,
-        config,
+        contract_snapshot: ContractSnapshot,
+        address: str,
+        validator_mode: str,
+        stake: int,
+        provider: str,
+        model: str,
+        config: dict,
         leader_receipt: Optional[dict] = None,
     ):
-        self.address = address
         self.validator_mode = validator_mode
-        self.config = config
+        self.address = address
+        self.validator_info = {
+            "provider": provider,
+            "model": model,
+            "config": config,
+            "stake": stake,
+        }
         self.leader_receipt = leader_receipt
-        self.genvm = GenVM(contract_snapshot, self.validator_mode, self.config)
+        self.genvm = GenVM(contract_snapshot, self.validator_mode, self.validator_info)
 
     async def exec_transaction(self, transaction: dict):
         transaction_data = transaction["data"]

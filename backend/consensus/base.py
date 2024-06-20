@@ -95,7 +95,13 @@ class ConsensusAlgorithm:
 
         # Create Leader
         leader_node = Node(
-            contract_snapshot, leader["address"], "leader", leader["config"]
+            contract_snapshot=contract_snapshot,
+            address=leader["address"],
+            validator_mode="leader",
+            stake=leader["stake"],
+            provider=leader["provider"],
+            model=leader["model"],
+            config=leader["config"],
         )
 
         # Leader executes transaction
@@ -109,11 +115,14 @@ class ConsensusAlgorithm:
         # Create Validators
         validator_nodes = [
             Node(
-                contract_snapshot,
-                validator["address"],
-                "validator",
-                validator["config"],
-                leader_receipt,
+                contract_snapshot=contract_snapshot,
+                address=validator["address"],
+                validator_mode="validator",
+                stake=validator["stake"],
+                provider=validator["provider"],
+                model=validator["model"],
+                config=validator["config"],
+                leader_receipt=leader_receipt,
             )
             for i, validator in enumerate(remaining_validators)
         ]
@@ -151,8 +160,6 @@ class ConsensusAlgorithm:
         execution_output = {}
         execution_output["leader_data"] = leader_receipt
         execution_output["consensus_data"] = consensus_data
-
-        print("leader_receipt", leader_receipt)
 
         # Register contract if it is a new contract
         if transaction["type"] == 1:

@@ -17,14 +17,15 @@ class GenVM:
     def __init__(
         self,
         snapshot: ContractSnapshot,
-        validator_mode,
-        node_config,
+        validator_mode: str,
+        validator_info: dict,
     ):
         self.snapshot = snapshot
         self.validator_mode = validator_mode
+
         self.contract_runner = {
-            "node_config": node_config,
             "mode": validator_mode,
+            "node_config": validator_info,
             "from_address": None,
             "gas_used": 0,
             "eq_num": 0,
@@ -110,7 +111,8 @@ class GenVM:
         current_contract = pickle.loads(decoded_pickled_object)
 
         if self.contract_runner["mode"] == "validator":
-            self.contract_runner["eq_outputs"]["leader"] = leader_receipt
+            leader_receipt_eq_result = leader_receipt["result"]["eq_outputs"]["leader"]
+            self.contract_runner["eq_outputs"]["leader"] = leader_receipt_eq_result
 
         function_to_run = getattr(current_contract, function_name, None)
         if asyncio.iscoroutinefunction(function_to_run):

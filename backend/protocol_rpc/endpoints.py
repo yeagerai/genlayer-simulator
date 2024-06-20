@@ -141,6 +141,9 @@ def get_contract_schema(
         contract_snapshot=None,
         address="",
         validator_mode="leader",
+        stake=0,
+        provider="",
+        model="",
         config=None,
         leader_receipt=None,
     )
@@ -152,6 +155,9 @@ def get_contract_schema_for_code(contract_code: str) -> dict:
         contract_snapshot=None,
         address="",
         validator_mode="leader",
+        stake=0,
+        provider="",
+        model="",
         config=None,
         leader_receipt=None,
     )
@@ -172,6 +178,9 @@ def get_contract_state(
         contract_snapshot=None,
         address="",
         validator_mode="leader",
+        stake=0,
+        provider="",
+        model="",
         config=None,
         leader_receipt=None,
     )
