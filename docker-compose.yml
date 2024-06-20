@@ -15,13 +15,13 @@ services:
     build:
       context: ./
       dockerfile: ./docker/Dockerfile.rpc
+      target: prod
     ports:
       - "${RPCPORT}:${RPCPORT}"
     depends_on:
       - ollama
       - postgres
       - genvm
-    command: python rpc/server.py
 
   webrequest:
     build:
@@ -39,6 +39,7 @@ services:
     build:
       context: ./
       dockerfile: ./docker/Dockerfile.genvm
+      target: prod
     expose:
       - "${GENVMPORT}"
     command: python genvm/server.py

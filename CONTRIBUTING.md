@@ -39,11 +39,19 @@ $ cp docker-compose.dev.yml docker-compose.yml
 
 #### VSCode Debugger
 
-Unfortunatly Flask can not live update when running the VSCode debugger. So If you want to run through your code make sure to do the following before first.
+Unfortunatly Flask can not live update when running the VSCode debugger. So If you want to run through your code make sure to delete the containers, images and re-build as below.
 
 ```
 <stop docker>
 $ docker rm $(docker ps -a -f status=exited -q)
+$ docker images
+genlayer-simulator $ docker images
+REPOSITORY                      TAG               IMAGE ID       CREATED        SIZE
+..........................      ......            ............   ...........    .....
+genlayer-simulator-jsonrpc      ......            63127d2ca3b8   ...........    .....
+genlayer-simulator-genvm        ......            aa6919d68922   ...........    .....
+..........................      ......            ............   ...........    .....
+$ docker rmi 63127d2ca3b8 aa6919d68922
 $ vim .env
 ...
 VSCODEDEBUG = "true"
