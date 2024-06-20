@@ -57,8 +57,6 @@ class ConsensusAlgorithm:
 
         # watch out! as ollama uses GPU resources and webrequest aka selenium uses RAM
         while True:
-            print("self.queues", self.queues)
-            print("self.queues.keys()", self.queues.keys())
             if self.queues:
                 chain_snapshot = ChainSnapshot(self.dbclient)
                 tasks = []
@@ -74,7 +72,7 @@ class ConsensusAlgorithm:
                                 key, self.dbclient
                             ).expire_queued_transactions()
                         )
-                if tasks:
+                if len(tasks) > 0:
                     try:
                         await asyncio.gather(*tasks)
                     except Exception as e:

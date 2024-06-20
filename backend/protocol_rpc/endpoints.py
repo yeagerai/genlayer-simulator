@@ -103,7 +103,7 @@ def call_contract_function(
     from_address: str,
     contract_address: str,
     function_name: str,
-    function_args: dict,
+    function_args: list,
 ) -> dict:
     if not address_is_in_correct_format(from_address):
         raise InvalidAddressError(from_address)

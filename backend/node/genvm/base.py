@@ -87,15 +87,23 @@ class GenVM:
             class_name, encoded_pickled_object, "__init__", [constructor_args]
         )
 
-    async def run_contract(self, from_address, function_name, args, leader_receipt):
+    async def run_contract(
+        self, from_address: str, function_name: str, args: list, leader_receipt: dict
+    ):
         self.contract_runner["from_address"] = from_address
+        contract_code = self.snapshot.contract_code
 
-        # is being used in function_to_run(*args)
-        contract_runner = self.contract_runner
-        try:
-            EquivalencePrinciple.contract_runner = self.contract_runner
-        except (ImportError, UnboundLocalError):
-            EquivalencePrinciple.contract_runner = self.contract_runner
+        local_namespace = {}
+        # Execute the code to ensure all classes are defined in the local_namespace
+        exec(contract_code, globals(), local_namespace)
+
+        # Ensure the class and other necessary elements are in the global local_namespace if needed
+        for name, value in local_namespace.items():
+            globals()[name] = value
+
+        globals()["contract_runner"] = self.contract_runner
+
+        EquivalencePrinciple.contract_runner = self.contract_runner
 
         contract_encoded_state = self.snapshot.encoded_state
         decoded_pickled_object = base64.b64decode(contract_encoded_state)
@@ -104,7 +112,6 @@ class GenVM:
         if self.contract_runner["mode"] == "validator":
             self.contract_runner["eq_outputs"]["leader"] = leader_receipt
 
-        class_name = ...
         function_to_run = getattr(current_contract, function_name, None)
         if asyncio.iscoroutinefunction(function_to_run):
             await function_to_run(*args)
@@ -113,6 +120,7 @@ class GenVM:
 
         pickled_object = pickle.dumps(current_contract)
         encoded_pickled_object = base64.b64encode(pickled_object).decode("utf-8")
+        class_name = self._get_contract_class_name(contract_code)
         return self._generate_receipt(
             class_name, encoded_pickled_object, function_name, [args]
         )

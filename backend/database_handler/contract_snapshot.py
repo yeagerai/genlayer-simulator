@@ -12,25 +12,24 @@ class ContractSnapshot:
         if not contract_address is None:
             self.contract_address = contract_address
 
-            contract_state = self._load_contract_state()
-            self.contract_data = json.loads(contract_state["data"])
+            contract_account = self._load_contract_account()
+            self.contract_data = contract_account["data"]
+            self.contract_code = self.contract_data["code"]
             self.encoded_state = self.contract_data["state"]
 
-    def _load_contract_state(self):
+    def _load_contract_account(self):
         """Load and return the current state of the contract from the database."""
         # Use the `get` method which retrieves rows based on a condition
         result = self.dbclient.get(
             self.db_state_table, f"id = '{self.contract_address}'", limit=1
         )
         if result:
-            return result[0]["state"]
+            return result[0]
         return None
 
     def expire_queued_transactions(self):
         """Sets all PENDING status transactions associated with this contract to CANCELED status."""
-        condition = (
-            f"status = 'PENDING' AND contract_address = '{self.contract_address}'"
-        )
+        condition = f"status = 'PENDING' AND to_address = '{self.contract_address}'"
         self.dbclient.update(
             self.db_transactions_table, {"status": "CANCELED"}, condition
         )

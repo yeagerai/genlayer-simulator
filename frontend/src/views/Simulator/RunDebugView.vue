@@ -35,7 +35,7 @@ const handleCallContractMethod = async ({ method, params }: { method: string; pa
   const result = await contractsStore.callContractMethod({
     userAccount: accountsStore.currentUserAddress || '',
     localContractId: contractsStore.deployedContract?.contractId || '',
-    method: `${contractsStore.currentDeployedContractAbi?.class}.${method}`,
+    method: `${method}`,
     params
   })
   if (!result) {

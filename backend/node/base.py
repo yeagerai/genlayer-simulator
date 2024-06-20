@@ -31,7 +31,7 @@ class Node:
                 transaction_data["constructor_args"],
             )
         elif transaction["type"] == 2:
-            receipt = self.run_contract(
+            receipt = await self.run_contract(
                 transaction["from_address"],
                 transaction_data["function_name"],
                 transaction_data["function_args"],
@@ -60,14 +60,17 @@ class Node:
             # create error receipt
         return {"vote": "agree", "result": receipt}
 
-    def run_contract(self, from_address, function_name, args):
+    async def run_contract(
+        self, from_address: str, function_name: str, args: list
+    ) -> dict:
         receipt = None
         try:
-            receipt = self.genvm.run_contract(
+            receipt = await self.genvm.run_contract(
                 from_address, function_name, args, self.leader_receipt
             )
         except Exception as e:
             print("Error running contract", e)
+            print(traceback.format_exc())
             # create error receipt
         return {"vote": "agree", "result": receipt}
 
