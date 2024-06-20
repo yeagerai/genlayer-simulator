@@ -4,6 +4,7 @@ import { ref } from 'vue';
 import JsonViewer from '@/components/JsonViewer/json-viewer.vue'
 import { useUIStore } from '@/stores';
 import type { TransactionItem } from '@/types';
+
 const props = defineProps<{
   transactions: TransactionItem[]
 }>()
@@ -29,7 +30,12 @@ const handleCloseModal = () => {
       <div class="flex flex-col p-1" v-for="transaction in props.transactions" :key="transaction.txId">
         <div class="flex cursor-pointer dark:text-white text-primary hover:bg-slate-100 items-center justify-between"
           @click="handleSelectTransaction(transaction)">#{{
-        transaction.txId }} <span class="text-xs ml-1 font-semibold p-1">{{ transaction.status }}</span></div>
+        transaction.txId }} <div class="p-1 justify-between flex items-center">
+            <VueSpinnerOval size="15" v-if="transaction.status !== 'FINALIZED'"
+              :color="uiStore.mode === 'light' ? '#1a3851' : 'white'" />
+            <span class="text-xs ml-1 font-semibold">{{ transaction.status }}</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
