@@ -2,6 +2,7 @@
 
 DEPLOY_CONTRACTS_QUEUE_KEY = "deploy_contracts"
 
+import traceback
 import asyncio
 from backend.node.base import Node
 from backend.database_handler.db_client import DBClient
@@ -33,7 +34,6 @@ class ConsensusAlgorithm:
         while True:
             chain_snapshot = ChainSnapshot(self.dbclient)
             pending_transactions = chain_snapshot.get_pending_transactions()
-            print("pending_transactions", pending_transactions)
             if len(pending_transactions) > 0:
                 for transaction in pending_transactions:
                     contract_address = (
@@ -75,7 +75,11 @@ class ConsensusAlgorithm:
                             ).expire_queued_transactions()
                         )
                 if tasks:
-                    await asyncio.gather(*tasks)
+                    try:
+                        await asyncio.gather(*tasks)
+                    except Exception as e:
+                        print("Error running consensus", e)
+                        print(traceback.format_exc())
             await asyncio.sleep(10)
 
     async def exec_transaction(
@@ -83,7 +87,7 @@ class ConsensusAlgorithm:
         transaction: dict,
         snapshot: ChainSnapshot,
     ) -> dict:
-        print("trasaction", transaction)
+        print(" ~ ~ ~ ~ ~ EXECUTING TRANSACTION: ", transaction)
         # Update transaction status
         self.transactions_processor.update_transaction_status(
             transaction["id"], TransactionStatus.PROPOSING.value

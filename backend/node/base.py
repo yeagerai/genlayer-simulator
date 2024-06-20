@@ -1,4 +1,5 @@
 import json
+import traceback
 from typing import Optional
 from backend.node.genvm.base import GenVM
 
@@ -55,6 +56,7 @@ class Node:
 
         except Exception as e:
             print("Error deploying contract", e)
+            print(traceback.format_exc())
             # create error receipt
         return {"vote": "agree", "result": receipt}
 
