@@ -27,13 +27,6 @@ class ContractSnapshot:
             return result[0]
         return None
 
-    def expire_queued_transactions(self):
-        """Sets all PENDING status transactions associated with this contract to CANCELED status."""
-        condition = f"status = 'PENDING' AND to_address = '{self.contract_address}'"
-        self.dbclient.update(
-            self.db_transactions_table, {"status": "CANCELED"}, condition
-        )
-
     def register_contract(self, contract: dict):
         """Register a new contract in the database."""
         parsed_contract = {"id": contract["id"], "data": json.dumps(contract["data"])}

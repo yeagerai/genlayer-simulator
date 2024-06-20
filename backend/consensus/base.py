@@ -54,7 +54,6 @@ class ConsensusAlgorithm:
 
     async def _run_consensus(self):
         asyncio.set_event_loop(asyncio.new_event_loop())
-
         # watch out! as ollama uses GPU resources and webrequest aka selenium uses RAM
         while True:
             if self.queues:
@@ -66,12 +65,6 @@ class ConsensusAlgorithm:
                         transaction = await self.queues[key].get()
                         tasks.append(self.exec_transaction(transaction, chain_snapshot))
 
-                    elif key != DEPLOY_CONTRACTS_QUEUE_KEY:
-                        tasks.append(
-                            ContractSnapshot(
-                                key, self.dbclient
-                            ).expire_queued_transactions()
-                        )
                 if len(tasks) > 0:
                     try:
                         await asyncio.gather(*tasks)
