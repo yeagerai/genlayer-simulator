@@ -26,7 +26,7 @@ jobs:
         run: |
           curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           chmod +x /usr/local/bin/docker-compose
-          docker composer version
+          docker compose version
 
       - name: Docker Build
         run: docker compose build up --build --no-start
@@ -34,7 +34,7 @@ jobs:
       - name: Docker Compose Up
         run: docker compose up -d
   
-      - name: Wait for services to be up
+      - name: Ping
         run: |
           timeout=$(date -v+5M +%s)  # Calculate timeout duration (5 minutes from now)
           while true; do
