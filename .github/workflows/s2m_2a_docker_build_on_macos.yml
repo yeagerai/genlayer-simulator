@@ -21,8 +21,8 @@ jobs:
 
       - name: Install Docker
         run: |
-          brew install docker docker-compose
-          brew services start docker
+          brew install --cask docker docker-compose
+          open /Applications/Docker.app
           docker --version
 
       - name: Install Colima
