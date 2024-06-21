@@ -1,4 +1,4 @@
-name: ci
+name: Build Docker Images on Multiple OS
 
 on:
   push:
@@ -14,10 +14,19 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-      - name: Prepare
+      - name: Prepare (Linux, MacOS)
         run: |
           platform=${{ matrix.platform }}
           echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+        shell: bash
+        if: runner.os != 'windows'
+
+      - name: Prepare (windows)
+        run: |
+          $platform = "${{ matrix.platform }}"
+          Write-Host "PLATFORM_PAIR=$platform" >> $env:GITHUB_ENV
+        shell: pwsh
+        if: runner.os == 'windows'
 
       - name: Checkout code
         uses: actions/checkout@v2
@@ -26,6 +35,13 @@ jobs:
 
       - name: Copy .env.example to .env
         run: cp .env.example .env
+
+      - name: Set up MacOS environment
+        run: |
+          brew install docker
+          colima start
+        shell: bash
+        if: runner.os == 'macos'
 
       - name: Docker meta
         id: meta
