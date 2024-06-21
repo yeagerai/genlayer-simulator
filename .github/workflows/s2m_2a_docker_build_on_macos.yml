@@ -29,7 +29,7 @@ jobs:
           docker-compose version
 
       - name: Docker Build
-        run: docker-compose up --build --no-start
+        run: docker-compose build --no-cache
 
       - name: Docker Compose Up
         run: docker-compose up -d
