@@ -1,7 +1,10 @@
 name: Build Docker Images on Multiple OS
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Check Version Difference"]
+    types:
+      - completed
 
 env:
   REGISTRY_IMAGE: user/app

@@ -1,0 +1,37 @@
+name: Build Docker Images on Multiple OS
+
+on:
+  push:
+
+env:
+  REGISTRY_IMAGE: user/app
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - name: Copy .env.example to .env
+        run: cp .env.example .env
+
+      - name: Set up MacOS environment
+        run: |
+          brew install docker
+          colima start
+        shell: bash
+        if: runner.os == 'macos'
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build Image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          push: false
