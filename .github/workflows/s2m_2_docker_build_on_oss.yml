@@ -1,10 +1,13 @@
 name: Build Docker Images on Multiple OS
 
 on:
-  workflow_run:
-    workflows: ["Check Version Difference"]
-    types:
-      - completed
+  push:
+    branches:
+      - '**'
+  #workflow_run:
+  #  workflows: ["Check Version Difference"]
+  #  types:
+  #    - completed
 
 jobs:
   build-docker:
@@ -30,6 +33,17 @@ jobs:
       env:
         OPENAIKEY: ${{ secrets.OPENAIKEY }}
       run: printf "\nOPENAIKEY='$OPENAIKEY'\n" >> .env
+
+    - name: Set up Docker for Linux
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y docker.io
+        sudo systemctl start docker
+        sudo systemctl enable docker
+        sudo usermod -aG docker $USER
+      shell: bash
+
 
     - name: Set up Docker - Windows
       if: matrix.os == 'windows-latest'
