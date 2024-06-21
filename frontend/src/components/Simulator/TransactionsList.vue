@@ -26,7 +26,7 @@ const handleCloseModal = () => {
   </div>
   <div class="flex flex-col p-2">
     <div
-      class="flex flex-col text-xs w-full max-h-[98%] overflow-y-auto mt-2 scroll-smooth overscroll-contain snap-y  snap-start">
+      class="flex flex-col-reverse text-xs w-full max-h-[98%] overflow-y-auto mt-2 scroll-smooth overscroll-contain snap-y  snap-start">
       <div class="flex flex-col p-1" v-for="transaction in props.transactions" :key="transaction.txId">
         <div class="flex cursor-pointer dark:text-white text-primary hover:bg-slate-100 items-center justify-between"
           @click="handleSelectTransaction(transaction)">#{{
