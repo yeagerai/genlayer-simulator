@@ -70,6 +70,11 @@ const handleDeployContract = async ({
   }
 }
 
+const handleClearTransactions = () => {
+  transactionsStore.processingQueue = transactionsStore.processingQueue.filter((t) => t.localContractId !== contractsStore.currentContractId)
+  transactionsStore.transactions = transactionsStore.transactions.filter((t) => t.localContractId !== contractsStore.currentContractId)
+}
+
 
 const debouncedGetConstructorInputs = debounce(() => contractsStore.getConstructorInputs(), 3000)
 
@@ -155,7 +160,7 @@ onUnmounted(() => {
             :calling-method="contractsStore.callingContractMethod" />
         </div>
         <div class="flex flex-col">
-          <TransactionsList :transactions="contractTransactions" />
+          <TransactionsList :transactions="contractTransactions" @clear-transactions="handleClearTransactions" />
         </div>
       </div>
     </div>
