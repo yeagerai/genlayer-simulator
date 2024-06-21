@@ -23,7 +23,7 @@ const steps = ref([
     }
   },
   {
-    target: () => `#contract-item-${contract.value?.id}`,
+    target: () => `.contract-item`,
     header: {
       title: 'Code Editor'
     },
