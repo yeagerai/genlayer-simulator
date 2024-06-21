@@ -1,77 +1,49 @@
-name: Build Docker Images on Multiple OS
+name: ci
 
 on:
   push:
-    branches:
-      - '**'
-  #workflow_run:
-  #  workflows: ["Check Version Difference"]
-  #  types:
-  #    - completed
+
+env:
+  REGISTRY_IMAGE: user/app
 
 jobs:
-  build-docker:
-    # Remove the below line to run the workflow with Act
+  build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
+      - name: Prepare
+        run: |
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
 
-    - name: Set up Docker for Linux
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        cp .env.example .env
-        sed -i "s/'jsonrpc'/'localhost'/g" .env
-        apt-get update
-        apt-get install -y apt-transport-https ca-certificates curl software-properties-common
-        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-        apt-get update
-        apt-get install -y docker-ce docker-ce-cli containerd.io
-        usermod -aG docker $SUDO_USER
-        systemctl enable docker
-      shell: bash
+      - name: Copy .env.example to .env
+        run: cp .env.example .env
 
-
-    - name: Set up Docker - Windows
-      if: matrix.os == 'windows-latest'
-      run: |
-        copy .env.example .env
-        powershell -Command "(Get-Content .env) -replace \"'jsonrpc'\", \"'localhost'\" | Set-Content .env"
-        choco install docker-cli
-        Start-Service com.docker.service
-      shell: powershell
-
-    - name: Set up Docker for macOS
-      if: matrix.os == 'macos-latest'
-      run: |
-        cp .env.example .env
-        sed -i '' "s/'jsonrpc'/'localhost'/g" .env
-        brew install --cask docker
-        open /Applications/Docker.app &  # Start Docker in background
-        # Wait for Docker to start
-        timeout=300  # Timeout after 300 seconds (5 minutes)
-        until docker info >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
-          echo "Waiting for Docker to start..."
-          sleep 5
-          ((timeout-=5))
-        done
-        if [ $timeout -eq 0 ]; then
-          echo "Timed out waiting for Docker to start"
-          exit 1
-        else
-          echo "Docker is up and running!"
-        fi
-      shell: bash
-
-    - name: Build Docker images
-      run: |
-        for DOCKERFILE in docker/*; do
-          docker build -f $DOCKERFILE -t os-builds-$DOCKERFILE .
-        done
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY_IMAGE }}
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Build Images
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          platforms: ${{ matrix.platform }}
+          labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=image,name=${{ env.REGISTRY_IMAGE }},name-canonical=true,push=false
