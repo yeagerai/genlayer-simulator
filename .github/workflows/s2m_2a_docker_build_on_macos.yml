@@ -1,10 +1,9 @@
-name: Build Docker Images on Multiple OS
+name: Build Docker Images on MacOS
 
 on:
   push:
-
-env:
-  REGISTRY_IMAGE: user/app
+    branches:
+      - '**'
 
 jobs:
   build:
