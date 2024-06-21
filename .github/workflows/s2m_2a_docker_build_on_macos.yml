@@ -29,7 +29,8 @@ jobs:
       - name: Install Colima
         run: |
           brew install colima
-          colima start
+          colima version
+          colima start --cpu 3 --memory 6 --disk 100 --vm-type=qemu --mount-type=sshfs --dns=1.1.1.1
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
