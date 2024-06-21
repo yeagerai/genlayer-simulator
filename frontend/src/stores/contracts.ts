@@ -1,10 +1,10 @@
 import type { IJsonRpcService } from '@/services'
-import type { ContractFile, DeployedContract } from '@/types'
+import type { ContractFile, DeployedContract, TransactionItem } from '@/types'
 import { getContractFileName } from '@/utils'
 import { defineStore } from 'pinia'
 import { ref, inject, computed } from 'vue'
 import { useAccountsStore } from './accounts'
-import { v4 as uuidv4 } from 'uuid'
+import { useTransactionsStore } from './transactions'
 const getInitialOPenedFiles = (): string[] => {
   const storage = localStorage.getItem('contractsStore.openedFiles')
   if (storage) return storage.split(',')
@@ -14,6 +14,7 @@ const getInitialOPenedFiles = (): string[] => {
 export const useContractsStore = defineStore('contractsStore', () => {
   const $jsonRpc = inject<IJsonRpcService>('$jsonRpc') // TODO: will be used in actions
   const accountsStore = useAccountsStore()
+  const transactionsStore = useTransactionsStore()
   const contracts = ref<ContractFile[]>([])
   const openedFiles = ref<string[]>(getInitialOPenedFiles())
 
@@ -21,7 +22,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
     localStorage.getItem('contractsStore.currentContractId') || ''
   )
   const deployedContracts = ref<DeployedContract[]>([])
-  const transactions = ref<Record<string, any[]>>({})
   const callingContractMethod = ref<boolean>(false)
   const callingContractState = ref<boolean>(false)
   const currentContractState = ref<Record<string, any>>({})
@@ -94,30 +94,36 @@ export const useContractsStore = defineStore('contractsStore', () => {
 
   async function callContractMethod({
     userAccount,
-    contractAddress,
+    localContractId,
     method,
     params
   }: {
     userAccount: string
-    contractAddress: string
+    localContractId: string
     method: string
     params: any[]
   }) {
     callingContractMethod.value = true
     try {
+      const contract = deployedContracts.value.find((c) => c.contractId === localContractId)
       const result = await $jsonRpc?.callContractFunction({
         userAccount,
-        contractAddress,
+        contractAddress: contract?.address || '',
         method,
         params
       })
 
       callingContractMethod.value = false
       if (result?.status === 'success') {
-        if (!transactions.value[contractAddress]) {
-          transactions.value[contractAddress] = []
-        }
-        transactions.value[contractAddress].push({ id: uuidv4(), ...result})
+        
+        transactionsStore.addTransaction({
+          contractAddress: contract?.address || '',
+          localContractId: contract?.contractId || '',
+          txId: (result?.data as any).transaction_id,
+          type: 'method',
+          status: 'PENDING',
+          data: {}
+        })
 
         return true
       }
@@ -125,7 +131,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
       console.error(error)
       callingContractMethod.value = false
     }
-
     return false
   }
 
@@ -140,7 +145,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
 
       currentContractState.value = {
         ...currentContractState.value,
-        [method]: result?.data[method]
+        [method]: result?.data
       }
       callingContractState.value = false
     } catch (error) {
@@ -194,13 +199,21 @@ export const useContractsStore = defineStore('contractsStore', () => {
             })
             deployingContract.value = false
             if (result?.status === 'success') {
-              const deployed = {
-                address: result?.data.contract_id,
-                contractId: currentContract.value.id,
-                defaultState: constructorParamsAsString
+              deployedContracts.value = deployedContracts.value.filter(
+                (c) => c.contractId !== currentContract.value?.id
+              )
+              const tx: TransactionItem = {
+                contractAddress: result?.data.contract_address,
+                localContractId: currentContract.value.id,
+                txId: result?.data.transaction_id,
+                type: 'deploy',
+                status: 'PENDING',
+                data: {}
               }
-              addDeployedContract(deployed)
-              return deployed
+
+              transactionsStore.addTransaction(tx)
+
+              return tx
             } else {
               throw new Error(
                 typeof result?.message === 'string'
@@ -260,6 +273,8 @@ export const useContractsStore = defineStore('contractsStore', () => {
       }
     }
   }
+
+
   const currentContract = computed(() => {
     return contracts.value.find((c) => c.id === currentContractId.value)
   })
@@ -273,7 +288,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
     openedFiles,
     currentContractId,
     deployedContracts,
-    transactions,
+
     currentContractState,
     callingContractState,
     callingContractMethod,
@@ -300,6 +315,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
     callContractMethod,
     getContractState,
     deployContract,
-    getConstructorInputs
+    getConstructorInputs,
   }
 })
