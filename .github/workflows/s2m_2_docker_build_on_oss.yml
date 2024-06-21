@@ -23,20 +23,11 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Copy .env file
-      run: cp .env.example .env
-
-    - name: Changing URL for rpc server to localhost
-      run: sed -i "s/'jsonrpc'/'localhost'/g" .env
-
-    - name: Adding OPENAIKEY to the .env file
-      env:
-        OPENAIKEY: ${{ secrets.OPENAIKEY }}
-      run: printf "\nOPENAIKEY='$OPENAIKEY'\n" >> .env
-
     - name: Set up Docker for Linux
       if: matrix.os == 'ubuntu-latest'
       run: |
+        cp .env.example .env
+        sed -i "s/'jsonrpc'/'localhost'/g" .env
         sudo apt-get update
         sudo apt-get install -y docker.io
         sudo systemctl start docker
@@ -48,6 +39,8 @@ jobs:
     - name: Set up Docker - Windows
       if: matrix.os == 'windows-latest'
       run: |
+        copy .env.example .env
+        powershell -Command "(Get-Content .env) -replace \"'jsonrpc'\", \"'localhost'\" | Set-Content .env"
         choco install docker-cli
         Start-Service com.docker.service
       shell: powershell
@@ -55,6 +48,8 @@ jobs:
     - name: Set up Docker for macOS
       if: matrix.os == 'macos-latest'
       run: |
+        cp .env.example .env
+        sed -i '' "s/'jsonrpc'/'localhost'/g" .env
         brew install --cask docker
         open /Applications/Docker.app &  # Start Docker in background
         # Wait for Docker to start
