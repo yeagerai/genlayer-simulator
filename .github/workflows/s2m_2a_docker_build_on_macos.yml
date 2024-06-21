@@ -21,7 +21,7 @@ jobs:
 
       - name: Install Docker
         run: |
-          brew install docker
+          brew install docker docker-compose
           brew services start docker
           docker --version
 
