@@ -14,6 +14,8 @@ from backend.node.genvm.code_enforcement import code_enforcement_check
 
 
 class GenVM:
+    eq_principle = EquivalencePrinciple
+
     def __init__(
         self,
         snapshot: ContractSnapshot,
@@ -104,7 +106,7 @@ class GenVM:
 
         globals()["contract_runner"] = self.contract_runner
 
-        EquivalencePrinciple.contract_runner = self.contract_runner
+        self.eq_principle.contract_runner = self.contract_runner
 
         contract_encoded_state = self.snapshot.encoded_state
         decoded_pickled_object = base64.b64decode(contract_encoded_state)
