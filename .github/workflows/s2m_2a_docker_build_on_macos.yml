@@ -25,8 +25,8 @@ jobs:
 
       - name: Install Docker
         run: |
-          brew install docker docker-compose
-          docker --version
+          brew install --cask docker
+          open /Applications/Docker.app 
 
       - name: Docker Version
         run: |
