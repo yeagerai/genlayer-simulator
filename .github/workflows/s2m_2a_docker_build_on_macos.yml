@@ -19,12 +19,15 @@ jobs:
       - name: Copy .env.example to .env
         run: cp .env.example .env
 
-      - name: Set up MacOS environment
+      - name: Install Docker
         run: |
           brew install docker
+          docker info
+
+      - name: Install Colima
+        run: |
+          brew install colima
           colima start
-        shell: bash
-        if: runner.os == 'macos'
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
