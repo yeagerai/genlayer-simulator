@@ -19,21 +19,8 @@ jobs:
       - name: Copy .env.example to .env
         run: cp .env.example .env
 
-      - name: Set up Homebrew
-        id: set-up-homebrew
-        uses: Homebrew/actions/setup-homebrew@master
-
-      - name: Install Docker
-        run: |
-          brew install --cask docker
-          open /Applications/Docker.app 
-
-      - name: Docker Version
-        run: |
-          docker --version
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Set up Docker
+        uses: crazy-max/ghaction-setup-docker@v3
 
       - name: Build Docker Images from Docker Directory
         run: |
