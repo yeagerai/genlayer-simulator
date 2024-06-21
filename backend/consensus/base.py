@@ -149,6 +149,10 @@ class ConsensusAlgorithm:
         ):
             raise Exception("Consensus not reached")
 
+        self.transactions_processor.update_transaction_status(
+            transaction["id"], TransactionStatus.ACCEPTED.value
+        )
+
         final = False
         consensus_data = ConsensusData(
             final=final,
