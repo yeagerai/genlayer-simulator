@@ -95,7 +95,8 @@ async function handleDeleteValidator() {
     </div>
     <div class="flex flex-col" id="tutorial-validators">
       <div class="flex flex-col text-xs w-full">
-        <div class="flex px-2 justify-between items-center hover:bg-slate-100 p-1 dark:hover:bg-zinc-700"
+        <div data-testid="validators-list"
+          class="flex px-2 justify-between items-center hover:bg-slate-100 p-1 dark:hover:bg-zinc-700"
           v-for="validator in nodeStore.validators" :key="validator.id">
           <div class="flex items-center cursor-pointer" @click="nodeStore.openUpdateValidatorModal(validator)">
             <div class="flex dark:text-white text-primary">{{ validator.id }} -</div>
@@ -120,7 +121,7 @@ async function handleDeleteValidator() {
       </div>
     </div>
     <div class="flex flex-col mt-4 w-full px-2">
-      <button @click="nodeStore.openCreateNewValidatorModal"
+      <button @click="nodeStore.openCreateNewValidatorModal" data-testid="create-new-validator-btn"
         class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
         New Validator
       </button>
@@ -141,7 +142,7 @@ async function handleDeleteValidator() {
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Provider:</p>
           <select :class="nodeStore.validatorToUpdate.provider ? '' : 'border border-red-500'"
-            class="p-2 w-full bg-slate-100 dark:bg-zinc-700 overflow-y-auto" name="" id=""
+            class="p-2 w-full bg-slate-100 dark:bg-zinc-700 overflow-y-auto"
             v-model="nodeStore.validatorToUpdate.provider" required>
             <option v-for="(_, provider) in nodeStore.nodeProviders" :key="provider" :value="provider"
               :selected="provider === nodeStore.validatorToUpdate.provider">
@@ -152,7 +153,7 @@ async function handleDeleteValidator() {
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Model:</p>
           <select :class="nodeStore.validatorToUpdate.model ? '' : 'border border-red-500'"
-            class="p-2 w-full bg-slate-100 overflow-y-auto dark:bg-zinc-700" name="" id=""
+            class="p-2 w-full bg-slate-100 overflow-y-auto dark:bg-zinc-700" name="dropdown-model"
             v-model="nodeStore.validatorToUpdate.model" required>
             <option v-for="model in nodeStore.nodeProviders[nodeStore.validatorToUpdate.provider]" :key="model"
               :value="model" :selected="model === nodeStore.validatorToUpdate.model">
@@ -190,7 +191,8 @@ async function handleDeleteValidator() {
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Provider:</p>
           <select :class="nodeStore.validatorToCreate.provider ? '' : 'border border-red-500'"
-            class="p-2 w-full bg-slate-100 dark:bg-zinc-700 overflow-y-auto" name="" id=""
+            class="p-2 w-full bg-slate-100 dark:bg-zinc-700 overflow-y-auto" 
+            data-testid="dropdown-provider-create"
             v-model="nodeStore.validatorToCreate.provider" required>
             <option v-for="(_, provider) in nodeStore.nodeProviders" :key="provider" :value="provider"
               :selected="provider === nodeStore.validatorToCreate.provider">
@@ -201,7 +203,8 @@ async function handleDeleteValidator() {
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Model:</p>
           <select :class="nodeStore.validatorToCreate.model ? '' : 'border border-red-500'"
-            class="p-2 w-full bg-slate-100 overflow-y-auto dark:bg-zinc-700" name="" id=""
+            class="p-2 w-full bg-slate-100 overflow-y-auto dark:bg-zinc-700" 
+            data-testid="dropdown-model-create"
             v-model="nodeStore.validatorToCreate.model" required>
             <option v-for="model in nodeStore.nodeProviders[nodeStore.validatorToCreate.provider]" :key="model"
               :value="model" :selected="model === nodeStore.validatorToCreate.model">
@@ -260,10 +263,8 @@ async function handleDeleteValidator() {
         </div>
       </div>
       <div class="flex flex-col mt-4 w-full">
-        <button
-          @click="handleDeleteValidator"
-          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded"
-        >
+        <button @click="handleDeleteValidator"
+          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
           Delete Validator
         </button>
       </div>
