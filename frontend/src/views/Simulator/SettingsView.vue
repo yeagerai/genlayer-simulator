@@ -3,49 +3,9 @@ import { onMounted } from 'vue'
 import { notify } from '@kyvg/vue3-notification'
 import Modal from '@/components/ModalComponent.vue'
 import { TrashIcon } from '@heroicons/vue/24/solid'
-<<<<<<< HEAD
-import type { IJsonRpcService } from '@/services'
-import { useContractsStore } from '@/stores'
-import { storeToRefs } from 'pinia'
-
-const contracts = useContractsStore()
-const nodeProviders = ref<Record<string, string[]>>({})
-// state
-const $jsonRpc = inject<IJsonRpcService>('$jsonRpc')!
-const validators = ref<ValidatorModel[]>([])
-const updateValidatorModalOpen = ref<boolean>(false)
-const createValidatorModalOpen = ref<boolean>(false)
-const deleteValidatorModalOpen = ref<boolean>(false)
-const resetStorageModalOpen = ref<boolean>(false)
-const resetingStorage = ref<boolean>(false)
-const createValidatorModelValid = computed(() => {
-  return validatorToCreate.value?.model !== '' && validatorToCreate.value?.provider !== '' && validatorToCreate.value?.stake
-})
-const updateValidatorModelValid = computed(() => {
-  return validatorToUpdate.value?.model !== '' && validatorToUpdate.value?.provider !== '' && validatorToUpdate.value?.stake
-})
-const contractsToDelete = computed(() =>
-  contracts.contracts
-    .filter((c) => c.example || (!c.example && !c.updatedAt)))
-const selectedValidator = ref<ValidatorModel>()
-const validatorToUpdate = ref<UpdateValidatorModel>({
-  model: '',
-  provider: '',
-  stake: 0,
-  config: '{ }'
-})
-const validatorToCreate = ref<CreateValidatorModel>({
-  model: '',
-  provider: '',
-  stake: 0,
-  config: '{ }'
-})
-=======
-
 import { useNodeStore } from '@/stores'
 
 const nodeStore = useNodeStore()
->>>>>>> 226-sim-fe-refactor-transaction-sending-processing-and-checking
 
 // Hooks
 onMounted(async () => {
@@ -116,19 +76,9 @@ async function handleDeleteValidator() {
   }
 }
 
-<<<<<<< HEAD
-const openResetStorageModal = () => {
-  resetStorageModalOpen.value = true
-}
-
-const closeResetStorageModal = () => {
-  resetStorageModalOpen.value = false
-}
-
 const handleResetStorage = async () => {
-  resetingStorage.value = true
   try {
-    await contracts.resetStorage()
+    await nodeStore.resetStorage()
     notify({
       title: 'Success',
       text: 'Storage reset successfully',
@@ -138,16 +88,14 @@ const handleResetStorage = async () => {
     console.error(error)
     notify({
       title: 'Error',
-      text: 'Error resetting the storage',
+      text: (error as Error)?.message || 'Error resetting the storage',
       type: 'error'
     })
   } finally {
-    resetingStorage.value = false
-    closeResetStorageModal()
+   
+    nodeStore.closeResetStorageModal()
   }
 }
-=======
->>>>>>> 226-sim-fe-refactor-transaction-sending-processing-and-checking
 </script>
 
 <template>
@@ -197,20 +145,16 @@ const handleResetStorage = async () => {
         New Validator
       </button>
     </div>
-<<<<<<< HEAD
     <div class="mt-10 flex flex-col p-2 w-full bg-slate-100 dark:dark:bg-zinc-700">
       <h4 class="text-md" id="tutorial-validators">Simulator Storage</h4>
     </div>
     <div class="flex flex-col mt-4 w-full px-2">
-      <button @click="openResetStorageModal"
+      <button @click="nodeStore.openResetStorageModal"
         class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
         Reset Storage
       </button>
     </div>
-    <Modal :open="updateValidatorModalOpen" @close="closeUpdateValidatorModal">
-=======
     <Modal :open="nodeStore.updateValidatorModalOpen" @close="nodeStore.closeUpdateValidatorModal">
->>>>>>> 226-sim-fe-refactor-transaction-sending-processing-and-checking
       <div class="flex flex-col">
         <div class="flex justify-between">
           <div class="text-xl">Validator Details</div>
@@ -353,7 +297,7 @@ const handleResetStorage = async () => {
         </button>
       </div>
     </Modal>
-    <Modal :open="resetStorageModalOpen" @close="closeResetStorageModal">
+    <Modal :open="nodeStore.resetStorageModalOpen" @close="nodeStore.closeResetStorageModal">
       <div class="flex flex-col">
         <div class="flex justify-between">
           <div class="text-xl">Reset Simulator Storage</div>
@@ -368,7 +312,7 @@ const handleResetStorage = async () => {
         </div>
         <div class="flex flex-col p-2 mt-2 overflow-y-auto">
           <ul class="list-disc list-inside">
-            <li class="text-md font-semibold" v-for="contract in contractsToDelete" :key="contract.id">
+            <li class="text-md font-semibold" v-for="contract in nodeStore.contractsToDelete" :key="contract.id">
               {{ contract.name }}
             </li>
           </ul>
@@ -380,7 +324,7 @@ const handleResetStorage = async () => {
       <div class="flex flex-col mt-4 w-full">
         <button @click="handleResetStorage"
           class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
-          <LoadingIndicator v-if="resetingStorage" :color="'white'">
+          <LoadingIndicator v-if="nodeStore.resetingStorage" :color="'white'">
           </LoadingIndicator>
           <span v-else>Reset</span>
         </button>
