@@ -31,26 +31,13 @@ export interface NodeLog {
   mock?: boolean
 }
 
-export interface MainStoreState {
-  contracts: ContractFile[]
-  openedFiles: string[]
-  currentContractId?: string
-  deployedContracts: DeployedContract[]
-  currentUserAddress?: string
-  nodeLogs: {
-    date: string
-    message: {
-      function: string
-      trace_id: string
-      response: {
-        status: string
-        message: string
-        data: any
-      }
-    }
-  }[]
-  accounts: string[]
-  contractTransactions: Record<string, any>
+export interface TransactionItem {
+  type: 'deploy' | 'method'
+  status: string
+  contractAddress: string
+  localContractId: string
+  txId: number
+  data?: any
 }
 
 export type UIMode = 'light' | 'dark'

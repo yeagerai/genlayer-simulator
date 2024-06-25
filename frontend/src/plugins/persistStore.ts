@@ -1,4 +1,4 @@
-import type { ContractFile, DeployedContract } from '@/types'
+import type { ContractFile, DeployedContract, TransactionItem } from '@/types'
 import { db, getContractFileName } from '@/utils'
 import { type PiniaPluginContext } from 'pinia'
 
@@ -40,10 +40,9 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
             break
           case 'updateContractFile':
             await db.contractFiles.update(args[0] as string, args[1] as ContractFile)
-            localStorage.setItem('contractsStore.contractsModified', `${Date.now()}`)
             break
           case 'removeContractFile':
-            await db.contractFiles.delete(args[0] as string)
+            await db.contractFiles.delete(args[0])
             await db.deployedContracts
               .where('contractId')
               .equals(args[0] as string)
@@ -82,8 +81,27 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
           default:
             break
         }
+      } else if (store.$id === 'transactionsStore') {
+        switch (name) {
+          case 'addTransaction':
+            await db.transactions.add(args[0])
+            break
+          case 'removeTransaction':
+            await db.transactions
+              .where('txId')
+              .equals(args[0] as string)
+              .delete()
+            break
+          case 'updateTransaction':
+            await db.transactions
+              .where('txId')
+              .equals((args[0] as any).id)
+              .modify({ data: args[0], status: args[0].status })
+            break
+          default:
+            break
+        }
       }
-
       console.log('PersistStorePlugin:::', { name, args, result })
     })
   })

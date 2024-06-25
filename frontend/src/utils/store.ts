@@ -1,4 +1,4 @@
-import { useAccountsStore, useContractsStore } from '@/stores'
+import { useAccountsStore, useContractsStore, useTransactionsStore } from '@/stores'
 import { db } from './db'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -12,8 +12,9 @@ export const examplesNames = [
 ]
 
 export const setupStores = async () => {
-  const contracts = useContractsStore()
-  const accounts = useAccountsStore()
+  const contractsStore = useContractsStore()
+  const accountsStore = useAccountsStore()
+  const transactionsStore = useTransactionsStore()
   const contractFiles = await db.contractFiles.toArray()
   
   if (contractFiles.filter((c) => c.example || examplesNames.includes(c.name)).length === 0) {
@@ -30,19 +31,18 @@ export const setupStores = async () => {
         content: ((raw as string) || '').trim(),
         example: true
       }
-      contracts.addContractFile(contract)
+      contractsStore.addContractFile(contract)
     }
   } else {
-    contracts.contracts = await db.contractFiles.toArray()
+    contractsStore.contracts = await db.contractFiles.toArray()
   }
 
-  contracts.deployedContracts = await db.deployedContracts.toArray()
-  if (accounts.accounts.length < 1) {
-    await accounts.generateNewAccount()
+  contractsStore.deployedContracts = await db.deployedContracts.toArray()
+  transactionsStore.transactions = await db.transactions.toArray()
+  if ( accountsStore.accounts.length < 1) {
+    await accountsStore.generateNewAccount()
   } else {
-    accounts.accounts = localStorage.getItem('accountsStore.accounts')
-      ? (localStorage.getItem('accountsStore.accounts') || '').split(',')
-      : []
+    accountsStore.accounts = localStorage.getItem('accountsStore.accounts') ?  (localStorage.getItem('accountsStore.accounts') || '').split(',') : []
   }
 }
 
