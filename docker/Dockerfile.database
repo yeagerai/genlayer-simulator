@@ -6,4 +6,4 @@ WORKDIR /docker-entrypoint-initdb.d
 
 # Copy the initialization script or SQL file into the container
 # It should be an SQL file or a shell script that runs SQL commands
-COPY ./database/initialization/init-db.sql /docker-entrypoint-initdb.d/
+COPY ./backend/database_handler/initialization/init-db.sql /docker-entrypoint-initdb.d/
