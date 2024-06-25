@@ -1,4 +1,5 @@
-from genvm.base.icontract import IContract
+from backend.node.genvm.icontract import IContract
+
 
 # contract class
 class UserStorage(IContract):
@@ -10,7 +11,7 @@ class UserStorage(IContract):
     # read methods must start with get_
     def get_complete_storage(self):
         return self.storage
-    
+
     def get_account_storage(self, account_address: str):
         return self.storage[account_address]
 

@@ -14,7 +14,7 @@ services:
   jsonrpc:
     build:
       context: ./
-      dockerfile: ./docker/Dockerfile.rpc
+      dockerfile: ./docker/Dockerfile.backend
       target: debug
     environment:
       - FLASK_SERVER_PORT=${RPCPORT}
@@ -26,14 +26,10 @@ services:
       - "${RPCDEBUGPORT}:${RPCDEBUGPORT}"
     volumes:
       - ./.env:/app/.env
-      - ./rpc:/app/rpc
-      - ./database:/app/database
-      - ./consensus:/app/consensus
-      - ./common:/app/common
+      - ./backend:/app/backend
     depends_on:
       - ollama
       - postgres
-      - genvm
     expose:
       - "${RPCPORT}"
 
@@ -50,24 +46,6 @@ services:
       - PYTHONUNBUFFERED=1
     expose:
       - "${WEBREQUESTPORT}"
-
-  genvm:
-    build:
-      context: ./
-      dockerfile: ./docker/Dockerfile.genvm
-      target: debug
-    environment:
-      - FLASK_SERVER_PORT=${GENVMPORT}
-      - DEBUG=${GENVMDEBUG}
-      - GENVMDEBUGPORT=${GENVMDEBUGPORT}
-      - PYTHONUNBUFFERED=${GENVMDEBUG}
-    expose:
-      - "${GENVMPORT}"
-    ports:
-      - "${GENVMDEBUGPORT}:${GENVMDEBUGPORT}"
-    volumes:
-      - ./genvm:/app/genvm
-      - ./common:/app/common
 
   ollama:
     image: ollama/ollama:latest

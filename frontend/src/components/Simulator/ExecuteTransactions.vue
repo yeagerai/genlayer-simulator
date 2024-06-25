@@ -47,6 +47,7 @@ const handleMethodCall = () => {
   if (method.value) {
     const params = Object.values(inputs.value[method.value.name] || {})
     emit('callMethod', { method: method.value.name, params })
+    inputs.value[method.value.name] = {}
   }
 }
 
