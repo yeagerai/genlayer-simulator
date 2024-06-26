@@ -62,7 +62,7 @@ services:
       context: ./
       dockerfile: ./docker/Dockerfile.database
     ports:
-      - "6000:5432"
+      - "${DBPORT}:5432"
     environment:
       - POSTGRES_USER=${DBUSER}
       - POSTGRES_PASSWORD=${DBPASSWORD}
