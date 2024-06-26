@@ -1,4 +1,8 @@
-from rpc.tests.base import payload, post_request
+from tests.common.requests import payload, post_request
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 validator_keys = ['id', 'address', 'stake', 'provider','model', 'config', 'updated_at']
 
@@ -9,27 +13,30 @@ def test_create_db_and_tables():
     assert True
 
 def test_create_random_validator():
-    response = post_request(payload('create_random_validator', 10)).json()
+    stake = 10
+    response = post_request(payload('create_random_validator', stake)).json()
     assert response['result']['status'] == 'success'
-    assert response['result']['data']['stake'] == 10
+    assert response['result']['data']['stake'] == stake
     for key in validator_keys:
         assert key in response['result']['data']
 
 def test_delete_validator_does_not_exist():
-    response = post_request(payload('delete_validator', 'dave')).json()
+    validator_address = 'dave'
+    response = post_request(payload('delete_validator', validator_address)).json()
     assert response['result']['status'] == 'error'
-    assert response['result']['message'] == 'validator not found'
+    assert response['result']['message'] == 'validator ' + validator_address + ' not found'
 
 def test_delete_validator():
     new_validator = post_request(payload('create_random_validator', 10)).json()
     response = post_request(payload('delete_validator', new_validator['result']['data']['address'])).json()
     assert response['result']['status'] == 'success'
-    assert response['result']['data']['address'] == new_validator['result']['data']['address']
+    assert response['result']['data'] == new_validator['result']['data']['address']
 
 def test_get_validator_does_not_exist():
-    response = post_request(payload('get_validator', 'dave')).json()
+    validator_address = 'dave'
+    response = post_request(payload('get_validator', validator_address)).json()
     assert response['result']['status'] == 'error'
-    assert response['result']['message'] == 'validator not found'
+    assert response['result']['message'] == 'validator ' + validator_address + ' not found'
 
 def test_get_validator():
     new_validator = post_request(payload('create_random_validator', 10)).json()
@@ -101,7 +108,7 @@ def test_update_validator_validator_does_not_exist():
         )
     ).json()
     assert updated_validator['result']['status'] == 'error'
-    assert updated_validator['result']['message'] == 'validator not found'
+    assert updated_validator['result']['message'] == 'validator ' + new_address + ' not found'
 
 def test_update_validator():
     new_validator = post_request(payload('create_random_validator', 10)).json()

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { InputTypesMap } from '@/utils'
-import { useMainStore } from '@/stores'
+import { useAccountsStore } from '@/stores'
 import type { ContractMethod } from '@/types'
 import LoadingIndicator from '@/components/LoadingIndicator.vue'
 interface Abi {
@@ -18,7 +18,7 @@ interface Props {
   callingMethod: boolean
 }
 
-const store = useMainStore()
+const store = useAccountsStore()
 const props = defineProps<Props>()
 const emit = defineEmits(['callMethod'])
 const methodList = ref<ContractMethod[]>([])

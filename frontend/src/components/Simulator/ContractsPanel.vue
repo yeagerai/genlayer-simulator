@@ -1,18 +1,15 @@
 <script setup lang="ts">
 import { HomeIcon, XMarkIcon, DocumentCheckIcon, PlayIcon } from '@heroicons/vue/24/solid'
 import CodeEditor from '@/components/Simulator/CodeEditor.vue'
-import { useMainStore } from '@/stores';
+import { useContractsStore } from '@/stores';
 import { computed } from 'vue';
 import HomeTab from './HomeTab.vue'
 import { useRouter } from 'vue-router';
 
 
-defineProps<{
-    parentHeight: number,
-    parentWidth: number
-}>()
-const store = useMainStore()
+const store = useContractsStore()
 const router = useRouter()
+
 const handleRunDebug = () => {
     router.push({ name: 'simulator.run-debug' })
 }
@@ -68,8 +65,7 @@ const showHome = computed(() => store.currentContractId === '')
         </div>
         <div v-for="contract in contracts" :key="contract.id" class="flex w-full h-full relative"
             v-show="contract.id === store.currentContractId">
-            <CodeEditor :contract="contract" @run-debug="handleRunDebug" :parent-height="parentHeight"
-                :parent-width="parentWidth" />
+            <CodeEditor :contract="contract" @run-debug="handleRunDebug"/>
         </div>
     </div>
 </template>
