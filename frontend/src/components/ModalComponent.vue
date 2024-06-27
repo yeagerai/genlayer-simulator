@@ -6,7 +6,7 @@ const props = defineProps({
 
 </script>
 <template>
-    <div v-if="props.open"
+    <div v-show="props.open"
         className="fixed top-0 left-0 flex justify-center items-center w-full h-full bg-black bg-opacity-50 z-50">
         <div className="relative bg-white rounded-lg p-8 dark:bg-zinc-800 dark:text-white text-primary min-w-[30%] max-w-[70%]">
             <button
@@ -19,5 +19,4 @@ const props = defineProps({
             </div>
         </div>
     </div>
-    <div v-else />
 </template>
