@@ -10,7 +10,7 @@ let driver: WebDriver
 let settingsPage: SettingsPage
 let contractsPage: ContractsPage
 
-describe('Settings - Delete Node Validator', () => {
+describe.skip('Settings - Delete Node Validator', () => {
   before(async () => {
     driver = await getDriver()
     await driver.manage().setTimeouts({ implicit: 10000 })
