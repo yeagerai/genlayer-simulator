@@ -1,5 +1,5 @@
-import type { ContractFile, DeployedContract } from '@/types'
-import { db } from '@/utils'
+import type { ContractFile, DeployedContract, TransactionItem } from '@/types'
+import { db, getContractFileName } from '@/utils'
 import { type PiniaPluginContext } from 'pinia'
 
 /**
@@ -20,7 +20,6 @@ const upsertDeployedContract = async (contract: DeployedContract): Promise<void>
   }
 }
 
-
 /**
  * A plugin for persisting the state of a Pinia store.
  *
@@ -31,42 +30,73 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
   context.store.$onAction(({ store, name, args, after }) => {
     console.log(`Called Action "${name}" with params [${JSON.stringify(args)}].`)
     after(async (result) => {
-      if (store.$id === 'mainStore') {
+      if (store.$id === 'contractsStore') {
         switch (name) {
           case 'addContractFile':
-            await db.contractFiles.add(args[0] as ContractFile)
+            await db.contractFiles.add({
+              ...(args[0] as ContractFile),
+              name: getContractFileName(args[0].name)
+            })
             break
           case 'updateContractFile':
             await db.contractFiles.update(args[0] as string, args[1] as ContractFile)
-            localStorage.setItem('mainStore.contractsModified', `${Date.now()}`)
             break
           case 'removeContractFile':
-            await db.contractFiles.delete(args[0] as string)
+            await db.contractFiles.delete(args[0])
             await db.deployedContracts
               .where('contractId')
               .equals(args[0] as string)
               .delete()
             break
           case 'openFile':
-            localStorage.setItem('mainStore.currentContractId', args[0] as string)
-            localStorage.setItem('mainStore.openedFiles', store.openedFiles.join(','))
+            localStorage.setItem('contractsStore.currentContractId', args[0] as string)
+            localStorage.setItem('contractsStore.openedFiles', store.openedFiles.join(','))
             break
           case 'closeFile':
-            localStorage.setItem('mainStore.currentContractId', store.currentContractId)
-            localStorage.setItem('mainStore.openedFiles', store.openedFiles.join(','))
+            localStorage.setItem('contractsStore.currentContractId', store.currentContractId)
+            localStorage.setItem('contractsStore.openedFiles', store.openedFiles.join(','))
             break
           case 'addDeployedContract':
             await upsertDeployedContract(args[0] as DeployedContract)
             break
           case 'setCurrentContractId':
-            localStorage.setItem('mainStore.currentContractId', args[0] as string)
+            localStorage.setItem('contractsStore.currentContractId', args[0] as string)
             break
+
+          case 'removeDeployedContract':
+            await db.deployedContracts
+              .where('contractId')
+              .equals(args[0] as string)
+              .delete()
+            break
+          default:
+            break
+        }
+      } else if (store.$id === 'accountsStore') {
+        switch (name) {
           case 'generateNewAccount':
-            localStorage.setItem('mainStore.accounts', store.accounts.join(','))
-            localStorage.setItem('mainStore.currentUserAddress', store.currentUserAddress)
+            localStorage.setItem('accountsStore.accounts', store.accounts.join(','))
+            localStorage.setItem('accountsStore.currentUserAddress', store.currentUserAddress)
             break
-            case 'removeDeployedContract':  
-            await db.deployedContracts.where('contractId').equals(args[0] as string).delete()
+          default:
+            break
+        }
+      } else if (store.$id === 'transactionsStore') {
+        switch (name) {
+          case 'addTransaction':
+            await db.transactions.add(args[0])
+            break
+          case 'removeTransaction':
+            await db.transactions
+              .where('txId')
+              .equals(args[0] as string)
+              .delete()
+            break
+          case 'updateTransaction':
+            await db.transactions
+              .where('txId')
+              .equals((args[0] as any).id)
+              .modify({ data: args[0], status: args[0].status })
             break
           default:
             break

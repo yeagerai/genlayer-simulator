@@ -1,24 +1,33 @@
 import json
+import traceback
 from typing import Optional
-from backend.node.genvm.base import GenVM
 
-from backend.database_handler.transactions_processor import TransactionStatus
+from backend.node.genvm.base import GenVM
+from backend.database_handler.contract_snapshot import ContractSnapshot
 
 
 class Node:
     def __init__(
         self,
-        contract_snapshot,
-        address,
-        validator_mode,
-        config,
+        contract_snapshot: ContractSnapshot,
+        address: str,
+        validator_mode: str,
+        stake: int,
+        provider: str,
+        model: str,
+        config: dict,
         leader_receipt: Optional[dict] = None,
     ):
-        self.address = address
         self.validator_mode = validator_mode
-        self.config = config
+        self.address = address
+        self.validator_info = {
+            "provider": provider,
+            "model": model,
+            "config": config,
+            "stake": stake,
+        }
         self.leader_receipt = leader_receipt
-        self.genvm = GenVM(contract_snapshot, self.validator_mode, self.config)
+        self.genvm = GenVM(contract_snapshot, self.validator_mode, self.validator_info)
 
     async def exec_transaction(self, transaction: dict):
         transaction_data = transaction["data"]
@@ -30,7 +39,7 @@ class Node:
                 transaction_data["constructor_args"],
             )
         elif transaction["type"] == 2:
-            receipt = self.run_contract(
+            receipt = await self.run_contract(
                 transaction["from_address"],
                 transaction_data["function_name"],
                 transaction_data["function_args"],
@@ -55,17 +64,21 @@ class Node:
 
         except Exception as e:
             print("Error deploying contract", e)
+            print(traceback.format_exc())
             # create error receipt
         return {"vote": "agree", "result": receipt}
 
-    def run_contract(self, from_address, function_name, args):
+    async def run_contract(
+        self, from_address: str, function_name: str, args: list
+    ) -> dict:
         receipt = None
         try:
-            receipt = self.genvm.run_contract(
+            receipt = await self.genvm.run_contract(
                 from_address, function_name, args, self.leader_receipt
             )
         except Exception as e:
             print("Error running contract", e)
+            print(traceback.format_exc())
             # create error receipt
         return {"vote": "agree", "result": receipt}
 

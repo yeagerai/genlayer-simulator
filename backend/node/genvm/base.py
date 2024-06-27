@@ -14,17 +14,20 @@ from backend.node.genvm.code_enforcement import code_enforcement_check
 
 
 class GenVM:
+    eq_principle = EquivalencePrinciple
+
     def __init__(
         self,
         snapshot: ContractSnapshot,
-        validator_mode,
-        node_config,
+        validator_mode: str,
+        validator_info: dict,
     ):
         self.snapshot = snapshot
         self.validator_mode = validator_mode
+
         self.contract_runner = {
-            "node_config": node_config,
             "mode": validator_mode,
+            "node_config": validator_info,
             "from_address": None,
             "gas_used": 0,
             "eq_num": 0,
@@ -87,24 +90,32 @@ class GenVM:
             class_name, encoded_pickled_object, "__init__", [constructor_args]
         )
 
-    async def run_contract(self, from_address, function_name, args, leader_receipt):
+    async def run_contract(
+        self, from_address: str, function_name: str, args: list, leader_receipt: dict
+    ):
         self.contract_runner["from_address"] = from_address
+        contract_code = self.snapshot.contract_code
 
-        # is being used in function_to_run(*args)
-        contract_runner = self.contract_runner
-        try:
-            EquivalencePrinciple.contract_runner = self.contract_runner
-        except (ImportError, UnboundLocalError):
-            EquivalencePrinciple.contract_runner = self.contract_runner
+        local_namespace = {}
+        # Execute the code to ensure all classes are defined in the local_namespace
+        exec(contract_code, globals(), local_namespace)
+
+        # Ensure the class and other necessary elements are in the global local_namespace if needed
+        for name, value in local_namespace.items():
+            globals()[name] = value
+
+        globals()["contract_runner"] = self.contract_runner
+
+        self.eq_principle.contract_runner = self.contract_runner
 
         contract_encoded_state = self.snapshot.encoded_state
         decoded_pickled_object = base64.b64decode(contract_encoded_state)
         current_contract = pickle.loads(decoded_pickled_object)
 
         if self.contract_runner["mode"] == "validator":
-            self.contract_runner["eq_outputs"]["leader"] = leader_receipt
+            leader_receipt_eq_result = leader_receipt["result"]["eq_outputs"]["leader"]
+            self.contract_runner["eq_outputs"]["leader"] = leader_receipt_eq_result
 
-        class_name = ...
         function_to_run = getattr(current_contract, function_name, None)
         if asyncio.iscoroutinefunction(function_to_run):
             await function_to_run(*args)
@@ -113,6 +124,7 @@ class GenVM:
 
         pickled_object = pickle.dumps(current_contract)
         encoded_pickled_object = base64.b64encode(pickled_object).decode("utf-8")
+        class_name = self._get_contract_class_name(contract_code)
         return self._generate_receipt(
             class_name, encoded_pickled_object, function_name, [args]
         )
@@ -176,13 +188,21 @@ class GenVM:
         code: str, state: str, method_name: str, method_args: list
     ) -> dict:
         namespace = {}
-        exec(code, namespace)
+        # Execute the code to ensure all classes are defined in the namespace
+        exec(code, globals(), namespace)
 
-        target_module = sys.modules["__main__"]
+        # Ensure the class and other necessary elements are in the global namespace if needed
         for name, value in namespace.items():
-            setattr(target_module, name, value)
+            globals()[name] = value
 
         decoded_pickled_object = base64.b64decode(state)
         contract_state = pickle.loads(decoded_pickled_object)
+
         method_to_call = getattr(contract_state, method_name)
-        return method_to_call(*method_args)
+        result = method_to_call(*method_args)
+
+        # Clean up
+        for name in namespace.keys():
+            del globals()[name]
+
+        return result

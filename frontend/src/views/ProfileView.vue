@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { useMainStore } from '@/stores';
+import { useAccountsStore } from '@/stores';
 import { notify } from "@kyvg/vue3-notification";
 import SimulatorMenu from '@/components/SimulatorMenu.vue'
 import { CheckIcon } from '@heroicons/vue/24/solid';
 import { ref } from 'vue';
-const store = useMainStore()
+const store = useAccountsStore()
 
 const showSetDefaultAccount = ref<Record<string, boolean>>({})
 const handleCreateNewAddress = async () => {
