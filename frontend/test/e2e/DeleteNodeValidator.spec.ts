@@ -1,0 +1,58 @@
+import { WebDriver, By, until } from 'selenium-webdriver'
+
+import { SettingsPage } from '../pages/SettingsPage.js'
+import { ContractsPage } from '../pages/ContractsPage.js'
+import { before, describe, after, it } from 'node:test'
+import { expect } from 'chai'
+import { getDriver } from '../utils/driver.js'
+
+let driver: WebDriver
+let settingsPage: SettingsPage
+let contractsPage: ContractsPage
+
+describe('Settings - Delete Node Validator', () => {
+  before(async () => {
+    driver = await getDriver()
+    await driver.manage().setTimeouts({ implicit: 10000 })
+    settingsPage = new SettingsPage(driver)
+    contractsPage = new ContractsPage(driver)
+  })
+
+  it('should delete an existing validator', async () => {
+    await contractsPage.navigate()
+    await contractsPage.waitUntilVisible()
+    await contractsPage.skipTutorial()
+
+    await settingsPage.navigate()
+    await settingsPage.waitUntilVisible()
+
+    await settingsPage.createValidator()
+    const existingValidators = await settingsPage.getValidatorsElements()
+    const existingValidatorsLength = existingValidators.length
+    expect(
+      existingValidatorsLength,
+      'number of validators should be greather than 0'
+    ).be.greaterThan(0)
+
+    const deleteBtn = await existingValidators[0].findElement(
+      By.xpath("//button[@data-testid = 'validator-item-delete']")
+    )
+    await deleteBtn.click()
+
+    const deleteValidatorBtn = await driver.wait(
+      until.elementLocated(By.xpath("//button[@data-testid='btn-delete-validator']"))
+    )
+    // call delete validator button
+    await deleteValidatorBtn.click()
+
+    await driver.navigate().refresh();
+    const validators = await driver.findElements(By.xpath("//button[@data-testid = 'validator-item-delete']"))
+    
+    expect(
+      validators.length,
+      'validators length should be less than initial validators length'
+    ).be.lessThan(existingValidatorsLength)
+  })
+
+  after(() => driver.quit())
+})

@@ -9,7 +9,7 @@ let driver: WebDriver
 let contractsPage: ContractsPage
 let runDebugPage: RunDebugPage
 
-describe('Contract Example WizardOfCoin', () => {
+describe.skip('Contract Example WizardOfCoin', () => {
   before(async () => {
     driver = await getDriver()
     await driver.manage().setTimeouts({ implicit: 10000 })

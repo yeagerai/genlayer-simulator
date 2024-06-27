@@ -10,7 +10,7 @@ let driver: WebDriver
 let settingsPage: SettingsPage
 let contractsPage: ContractsPage
 
-describe('Node Validators Settings', () => {
+describe('Settings - Create Node Validator', () => {
   before(async () => {
     driver = await getDriver()
     await driver.manage().setTimeouts({ implicit: 10000 })
@@ -25,26 +25,14 @@ describe('Node Validators Settings', () => {
 
     await settingsPage.navigate()
     await settingsPage.waitUntilVisible()
-    await settingsPage.openNewValidatorModal()
-    // provider select
-    const selectProviderElement = await driver.wait(
-      until.elementLocated(By.xpath("//select[contains(@data-testid, 'dropdown-provider-create')]"))
-    )
-    const selectProvider = new Select(selectProviderElement)
-    await selectProvider.selectByValue('heuristai')
-    
-    // model select
-    const selectModelElement = await driver.wait(
-      until.elementLocated(By.xpath("//select[contains(@data-testid, 'dropdown-model-create')]"))
-    )
-    const selectModel = new Select(selectModelElement)
-    await selectModel.selectByValue('mistralai/mixtral-8x7b-instruct')
-    
-    const createValidatorBtn = await driver.wait(
-      until.elementLocated(By.xpath("//button[@data-testid='create-new-validator-btn']"))
-    )
 
-    // createValidatorBtn.click()
+    const initialValidators = await settingsPage.getValidatorsElements()
+    await settingsPage.createValidator()
+    const existingValidators = await settingsPage.getValidatorsElements()
+    expect(
+      existingValidators.length,
+      'number of validators should be greather than old validators list'
+    ).be.greaterThan(initialValidators.length)
   })
 
   after(() => driver.quit())
