@@ -1,5 +1,9 @@
 <template>
-    <div v-bind:class="{ 'v-step--sticky': isSticky }" class="v-step bg-slate-300 dark:bg-zinc-700" :id="'v-step-' + hash" :ref="'v-step-' + hash">
+    <div v-bind:class="{ 'v-step--sticky': isSticky }" 
+        class="v-step bg-slate-300 dark:bg-zinc-700" 
+        :id="'v-step-' + hash" 
+        :ref="'v-step-' + hash"
+        :data-testid="'tutorial-step-' + step.target">
         <slot name="header">
             <div v-if="step.header" class="v-step__header bg-slate-300 dark:bg-zinc-700">
                 <div v-if="step.header.title" v-html="step.header.title"></div>
