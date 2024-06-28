@@ -40,7 +40,6 @@ def test_wizard_of_coin():
             payload("deploy_intelligent_contract", *data)
         )
     )
-    print("41 ---- RESULT", result)
 
     assert has_success_status(transaction_response_deploy)
     contract_address = call_method_response_deploy["result"]["data"]["contract_address"]
