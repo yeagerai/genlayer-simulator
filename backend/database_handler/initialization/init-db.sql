@@ -19,20 +19,8 @@ BEGIN
     END IF;
 END $$;
 
-CREATE TYPE transaction_status AS ENUM (
-    'PENDING',
-    'CANCELED',
-    'PROPOSING',
-    'COMMITTING',
-    'REVEALING',
-    'ACCEPTED',
-    'FINALIZED',
-    'UNDETERMINED'
-);
-
 CREATE TABLE IF NOT EXISTS transactions (
     id SERIAL PRIMARY KEY,
-    status transaction_status DEFAULT 'PENDING',
     from_address VARCHAR(255),
     to_address VARCHAR(255),
     input_data JSONB,
@@ -61,12 +49,5 @@ CREATE TABLE IF NOT EXISTS validators (
     provider VARCHAR(255),
     model VARCHAR(255),
     config JSONB NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS transactions_audit (
-    id SERIAL PRIMARY KEY,
-    transaction_id INT,
-    data JSONB,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
