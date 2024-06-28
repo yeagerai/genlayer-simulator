@@ -1,26 +1,29 @@
+# Use a lightweight base image
 FROM python:3.12.2-slim as base
 
 ARG path=/app
-  
-RUN mkdir $path
-WORKDIR $path
-COPY ../.env .
-ADD rpc $path/rpc
-ADD database $path/database
-ADD consensus $path/consensus
-ADD common $path/common
-RUN pip install --no-cache-dir -r rpc/requirements.txt
-
-ENV PYTHONPATH "${PYTHONPATH}:/${path}"
+RUN groupadd -r rpc-group && useradd -r -g rpc-group -d ${path} rpc-user
+ENV PYTHONPATH="${PYTHONPATH}:${path}"
 ENV FLASK_APP=rpc/server.py
+RUN mkdir -p ${path} && chown -R rpc-user:rpc-group ${path}
+WORKDIR ${path}
 
-###########START NEW IMAGE : DEBUGGER ###################
+COPY --chown=rpc-user:rpc-group ../.env .
+COPY --chown=rpc-user:rpc-group rpc ${path}/rpc
+COPY --chown=rpc-user:rpc-group database ${path}/database
+COPY --chown=rpc-user:rpc-group consensus ${path}/consensus
+COPY --chown=rpc-user:rpc-group common ${path}/common
+
+RUN pip install --no-cache-dir -r rpc/requirements.txt
+USER rpc-user
+
+# Start the new image for the debugger
 FROM base as debug
-RUN pip install debugpy
+RUN pip install --no-cache-dir debugpy
 
-CMD python -m debugpy --listen 0.0.0.0:${RPCDEBUGPORT} -m flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}
+CMD ["python", "-m", "debugpy", "--listen", "0.0.0.0:${RPCDEBUGPORT}", "-m", "flask", "run", "-h", "0.0.0.0", "-p", "${FLASK_SERVER_PORT}"]
 
-###########START NEW IMAGE: PRODUCTION ###################
+# Start the new image for production
 FROM base as prod
 
-CMD flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}
+CMD ["flask", "run", "-h", "0.0.0.0", "-p", "${FLASK_SERVER_PORT}"]
