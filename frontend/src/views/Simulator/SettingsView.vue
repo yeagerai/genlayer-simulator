@@ -260,8 +260,10 @@ async function handleDeleteValidator() {
         </div>
       </div>
       <div class="flex flex-col mt-4 w-full">
-        <button @click="handleDeleteValidator"
-          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
+        <button
+          @click="handleDeleteValidator"
+          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded"
+        >
           Delete Validator
         </button>
       </div>

@@ -1,159 +1,89 @@
-<script lang="ts">
-import { RpcClient } from '@/utils'
-import { DEFAULT_CALLBACKS, DEFAULT_OPTIONS, KEYS } from './constants'
+<script setup lang="ts">
+import { useRouter } from 'vue-router'
+import { DEFAULT_OPTIONS, KEYS } from './constants'
 import TutorialStep from './TutorialStep.vue'
-import { useContractsStore, useUIStore } from '@/stores'
+import { useContractsStore, useTutorialStore, useUIStore } from '@/stores'
 import { notify } from '@kyvg/vue3-notification'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
-const rpcClient = new RpcClient()
-const loadExample = async (mainStore: any) => {
-  if (mainStore.contracts.find((c: any) => c.id === 'tutorial-example')) return
-  const contractsBlob = import.meta.glob('./wizard_of_coin.py', {
-    query: '?raw',
-    import: 'default'
-  })
-  const raw = await contractsBlob['./wizard_of_coin.py']()
-  const contract = {
-    id: 'tutorial-example',
-    name: 'ExampleContract.py',
-    content: ((raw as string) || '').trim()
-  }
-  mainStore.addContractFile(contract)
-}
-
-const steps = [
+const contractsStore = useContractsStore()
+const tutorialStore = useTutorialStore()
+const uiStore = useUIStore()
+const router = useRouter()
+const contract = computed(() =>(contractsStore.contracts[0]))
+const steps = ref([
   {
-    target: '#tutorial-welcome',
+    target: () => '#tutorial-welcome',
     header: {
       title: 'Welcome to GenLayer Simulator!'
     },
-    content: 'This tutorial will guide you through the basics. Click “Next” to begin!',
-    onNextStep: async (store: any) => {
-      store.openFile('tutorial-example')
+    content: () => 'This tutorial will guide you through the basics. Click “Next” to begin!',
+    onNextStep: async () => {
+      contractsStore.openFile(contract.value?.id)
     }
   },
   {
-    target: '#tutorial-contract-example',
+    target: () => `.contract-item`,
     header: {
       title: 'Code Editor'
     },
-    content: "Write and edit your Intelligent Contracts here. The example contract 'ExampleContract.py' is preloaded for you.",
-    onNextStep: async (store: any, router: any) => {
-      router.push({ name: 'simulator.run-debug', query: { tutorial: true } })
+    content: () => `Write and edit your Intelligent Contracts here. The example contract '${contract.value?.name}' is preloaded for you.`,
+    onNextStep: async () => {
+      router.push({ name: 'simulator.run-debug', query: { tutorial: 1 } })
     }
   },
   {
-    target: '#tutorial-how-to-deploy',
+    target: () => '#tutorial-how-to-deploy',
     header: {
       title: 'Deploying Contracts'
     },
-    content: "Click “Next” to automatically deploy your Intelligent Contract to the GenLayer network.",
-    onNextStep: async (store: any, router: any) => {
-      const contract = store.contracts.find((c: any) => c.id === 'tutorial-example')
-      const { result } = await rpcClient.call<any>({
-        method: 'deploy_intelligent_contract',
-        params: [
-          store.currentUserAddress,
-          'WizardOfCoin',
-          contract.content,
-          `{ "have_coin": "True" }`
-        ]
+    content: () => "Click “Next” to automatically deploy your Intelligent Contract to the GenLayer network.",
+    onNextStep: async () => {
+      await tutorialStore.deployContract()
+      notify({
+        title: 'OK',
+        text: 'Contract deployed',
+        type: 'success'
       })
-
-      if (result?.status === 'success') {
-        store.addDeployedContract({
-          address: result?.data.contract_id,
-          contractId: contract.id,
-          defaultState: `{ "have_coin": "True" }`
-        })
-        notify({
-          title: 'OK',
-          text: 'Contract deployed',
-          type: 'success'
-        })
-      } else {
-        notify({
-          title: 'Error',
-          text:
-            typeof result.message === 'string' ? result.message : 'Error Deploying the contract',
-          type: 'error'
-        })
-      }
     }
   },
   {
-    target: '#tutorial-creating-transactions',
+    target: () => '#tutorial-creating-transactions',
     header: {
       title: 'Creating Transactions'
     },
-    content: "This is where you can interact with the deployed contract. You can select a method you want to use from the dropdown, and provide the parameters.  Click “Next” to automatically create a transaction and interact with your deployed contract.",
-    onNextStep: async (store: any, router: any) => {
-      const deployedContract = store.deployedContracts.find((contract: any) => contract.contractId === store.currentContractId)
-      if (deployedContract) {
-        try {
-          const { result } = await rpcClient.call({
-            method: 'call_contract_function',
-            params: [
-              store.currentUserAddress,
-              deployedContract?.address,
-              'WizardOfCoin.ask_for_coin',
-              ['Please give me some coin!']
-            ]
-          })
-
-          if (result?.status === 'success') {
-            if (!store.contractTransactions[deployedContract.address]) {
-              store.contractTransactions[deployedContract.address] = [result]
-            } else {
-              store.contractTransactions[deployedContract.address].push(result)
-            }
-            notify({
-              title: 'OK',
-              text: 'Contract method called',
-              type: 'success'
-            })
-          } else {
-            notify({
-              title: 'Error',
-              text:
-                typeof result.message === 'string' ? result.message : 'Error calling contract method',
-              type: 'error'
-            })
-          }
-
-        } catch (error) {
-          console.error(error)
-          notify({
-            title: 'Error',
-            text: 'Error calling contract method',
-            type: 'error'
-          })
-        }
-      }
+    content: () => "This is where you can interact with the deployed contract. You can select a method you want to use from the dropdown, and provide the parameters.  Click “Next” to automatically create a transaction and interact with your deployed contract.",
+    onNextStep: async () => {
+      tutorialStore.callContractMethod()
+      notify({
+        title: 'OK',
+        text: 'Contract method called',
+        type: 'success'
+      })
     }
   },
   {
-    target: '#tutorial-node-output',
+    target: () => '#tutorial-node-output',
     header: {
       title: 'Node Output'
     },
-    content: "View real-time feedback as your transaction execution and debug any issues."
+    content: () => "View real-time feedback as your transaction execution and debug any issues."
   },
 
   {
-    target: '#tutorial-contract-state',
+    target: () => '#tutorial-contract-state',
     header: {
       title: 'Contract State'
     },
-    content: "This panel shows the contract's data after executing transactions."
+    content: () => "This panel shows the contract's data after executing transactions."
   },
   {
-    target: '#tutorial-tx-response',
+    target: () => '#tutorial-tx-response',
     header: {
       title: 'Transaction Response'
     },
-    content: 'See the results of your transaction interaction with the contract in this area.',
-    onNextStep: async (store: any, router: any) => {
+    content: () => 'See the results of your transaction interaction with the contract in this area.',
+    onNextStep: async () => {
       router.push({ name: 'simulator.contracts' })
     }
   },
@@ -161,9 +91,9 @@ const steps = [
     header: {
       title: 'Switching Examples'
     },
-    target: '#tutorial-how-to-change-example',
-    content: "Switch between different example contracts to explore various features and functionalities.",
-    onNextStep: async (store: any, router: any) => {
+    target: () => '#tutorial-how-to-change-example',
+    content: () => "Switch between different example contracts to explore various features and functionalities.",
+    onNextStep: async () => {
       await router.push({ name: 'simulator.settings' })
     }
   },
@@ -171,226 +101,187 @@ const steps = [
     header: {
       title: 'Validators'
     },
-    target: '#tutorial-validators',
-    content: "Configure the number of validators and set up their parameters here."
+    target: () => '#tutorial-validators',
+    content: () => "Configure the number of validators and set up their parameters here."
   },
   {
     header: {
       title: 'Congratulations!'
     },
-    target: '#tutorial-end',
-    content: "You've completed the GenLayer Simulator tutorial. Feel free to revisit any step or start experimenting with your own contracts. Happy coding!"
+    target: () => '#tutorial-end',
+    content: () => "You've completed the GenLayer Simulator tutorial. Feel free to revisit any step or start experimenting with your own contracts. Happy coding!"
   }
-]
+])
 
-export default {
-  components: {
-    TutorialStep
-  },
-  data() {
-    return {
-      currentStep: -1,
-      steps
-    }
-  },
-  async mounted() {
-    const store = useContractsStore()
-    if (!localStorage.getItem('genlayer.tutorial')) {
-      await loadExample(store)
-      localStorage.setItem('genlayer.tutorial', new Date().getTime().toString())
-      this.start()
-    }
-  },
-  beforeUnmount() {
-    // Remove the keyup listener if it has been defined
-    if (this.options.useKeyboardNavigation) {
-      window.removeEventListener('keyup', this.handleKeyup)
-    }
-  },
-  computed: {
-    // Allow us to define custom options and merge them with the default options.
-    // Since options is a computed property, it is reactive and can be updated during runtime.
-    options() {
-      return {
-        ...DEFAULT_OPTIONS
-      }
-    },
-    callbacks() {
-      return {
-        ...DEFAULT_CALLBACKS
-      }
-    },
-    // Return true if the tour is active, which means that there's a VStep displayed
-    isRunning() {
-      return this.currentStep > -1 && this.currentStep < this.numberOfSteps
-    },
-    isFirst() {
-      return this.currentStep === 0
-    },
-    isLast() {
-      return this.currentStep === this.steps.length - 1
-    },
-    numberOfSteps() {
-      return this.steps.length
-    },
-    step() {
-      return this.steps[this.currentStep]
-    },
-    showTutorial() {
-      const uiStore = useUIStore()
-      return uiStore.showTutorial
-    }
-  },
-  methods: {
-    async start(startStep?: number) {
-      this.$router.replace({ name: 'simulator.contracts' })
-      const store = useContractsStore()
-      store.openFile('tutorial-example')
-      store.setCurrentContractId('')
-      // Register keyup listeners for this tour
-      if (this.options.useKeyboardNavigation) {
-        window.addEventListener('keyup', this.handleKeyup)
-      }
+const currentStep = ref(-1)
+const options = ref(DEFAULT_OPTIONS)
+const numberOfSteps = computed(() => steps.value.length)
+const isRunning = computed(() => {
+  return currentStep.value > -1 && currentStep.value < numberOfSteps.value
+})
+const isFirst = computed(() => currentStep.value === 0)
+const isLast = computed(() => currentStep.value === steps.value.length - 1)
+const step = computed(() => steps.value[currentStep.value])
+const showTutorial = computed(() => uiStore.showTutorial)
 
-      // Wait for the DOM to be loaded, then start the tour
-      startStep = startStep ? parseInt(`${startStep}`, 10) : 0
-      let step = this.steps[startStep]
+function stop() {
+  document.body.classList.remove('v-tour--active')
+  currentStep.value = -1
+}
 
-      let process = () =>
-        new Promise((resolve, _reject) => {
-          setTimeout(() => {
-            this.callbacks.onStart()
-            this.currentStep = startStep
-            resolve(0)
-          }, this.options.startTimeout)
-        })
+function skip() {
+  stop()
+}
 
-      if ((step as any).before) {
-        try {
-          await (step as any).before('start')
-        } catch (e) {
-          return Promise.reject(e)
-        }
-      }
-      await process()
+function finish() {
+  stop()
+}
 
-      return Promise.resolve()
-    },
-    async previousStep() {
-      let futureStep = this.currentStep - 1
+function isKeyEnabled(key: 'escape' | 'arrowRight' | 'arrowLeft'): boolean {
+  if (options.value.enabledNavigationKeys && options.value.enabledNavigationKeys[key]) {
+    return options.value.enabledNavigationKeys[key]
+  }
+  return false
+}
 
-      let process = () =>
-        new Promise((resolve, reject) => {
-          this.callbacks.onPreviousStep(this.currentStep)
-          const cb = this.steps[futureStep].onNextStep
-          if (cb) {
-            cb(useContractsStore(), this.$router).then(() => {
-              this.currentStep = futureStep
-              setTimeout(() => {
-                resolve(0)
-              }, 300);
-            })
-          } else {
-            this.currentStep = futureStep
-            resolve(0)
-          }
-        })
-
-      if (futureStep > -1) {
-        let step = this.steps[futureStep]
-        if ((step as any).before) {
-          try {
-            await (step as any).before('previous')
-          } catch (e) {
-            return Promise.reject(e)
-          }
-        }
-        await process()
-      }
-
-      return Promise.resolve()
-    },
-    async nextStep() {
-      let futureStep = this.currentStep + 1
-
-      let process = () =>
-        new Promise((resolve, _reject) => {
-          this.callbacks.onNextStep(this.currentStep)
-          const cb = this.steps[this.currentStep].onNextStep
-          if (cb) {
-            cb(useContractsStore(), this.$router).then(() => {
-              this.currentStep = futureStep
-              setTimeout(() => {
-                resolve(0)
-              }, 300);
-            })
-          } else {
-            this.currentStep = futureStep
-            resolve(0)
-          }
-        })
-
-      if (futureStep < this.numberOfSteps && this.currentStep !== -1) {
-        let step = this.steps[futureStep]
-        if ((step as any).before) {
-          try {
-            await (step as any).before('next')
-          } catch (e) {
-            return Promise.reject(e)
-          }
-        }
-        await process()
-      }
-
-      return Promise.resolve()
-    },
-    stop() {
-      this.callbacks.onStop()
-      document.body.classList.remove('v-tour--active')
-      this.currentStep = -1
-    },
-    skip() {
-      this.callbacks.onSkip()
-      this.stop()
-    },
-    finish() {
-      this.callbacks.onFinish()
-      this.stop()
-    },
-
-    handleKeyup(e: KeyboardEvent) {
-      if (this.options.debug) {
-        console.log('[Vue Tour] A keyup event occured:', e)
-      }
-      switch (e.keyCode) {
-        case KEYS.ARROW_RIGHT:
-          this.isKeyEnabled('arrowRight') && this.nextStep()
-          break
-        case KEYS.ARROW_LEFT:
-          this.isKeyEnabled('arrowLeft') && this.previousStep()
-          break
-        case KEYS.ESCAPE:
-          this.isKeyEnabled('escape') && this.stop()
-          break
-      }
-    },
-    isKeyEnabled(key: 'escape' | 'arrowRight' | 'arrowLeft'): boolean {
-      if (this.options.enabledNavigationKeys && this.options.enabledNavigationKeys[key]) {
-        return this.options.enabledNavigationKeys[key]
-      }
-      return false
-    }
-  },
-  watch: {
-    showTutorial() {
-      if (this.showTutorial) {
-        this.start()
-      } else {
-        this.stop()
-      }
-    }
+function handleKeyup(e: KeyboardEvent) {
+  if (options.value.debug) {
+    console.log('[Vue Tour] A keyup event occured:', e)
+  }
+  switch (e.keyCode) {
+    case KEYS.ARROW_RIGHT:
+      isKeyEnabled('arrowRight') && nextStep()
+      break
+    case KEYS.ARROW_LEFT:
+      isKeyEnabled('arrowLeft') && previousStep()
+      break
+    case KEYS.ESCAPE:
+      isKeyEnabled('escape') && stop()
+      break
   }
 }
+async function start(startStep?: number) {
+  router.replace({ name: 'simulator.contracts' })
+  contractsStore.openFile(contractsStore.contracts[0].id)
+  contractsStore.setCurrentContractId('')
+  // Register keyup listeners for this tour
+  if (options.value.useKeyboardNavigation) {
+    window.addEventListener('keyup', handleKeyup)
+  }
+
+  // Wait for the DOM to be loaded, then start the tour
+  startStep = startStep ? parseInt(`${startStep}`, 10) : 0
+  let step = steps.value[startStep]
+
+  let process = () =>
+    new Promise((resolve, _reject) => {
+      setTimeout(() => {
+        currentStep.value = startStep
+        resolve(0)
+      }, options.value.startTimeout)
+    })
+
+  if ((step as any).before) {
+    try {
+      await (step as any).before('start')
+    } catch (e) {
+      return Promise.reject(e)
+    }
+  }
+  await process()
+
+  return Promise.resolve()
+}
+
+async function previousStep() {
+  let futureStep = currentStep.value - 1
+
+  let process = () =>
+    new Promise((resolve, reject) => {
+      const cb = steps.value[futureStep].onNextStep
+      if (cb) {
+        cb().then(() => {
+          currentStep.value = futureStep
+          setTimeout(() => {
+            resolve(0)
+          }, 300);
+        })
+      } else {
+        currentStep.value = futureStep
+        resolve(0)
+      }
+    })
+
+  if (futureStep > -1) {
+    let step = steps.value[futureStep]
+    if ((step as any).before) {
+      try {
+        await (step as any).before('previous')
+      } catch (e) {
+        return Promise.reject(e)
+      }
+    }
+    await process()
+  }
+
+  return Promise.resolve()
+}
+
+async function nextStep() {
+  let futureStep = currentStep.value + 1
+
+  let process = () =>
+    new Promise((resolve, _reject) => {
+      const cb = steps.value[currentStep.value].onNextStep
+      if (cb) {
+        cb().then(() => {
+          currentStep.value = futureStep
+          setTimeout(() => {
+            resolve(0)
+          }, 300);
+        })
+      } else {
+        currentStep.value = futureStep
+        resolve(0)
+      }
+    })
+
+  if (futureStep < numberOfSteps.value && currentStep.value !== -1) {
+    let step = steps.value[futureStep]
+    if ((step as any).before) {
+      try {
+        await (step as any).before('next')
+      } catch (e) {
+        return Promise.reject(e)
+      }
+    }
+    await process()
+  }
+
+  return Promise.resolve()
+}
+
+onMounted(() => {
+  if (!localStorage.getItem('genlayer.tutorial')) {
+    localStorage.setItem('genlayer.tutorial', new Date().getTime().toString())
+    start()
+  }
+})
+
+onBeforeUnmount(() => {
+  if (options.value.useKeyboardNavigation) {
+    window.removeEventListener('keyup', handleKeyup)
+  }
+})
+
+watch(showTutorial, () => {
+  if (showTutorial.value) {
+    start()
+  } else {
+    stop()
+  }
+})
+
 </script>
 <template>
   <div class="v-tour bg-slate-300 dark:bg-zinc-700">
