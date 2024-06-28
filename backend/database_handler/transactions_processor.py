@@ -23,6 +23,24 @@ class TransactionsProcessor:
         self.db_transactions_table = "transactions"
         self.db_audits_table = "transactions_audit"
 
+    def _parse_transaction_data(self, transaction_data: dict) -> dict:
+        return {
+            "id": transaction_data["id"],
+            "from_address": transaction_data["from_address"],
+            "to_address": transaction_data["to_address"],
+            "data": transaction_data["data"],
+            "value": float(transaction_data["value"]),
+            "type": transaction_data["type"],
+            "status": transaction_data["status"],
+            "consensus_data": transaction_data["consensus_data"],
+            "gaslimit": transaction_data["nonce"],
+            "nonce": transaction_data["nonce"],
+            "r": transaction_data["r"],
+            "s": transaction_data["s"],
+            "v": transaction_data["v"],
+            "created_at": transaction_data["created_at"].isoformat(),
+        }
+
     def insert_transaction(
         self, from_address: str, to_address: str, data: dict, value: float, type: int
     ) -> int:
@@ -50,7 +68,8 @@ class TransactionsProcessor:
 
     def get_transaction_by_id(self, transaction_id: int) -> dict:
         condition = f"id = {transaction_id}"
-        return self.db_client.get(self.db_transactions_table, condition)
+        transaction_data = self.db_client.get(self.db_transactions_table, condition)
+        return self._parse_transaction_data(transaction_data[0])
 
     def update_transaction_status(
         self, transaction_id: int, new_status: TransactionStatus

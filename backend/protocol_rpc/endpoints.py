@@ -103,7 +103,7 @@ def call_contract_function(
     from_address: str,
     contract_address: str,
     function_name: str,
-    function_args: dict,
+    function_args: list,
 ) -> dict:
     if not address_is_in_correct_format(from_address):
         raise InvalidAddressError(from_address)
@@ -141,6 +141,9 @@ def get_contract_schema(
         contract_snapshot=None,
         address="",
         validator_mode="leader",
+        stake=0,
+        provider="",
+        model="",
         config=None,
         leader_receipt=None,
     )
@@ -152,6 +155,9 @@ def get_contract_schema_for_code(contract_code: str) -> dict:
         contract_snapshot=None,
         address="",
         validator_mode="leader",
+        stake=0,
+        provider="",
+        model="",
         config=None,
         leader_receipt=None,
     )
@@ -172,6 +178,9 @@ def get_contract_state(
         contract_snapshot=None,
         address="",
         validator_mode="leader",
+        stake=0,
+        provider="",
+        model="",
         config=None,
         leader_receipt=None,
     )
@@ -336,3 +345,4 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint_for_partial(fund_account, accounts_manager)
     register_rpc_endpoint_for_partial(get_contract_schema, accounts_manager)
     register_rpc_endpoint_for_partial(get_contract_state, accounts_manager)
+    register_rpc_endpoint_for_partial(get_transaction_by_id, transactions_processor)

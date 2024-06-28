@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { SunIcon, PresentationChartLineIcon } from '@heroicons/vue/24/solid'
-import { useUIStore, useMainStore } from '@/stores'
+import { useUIStore, useAccountsStore } from '@/stores'
 import { shortenAddress } from '@/utils'
 import { RouterLink } from 'vue-router'
 
 
 const uiStore = useUIStore()
-const mainStore = useMainStore()
+const accounts = useAccountsStore()
 const toogleMode = () => {
     uiStore.toogleMode()
 }
@@ -24,8 +24,8 @@ const showTutorial = () => {
         </a>
         <div class="flex items-center" id="tutorial-end">
             <RouterLink :to="{ name: 'profile' }" class="text-sm  dark:text-white text-primary dark:text-white text-primary">
-                {{ shortenAddress(mainStore.currentUserAddress || '') }}
-                <ToolTip :text="mainStore.currentUserAddress" :options="{ placement: 'bottom' }" />
+                {{ shortenAddress(accounts.currentUserAddress || '') }}
+                <ToolTip :text="accounts.currentUserAddress" :options="{ placement: 'bottom' }" />
             </RouterLink>
 
             <button class="mx-3" @click="toogleMode">
