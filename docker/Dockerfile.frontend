@@ -1,16 +1,21 @@
-FROM node:21.5.0-slim
-
+FROM node:21.7.3-alpine3.20 AS builder
+RUN 
 WORKDIR /app
-
-COPY /frontend/package*.json .
-
-RUN npm i
-
+COPY ./frontend/package*.json .
+RUN npm ci --cache /tmp/empty-cache && \
+    npm cache clean --force && \
+    rm -rf /tmp/empty-cache
 COPY ./frontend .
 COPY ./examples src/assets/examples
 COPY ./.env .
 RUN npm run build
 
+FROM alpine:latest AS final
+RUN apk add --no-cache nodejs npm && \
+    addgroup --system frontend-user && adduser --system --ingroup frontend-user frontend-user && \
+    mkdir /app && chown -R frontend-user:frontend-user /app
+WORKDIR /app
+COPY --from=builder --chown=frontend-user:frontend-user /app /app
+USER frontend-user
 EXPOSE 8080
-
 CMD [ "npm", "run", "preview" ]

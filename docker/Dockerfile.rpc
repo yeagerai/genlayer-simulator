@@ -1,26 +1,40 @@
+# Use a lightweight base image
 FROM python:3.12.2-slim as base
 
+# Define the application path
 ARG path=/app
-  
-RUN mkdir $path
-WORKDIR $path
-COPY ../.env .
-ADD rpc $path/rpc
-ADD database $path/database
-ADD consensus $path/consensus
-ADD common $path/common
-RUN pip install --no-cache-dir -r rpc/requirements.txt
 
-ENV PYTHONPATH "${PYTHONPATH}:/${path}"
+# Create a non-root user and group
+RUN groupadd -r appgroup && useradd -r -g appgroup -d ${path} appuser
+
+# Set environment variables
+ENV PYTHONPATH="${PYTHONPATH}:${path}"
 ENV FLASK_APP=rpc/server.py
 
-###########START NEW IMAGE : DEBUGGER ###################
+# Create application directory, set permissions, and work directory
+RUN mkdir -p ${path} && chown -R appuser:appgroup ${path}
+WORKDIR ${path}
+
+# Copy necessary files and set permissions
+COPY --chown=appuser:appgroup ../.env .
+COPY --chown=appuser:appgroup rpc ${path}/rpc
+COPY --chown=appuser:appgroup database ${path}/database
+COPY --chown=appuser:appgroup consensus ${path}/consensus
+COPY --chown=appuser:appgroup common ${path}/common
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r rpc/requirements.txt
+
+# Switch to the non-root user
+USER appuser
+
+# Start the new image for the debugger
 FROM base as debug
-RUN pip install debugpy
+RUN pip install --no-cache-dir debugpy
 
-CMD python -m debugpy --listen 0.0.0.0:${RPCDEBUGPORT} -m flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}
+CMD ["python", "-m", "debugpy", "--listen", "0.0.0.0:${RPCDEBUGPORT}", "-m", "flask", "run", "-h", "0.0.0.0", "-p", "${FLASK_SERVER_PORT}"]
 
-###########START NEW IMAGE: PRODUCTION ###################
+# Start the new image for production
 FROM base as prod
 
-CMD flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}
+CMD ["flask", "run", "-h", "0.0.0.0", "-p", "${FLASK_SERVER_PORT}"]
