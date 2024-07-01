@@ -1,15 +1,9 @@
 name: CI
 
 on:
-  pull_request:
+  push:
     branches:
-      - staging
-    types:
-      - opened
-  pull_request_review:
-    branches:
-      - staging
-    types: [approved]
+      - 237-sim-optimize-docker-image-sizes-and-run-as-non-root-user
 
 jobs:
   test:
