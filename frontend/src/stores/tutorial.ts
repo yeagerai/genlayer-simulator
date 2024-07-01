@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { useContractsStore } from './contracts'
 import { useNodeStore } from './node'
 import { v4 as uuidv4 } from 'uuid'
+import { useTransactionsStore } from './transactions'
 
 const deployedContract = {
   address: '0x3F9Fb6C6aBaBD0Ae6cB27c513E7b0fE4C0B3E9C8',
@@ -9,7 +10,7 @@ const deployedContract = {
   defaultState: '{}'
 }
 
-const transaction = {}
+
 const contractFunctionLogs = [
   {
     function: 'call_contract_function',
@@ -107,6 +108,7 @@ const contractFunctionLogs = [
 
 export const useTutorialStore = defineStore('tutorialStore', () => {
   const contractsStore = useContractsStore()
+  const transactionsStore = useTransactionsStore()
   const nodeStore = useNodeStore()
 
   const addLog = async (message: any) => {
@@ -165,11 +167,14 @@ export const useTutorialStore = defineStore('tutorialStore', () => {
     }
     return new Promise((resolve) => {
       setTimeout(() => {
-        contractsStore.callingContractMethod = false
-        if (!contractsStore.transactions[deployedContract.address]) {
-          contractsStore.transactions[deployedContract.address] = []
-        }
-        contractsStore.transactions[deployedContract.address].push({ id: uuidv4(), ...transaction })
+        transactionsStore.addTransaction({
+          contractAddress: deployedContract.address || '',
+          localContractId: deployedContract.contractId || '',
+          txId: 100000,
+          type: 'method',
+          status: 'PENDING',
+          data: {}
+        })
         resolve(true)
       }, 2000)
     })
