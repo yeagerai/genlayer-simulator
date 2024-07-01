@@ -1,6 +1,4 @@
 def assert_dict_struct(data, structure):
-    print("data", data)
-    print("structure", structure)
     if isinstance(structure, dict):
         assert isinstance(data, dict)
         for key, value in structure.items():
