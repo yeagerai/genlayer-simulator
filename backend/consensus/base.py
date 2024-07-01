@@ -1,6 +1,7 @@
 # backend/consensus/base.py
 
 DEPLOY_CONTRACTS_QUEUE_KEY = "deploy_contracts"
+DEFAULT_VALIDATORS_COUNT = 5
 
 import traceback
 import asyncio
@@ -86,7 +87,7 @@ class ConsensusAlgorithm:
         # Select Leader and validators
         all_validators = snapshot.get_all_validators()
         leader, remaining_validators = get_validators_for_transaction(
-            all_validators, snapshot.num_validators
+            all_validators, DEFAULT_VALIDATORS_COUNT
         )
         num_validators = len(remaining_validators) + 1
 
