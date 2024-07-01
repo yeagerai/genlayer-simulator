@@ -1,23 +1,40 @@
 name: CI
 
 on:
-  push:
+  pull_request:
     branches:
-      - 237-sim-optimize-docker-image-sizes-and-run-as-non-root-user
+      - staging
+    types:
+      - opened
+  pull_request_review:
+    branches:
+      - staging
+    types: [approved]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
+
     env:
       PYTHONPATH: ${{ github.workspace }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Copy and remove OpenAI key from the .env file
-        run: |
-          cp .env.example .env
-          sed -i "s/'jsonrpc'/'localhost'/g; s/'<add_your_api_key_here>'/'${{ secrets.OPENAIKEY }}'/g" .env
+      - name: Copy .env file
+        run: cp .env.example .env
+
+      - name: Changing URL for rpc server to localhost
+        run: sed -i "s/'jsonrpc'/'localhost'/g" .env
+      
+      - name: Remove OPENAIKEY from the .env file so it can be loaded from the environment
+        run: sed -i "/^OPENAIKEY *= *'<add_your_api_key_here>'$/d" .env
+
+      - name: Adding OPENAIKEY to the .env file
+        env:
+          OPENAIKEY: ${{ secrets.OPENAIKEY }}
+        run: printf "\nOPENAIKEY='$OPENAIKEY'\n" >> .env
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -30,24 +47,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
-      - name: Build Docker Images
-        run: docker compose build
-
-  test:
-    runs-on: ubuntu-latest
-    needs: build # Run tests after build
-    env:
-      PYTHONPATH: ${{ github.workspace }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Copy and Update .env file
-        run: |
-          cp .env.example .env
-          sed -i "s/'jsonrpc'/'localhost'/g; s/'<add_your_api_key_here>'/'${{ secrets.OPENAIKEY }}'/g" .env
-
-      - name: Start Docker Compose
+      - name: Run Docker Compose
         run: docker compose up -d
 
       - name: Wait for services to be up
@@ -55,7 +55,7 @@ jobs:
           timeout=60
           counter=0
           while [[ "$counter" -lt "$timeout" ]]; do
-            if curl -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"ping","params":[],"id":1}' http://0.0.0.0:4000/api 2>&1 | grep -q "OK"; then
+            if curl -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"ping","params":[],"id":1}' http://0.0.0.0:4000/api | grep -q "OK"; then
               echo "RPC server is up!"
               break
             else
