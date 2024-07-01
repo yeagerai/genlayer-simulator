@@ -1,38 +1,38 @@
 execute_icontract_function_response_structure = {
-    'id': int,
-    'jsonrpc': str,
-    'result': {
-        'data': {
-            'execution_output': {
-                'consensus_data': str,
-                'leader_data': {
-                    'result': {
-                        'args': list,
-                        'class': str,
-                        'contract_state': str,
-                        'eq_outputs': {
-                            'leader': {
-                                '0': str
-                            }
+    "id": int,
+    "jsonrpc": str,
+    "result": {
+        "data": {
+            "consensus_data": {
+                "consensus_data": str,
+                "leader_data": {
+                    "result": {
+                        "args": list,
+                        "class": str,
+                        "contract_state": str,
+                        "eq_outputs": {"leader": dict},
+                        "gas_used": int,
+                        "method": str,
+                        "mode": str,
+                        "node_config": {
+                            "config": dict,
+                            "model": str,
+                            "provider": str,
+                            "stake": float,
                         },
-                        'gas_used': int,
-                        'method': str,
-                        'mode': str,
-                        'node_config': {
-                            'address': str,
-                            'id': int,
-                            'model': str,
-                            'provider': str,
-                            'stake': float,
-                            'type': str,
-                            'updated_at': str
-                        }
                     },
-                    'vote': str
-                }
-            }
+                    "vote": str,
+                },
+            },
+            "created_at": str,
+            "data": dict,
+            "from_address": str,
+            "id": int,
+            "status": str,
+            "type": int,
+            "value": float,
         },
-        'message': str,
-        'status': str
-    }
+        "message": str,
+        "status": str,
+    },
 }
