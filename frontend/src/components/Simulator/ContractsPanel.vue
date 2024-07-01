@@ -26,9 +26,7 @@ const contracts = computed(() => {
     return store.contracts.filter(contract => store.openedFiles.includes(contract.id || ''))
 })
 const showHome = computed(() => store.currentContractId === '')
-
 </script>
-
 <template>
     <div class="flex flex-col w-full h-full">
         <nav class="border-b text-sm flex justify-between items-center">
@@ -41,7 +39,7 @@ const showHome = computed(() => store.currentContractId === '')
                     </button>
                 </div>
                 <div v-for="(contract) in contracts" :key="contract.id" 
-                    :id="contract.id === 'tutorial-example' ? `tutorial-contract-example`: contract.id"
+                    :id="`contract-item-${contract.id}`"
                     :class="['contract-item font-semibold flex justify-between px-2 py-2 text-neutral-500', contract.id === store.currentContractId ? 'border-b-2 border-primary dark:text-white text-primary' : '']">
                     <button class="bg-transparent flex" @click="setCurrentContractTab(contract.id)">
                         <DocumentCheckIcon class="h-4 w-4 mr-2"

@@ -1,5 +1,6 @@
 <template>
-    <div v-bind:class="{ 'v-step--sticky': isSticky }" class="v-step bg-slate-300 dark:bg-zinc-700" :id="'v-step-' + hash" :ref="'v-step-' + hash">
+    <div v-bind:class="{ 'v-step--sticky': isSticky }" class="v-step bg-slate-300 dark:bg-zinc-700"
+        :id="'v-step-' + hash" :ref="'v-step-' + hash">
         <slot name="header">
             <div v-if="step.header" class="v-step__header bg-slate-300 dark:bg-zinc-700">
                 <div v-if="step.header.title" v-html="step.header.title"></div>
@@ -8,7 +9,7 @@
 
         <slot name="content">
             <div class="v-step__content bg-slate-300 dark:bg-zinc-700">
-                <div v-if="step.content" v-html="step.content"></div>
+                <div v-if="step.content()" v-html="step.content()"></div>
                 <div v-else>This is a demo step! The id of this step is {{ hash }} and it targets {{ step.target }}.
                 </div>
             </div>
@@ -39,7 +40,7 @@ import sum from 'hash-sum'
 import { DEFAULT_STEP_OPTIONS, HIGHLIGHT } from './constants'
 
 export default {
-    name: 'TutorialSte',
+    name: 'TutorialStep',
     props: {
         step: {
             type: Object
@@ -89,8 +90,8 @@ export default {
     },
     data() {
         return {
-            hash: sum(this.step.target),
-            targetElement: document.querySelector(this.step.target)
+            hash: sum(this.step.target()),
+            targetElement: document.querySelector(this.step.target())
         }
     },
     computed: {
@@ -111,8 +112,9 @@ export default {
     },
     methods: {
         createStep() {
+            console.log('[Vue Tour] The target element ' + this.step.target() + ' of .v-step[id="' + this.hash + '"] is:', this.targetElement)
             if (this.debug) {
-                console.log('[Vue Tour] The target element ' + this.step.target + ' of .v-step[id="' + this.hash + '"] is:', this.targetElement)
+                console.log('[Vue Tour] The target element ' + this.step.target() + ' of .v-step[id="' + this.hash + '"] is:', this.targetElement)
             }
 
             if (this.isSticky) {
@@ -183,16 +185,16 @@ export default {
         removeHighlight() {
             if (this.isHighlightEnabled()) {
                 const target = this.targetElement
-                if(target) {
+                if (target) {
                     const currentTransition = this.targetElement.style.transition
-                this.targetElement.classList.remove(HIGHLIGHT.classes.targetHighlighted)
-                this.targetElement.classList.remove(HIGHLIGHT.classes.targetRelative)
-                // Remove our transition when step is finished.
-                if (currentTransition.includes(HIGHLIGHT.transition)) {
-                    setTimeout(() => {
-                        target.style.transition = currentTransition.replace(`, ${HIGHLIGHT.transition}`, '')
-                    }, 0)
-                }
+                    this.targetElement.classList.remove(HIGHLIGHT.classes.targetHighlighted)
+                    this.targetElement.classList.remove(HIGHLIGHT.classes.targetRelative)
+                    // Remove our transition when step is finished.
+                    if (currentTransition.includes(HIGHLIGHT.transition)) {
+                        setTimeout(() => {
+                            target.style.transition = currentTransition.replace(`, ${HIGHLIGHT.transition}`, '')
+                        }, 0)
+                    }
                 }
             }
         },
@@ -243,12 +245,10 @@ export default {
     visibility: hidden;
 }
 
-.v-step__arrow--dark::before {
-    
-}
+.v-step__arrow--dark::before {}
 
 .v-step__arrow::before {
-    
+
     visibility: visible;
     content: '';
     transform: rotate(45deg);
@@ -288,7 +288,7 @@ export default {
     background: transparent;
     border: .05rem solid;
     border-radius: .1rem;
-    
+
     cursor: pointer;
     display: inline-block;
     font-size: .8rem;
