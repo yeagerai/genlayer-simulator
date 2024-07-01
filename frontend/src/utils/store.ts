@@ -30,13 +30,14 @@ export const setupStores = async () => {
   }
 
   contracts.deployedContracts = await db.deployedContracts.toArray()
-  if ( accounts.accounts.length < 1) {
-    await accounts.generateNewAccount()
+  if (accounts.accounts.length < 1) {
+    accounts.generateNewAccount()
   } else {
-    accounts.accounts = localStorage.getItem('accountsStore.accounts') ?  (localStorage.getItem('accountsStore.accounts') || '').split(',') : []
+    accounts.accounts = localStorage.getItem('accountsStore.privateKeys')
+      ? ((localStorage.getItem('accountsStore.privateKeys') || '').split(',') as `0x${string}`[])
+      : []
   }
 }
-
 
 export const getContractFileName = (name: string) => {
   const tokens = name.split('.')

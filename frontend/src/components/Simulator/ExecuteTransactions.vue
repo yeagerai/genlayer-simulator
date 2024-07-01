@@ -60,7 +60,7 @@ const onMethodChange = (event: Event) => {
 
 const setCurentUserAddress = (event: Event) => {
   if ((event.target as HTMLSelectElement)?.value) {
-    store.currentUserAddress = (event.target as HTMLSelectElement)?.value
+    store.currentPrivateKey = (event.target as HTMLSelectElement)?.value as `0x${string}`
   }
 }
 </script>
@@ -75,7 +75,7 @@ const setCurentUserAddress = (event: Event) => {
       <select name="dropdown-current-account" @change="setCurentUserAddress" class="text-xs w-full dark:bg-zinc-700"
         :value="store.currentUserAddress">
         <option v-for="account in store.accounts" :key="account" :value="account">
-          {{ account }}
+          {{ store.accountFromPrivateKey(account).address }}
         </option>
       </select>
     </div>

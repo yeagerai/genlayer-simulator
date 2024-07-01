@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "viem": "^2.16.5"
+  }
+}

@@ -31,9 +31,9 @@ const handleShowSetDefaultAccount = (address: string) => {
 const handleHideSetDefaultAccount = (address: string) => {
   showSetDefaultAccount.value[address] = false
 }
-const setCurentUserAddress = (address: string) => {
+const setCurentUserAddress = (address: `0x${string}`) => {
   if (address) {
-    store.currentUserAddress = address
+    store.currentPrivateKey = address
     showSetDefaultAccount.value = {}
     notify({
       title: 'OK',
@@ -62,11 +62,11 @@ const setCurentUserAddress = (address: string) => {
                 <div
                   class="flex justify-between items-center hover:bg-slate-100 p-1 dark:bg-zinc-800 dark:hover:bg-zinc-700"
                   v-for="account in store.accounts" :key="account">
-                  <template v-if="account === store.currentUserAddress">
+                  <template v-if="account === store.currentPrivateKey">
                     <div class="flex items-center">
                       <ToolTip text="Your Current Account" :options="{ placement: 'right' }" />
                       <div class="flex  dark:text-white text-primary pl-4 pr-2 ">
-                        {{ account }}
+                        {{ store.accountFromPrivateKey(account).address }}
                       </div>
                     </div>
                     <div class="flex  dark:text-white text-primary  w-6 h-6">
@@ -79,7 +79,7 @@ const setCurentUserAddress = (address: string) => {
                       @mouseleave="handleHideSetDefaultAccount(account)">
                       <ToolTip text="Set as Current Account" :options="{ placement: 'right' }" />
                       <div class="flex  dark:text-white text-primary pl-4 pr-2">
-                        {{ account }}
+                        {{ store.accountFromPrivateKey(account).address }}
                       </div>
                     </div>
                     <div class="flex  dark:text-white text-primary w-6 h-6">

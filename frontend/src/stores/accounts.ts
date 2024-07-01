@@ -1,30 +1,31 @@
 import { defineStore } from 'pinia'
-import { inject, ref } from 'vue'
-import type { IJsonRpcService } from '@/services'
+import { computed, ref } from 'vue'
+import { getAccount, getPrivateKey } from '@/utils'
 
 export const useAccountsStore = defineStore('accountsStore', () => {
-  const $jsonRpc = inject<IJsonRpcService>('$jsonRpc')
-  const currentUserAddress = ref<string>(localStorage.getItem('accountsStore.currentUserAddress') || '')
+  const key = localStorage.getItem('accountsStore.currentPrivateKey')
+  const currentPrivateKey = ref<`0x${string}` | null>(key ? (key as `0x${string}`) : null)
 
-  const accounts = ref<string[]>(
-    localStorage.getItem('accountsStore.accounts')
-      ? (localStorage.getItem('accountsStore.accounts') || '').split(',')
+  const currentUserAddress = computed(() => {
+    return currentPrivateKey.value ? getAccount(currentPrivateKey.value).address : ''
+  })
+
+  const accounts = ref<`0x${string}`[]>(
+    localStorage.getItem('accountsStore.privateKeys')
+      ? ((localStorage.getItem('accountsStore.privateKeys') || '').split(',') as `0x${string}`[])
       : []
   )
 
-  async function generateNewAccount(): Promise<string | null> {
-    try {
-      const result = await $jsonRpc?.createAccount()
-      if (result && result.status === 'success') {
-        accounts.value = [...accounts.value, result.data.address]
-        currentUserAddress.value = result.data.address
-        return result.data.address
-      }
-      return null
-    } catch (error) {
-      console.error
-      return null
-    }
+  function generateNewAccount(): `0x${string}` {
+    const privateKey = getPrivateKey()
+    accounts.value = [...accounts.value, privateKey]
+    currentPrivateKey.value = privateKey
+    return privateKey
   }
-  return { currentUserAddress, accounts, generateNewAccount }
+
+  function accountFromPrivateKey(privateKey: `0x${string}`) {
+    return getAccount(privateKey)
+  }
+
+  return { currentUserAddress, currentPrivateKey, accounts, generateNewAccount, accountFromPrivateKey }
 })

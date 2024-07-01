@@ -1,0 +1,1 @@
+{"version":3,"file":"transaction.js","sourceRoot":"","sources":["../../../zksync/errors/transaction.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,SAAS,EAAE,MAAM,sBAAsB,CAAA;AAMhD,MAAM,OAAO,6BAA8B,SAAQ,SAAS;IAG1D;QACE,KAAK,CACH;YACE,2CAA2C;YAC3C,EAAE;YACF,mBAAmB;YACnB,8BAA8B;YAC9B,oHAAoH;SACrH,CAAC,IAAI,CAAC,IAAI,CAAC,CACb,CAAA;QAXM;;;;mBAAO,+BAA+B;WAAA;IAY/C,CAAC;CACF"}
