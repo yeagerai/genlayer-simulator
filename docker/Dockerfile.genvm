@@ -1,7 +1,9 @@
-FROM python:3.12.4-slim as base
+FROM python:3.12.4-slim AS base
+
 ARG path=/app
 RUN addgroup --system genvm-group && adduser --system --ingroup genvm-group genvm-user
 RUN mkdir -p $path && chown -R genvm-user:genvm-group $path
+
 WORKDIR $path
 COPY --chown=genvm-user:genvm-group ../.env .
 COPY --chown=genvm-user:genvm-group genvm $path/genvm
@@ -9,18 +11,20 @@ COPY --chown=genvm-user:genvm-group common $path/common
 RUN ln -s genvm/base/llms.py /tmp/llms.py && \
     ln -s genvm/base/context_wrapper.py /tmp/context_wrapper.py && \
     ln -s genvm/base/contract_runner.py /tmp/contract_runner.py && \
-    ln -s genvm/base/equivalence_principle.py /tmp/equivalence_principle.py && \
-    pip install --no-cache-dir -r genvm/requirements.txt && \
+    ln -s genvm/base/equivalence_principle.py /tmp/equivalence_principle.py
+RUN pip install --no-cache-dir -r genvm/requirements.txt && \
     pip install Flask
-USER genvm-user
+
 ENV PYTHONPATH="${PYTHONPATH}:/${path}"
 ENV FLASK_APP=genvm/server.py
 
 ###########START NEW IMAGE : DEBUGGER ###################
 FROM base as debug
 RUN pip install debugpy
-CMD ["python", "-m", "debugpy", "--listen", "0.0.0.0:${GENVMDEBUGPORT}", "-m", "flask", "run", "-h", "0.0.0.0", "-p", "${FLASK_SERVER_PORT}"]
+USER genvm-user
+CMD python -m debugpy --listen 0.0.0.0:${GENVMDEBUGPORT} -m flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}
 
 ###########START NEW IMAGE: PRODUCTION ###################
 FROM base as prod
-CMD ["flask", "run", "-h", "0.0.0.0", "-p", "${FLASK_SERVER_PORT}"]
+USER genvm-user
+CMD flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}
