@@ -1,15 +1,13 @@
-import { useAccountsStore, useContractsStore } from '@/stores'
+import { useAccountsStore, useContractsStore, useTransactionsStore } from '@/stores'
 import { db } from './db'
 import { v4 as uuidv4 } from 'uuid'
 
 export const setupStores = async () => {
-  const contracts = useContractsStore()
-  const accounts = useAccountsStore()
-  // await db.contractFiles.clear()
-  // localStorage.setItem('mainStore.contractsModified', '')
+  const contractsStore = useContractsStore()
+  const accountsStore = useAccountsStore()
+  const transactionsStore = useTransactionsStore()
   if (
-    (await db.contractFiles.count()) === 0 &&
-    !localStorage.getItem('mainStore.contractsModified')
+    (await db.contractFiles.count()) === 0
   ) {
     const contractsBlob = import.meta.glob('@/assets/examples/contracts/*.py', {
       query: '?raw',
@@ -23,17 +21,18 @@ export const setupStores = async () => {
         name,
         content: ((raw as string) || '').trim()
       }
-      contracts.addContractFile(contract)
+      contractsStore.addContractFile(contract)
     }
   } else {
-    contracts.contracts = await db.contractFiles.toArray()
+    contractsStore.contracts = await db.contractFiles.toArray()
   }
 
-  contracts.deployedContracts = await db.deployedContracts.toArray()
-  if (accounts.accounts.length < 1) {
-    accounts.generateNewAccount()
+  contractsStore.deployedContracts = await db.deployedContracts.toArray()
+  transactionsStore.transactions = await db.transactions.toArray()
+  if ( accountsStore.accounts.length < 1) {
+    accountsStore.generateNewAccount()
   } else {
-    accounts.accounts = localStorage.getItem('accountsStore.privateKeys')
+    accountsStore.accounts = localStorage.getItem('accountsStore.privateKeys')
       ? ((localStorage.getItem('accountsStore.privateKeys') || '').split(',') as `0x${string}`[])
       : []
   }
