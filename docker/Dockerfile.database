@@ -1,5 +1,5 @@
-# Use the official PostgreSQL image from the Docker Hub
-FROM postgres:12.17
+# Use the official PostgreSQL image with Alpine linux from the Docker Hub
+FROM postgres:12.19-alpine
 
 # Set the working directory in the container
 WORKDIR /docker-entrypoint-initdb.d
