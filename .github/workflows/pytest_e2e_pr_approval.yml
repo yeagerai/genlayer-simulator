@@ -49,7 +49,7 @@ jobs:
           timeout=60
           counter=0
           while [[ "$counter" -lt "$timeout" ]]; do
-            if curl -s -o /dev/null -w "%{http_code}" http://localhost:4000/api 2>&1 | grep -q "200"; then
+            if curl -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"ping","params":[],"id":1}' http://0.0.0.0:4000/api 2>&1 | grep -q "OK"; then
               echo "RPC server is up!"
               break
             else
