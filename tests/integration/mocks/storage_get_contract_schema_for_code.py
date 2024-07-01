@@ -7,7 +7,7 @@ storage_contract_schema = {
             "methods": {
                 "__init__": {"inputs": {"initial_storage": str}, "output": str},
                 "get_storage": {"output": str},
-                "update_storage": {"inputs": {"new_storage": str}},
+                "update_storage": {"inputs": {"new_storage": str}, "output": str},
             },
         },
         "status": str,
