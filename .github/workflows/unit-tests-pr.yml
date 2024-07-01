@@ -22,4 +22,4 @@ jobs:
   test:
     name: Unit Tests
     if: ${{ github.event.review.state == 'APPROVED' || github.event_name == 'pull_request' }}
-    uses: ./.github/workflows/unit-tests.yml
+    uses: ./.github/workflows/frontend-unit-tests.yml

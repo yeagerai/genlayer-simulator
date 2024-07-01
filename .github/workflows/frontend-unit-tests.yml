@@ -13,5 +13,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "21.x"
+
       - run: npm ci
+        working-directory: frontend
       - run: npm run test:unit
+        working-directory: frontend
