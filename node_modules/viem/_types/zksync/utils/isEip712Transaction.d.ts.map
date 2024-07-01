@@ -1,1 +1,0 @@
-{"version":3,"file":"isEip712Transaction.d.ts","sourceRoot":"","sources":["../../../zksync/utils/isEip712Transaction.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,YAAY,EAAE,MAAM,sBAAsB,CAAA;AACxD,OAAO,KAAK,EAAE,6BAA6B,EAAE,MAAM,yBAAyB,CAAA;AAE5E,wBAAgB,mBAAmB,CACjC,WAAW,EAAE,YAAY,CAAC,6BAA6B,CAAC,WAazD"}

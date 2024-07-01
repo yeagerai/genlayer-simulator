@@ -1,4 +1,0 @@
-export { zkSync } from '../chains/definitions/zkSync.js';
-export { zkSyncTestnet } from '../chains/definitions/zkSyncTestnet.js';
-export { zkSyncSepoliaTestnet } from '../chains/definitions/zkSyncSepoliaTestnet.js';
-//# sourceMappingURL=chains.d.ts.map
