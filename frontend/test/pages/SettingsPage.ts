@@ -13,43 +13,43 @@ export class SettingsPage extends BasePage {
     return this.driver.findElements(By.xpath("//div[@data-testid = 'validator-item-container']"))
   }
 
-  async createValidator({provider,
+  async createValidator({
+    provider,
     model,
-    stake } :{
-    provider: string,
-    model: string,
+    stake
+  }: {
+    provider: string
+    model: string
     stake: number
   }) {
-     // get the list of validators
-   
-     await this.openNewValidatorModal()
-     // provider select
-     const selectProviderElement = await this.driver.wait(
-       until.elementLocated(By.xpath("//select[contains(@data-testid, 'dropdown-provider-create')]"))
-     )
-     const selectProvider = new Select(selectProviderElement)
-     await selectProvider.selectByValue(provider)
- 
-     // model select
-     const selectModelElement = await this.driver.wait(
-       until.elementLocated(By.xpath("//select[contains(@data-testid, 'dropdown-model-create')]"))
-     )
-     const selectModel = new Select(selectModelElement)
-     await selectModel.selectByValue(model)
- 
-     const stakeInput = await this.driver.wait(
-       until.elementLocated(By.xpath("//input[@data-testid='input-stake-create']"))
-     )
-     await stakeInput.clear()
-     await stakeInput.sendKeys(stake)
-  
- 
-     const createValidatorBtn = await this.driver.wait(
-       until.elementLocated(By.xpath("//button[@data-testid='btn-create-validator']"))
-     )
-     // call create validator button
-     await createValidatorBtn.click()
-     await this.driver.navigate().refresh();
-  
+    // get the list of validators
+
+    await this.openNewValidatorModal()
+    // provider select
+    const selectProviderElement = await this.driver.wait(
+      until.elementLocated(By.xpath("//select[contains(@data-testid, 'dropdown-provider-create')]"))
+    )
+    const selectProvider = new Select(selectProviderElement)
+    await selectProvider.selectByValue(provider)
+
+    // model select
+    const selectModelElement = await this.driver.wait(
+      until.elementLocated(By.xpath("//select[contains(@data-testid, 'dropdown-model-create')]"))
+    )
+    const selectModel = new Select(selectModelElement)
+    await selectModel.selectByValue(model)
+
+    const stakeInput = await this.driver.wait(
+      until.elementLocated(By.xpath("//input[@data-testid='input-stake-create']"))
+    )
+    await stakeInput.clear()
+    await stakeInput.sendKeys(stake)
+
+    const createValidatorBtn = await this.driver.wait(
+      until.elementLocated(By.xpath("//button[@data-testid='btn-create-validator']"))
+    )
+    // call create validator button
+    await createValidatorBtn.click()
+    await this.driver.navigate().refresh()
   }
 }
