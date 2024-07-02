@@ -14,7 +14,7 @@ You keep track of transactions between users and their balance in coins.
 The current balance for all users in JSON format is:
 {json.dumps(self.balances)}
 The transaction to compute is: {{
-sender: "{contract_runner.from_address}",
+sender: "{contract_runner["from_address"]}",
 recipient: "{to_address}",
 amount: {amount},
 }}
