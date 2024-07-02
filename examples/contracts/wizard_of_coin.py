@@ -41,5 +41,5 @@ your output must be only be JSON.
             if output["give_coin"] is True:
                 self.have_coin = False
 
-    def get_have_coin(self):
+    def get_have_coin(self) -> bool:
         return self.have_coin
