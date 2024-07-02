@@ -94,10 +94,12 @@ def test_llm_erc20():
         payload("get_contract_state", contract_address, "get_balances", [])
     ).json()
     assert has_success_status(contract_state_2_1)
-    assert contract_state_2_1["result"]["data"][from_address_a] == str(
-        TOKEN_TOTAL_SUPPLY - TRANSFER_AMOUNT
+    assert (
+        contract_state_2_1["result"]["data"][from_address_a]
+        == TOKEN_TOTAL_SUPPLY - TRANSFER_AMOUNT
     )
-    assert contract_state_2_1["result"]["data"][from_address_b] == str(TRANSFER_AMOUNT)
+
+    assert contract_state_2_1["result"]["data"][from_address_b] == TRANSFER_AMOUNT
 
     # Get Updated State
     contract_state_2_2 = post_request_localhost(
@@ -109,9 +111,7 @@ def test_llm_erc20():
         )
     ).json()
     assert has_success_status(contract_state_2_2)
-    assert contract_state_2_2["result"]["data"] == str(
-        TOKEN_TOTAL_SUPPLY - TRANSFER_AMOUNT
-    )
+    assert contract_state_2_2["result"]["data"] == TOKEN_TOTAL_SUPPLY - TRANSFER_AMOUNT
 
     # Get Updated State
     contract_state_2_3 = post_request_localhost(
@@ -123,7 +123,7 @@ def test_llm_erc20():
         )
     ).json()
     assert has_success_status(contract_state_2_3)
-    assert contract_state_2_3["result"]["data"] == str(TRANSFER_AMOUNT)
+    assert contract_state_2_3["result"]["data"] == TRANSFER_AMOUNT
 
     delete_validators_result = post_request_localhost(
         payload("delete_all_validators")
