@@ -22,7 +22,7 @@ async function validateTutorialStep({
   contentElementText: string
   isEndStep?: boolean
 }) {
-  console.log(`Validating step tutorial element with id ${stepTarget}`)
+  console.log(`Validating step tutorial element with target ${stepTarget}`)
   const stepElement = await tutorialPage.getStepElement(stepTarget)
   expect(stepElement, 'Step container should be visible').not.null
 
