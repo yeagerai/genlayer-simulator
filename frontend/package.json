@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:unit": "vitest run",
-    "test:e2e": "npm run build && start-server-and-test preview http://localhost:8080 'mocha -r tsx test/e2e/*spec.ts'",
+    "test:e2e": "npm run cp-examples && npm run build && start-server-and-test preview http://localhost:8080 'mocha -r tsx test/e2e/*spec.ts'",
     "test:e2e:dev": "start-server-and-test 'vite dev --port 8080' http://localhost:8080 'mocha -r tsx test/e2e/*spec.ts'",
     "test:ui": "vitest --ui",
     "coverage": "vitest run --coverage",

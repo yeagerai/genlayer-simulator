@@ -84,6 +84,7 @@ describe('Contract Example Storage', () => {
   })
 
   it('should call get_storage state', async () => {
+  
     const stateBtn = await driver.wait(
       until.elementLocated(By.xpath("//button[text()='get_storage']")),
       25000
