@@ -25,6 +25,9 @@ Respond using ONLY the following format:
 "reasoning": str,
 "give_coin": bool
 }}
+It is mandatory that you respond only using the JSON format above,
+nothing else. Don't include any other words or characters,
+your output must be only be JSON.
 """
         if self.have_coin:
             # that must be awaited
@@ -38,5 +41,5 @@ Respond using ONLY the following format:
             if output["give_coin"] is True:
                 self.have_coin = False
 
-    def get_have_coin(self):
+    def get_have_coin(self) -> bool:
         return self.have_coin

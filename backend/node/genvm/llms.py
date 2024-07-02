@@ -33,7 +33,7 @@ async def stream_http_response(url, data):
 
 
 async def call_ollama(
-    model_config: str,
+    model_config: dict,
     prompt: str,
     regex: Optional[str],
     return_streaming_channel: Optional[asyncio.Queue],
@@ -64,7 +64,7 @@ async def call_ollama(
 
 
 async def call_openai(
-    model_config: str,
+    model_config: dict,
     prompt: str,
     regex: Optional[str],
     return_streaming_channel: Optional[asyncio.Queue],
@@ -77,7 +77,7 @@ async def call_openai(
 
 
 async def call_heuristai(
-    model_config: str,
+    model_config: dict,
     prompt: str,
     regex: Optional[str],
     return_streaming_channel: Optional[asyncio.Queue],

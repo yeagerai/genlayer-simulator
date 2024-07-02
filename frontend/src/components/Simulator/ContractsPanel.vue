@@ -1,18 +1,15 @@
 <script setup lang="ts">
 import { HomeIcon, XMarkIcon, DocumentCheckIcon, PlayIcon } from '@heroicons/vue/24/solid'
 import CodeEditor from '@/components/Simulator/CodeEditor.vue'
-import { useMainStore } from '@/stores';
+import { useContractsStore } from '@/stores';
 import { computed } from 'vue';
 import HomeTab from './HomeTab.vue'
 import { useRouter } from 'vue-router';
 
 
-defineProps<{
-    parentHeight: number,
-    parentWidth: number
-}>()
-const store = useMainStore()
+const store = useContractsStore()
 const router = useRouter()
+
 const handleRunDebug = () => {
     router.push({ name: 'simulator.run-debug' })
 }
@@ -29,9 +26,7 @@ const contracts = computed(() => {
     return store.contracts.filter(contract => store.openedFiles.includes(contract.id || ''))
 })
 const showHome = computed(() => store.currentContractId === '')
-
 </script>
-
 <template>
     <div class="flex flex-col w-full h-full">
         <nav class="border-b text-sm flex justify-between items-center">
@@ -43,8 +38,9 @@ const showHome = computed(() => store.currentContractId === '')
                         <HomeIcon class="mx-2 h-4 w-4" :class="{ 'dark:fill-white fill-primary': showHome }" />
                     </button>
                 </div>
-                <div v-for="(contract, index) in contracts" :key="contract.id" :id="contract.id === 'tutorial-example' ? `tutorial-contract-example`: `tutorial-contract-${index}`"
-                    :class="['font-semibold flex justify-between px-2 py-2 text-neutral-500', contract.id === store.currentContractId ? 'border-b-2 border-primary dark:text-white text-primary' : '']">
+                <div v-for="(contract) in contracts" :key="contract.id" 
+                    :id="`contract-item-${contract.id}`"
+                    :class="['contract-item font-semibold flex justify-between px-2 py-2 text-neutral-500', contract.id === store.currentContractId ? 'border-b-2 border-primary dark:text-white text-primary' : '']">
                     <button class="bg-transparent flex" @click="setCurrentContractTab(contract.id)">
                         <DocumentCheckIcon class="h-4 w-4 mr-2"
                             :class="{ 'dark:fill-white fill-primary': contract.id === store.currentContractId }" />
@@ -67,8 +63,7 @@ const showHome = computed(() => store.currentContractId === '')
         </div>
         <div v-for="contract in contracts" :key="contract.id" class="flex w-full h-full relative"
             v-show="contract.id === store.currentContractId">
-            <CodeEditor :contract="contract" @run-debug="handleRunDebug" :parent-height="parentHeight"
-                :parent-width="parentWidth" />
+            <CodeEditor :contract="contract" @run-debug="handleRunDebug"/>
         </div>
     </div>
 </template>

@@ -1,7 +1,9 @@
 # backend/consensus/base.py
 
 DEPLOY_CONTRACTS_QUEUE_KEY = "deploy_contracts"
+DEFAULT_VALIDATORS_COUNT = 5
 
+import traceback
 import asyncio
 from backend.node.base import Node
 from backend.database_handler.db_client import DBClient
@@ -33,7 +35,6 @@ class ConsensusAlgorithm:
         while True:
             chain_snapshot = ChainSnapshot(self.dbclient)
             pending_transactions = chain_snapshot.get_pending_transactions()
-            print("pending_transactions", pending_transactions)
             if len(pending_transactions) > 0:
                 for transaction in pending_transactions:
                     contract_address = (
@@ -54,11 +55,8 @@ class ConsensusAlgorithm:
 
     async def _run_consensus(self):
         asyncio.set_event_loop(asyncio.new_event_loop())
-
         # watch out! as ollama uses GPU resources and webrequest aka selenium uses RAM
         while True:
-            print("self.queues", self.queues)
-            print("self.queues.keys()", self.queues.keys())
             if self.queues:
                 chain_snapshot = ChainSnapshot(self.dbclient)
                 tasks = []
@@ -68,14 +66,12 @@ class ConsensusAlgorithm:
                         transaction = await self.queues[key].get()
                         tasks.append(self.exec_transaction(transaction, chain_snapshot))
 
-                    elif key != DEPLOY_CONTRACTS_QUEUE_KEY:
-                        tasks.append(
-                            ContractSnapshot(
-                                key, self.dbclient
-                            ).expire_queued_transactions()
-                        )
-                if tasks:
-                    await asyncio.gather(*tasks)
+                if len(tasks) > 0:
+                    try:
+                        await asyncio.gather(*tasks)
+                    except Exception as e:
+                        print("Error running consensus", e)
+                        print(traceback.format_exc())
             await asyncio.sleep(10)
 
     async def exec_transaction(
@@ -83,7 +79,7 @@ class ConsensusAlgorithm:
         transaction: dict,
         snapshot: ChainSnapshot,
     ) -> dict:
-        print("trasaction", transaction)
+        print(" ~ ~ ~ ~ ~ EXECUTING TRANSACTION: ", transaction)
         # Update transaction status
         self.transactions_processor.update_transaction_status(
             transaction["id"], TransactionStatus.PROPOSING.value
@@ -91,7 +87,7 @@ class ConsensusAlgorithm:
         # Select Leader and validators
         all_validators = snapshot.get_all_validators()
         leader, remaining_validators = get_validators_for_transaction(
-            all_validators, snapshot.num_validators
+            all_validators, DEFAULT_VALIDATORS_COUNT
         )
         num_validators = len(remaining_validators) + 1
 
@@ -100,7 +96,13 @@ class ConsensusAlgorithm:
 
         # Create Leader
         leader_node = Node(
-            contract_snapshot, leader["address"], "leader", leader["config"]
+            contract_snapshot=contract_snapshot,
+            address=leader["address"],
+            validator_mode="leader",
+            stake=leader["stake"],
+            provider=leader["provider"],
+            model=leader["model"],
+            config=leader["config"],
         )
 
         # Leader executes transaction
@@ -114,11 +116,14 @@ class ConsensusAlgorithm:
         # Create Validators
         validator_nodes = [
             Node(
-                contract_snapshot,
-                validator["address"],
-                "validator",
-                validator["config"],
-                leader_receipt,
+                contract_snapshot=contract_snapshot,
+                address=validator["address"],
+                validator_mode="validator",
+                stake=validator["stake"],
+                provider=validator["provider"],
+                model=validator["model"],
+                config=validator["config"],
+                leader_receipt=leader_receipt,
             )
             for i, validator in enumerate(remaining_validators)
         ]
@@ -145,6 +150,10 @@ class ConsensusAlgorithm:
         ):
             raise Exception("Consensus not reached")
 
+        self.transactions_processor.update_transaction_status(
+            transaction["id"], TransactionStatus.ACCEPTED.value
+        )
+
         final = False
         consensus_data = ConsensusData(
             final=final,
@@ -156,8 +165,6 @@ class ConsensusAlgorithm:
         execution_output = {}
         execution_output["leader_data"] = leader_receipt
         execution_output["consensus_data"] = consensus_data
-
-        print("leader_receipt", leader_receipt)
 
         # Register contract if it is a new contract
         if transaction["type"] == 1:

@@ -43,3 +43,6 @@ public/mockServiceWorker.js
 !.env.example
 
 src/assets/examples
+.nyc_output
+coverage
+vite.config.ts.timestamp-*

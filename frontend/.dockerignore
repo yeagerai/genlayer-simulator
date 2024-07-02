@@ -15,3 +15,6 @@ npm-debug.log
 .DS_Store
 
 src/assets/examples
+.nyc_output
+coverage
+vite.config.ts.timestamp-*
