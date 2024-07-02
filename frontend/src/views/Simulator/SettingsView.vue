@@ -65,8 +65,7 @@ async function handleDeleteValidator() {
     notify({
       title: 'OK',
       text: 'Validator deleted successfully',
-      type: 'success',
-      duration: 53000
+      type: 'success'
     })
   } catch (error) {
     console.error(error)
