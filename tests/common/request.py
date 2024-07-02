@@ -53,7 +53,6 @@ def post_request_and_wait_for_finalization(
     attempts = 0
     while attempts < retries:
         transaction_response = get_transaction_by_id(str(transaction_id))
-        print("status_response", transaction_response)
         status = transaction_response["result"]["data"]["status"]
         if status == "FINALIZED":
             return (call_method_response, transaction_response)

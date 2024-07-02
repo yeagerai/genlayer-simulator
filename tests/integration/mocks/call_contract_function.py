@@ -1,4 +1,4 @@
-execute_icontract_function_response_structure = {
+call_contract_function_response = {
     "id": int,
     "jsonrpc": str,
     "result": {
