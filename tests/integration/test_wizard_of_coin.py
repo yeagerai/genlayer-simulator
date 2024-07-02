@@ -31,8 +31,6 @@ def test_wizard_of_coin():
     assert has_success_status(result)
     assert "account_address" in result["result"]["data"]
     from_address = result["result"]["data"]["account_address"]
-    result = post_request_localhost(payload("fund_account", from_address, 10)).json()
-    assert has_success_status(result)
 
     # Get contract schema
     contract_code = open("examples/contracts/wizard_of_coin.py", "r").read()
@@ -70,3 +68,8 @@ def test_wizard_of_coin():
 
     # Assert format
     assert_dict_struct(transaction_response_call_1, call_contract_function_response)
+
+    delete_validators_result = post_request_localhost(
+        payload("delete_all_validators")
+    ).json()
+    assert has_success_status(delete_validators_result)

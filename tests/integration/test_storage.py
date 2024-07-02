@@ -33,8 +33,6 @@ def test_storage():
     assert has_success_status(result)
     assert "account_address" in result["result"]["data"]
     from_address = result["result"]["data"]["account_address"]
-    result = post_request_localhost(payload("fund_account", from_address, 10)).json()
-    assert has_success_status(result)
 
     # Get contract schema
     contract_code = open("examples/contracts/storage.py", "r").read()
@@ -88,3 +86,8 @@ def test_storage():
     ).json()
     assert has_success_status(contract_state_2)
     assert contract_state_2["result"]["data"] == UPDATED_STATE
+
+    delete_validators_result = post_request_localhost(
+        payload("delete_all_validators")
+    ).json()
+    assert has_success_status(delete_validators_result)
