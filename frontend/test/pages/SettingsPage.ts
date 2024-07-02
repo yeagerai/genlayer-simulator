@@ -13,7 +13,13 @@ export class SettingsPage extends BasePage {
     return this.driver.findElements(By.xpath("//div[@data-testid = 'validator-item-container']"))
   }
 
-  async createValidator() {
+  async createValidator({provider,
+    model,
+    stake } :{
+    provider: string,
+    model: string,
+    stake: number
+  }) {
      // get the list of validators
    
      await this.openNewValidatorModal()
@@ -22,20 +28,20 @@ export class SettingsPage extends BasePage {
        until.elementLocated(By.xpath("//select[contains(@data-testid, 'dropdown-provider-create')]"))
      )
      const selectProvider = new Select(selectProviderElement)
-     await selectProvider.selectByValue('heuristai')
+     await selectProvider.selectByValue(provider)
  
      // model select
      const selectModelElement = await this.driver.wait(
        until.elementLocated(By.xpath("//select[contains(@data-testid, 'dropdown-model-create')]"))
      )
      const selectModel = new Select(selectModelElement)
-     await selectModel.selectByValue('mistralai/mixtral-8x7b-instruct')
+     await selectModel.selectByValue(model)
  
      const stakeInput = await this.driver.wait(
        until.elementLocated(By.xpath("//input[@data-testid='input-stake-create']"))
      )
      await stakeInput.clear()
-     await stakeInput.sendKeys(7)
+     await stakeInput.sendKeys(stake)
   
  
      const createValidatorBtn = await this.driver.wait(

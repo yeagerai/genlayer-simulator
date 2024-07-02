@@ -1,4 +1,4 @@
-import { WebDriver, By, until, Select } from 'selenium-webdriver'
+import { WebDriver, Select } from 'selenium-webdriver'
 
 import { SettingsPage } from '../pages/SettingsPage.js'
 import { ContractsPage } from '../pages/ContractsPage.js'
@@ -27,7 +27,11 @@ describe('Settings - Create Node Validator', () => {
     await settingsPage.waitUntilVisible()
 
     const initialValidators = await settingsPage.getValidatorsElements()
-    await settingsPage.createValidator()
+    await settingsPage.createValidator({
+      provider: 'heuristai',
+      model: 'mistralai/mixtral-8x7b-instruct',
+      stake: 7
+    })
     const existingValidators = await settingsPage.getValidatorsElements()
     expect(
       existingValidators.length,

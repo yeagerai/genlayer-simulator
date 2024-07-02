@@ -26,7 +26,11 @@ describe('Settings - Delete Node Validator', () => {
     await settingsPage.navigate()
     await settingsPage.waitUntilVisible()
 
-    await settingsPage.createValidator()
+    await settingsPage.createValidator({
+      provider: 'heuristai',
+      model: 'mistralai/mixtral-8x7b-instruct',
+      stake: 7
+    })
     const existingValidators = await settingsPage.getValidatorsElements()
     const existingValidatorsLength = existingValidators.length
     expect(
@@ -45,9 +49,11 @@ describe('Settings - Delete Node Validator', () => {
     // call delete validator button
     await deleteValidatorBtn.click()
 
-    await driver.navigate().refresh();
-    const validators = await driver.findElements(By.xpath("//button[@data-testid = 'validator-item-delete']"))
-    
+    await driver.navigate().refresh()
+    const validators = await driver.findElements(
+      By.xpath("//button[@data-testid = 'validator-item-delete']")
+    )
+
     expect(
       validators.length,
       'validators length should be less than initial validators length'

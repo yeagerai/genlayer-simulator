@@ -26,7 +26,11 @@ describe('Settings - Update Node Validator', () => {
     await settingsPage.navigate()
     await settingsPage.waitUntilVisible()
 
-    await settingsPage.createValidator()
+    await settingsPage.createValidator({
+      provider: 'heuristai',
+      model: 'mistralai/mixtral-8x7b-instruct',
+      stake: 7
+    })
     const existingValidators = await settingsPage.getValidatorsElements()
     expect(
       existingValidators.length,
