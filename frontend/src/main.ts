@@ -14,7 +14,7 @@ const pinia = createPinia()
 
 pinia.use(persistStorePlugin)
 app.use(pinia)
-
+setupStores()
 app.use(router)
 app.use(
   createToolTipPlugin({
@@ -28,4 +28,4 @@ app.use(TransactionsListenerPlugin, {
   interval: 5000
 })
 app.mount('#app')
-setupStores()
+
