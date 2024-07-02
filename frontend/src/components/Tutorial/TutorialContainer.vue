@@ -11,33 +11,34 @@ const tutorialStore = useTutorialStore()
 const uiStore = useUIStore()
 const router = useRouter()
 const contract = computed(() =>(contractsStore.contracts[0]))
+const contracts = computed(() =>(contractsStore.contracts))
 const steps = ref([
   {
-    target: () => '#tutorial-welcome',
+    target:'#tutorial-welcome',
     header: {
       title: 'Welcome to GenLayer Simulator!'
     },
-    content: () => 'This tutorial will guide you through the basics. Click “Next” to begin!',
+    content: 'This tutorial will guide you through the basics. Click “Next” to begin!',
     onNextStep: async () => {
       contractsStore.openFile(contract.value?.id)
     }
   },
   {
-    target: () => `.contract-item`,
+    target:`.contract-item`,
     header: {
       title: 'Code Editor'
     },
-    content: () => `Write and edit your Intelligent Contracts here. The example contract '${contract.value?.name}' is preloaded for you.`,
+    content: `Write and edit your Intelligent Contracts here. This example contract is preloaded for you.`,
     onNextStep: async () => {
       router.push({ name: 'simulator.run-debug', query: { tutorial: 1 } })
     }
   },
   {
-    target: () => '#tutorial-how-to-deploy',
+    target:'#tutorial-how-to-deploy',
     header: {
       title: 'Deploying Contracts'
     },
-    content: () => "Click “Next” to automatically deploy your Intelligent Contract to the GenLayer network.",
+    content: "Click “Next” to automatically deploy your Intelligent Contract to the GenLayer network.",
     onNextStep: async () => {
       await tutorialStore.deployContract()
       notify({
@@ -48,11 +49,11 @@ const steps = ref([
     }
   },
   {
-    target: () => '#tutorial-creating-transactions',
+    target:'#tutorial-creating-transactions',
     header: {
       title: 'Creating Transactions'
     },
-    content: () => "This is where you can interact with the deployed contract. You can select a method you want to use from the dropdown, and provide the parameters.  Click “Next” to automatically create a transaction and interact with your deployed contract.",
+    content: "This is where you can interact with the deployed contract. You can select a method you want to use from the dropdown, and provide the parameters.  Click “Next” to automatically create a transaction and interact with your deployed contract.",
     onNextStep: async () => {
       tutorialStore.callContractMethod()
       notify({
@@ -63,26 +64,26 @@ const steps = ref([
     }
   },
   {
-    target: () => '#tutorial-node-output',
+    target:'#tutorial-node-output',
     header: {
       title: 'Node Output'
     },
-    content: () => "View real-time feedback as your transaction execution and debug any issues."
+    content: "View real-time feedback as your transaction execution and debug any issues."
   },
 
   {
-    target: () => '#tutorial-contract-state',
+    target:'#tutorial-contract-state',
     header: {
       title: 'Contract State'
     },
-    content: () => "This panel shows the contract's data after executing transactions."
+    content: "This panel shows the contract's data after executing transactions."
   },
   {
-    target: () => '#tutorial-tx-response',
+    target:'#tutorial-tx-response',
     header: {
       title: 'Transaction Response'
     },
-    content: () => 'See the results of your transaction interaction with the contract in this area.',
+    content: 'See the results of your transaction interaction with the contract in this area.',
     onNextStep: async () => {
       router.push({ name: 'simulator.contracts' })
     }
@@ -91,8 +92,8 @@ const steps = ref([
     header: {
       title: 'Switching Examples'
     },
-    target: () => '#tutorial-how-to-change-example',
-    content: () => "Switch between different example contracts to explore various features and functionalities.",
+    target:'#tutorial-how-to-change-example',
+    content: "Switch between different example contracts to explore various features and functionalities.",
     onNextStep: async () => {
       await router.push({ name: 'simulator.settings' })
     }
@@ -101,15 +102,15 @@ const steps = ref([
     header: {
       title: 'Validators'
     },
-    target: () => '#tutorial-validators',
-    content: () => "Configure the number of validators and set up their parameters here."
+    target:'#tutorial-validators',
+    content: "Configure the number of validators and set up their parameters here."
   },
   {
     header: {
       title: 'Congratulations!'
     },
-    target: () => '#tutorial-end',
-    content: () => "You've completed the GenLayer Simulator tutorial. Feel free to revisit any step or start experimenting with your own contracts. Happy coding!"
+    target:'#tutorial-end',
+    content: "You've completed the GenLayer Simulator tutorial. Feel free to revisit any step or start experimenting with your own contracts. Happy coding!"
   }
 ])
 
@@ -162,12 +163,12 @@ function handleKeyup(e: KeyboardEvent) {
 }
 async function start(startStep?: number) {
   router.replace({ name: 'simulator.contracts' })
-  contractsStore.openFile(contractsStore.contracts[0].id)
   contractsStore.setCurrentContractId('')
   // Register keyup listeners for this tour
   if (options.value.useKeyboardNavigation) {
     window.addEventListener('keyup', handleKeyup)
   }
+  localStorage.setItem('genlayer.tutorial', new Date().getTime().toString())
 
   // Wait for the DOM to be loaded, then start the tour
   startStep = startStep ? parseInt(`${startStep}`, 10) : 0
@@ -176,6 +177,7 @@ async function start(startStep?: number) {
   let process = () =>
     new Promise((resolve, _reject) => {
       setTimeout(() => {
+        contractsStore.openFile(contracts.value[0].id)
         currentStep.value = startStep
         resolve(0)
       }, options.value.startTimeout)
@@ -263,7 +265,6 @@ async function nextStep() {
 
 onMounted(() => {
   if (!localStorage.getItem('genlayer.tutorial')) {
-    localStorage.setItem('genlayer.tutorial', new Date().getTime().toString())
     start()
   }
 })

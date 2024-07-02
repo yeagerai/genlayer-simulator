@@ -1,9 +1,6 @@
 <template>
-    <div v-bind:class="{ 'v-step--sticky': isSticky }" 
-        class="v-step bg-slate-300 dark:bg-zinc-700" 
-        :id="'v-step-' + hash" 
-        :ref="'v-step-' + hash"
-        :data-testid="'tutorial-step-' + step.target">
+    <div v-bind:class="{ 'v-step--sticky': isSticky }" class="v-step bg-slate-300 dark:bg-zinc-700"
+        :id="'v-step-' + hash" :ref="'v-step-' + hash" :data-testid="'tutorial-step-' + step.target">
         <slot name="header">
             <div v-if="step.header" class="v-step__header bg-slate-300 dark:bg-zinc-700">
                 <div v-if="step.header.title" v-html="step.header.title"></div>
@@ -12,7 +9,7 @@
 
         <slot name="content">
             <div class="v-step__content bg-slate-300 dark:bg-zinc-700">
-                <div v-if="step.content()" v-html="step.content()"></div>
+                <div v-if="content" v-html="content"></div>
                 <div v-else>This is a demo step! The id of this step is {{ hash }} and it targets {{ step.target }}.
                 </div>
             </div>
@@ -93,8 +90,8 @@ export default {
     },
     data() {
         return {
-            hash: sum(this.step.target()),
-            targetElement: document.querySelector(this.step.target())
+            hash: sum(this.step.target),
+            targetElement: document.querySelector(this.step.target)
         }
     },
     computed: {
@@ -111,13 +108,19 @@ export default {
          */
         isSticky() {
             return !this.step.target
+        },
+        content() {
+            if (typeof this.step.content === 'function') {
+                return this.step.content()
+            }
+            return this.step.content
         }
     },
     methods: {
         createStep() {
-            console.log('[Vue Tour] The target element ' + this.step.target() + ' of .v-step[id="' + this.hash + '"] is:', this.targetElement)
+            console.log('[Vue Tour] The target element ' + this.step.target + ' of .v-step[id="' + this.hash + '"] is:', this.targetElement)
             if (this.debug) {
-                console.log('[Vue Tour] The target element ' + this.step.target() + ' of .v-step[id="' + this.hash + '"] is:', this.targetElement)
+                console.log('[Vue Tour] The target element ' + this.step.target + ' of .v-step[id="' + this.hash + '"] is:', this.targetElement)
             }
 
             if (this.isSticky) {
