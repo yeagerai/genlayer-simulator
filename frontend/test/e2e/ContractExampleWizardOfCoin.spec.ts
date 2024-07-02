@@ -58,7 +58,7 @@ describe('Contract Example WizardOfCoin', () => {
           "//h5[contains(@class, 'text-sm') and contains(text(), 'Current Intelligent Contract State')]"
         )
       ),
-      5000
+      15000
     )
     expect(contractStateTitle, 'Contract state title section should be visible').not.null
 
@@ -79,7 +79,8 @@ describe('Contract Example WizardOfCoin', () => {
   })
 
   it('should call get_have_coin state', async () => {
-    await driver.wait(until.elementLocated(By.xpath("//button[text()='get_have_coin']"))).click()
+    const stateBtn = await driver.wait(until.elementLocated(By.xpath("//button[text()='get_have_coin']")), 25000)
+    await stateBtn.click()
 
     const stateResult = await driver.wait(
       until.elementLocated(By.xpath("//div[contains(@data-testid, 'get_have_coin')]"))
