@@ -9,9 +9,60 @@ jobs:
   load-test:
     runs-on: ubuntu-latest
 
+    # env:
+    #   PYTHONPATH: ${{ github.workspace }}
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Copy .env file
+        run: cp .env.example .env
+
+      - name: Changing URL for rpc server to localhost
+        run: sed -i "s/'jsonrpc'/'localhost'/g" .env
+      
+      - name: Remove OPENAIKEY from the .env file so it can be loaded from the environment
+        run: sed -i "/^OPENAIKEY *= *'<add_your_api_key_here>'$/d" .env
+
+      - name: Adding OPENAIKEY to the .env file
+        env:
+          OPENAIKEY: ${{ secrets.OPENAIKEY }}
+        run: printf "\nOPENAIKEY='$OPENAIKEY'\n" >> .env
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Run Docker Compose
+        run: docker compose up -d
+
+      - name: Wait for services to be up
+        run: |
+          timeout=60
+          counter=0
+          while [[ "$counter" -lt "$timeout" ]]; do
+            if curl -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"ping","params":[],"id":1}' http://0.0.0.0:4000/api | grep -q "OK"; then
+              echo "RPC server is up!"
+              break
+            else
+              echo "Waiting for RPC server... ($counter/$timeout)"
+              sleep 5
+              counter=$((counter+1))
+            fi
+          done
+          # Fail if the service didn't start within the timeout
+          if [[ "$counter" -ge "$timeout" ]]; then
+            echo "Error: Timeout while waiting for RPC server"
+            exit 1
+          fi
 
       - name: Install jq
         run: sudo apt-get install jq
@@ -26,3 +77,7 @@ jobs:
 
       - name: Run Load Test
         run: ./tests/load/test.sh
+
+      - name: Shutdown Docker Compose
+        if: always()
+        run: docker compose down
