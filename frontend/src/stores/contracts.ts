@@ -288,7 +288,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
     openedFiles,
     currentContractId,
     deployedContracts,
-
     currentContractState,
     callingContractState,
     callingContractMethod,
