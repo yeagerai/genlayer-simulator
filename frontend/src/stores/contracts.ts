@@ -272,7 +272,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
       }
     }
   }
-
   const currentContract = computed(() => {
     return contracts.value.find((c) => c.id === currentContractId.value)
   })
