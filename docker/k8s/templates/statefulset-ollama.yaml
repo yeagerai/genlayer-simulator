@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ollama
+spec:
+  serviceName: ollama
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ollama
+  template:
+    metadata:
+      labels:
+        app: ollama
+    spec:
+      containers:
+        - name: ollama
+          image: {{ .Values.ollama.image }}
+          ports:
+            - containerPort: {{ .Values.ollama.port }}
+          volumeMounts:
+            - name: ollama-data
+              mountPath: /root/.ollama
+          # resources:
+          #   requests:
+          #     memory: "2Gi"
+          #     cpu: "1"
+          #   limits:
+          #     memory: "2Gi"
+          #     cpu: "1"
+          tty: true
+          # restartPolicy: Always
+  volumeClaimTemplates:
+    - metadata:
+        name: ollama-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ .Values.ollama.disk_size }}

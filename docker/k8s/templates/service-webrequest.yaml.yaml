@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: webrequest
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.webrequest.port }}
+      targetPort: {{ .Values.webrequest.port }}
+  selector:
+    app: webrequest

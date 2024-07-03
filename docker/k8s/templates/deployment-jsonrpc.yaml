@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jsonrpc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jsonrpc
+  template:
+    metadata:
+      labels:
+        app: jsonrpc
+    spec:
+      containers:
+        - name: jsonrpc
+          image: {{ .Values.jsonrpc.image }}
+          ports:
+            - containerPort: {{ .Values.rpc.port }}
+            - containerPort: {{ .Values.rpc.debugPort }}
+          envFrom:
+            - configMapRef:
+                name: genlayer-sim-env-config
+          volumeMounts:
+            - name: env
+              mountPath: /app/.env
+            - name: rpc
+              mountPath: /app/rpc
+            - name: database
+              mountPath: /app/database
+            - name: consensus
+              mountPath: /app/consensus
+            - name: common
+              mountPath: /app/common
+      volumes:
+        - name: env
+          hostPath:
+            path: /path/to/.env
+        - name: rpc
+          hostPath:
+            path: /path/to/rpc
+        - name: database
+          hostPath:
+            path: /path/to/database
+        - name: consensus
+          hostPath:
+            path: /path/to/consensus
+        - name: common
+          hostPath:
+            path: /path/to/common

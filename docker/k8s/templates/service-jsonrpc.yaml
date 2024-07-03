@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: jsonrpc
+spec:
+  type: ClusterIP
+  ports:
+    - name: jsonrpc-port
+      port: {{ .Values.rpc.port }}
+      targetPort: {{ .Values.rpc.port }}
+    - name: jsonrpc-debug-port
+      port: {{ .Values.rpc.debugPort }}
+      targetPort: {{ .Values.rpc.debugPort }}
+  selector:
+    app: jsonrpc

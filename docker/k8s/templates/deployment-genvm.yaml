@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: genvm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: genvm
+  template:
+    metadata:
+      labels:
+        app: genvm
+    spec:
+      containers:
+        - name: genvm
+          image: {{ .Values.genvm.image }}
+          ports:
+            - containerPort: {{ .Values.genvm.port }}
+            - containerPort: {{ .Values.genvm.debugPort }}
+          envFrom:
+            - configMapRef:
+                name: genlayer-sim-env-config
+          volumeMounts:
+            - name: genvm
+              mountPath: /app/genvm
+            - name: common
+              mountPath: /app/common
+      volumes:
+        - name: genvm
+          hostPath:
+            path: /path/to/genvm
+        - name: common
+          hostPath:
+            path: /path/to/common

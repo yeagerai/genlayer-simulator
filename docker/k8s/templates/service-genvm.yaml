@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: genvm
+spec:
+  type: ClusterIP
+  ports:
+    - name: genvm-port
+      port: {{ .Values.genvm.port }}
+      targetPort: {{ .Values.genvm.port }}
+    - name: genvm-debug-port
+      port: {{ .Values.genvm.debugPort }}
+      targetPort: {{ .Values.genvm.debugPort }}
+  selector:
+    app: genvm

@@ -1,0 +1,4 @@
+apiVersion: v2
+name: genlayer-simulator
+description: GenLayer Simulator Helm chart
+version: 0.0.1

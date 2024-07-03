@@ -1,0 +1,43 @@
+#Re-using locally built docker images from the docker-compose
+postgres:
+  image: genlayer-simulator_postgres:latest
+  name: genlayer_state
+  user: postgres
+  password: postgres
+  port: 5432
+  disk_size: 5Gi
+
+ollama:
+  image: ollama/ollama:latest
+  protocol: http
+  port: 11434
+  disk_size: 5Gi
+
+genvm:
+  image: genlayer-simulator_genvm:latest
+  protocol: http
+  port: 6000
+  debugPort: 6678
+  debug: 1
+
+rpc:
+  image: genlayer-simulator_jsonrpc:latest
+  protocol: http
+  port: 4000
+  debugPort: 4678
+
+webrequest:
+  image: genlayer-simulator_webrequest:latest
+  protocol: http
+  port: 5000
+
+frontend:
+  port: 8080
+  image: genlayer-simulator_frontend:latest
+
+vscodeDebug: false
+openaiKey: "YOUR_OPENAI_KEY"
+heuristAI:
+  url: https://llm-gateway.heurist.xyz
+  modelsUrl: https://raw.githubusercontent.com/heurist-network/heurist-models/main/models.json
+  apiKey: "YOUR_HEURISTAI_KEY"

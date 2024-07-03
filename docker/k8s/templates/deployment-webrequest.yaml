@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webrequest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webrequest
+  template:
+    metadata:
+      labels:
+        app: webrequest
+    spec:
+      containers:
+        - name: webrequest
+          image: {{ .Values.webrequest.image }}
+          envFrom:
+            - configMapRef:
+                name: genlayer-sim-env-config
+          volumeMounts:
+            - name: webrequest
+              mountPath: /app/webrequest
+      volumes:
+        - name: webrequest
+          hostPath:
+            path: /path/to/webrequest
