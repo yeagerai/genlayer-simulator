@@ -7,9 +7,9 @@ import { ref } from 'vue';
 const store = useAccountsStore()
 
 const showSetDefaultAccount = ref<Record<string, boolean>>({})
-const handleCreateNewAddress = async () => {
-  const address = await store.generateNewAccount()
-  if (address) {
+const handleCreateNewAccount = async () => {
+  const privateKey = store.generateNewAccount()
+  if (privateKey) {
     notify({
       title: 'OK',
       text: 'New Account Created',
@@ -25,15 +25,15 @@ const handleCreateNewAddress = async () => {
 }
 
 
-const handleShowSetDefaultAccount = (address: string) => {
-  showSetDefaultAccount.value[address] = true
+const handleShowSetDefaultAccount = (privateKey: string) => {
+  showSetDefaultAccount.value[privateKey] = true
 }
-const handleHideSetDefaultAccount = (address: string) => {
-  showSetDefaultAccount.value[address] = false
+const handleHideSetDefaultAccount = (privateKey: string) => {
+  showSetDefaultAccount.value[privateKey] = false
 }
-const setCurentUserAddress = (address: `0x${string}`) => {
-  if (address) {
-    store.currentPrivateKey = address
+const setCurentUserAddress = (privateKey: `0x${string}`) => {
+  if (privateKey) {
+    store.currentPrivateKey = privateKey
     showSetDefaultAccount.value = {}
     notify({
       title: 'OK',
@@ -61,12 +61,12 @@ const setCurentUserAddress = (address: `0x${string}`) => {
               <div class="flex flex-col text-xs w-full overflow-y-auto max-h-56">
                 <div
                   class="flex justify-between items-center hover:bg-slate-100 p-1 dark:bg-zinc-800 dark:hover:bg-zinc-700"
-                  v-for="account in store.accounts" :key="account">
-                  <template v-if="account === store.currentPrivateKey">
+                  v-for="privateKey in store.privateKeys" :key="privateKey">
+                  <template v-if="privateKey === store.currentPrivateKey">
                     <div class="flex items-center">
                       <ToolTip text="Your Current Account" :options="{ placement: 'right' }" />
                       <div class="flex  dark:text-white text-primary pl-4 pr-2 ">
-                        {{ store.accountFromPrivateKey(account).address }}
+                        {{ store.accountFromPrivateKey(privateKey).address }}
                       </div>
                     </div>
                     <div class="flex  dark:text-white text-primary  w-6 h-6">
@@ -74,16 +74,16 @@ const setCurentUserAddress = (address: `0x${string}`) => {
                     </div>
                   </template>
                   <template v-else>
-                    <div class="flex items-center cursor-pointer" @click="setCurentUserAddress(account)"
-                      @mouseover="handleShowSetDefaultAccount(account)"
-                      @mouseleave="handleHideSetDefaultAccount(account)">
+                    <div class="flex items-center cursor-pointer" @click="setCurentUserAddress(privateKey)"
+                      @mouseover="handleShowSetDefaultAccount(privateKey)"
+                      @mouseleave="handleHideSetDefaultAccount(privateKey)">
                       <ToolTip text="Set as Current Account" :options="{ placement: 'right' }" />
                       <div class="flex  dark:text-white text-primary pl-4 pr-2">
-                        {{ store.accountFromPrivateKey(account).address }}
+                        {{ store.accountFromPrivateKey(privateKey).address }}
                       </div>
                     </div>
                     <div class="flex  dark:text-white text-primary w-6 h-6">
-                      <CheckIcon v-show="showSetDefaultAccount[account]" class="h-4 w-4 mr-1" />
+                      <CheckIcon v-show="showSetDefaultAccount[privateKey]" class="h-4 w-4 mr-1" />
                     </div>
                   </template>
                 </div>
@@ -91,7 +91,7 @@ const setCurentUserAddress = (address: `0x${string}`) => {
             </div>
           </div>
           <div class="flex flex-col mt-4">
-            <button @click="handleCreateNewAddress"
+            <button @click="handleCreateNewAccount"
               class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">Generate New
               Address</button>
           </div>

@@ -29,10 +29,10 @@ export const setupStores = async () => {
 
   contractsStore.deployedContracts = await db.deployedContracts.toArray()
   transactionsStore.transactions = await db.transactions.toArray()
-  if ( accountsStore.accounts.length < 1) {
+  if ( accountsStore.privateKeys.length < 1) {
     accountsStore.generateNewAccount()
   } else {
-    accountsStore.accounts = localStorage.getItem('accountsStore.privateKeys')
+    accountsStore.privateKeys = localStorage.getItem('accountsStore.privateKeys')
       ? ((localStorage.getItem('accountsStore.privateKeys') || '').split(',') as `0x${string}`[])
       : []
   }

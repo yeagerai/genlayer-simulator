@@ -1,6 +1,6 @@
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
 
-export const getAccount = (privateKey: `0x${string}`) => {
+export const getAccountFromPrivatekey = (privateKey: `0x${string}`) => {
     return privateKeyToAccount(privateKey)
 }
 
