@@ -12,14 +12,12 @@ import type {
   GetContractSchemaRequest,
   GetDeployedContractSchemaRequest,
   CreateValidatorRequest,
-  UpdateValidatorRequest
+  UpdateValidatorRequest,
+  TransactionItem
 } from '@/types'
 
 export class JsonRpcService implements IJsonRpcService {
-
-  constructor(protected rpcClient: IRpcClient) { 
-
-  }
+  constructor(protected rpcClient: IRpcClient) {}
   /**
    * Retrieves the state of a contract at a specific address and method.
    *
@@ -95,7 +93,7 @@ export class JsonRpcService implements IJsonRpcService {
    */
   async getContractSchema({ code }: GetContractSchemaRequest): Promise<JsonRpcResult<any>> {
     const { result } = await this.rpcClient.call({
-      method: 'get_icontract_schema_for_code',
+      method: 'get_contract_schema_for_code',
       params: [code]
     })
     return result
@@ -107,9 +105,11 @@ export class JsonRpcService implements IJsonRpcService {
    * @param {string} params.address - The address of the deployed contract.
    * @return {Promise<JsonRpcResult<any>>} A promise that resolves to the deployed contract schema.
    */
-  async getDeployedContractSchema({ address }: GetDeployedContractSchemaRequest): Promise<JsonRpcResult<any>> {
+  async getDeployedContractSchema({
+    address
+  }: GetDeployedContractSchemaRequest): Promise<JsonRpcResult<any>> {
     const { result } = await this.rpcClient.call({
-      method: 'get_icontract_schema',
+      method: 'get_contract_schema',
       params: [address]
     })
     return result
@@ -201,11 +201,18 @@ export class JsonRpcService implements IJsonRpcService {
     return result
   }
 
-
   async createAccount(): Promise<JsonRpcResult<any>> {
     const { result } = await this.rpcClient.call({
       method: 'create_account',
       params: []
+    })
+    return result
+  }
+
+  async getTransactionById(txId: number): Promise<JsonRpcResult<TransactionItem>> {
+    const { result } = await this.rpcClient.call<TransactionItem>({
+      method: 'get_transaction_by_id',
+      params: [`${txId}`]
     })
     return result
   }

@@ -1,6 +1,6 @@
 import json
-from genvm.base.icontract import IContract
-from genvm.base.equivalence_principle import call_llm_with_principle
+from backend.node.genvm.icontract import IContract
+from backend.node.genvm.equivalence_principle import call_llm_with_principle
 
 
 class WizardOfCoin(IContract):
@@ -41,5 +41,5 @@ your output must be only be JSON.
             if output["give_coin"] is True:
                 self.have_coin = False
 
-    def get_have_coin(self):
+    def get_have_coin(self) -> bool:
         return self.have_coin

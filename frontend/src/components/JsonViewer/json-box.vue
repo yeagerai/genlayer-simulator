@@ -73,7 +73,7 @@ export default {
     } else if (typeof this.value === "function") {
       dataType = JsonFunction;
     }
-    if (this.value.constructor === RegExp) {
+    if (this.value?.constructor === RegExp) {
       // console.log("type", this.value.constructor === RegExp);
       // this.value=this.value.toString()
       dataType = JsonRegexp;
