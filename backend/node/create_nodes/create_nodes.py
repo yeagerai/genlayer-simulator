@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+default_provider_key_value = "<add_your_api_key_here>"
+
 
 def get_ollama_url(endpoint: str) -> str:
     return f"{os.environ['OLAMAPROTOCOL']}://{os.environ['OLAMAHOST']}:{os.environ['OLAMAPORT']}/api/{endpoint}"
@@ -20,16 +22,21 @@ def base_node_json(provider: str, model: str) -> dict:
 def get_random_provider_using_weights(defaults):
     # remove providers if no api key
     provider_weights = defaults["provider_weights"]
-    default_value = "<add_your_api_key_here>"
     if "openai" in provider_weights and (
-        "OPENAIKEY" not in os.environ or os.environ["OPENAIKEY"] == default_value
+        "OPENAIKEY" not in os.environ
+        or os.environ["OPENAIKEY"] == default_provider_key_value
     ):
         provider_weights.pop("openai")
     if "heuristai" in provider_weights and (
         "HEURISTAIAPIKEY" not in os.environ
-        or os.environ["HEURISTAIAPIKEY"] == default_value
+        or os.environ["HEURISTAIAPIKEY"] == default_provider_key_value
     ):
         provider_weights.pop("heuristai")
+    if get_provider_models({}, "ollama") == []:
+        provider_weights.pop("ollama")
+
+    if len(provider_weights) == 0:
+        raise Exception("No providers avaliable")
 
     total_weight = sum(provider_weights.values())
     random_num = uniform(0, total_weight)
@@ -116,10 +123,10 @@ def random_validator_config(providers: list = []):
 
     if (
         not len(ollama_models)
-        and os.environ["OPENAIKEY"] == "<add_your_open_ai_key_here>"
-        and os.environ["HEURISTAIAPIKEY"] == "<add_your_heurist_api_key_here>"
+        and os.environ["OPENAIKEY"] == default_provider_key_value
+        and os.environ["HEURISTAIAPIKEY"] == default_provider_key_value
     ):
-        raise Exception("No models avaliable.")
+        raise Exception("No providers avaliable.")
 
     # See if they have an OpenAPI key
 

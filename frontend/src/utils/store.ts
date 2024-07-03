@@ -6,9 +6,7 @@ export const setupStores = async () => {
   const contractsStore = useContractsStore()
   const accountsStore = useAccountsStore()
   const transactionsStore = useTransactionsStore()
-  if (
-    (await db.contractFiles.count()) === 0
-  ) {
+  if ((await db.contractFiles.count()) === 0) {
     const contractsBlob = import.meta.glob('@/assets/examples/contracts/*.py', {
       query: '?raw',
       import: 'default'
@@ -29,13 +27,14 @@ export const setupStores = async () => {
 
   contractsStore.deployedContracts = await db.deployedContracts.toArray()
   transactionsStore.transactions = await db.transactions.toArray()
-  if ( accountsStore.accounts.length < 1) {
+  if (accountsStore.accounts.length < 1) {
     await accountsStore.generateNewAccount()
   } else {
-    accountsStore.accounts = localStorage.getItem('accountsStore.accounts') ?  (localStorage.getItem('accountsStore.accounts') || '').split(',') : []
+    accountsStore.accounts = localStorage.getItem('accountsStore.accounts')
+      ? (localStorage.getItem('accountsStore.accounts') || '').split(',')
+      : []
   }
 }
-
 
 export const getContractFileName = (name: string) => {
   const tokens = name.split('.')
