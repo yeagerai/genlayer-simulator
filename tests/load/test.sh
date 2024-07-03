@@ -1,9 +1,7 @@
 #!/bin/bash
 
 # Base URL of the application
-# BASE_URL="http://localhost:4000"
-BASE_URL="http://192.168.1.2:4000"
-
+BASE_URL="http://localhost:4000"
 
 # Number of requests and concurrency level
 REQUESTS=1000
