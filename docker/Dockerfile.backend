@@ -16,10 +16,11 @@ ADD backend $path/backend
 ###########START NEW IMAGE : DEBUGGER ###################
 FROM base AS debug
 RUN pip install debugpy
+RUN pip install watchdog
 
-CMD python -m debugpy --listen 0.0.0.0:${RPCDEBUGPORT} -m flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}
+CMD watchmedo auto-restart --recursive --pattern="*.py" --ignore-patterns="*.pyc;*__pycache__*" -- python -m debugpy --listen 0.0.0.0:${RPCDEBUGPORT} -m flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}
 
 ###########START NEW IMAGE: PRODUCTION ###################
-FROM base as prod
+FROM base AS prod
 
 CMD flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}
