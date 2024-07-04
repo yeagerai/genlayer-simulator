@@ -11,12 +11,11 @@ ENV PYTHONPATH "${PYTHONPATH}:/${path}"
 ENV FLASK_APP=backend/protocol_rpc/server.py
 
 COPY ../.env .
-ADD backend $path/backend
+COPY backend $path/backend
 
 ###########START NEW IMAGE : DEBUGGER ###################
 FROM base AS debug
-RUN pip install debugpy
-RUN pip install watchdog
+RUN pip install --no-cache-dir debugpy watchdog
 
 CMD watchmedo auto-restart --recursive --pattern="*.py" --ignore-patterns="*.pyc;*__pycache__*" -- python -m debugpy --listen 0.0.0.0:${RPCDEBUGPORT} -m flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}
 
