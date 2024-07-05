@@ -15,7 +15,7 @@ services:
   jsonrpc:
     build:
       context: ./
-      dockerfile: ./docker/Dockerfile.rpc
+      dockerfile: ./docker/Dockerfile.backend
       target: debug
     environment:
       - FLASK_SERVER_PORT=${RPCPORT}
@@ -27,14 +27,12 @@ services:
       - "${RPCDEBUGPORT}:${RPCDEBUGPORT}"
     volumes:
       - ./.env:/app/.env
-      - ./rpc:/app/rpc
-      - ./database:/app/database
-      - ./consensus:/app/consensus
-      - ./common:/app/common
+      - ./backend:/app/backend
     depends_on:
-      - ollama
-      - postgres
-      - genvm
+      ollama:
+        condition: service_started
+      database-migration:
+        condition: service_completed_successfully
     expose:
       - "${RPCPORT}"
 
@@ -52,24 +50,6 @@ services:
     expose:
       - "${WEBREQUESTPORT}"
 
-  genvm:
-    build:
-      context: ./
-      dockerfile: ./docker/Dockerfile.genvm
-      target: debug
-    environment:
-      - FLASK_SERVER_PORT=${GENVMPORT}
-      - DEBUG=${GENVMDEBUG}
-      - GENVMDEBUGPORT=${GENVMDEBUGPORT}
-      - PYTHONUNBUFFERED=${GENVMDEBUG}
-    expose:
-      - "${GENVMPORT}"
-    ports:
-      - "${GENVMDEBUGPORT}:${GENVMDEBUGPORT}"
-    volumes:
-      - ./genvm:/app/genvm
-      - ./common:/app/common
-
   ollama:
     image: ollama/ollama:latest
     ports:
@@ -86,11 +66,27 @@ services:
       context: ./
       dockerfile: ./docker/Dockerfile.database
     ports:
-      - "6000:5432"
+      - "${DBPORT}:5432"
     environment:
       - POSTGRES_USER=${DBUSER}
       - POSTGRES_PASSWORD=${DBPASSWORD}
       - POSTGRES_DB=${DBNAME}
+    healthcheck:
+      test: pg_isready -U ${DBUSER} -d ${DBNAME}
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
     # If you want your db to persist in dev
     #volumes:
     #  - "./data/postgres:/var/lib/postgresql/data"
+
+  database-migration:
+    build:
+      context: ./backend/database_handler
+      dockerfile: ../../docker/Dockerfile.database-migration
+    environment:
+      - DB_URL=postgresql://${DBUSER}:${DBUSER}@postgres/${DBNAME}
+    depends_on:
+      postgres:
+        condition: service_healthy

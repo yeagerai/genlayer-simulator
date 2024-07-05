@@ -62,7 +62,8 @@ describe('Contract Example Storage', () => {
         By.xpath(
           "//h5[contains(@class, 'text-sm') and contains(text(), 'Current Intelligent Contract State')]"
         )
-      )
+      ),
+      15000
     )
     expect(contractStateTitle, 'Contract state title section should be visible').not.null
 
@@ -83,9 +84,12 @@ describe('Contract Example Storage', () => {
   })
 
   it('should call get_storage state', async () => {
-    await driver
-      .wait(until.elementLocated(By.xpath("//button[text()='get_storage']")), 10000)
-      .click()
+  
+    const stateBtn = await driver.wait(
+      until.elementLocated(By.xpath("//button[text()='get_storage']")),
+      25000
+    )
+    await stateBtn.click()
 
     const stateResult = await driver.wait(
       until.elementLocated(By.xpath("//div[contains(@data-testid, 'get_storage')]")),
@@ -93,7 +97,9 @@ describe('Contract Example Storage', () => {
     )
     expect(stateResult, 'get_storage result should be visible').not.null
 
-    const stateResultText = await driver.wait(until.elementTextContains(stateResult, 'Test initial storage')).getText()
+    const stateResultText = await driver
+      .wait(until.elementTextContains(stateResult, 'Test initial storage'))
+      .getText()
 
     console.log(`get_storage result: ${stateResultText}`)
     expect(stateResultText, 'get_storage result should be Test initial storage').be.equal(

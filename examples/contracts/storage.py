@@ -1,4 +1,5 @@
-from genvm.base.icontract import IContract
+from backend.node.genvm.icontract import IContract
+
 
 # contract class
 class Storage(IContract):
@@ -8,7 +9,7 @@ class Storage(IContract):
         self.storage = initial_storage
 
     # read methods must start with get_
-    def get_storage(self):
+    def get_storage(self) -> str:
         return self.storage
 
     # write method
