@@ -10,6 +10,8 @@ on:
     types:
       - submitted
       - edited
+  push:
+    branches: main
 
 concurrency:
   group: unit-tests-${{ github.event.number }}
