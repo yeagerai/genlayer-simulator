@@ -96,15 +96,6 @@ watch(() => contractsStore.currentContract?.content, (newValue, oldValue) => {
     debouncedGetConstructorInputs()
   }
 })
-watch(() => contractsStore.currentErrorConstructorInputs, (newValue, oldValue) => {
-  if (newValue && newValue !== oldValue) {
-    notify({
-      title: 'Error',
-      text: 'Error getting the contract schema',
-      type: 'error'
-    })
-  }
-})
 
 onMounted(async () => {
   await contractsStore.getConstructorInputs()

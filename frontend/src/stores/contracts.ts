@@ -27,7 +27,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
   const currentContractState = ref<Record<string, any>>({})
 
   const currentConstructorInputs = ref<{ [k: string]: string }>({})
-  const currentErrorConstructorInputs = ref<Error>()
+  const currentErrorConstructorInputs = ref<{ message: string; lineNumber?: number }>()
   const currentDeployedContractAbi = ref<any>()
 
   const loadingConstructorInputs = ref(false)
@@ -173,14 +173,31 @@ export const useContractsStore = defineStore('contractsStore', () => {
           const result = await $jsonRpc?.getContractSchema({
             code: currentContract.value.content
           })
+          if (result?.status === 'success') {
+            loadingConstructorInputs.value = false
+            if (result?.data?.exec_error) {
+              currentErrorConstructorInputs.value = {
+                message: `${result?.data?.exec_error?.error_class}(${result?.data?.exec_error?.detail}) at line ${result?.data?.exec_error?.line_number}`,
+                lineNumber: result?.data?.exec_error?.line_number
+              }
+              return
+            } else {
+              contractSchema = result?.data
+              currentErrorConstructorInputs.value = undefined
+            }
+          } else {
+            currentErrorConstructorInputs.value = {
+              message: result?.message || 'Error getting the constructor inputs'
+            }
 
-          contractSchema = result?.data
-          loadingConstructorInputs.value = false
-          currentErrorConstructorInputs.value = undefined
+            return
+          }
         } catch (error) {
           console.error(error)
           loadingConstructorInputs.value = false
-          currentErrorConstructorInputs.value = error as Error
+          currentErrorConstructorInputs.value = {
+            message: typeof error === 'string' ? error : (error as Error).message
+          }
 
           throw new Error('Error getting the contract schema')
         }
@@ -251,21 +268,36 @@ export const useContractsStore = defineStore('contractsStore', () => {
           const result = await $jsonRpc?.getContractSchema({
             code: currentContract.value.content
           })
-          if (!currentConstructorInputs.value) {
-            currentConstructorInputs.value = result?.data?.methods['__init__']?.inputs
+          if (result?.status === 'success') {
+            if (result?.data?.exec_error) {
+              currentErrorConstructorInputs.value = {
+                message: `${result?.data?.exec_error?.error_class}(${result?.data?.exec_error?.detail}) at line ${result?.data?.exec_error?.line_number}`,
+                lineNumber: result?.data?.exec_error?.line_number
+              }
+            } else {
+              if (!currentConstructorInputs.value) {
+                currentConstructorInputs.value = result?.data?.methods['__init__']?.inputs
+              } else {
+                //compare existing inputs with new ones
+                if (
+                  JSON.stringify(currentConstructorInputs.value) !==
+                  JSON.stringify(result?.data?.methods['__init__']?.inputs)
+                ) {
+                  currentConstructorInputs.value = result?.data?.methods['__init__']?.inputs
+                }
+              }
+              currentErrorConstructorInputs.value = undefined
+            }
           } else {
-            //compare existing inputs with new ones
-            if (
-              JSON.stringify(currentConstructorInputs.value) !==
-              JSON.stringify(result?.data?.methods['__init__']?.inputs)
-            ) {
-              currentConstructorInputs.value = result?.data?.methods['__init__']?.inputs
+            currentErrorConstructorInputs.value = {
+              message: result?.message || 'Error getting the constructor inputs'
             }
           }
-          currentErrorConstructorInputs.value = undefined
         } catch (error) {
           console.error(error)
-          currentErrorConstructorInputs.value = error as Error
+          currentErrorConstructorInputs.value = {
+            message: typeof error === 'string' ? error : (error as Error).message
+          }
         } finally {
           loadingConstructorInputs.value = false
         }
