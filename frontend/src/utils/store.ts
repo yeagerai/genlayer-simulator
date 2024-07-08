@@ -16,8 +16,9 @@ export const setupStores = async () => {
   const accountsStore = useAccountsStore()
   const transactionsStore = useTransactionsStore()
   const contractFiles = await db.contractFiles.toArray()
+  const filteredFiles = contractFiles.filter((c) => (c.example && !c.updatedAt ) || (!c.example && !c.updatedAt))
   
-  if (contractFiles.filter((c) => c.example || examplesNames.includes(c.name)).length === 0) {
+  if (filteredFiles.length === 0) {
     const contractsBlob = import.meta.glob('@/assets/examples/contracts/*.py', {
       query: '?raw',
       import: 'default'
@@ -25,13 +26,15 @@ export const setupStores = async () => {
     for (const key of Object.keys(contractsBlob)) {
       const raw = await contractsBlob[key]()
       const name = key.split('/').pop() || 'ExampleContract.py'
-      const contract = {
-        id: uuidv4(),
-        name,
-        content: ((raw as string) || '').trim(),
-        example: true
+      if(!contractFiles.some((c) => c.name === name)) {
+        const contract = {
+          id: uuidv4(),
+          name,
+          content: ((raw as string) || '').trim(),
+          example: true
+        }
+        contractsStore.addContractFile(contract)
       }
-      contractsStore.addContractFile(contract)
     }
   } else {
     contractsStore.contracts = await db.contractFiles.toArray()

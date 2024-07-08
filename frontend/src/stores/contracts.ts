@@ -43,13 +43,13 @@ export const useContractsStore = defineStore('contractsStore', () => {
     deployedContracts.value = [...deployedContracts.value.filter((c) => c.contractId !== id)]
   }
 
-  function updateContractFile(id: string, { name, content }: { name?: string; content?: string }) {
+  function updateContractFile(id: string, { name, content, updatedAt }: { name?: string; content?: string, updatedAt?: string }) {
     contracts.value = [
       ...contracts.value.map((c) => {
         if (c.id === id) {
           const _name = getContractFileName(name || c.name)
           const _content = content || c.content
-          return { ...c, name: _name, content: _content }
+          return { ...c, name: _name, content: _content, updatedAt }
         }
         return c
       })
@@ -300,7 +300,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
     }
   }
 
-
   const currentContract = computed(() => {
     return contracts.value.find((c) => c.id === currentContractId.value)
   })
@@ -341,6 +340,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
     callContractMethod,
     getContractState,
     deployContract,
-    getConstructorInputs,
+    getConstructorInputs
   }
 })

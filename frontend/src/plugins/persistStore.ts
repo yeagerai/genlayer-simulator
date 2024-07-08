@@ -39,7 +39,9 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
             })
             break
           case 'updateContractFile':
-            await db.contractFiles.update(args[0] as string, args[1] as ContractFile)
+            await db.contractFiles.update(args[0] as string, {
+              ...(args[1] as ContractFile)
+            })
             break
           case 'removeContractFile':
             await db.contractFiles.delete(args[0])

@@ -92,7 +92,7 @@ const handleResetStorage = async () => {
       type: 'error'
     })
   } finally {
-   
+
     nodeStore.closeResetStorageModal()
   }
 }
@@ -118,16 +118,18 @@ const handleResetStorage = async () => {
         <div data-testid="validator-item-container"
           class="flex px-2 justify-between items-center hover:bg-slate-100 p-1 dark:hover:bg-zinc-700"
           v-for="validator in nodeStore.validators" :key="validator.id">
-          <div class="flex items-center cursor-pointer" data-testid="validator-item" @click="nodeStore.openUpdateValidatorModal(validator)">
+          <div class="flex items-center cursor-pointer" data-testid="validator-item"
+            @click="nodeStore.openUpdateValidatorModal(validator)">
             <div class="flex dark:text-white text-primary">{{ validator.id }} -</div>
             <div class="flex flex-col items-start ml-2">
               <div class="flex">
                 <span class="font-semibold mr-1">Model: </span>
-                <span class="dark:text-white text-primary" data-testid="validator-item-model">{{ validator.model }}</span>
+                <span class="dark:text-white text-primary" data-testid="validator-item-model">{{ validator.model
+                  }}</span>
               </div>
               <div class="flex">
                 <span class="font-semibold mr-1">Provider: </span>
-                <span data-testid="validator-item-provider" >{{ validator.provider }}</span>
+                <span data-testid="validator-item-provider">{{ validator.provider }}</span>
               </div>
             </div>
           </div>
@@ -151,9 +153,12 @@ const handleResetStorage = async () => {
     </div>
     <div class="flex flex-col mt-4 w-full px-2">
       <button @click="nodeStore.openResetStorageModal"
+      :disabled="nodeStore.contractsToDelete.length < 1"
         class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
         Reset Storage
+        
       </button>
+      <ToolTip text="No Contracts file to delete" :options="{ placement: 'right' }" v-if="nodeStore.contractsToDelete.length < 1"/>
     </div>
     <Modal :open="nodeStore.updateValidatorModalOpen" @close="nodeStore.closeUpdateValidatorModal">
       <div class="flex flex-col">
@@ -171,9 +176,8 @@ const handleResetStorage = async () => {
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Provider:</p>
           <select :class="nodeStore.validatorToUpdate.provider ? '' : 'border border-red-500'"
-                  data-testid="dropdown-provider-update"
-                  class="p-2 w-full bg-slate-100 dark:bg-zinc-700 overflow-y-auto"
-                  v-model="nodeStore.validatorToUpdate.provider" required>
+            data-testid="dropdown-provider-update" class="p-2 w-full bg-slate-100 dark:bg-zinc-700 overflow-y-auto"
+            v-model="nodeStore.validatorToUpdate.provider" required>
             <option v-for="(_, provider) in nodeStore.nodeProviders" :key="provider" :value="provider"
               :selected="provider === nodeStore.validatorToUpdate.provider">
               {{ provider }}
@@ -184,8 +188,7 @@ const handleResetStorage = async () => {
           <p class="text-md font-semibold">Model:</p>
           <select :class="nodeStore.validatorToUpdate.model ? '' : 'border border-red-500'"
             class="p-2 w-full bg-slate-100 overflow-y-auto dark:bg-zinc-700" name="dropdown-model"
-            data-testid="dropdown-model-update"
-            v-model="nodeStore.validatorToUpdate.model" required>
+            data-testid="dropdown-model-update" v-model="nodeStore.validatorToUpdate.model" required>
             <option v-for="model in nodeStore.nodeProviders[nodeStore.validatorToUpdate.provider]" :key="model"
               :value="model" :selected="model === nodeStore.validatorToUpdate.model">
               {{ model }}
@@ -195,8 +198,7 @@ const handleResetStorage = async () => {
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Stake:</p>
           <input type="number" min="0.01" v-model="nodeStore.validatorToUpdate.stake"
-            :class="nodeStore.validatorToUpdate.stake ? '' : 'border border-red-500'"
-            data-testid="input-stake-update"
+            :class="nodeStore.validatorToUpdate.stake ? '' : 'border border-red-500'" data-testid="input-stake-update"
             class="p-2 w-full bg-slate-100 dark:bg-zinc-700" required />
         </div>
         <div class="flex flex-col p-2 mt-2">
@@ -208,8 +210,7 @@ const handleResetStorage = async () => {
         </div>
       </div>
       <div class="flex flex-col mt-4 w-full">
-        <button @click="handleUpdateValidator" 
-        :disabled="!nodeStore.updateValidatorModelValid"
+        <button @click="handleUpdateValidator" :disabled="!nodeStore.updateValidatorModelValid"
           data-testid="btn-update-validator"
           class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded disabled:opacity-80">
           Save
@@ -225,8 +226,7 @@ const handleResetStorage = async () => {
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Provider:</p>
           <select :class="nodeStore.validatorToCreate.provider ? '' : 'border border-red-500'"
-            class="p-2 w-full bg-slate-100 dark:bg-zinc-700 overflow-y-auto" 
-            data-testid="dropdown-provider-create"
+            class="p-2 w-full bg-slate-100 dark:bg-zinc-700 overflow-y-auto" data-testid="dropdown-provider-create"
             v-model="nodeStore.validatorToCreate.provider" required>
             <option v-for="(_, provider) in nodeStore.nodeProviders" :key="provider" :value="provider"
               :selected="provider === nodeStore.validatorToCreate.provider">
@@ -237,8 +237,7 @@ const handleResetStorage = async () => {
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Model:</p>
           <select :class="nodeStore.validatorToCreate.model ? '' : 'border border-red-500'"
-            class="p-2 w-full bg-slate-100 overflow-y-auto dark:bg-zinc-700" 
-            data-testid="dropdown-model-create"
+            class="p-2 w-full bg-slate-100 overflow-y-auto dark:bg-zinc-700" data-testid="dropdown-model-create"
             v-model="nodeStore.validatorToCreate.model" required>
             <option v-for="model in nodeStore.nodeProviders[nodeStore.validatorToCreate.provider]" :key="model"
               :value="model" :selected="model === nodeStore.validatorToCreate.model">
@@ -248,9 +247,7 @@ const handleResetStorage = async () => {
         </div>
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Stake:</p>
-          <input type="number" min="0.01" 
-            v-model="nodeStore.validatorToCreate.stake"
-            data-testid="input-stake-create"
+          <input type="number" min="0.01" v-model="nodeStore.validatorToCreate.stake" data-testid="input-stake-create"
             :class="nodeStore.validatorToCreate.stake ? '' : 'border border-red-500'"
             class="p-2 w-full bg-slate-100 dark:bg-zinc-700" required />
         </div>
@@ -300,8 +297,7 @@ const handleResetStorage = async () => {
         </div>
       </div>
       <div class="flex flex-col mt-4 w-full">
-        <button @click="handleDeleteValidator"
-        data-testid="btn-delete-validator"
+        <button @click="handleDeleteValidator" data-testid="btn-delete-validator"
           class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
           Delete Validator
         </button>
@@ -328,7 +324,8 @@ const handleResetStorage = async () => {
           </ul>
         </div>
         <div class="flex flex-col p-2 mt-2">
-         <div class="text-md italic"><span class="font-semibold">Note:</span> if you want to preserve any of these contracts, make a copy of them in the files section.</div>
+          <div class="text-md italic"><span class="font-semibold">Note:</span> if you want to preserve any of these
+            contracts, make a copy of them in the files section.</div>
         </div>
       </div>
       <div class="flex flex-col mt-4 w-full">
