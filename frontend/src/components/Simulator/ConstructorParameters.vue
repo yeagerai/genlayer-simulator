@@ -9,7 +9,7 @@ import LoadingIndicator from '@/components/LoadingIndicator.vue'
 interface Props {
   inputs: { [k: string]: string }
   loading: boolean
-  error?: Error,
+  error?: { message: string },
   deploying: boolean
 }
 

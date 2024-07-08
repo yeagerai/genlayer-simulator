@@ -8,7 +8,7 @@ import { useElementResize, useWindowResize } from '@/hooks';
 
 
 const uiStore = useUIStore()
-const contractStore = useContractsStore()
+const contractsStore = useContractsStore()
 const props = defineProps<{
   contract: ContractFile,
 }>()
@@ -41,11 +41,30 @@ watch(
         language: 'python',
         theme: theme.value,
         automaticLayout: true,
-        formatOnPaste: true,
-        formatOnType: true,
+        renderValidationDecorations: 'on',
+        matchBrackets: 'near',
+        scrollBeyondLastLine: false,
+        useShadowDOM: true,
+        lightbulb: {
+          enabled: monaco.editor.ShowLightbulbIconMode.On
+        },
+      
       })
+
+      monaco.editor.setModelMarkers(editorRef.value.getModel()!, "python", [
+        {
+          startLineNumber: 6,
+          startColumn: 0,
+          endLineNumber: 6,
+          endColumn: 10,
+          message: 'TEst Message',
+          severity: monaco.MarkerSeverity.Error,
+          source: 'python',
+          code: 'python'
+        }
+      ]);
       editorRef.value.onDidChangeModelContent(() => {
-        contractStore.updateContractFile(props.contract.id!, { content: editorRef.value?.getValue() || "" })
+        contractsStore.updateContractFile(props.contract.id!, { content: editorRef.value?.getValue() || "" })
       })
       resizeEditor()
     }
@@ -86,7 +105,27 @@ watch(
     resizeEditor()
   },
 )
+watch(() => contractsStore.currentErrorConstructorInputs, (newValue, oldValue) => {
+  if (newValue && newValue !== oldValue) {
+    console.log('newValue', newValue)
+    const model = editorRef.value?.getModel()
+    if (editorRef.value && newValue.lineNumber && model) {
 
+      monaco.editor.setModelMarkers(model, "python", [
+        {
+          startLineNumber: newValue.lineNumber,
+          startColumn: 0,
+          endLineNumber: newValue.lineNumber,
+          endColumn: 10,
+          message: 'TEst Message',
+          severity: monaco.MarkerSeverity.Error,
+          source: 'owner',
+          code: 'owner'
+        }
+      ]);
+    }
+  }
+})
 </script>
 
 <template>

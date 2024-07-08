@@ -7,6 +7,7 @@ import asyncio
 import pickle
 import base64
 import sys
+import traceback
 
 from backend.database_handler.contract_snapshot import ContractSnapshot
 from backend.node.genvm.equivalence_principle import EquivalencePrinciple
@@ -133,9 +134,59 @@ class GenVM:
     def get_contract_schema(contract_code: str) -> dict:
 
         namespace = {}
-        exec(contract_code, globals(), namespace)
+        try:
+            exec(contract_code, globals(), namespace)
+        except SyntaxError as err:
+            cl, exc, tb = sys.exc_info()
+            
+            return {
+                "exec_error": {
+                    "error_class": err.__class__.__name__,
+                    "detail": err.args[0],
+                    "lineno": err.lineno,
+                    "end_lineno": err.end_lineno,
+                    "offset": err.offset,
+                    "end_offset": err.end_offset,
+                    "tb": str(tb),
+                    "exc": str(exc),
+                    "cl": str(cl),
+                    "args": str(err.args[1]),
+                    "extract": str(traceback.extract_tb(tb)[-1][1]),
+                    "extract1": str(traceback.extract_tb(tb)[-1][0])
+                }
+            }
+            
+        except NameError as err:
+            cl, exc, tb = sys.exc_info()
+            line_number = traceback.extract_tb(tb)[-1][1]
+            return {
+                "exec_error": {
+                     "args": str(err.args),
+                    "extract": str(traceback.extract_tb(tb)[-1][1]),
+                    "extract1": str(traceback.extract_tb(tb)[-1][0]),
+                    "testing": "NameError",
+                    "error_class": err.__class__.__name__,
+                    "detail": err.args[0],
+                    "line_number": line_number,
+                }
+            }
+        except Exception as err:
+            cl, exc, tb = sys.exc_info()
+            line_number = traceback.extract_tb(tb)[-1][1]
+            return {
+                "exec_error": {
+                     "args": str(err.args),
+                    "extract": str(traceback.extract_tb(tb)[-1][1]),
+                    "extract1": str(traceback.extract_tb(tb)[-1][0]),
+                    "testing": "",
+                    "error_class": err.__class__.__name__,
+                    "detail": err.args[0],
+                    "line_number": line_number,
+                }
+            }
+            
         class_name = GenVM._get_contract_class_name(contract_code)
-
+        code_enforcement_check(contract_code, class_name)
         iclass = namespace[class_name]
 
         members = inspect.getmembers(iclass)
