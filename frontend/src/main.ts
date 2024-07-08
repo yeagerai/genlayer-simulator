@@ -29,3 +29,4 @@ app.use(TransactionsListenerPlugin, {
 })
 app.mount('#app')
 setupStores()
+

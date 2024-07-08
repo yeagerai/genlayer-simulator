@@ -142,7 +142,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
 
       callingContractMethod.value = false
       if (result?.status === 'success') {
-        
         transactionsStore.addTransaction({
           contractAddress: contract?.address || '',
           localContractId: contract?.contractId || '',
@@ -315,7 +314,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
     openedFiles,
     currentContractId,
     deployedContracts,
-
     currentContractState,
     callingContractState,
     callingContractMethod,
