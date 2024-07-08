@@ -2,6 +2,9 @@ name: "Frontend Unit Tests"
 
 on:
   workflow_call:
+    secrets:
+      codecov_token:
+        required: true
 
 jobs:
   frontend:
@@ -23,6 +26,5 @@ jobs:
         uses: codecov/codecov-action@v4.0.1
         with:
           verbose: true
-          token: ${{ secrets.CODECOV_TOKEN }}
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ secrets.codecov_token }}
+          fail_ci_if_error: true
