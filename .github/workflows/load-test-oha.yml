@@ -1,5 +1,11 @@
 name: Load Test with oha CLI
 
+inputs:
+  oha-version:
+    description: 'Version of oha CLI to use for load testing'
+    required: false
+    default: 'v1.4.5'
+
 on:
   push:
     branches:
@@ -64,14 +70,11 @@ jobs:
             exit 1
           fi
 
-      - name: Install jq
-        run: sudo apt-get install jq
-
       - name: Install oha
         run: |
           sudo apt-get update
           sudo apt-get install -y curl jq
-          curl -sSfL https://github.com/hatoo/oha/releases/download/v1.4.5/oha-linux-amd64 -o oha
+          curl -sSfL https://github.com/hatoo/oha/releases/download/${{ inputs.oha-version }}/oha-linux-amd64 -o oha
           chmod +x oha
           sudo mv oha /usr/local/bin
 
