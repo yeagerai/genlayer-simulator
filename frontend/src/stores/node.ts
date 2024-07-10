@@ -108,7 +108,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
       model,
       provider,
       stake,
-      config: JSON.stringify(config || '{ }', null, 2)
+      config: typeof config === 'string' ? config : JSON.stringify(config || '{ }', null, 2)
     }
     updateValidatorModalOpen.value = true
   }

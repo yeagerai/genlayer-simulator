@@ -77,6 +77,16 @@ async function handleDeleteValidator() {
   }
 }
 
+const handleNumberInput = (event: Event) => {
+  const formattedValue = parseInt((event?.target as any)?.value || '', 10);
+
+  if (!isNaN(formattedValue)) {
+    (event?.target as any).value = '';
+    (event?.target as any).value = formattedValue;
+  } else {
+    event.preventDefault();
+  }
+}
 </script>
 
 <template>
@@ -126,6 +136,59 @@ async function handleDeleteValidator() {
         New Validator
       </button>
     </div>
+    <Modal :open="nodeStore.createValidatorModalOpen" @close="nodeStore.closeNewValidatorModal">
+      <div class="flex flex-col w-full">
+        <div class="flex justify-between">
+          <div class="text-xl">Create New Validator</div>
+        </div>
+        <div class="flex flex-col p-2 mt-2">
+          <p class="text-md font-semibold">Provider:</p>
+          <select :class="nodeStore.validatorToCreate.provider ? '' : 'border border-red-500'"
+            class="p-2 w-full bg-slate-100 dark:bg-zinc-700 overflow-y-auto" 
+             data-testid="dropdown-provider-create"
+            v-model="nodeStore.validatorToCreate.provider" required>
+            <option v-for="(_, provider) in nodeStore.nodeProviders" :key="provider" :value="provider"
+              :selected="provider === nodeStore.validatorToCreate.provider">
+              {{ provider }}
+            </option>
+          </select>
+        </div>
+        <div class="flex flex-col p-2 mt-2">
+          <p class="text-md font-semibold">Model:</p>
+          <select :class="nodeStore.validatorToCreate.model ? '' : 'border border-red-500'"
+            class="p-2 w-full bg-slate-100 overflow-y-auto dark:bg-zinc-700"
+            data-testid="dropdown-model-create"
+            v-model="nodeStore.validatorToCreate.model" required>
+            <option v-for="model in nodeStore.nodeProviders[nodeStore.validatorToCreate.provider]" :key="model"
+              :value="model" :selected="model === nodeStore.validatorToCreate.model">
+              {{ model }}
+            </option>
+          </select>
+        </div>
+        <div class="flex flex-col p-2 mt-2">
+          <p class="text-md font-semibold">Stake:</p>
+          <input type="number" min="1" step="1" 
+          data-testid="input-stake-create"
+            @input="handleNumberInput" v-model="nodeStore.validatorToCreate.stake"
+            :class="nodeStore.validatorToCreate.stake ? '' : 'border border-red-500'"
+            class="p-2 w-full bg-slate-100 dark:bg-zinc-700" required />
+        </div>
+        <div class="flex flex-col p-2 mt-2">
+          <p class="text-md font-semibold">Config:</p>
+
+          <textarea name="" id="" rows="5" cols="60" class="p-2 max-h-64 w-full bg-slate-100 dark:bg-zinc-700"
+            v-model="nodeStore.validatorToCreate.config">
+          </textarea>
+        </div>
+      </div>
+      <div class="flex flex-col mt-4 w-full">
+        <button @click="handleCreateNewValidator" :disabled="!nodeStore.createValidatorModelValid"
+        data-testid="btn-create-validator"
+          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded disabled:opacity-80">
+          Create
+        </button>
+      </div>
+    </Modal>
     <Modal :open="nodeStore.updateValidatorModalOpen" @close="nodeStore.closeUpdateValidatorModal">
       <div class="flex flex-col">
         <div class="flex justify-between">
@@ -165,7 +228,7 @@ async function handleDeleteValidator() {
         </div>
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Stake:</p>
-          <input type="number" min="0.01" v-model="nodeStore.validatorToUpdate.stake"
+          <input type="number" min="1" step="1" @input="handleNumberInput" v-model="nodeStore.validatorToUpdate.stake"
             :class="nodeStore.validatorToUpdate.stake ? '' : 'border border-red-500'"
             data-testid="input-stake-update"
             class="p-2 w-full bg-slate-100 dark:bg-zinc-700" required />
@@ -188,59 +251,7 @@ async function handleDeleteValidator() {
       </div>
     </Modal>
 
-    <Modal :open="nodeStore.createValidatorModalOpen" @close="nodeStore.closeNewValidatorModal">
-      <div class="flex flex-col w-full">
-        <div class="flex justify-between">
-          <div class="text-xl">Create New Validator</div>
-        </div>
-        <div class="flex flex-col p-2 mt-2">
-          <p class="text-md font-semibold">Provider:</p>
-          <select :class="nodeStore.validatorToCreate.provider ? '' : 'border border-red-500'"
-            class="p-2 w-full bg-slate-100 dark:bg-zinc-700 overflow-y-auto" 
-            data-testid="dropdown-provider-create"
-            v-model="nodeStore.validatorToCreate.provider" required>
-            <option v-for="(_, provider) in nodeStore.nodeProviders" :key="provider" :value="provider"
-              :selected="provider === nodeStore.validatorToCreate.provider">
-              {{ provider }}
-            </option>
-          </select>
-        </div>
-        <div class="flex flex-col p-2 mt-2">
-          <p class="text-md font-semibold">Model:</p>
-          <select :class="nodeStore.validatorToCreate.model ? '' : 'border border-red-500'"
-            class="p-2 w-full bg-slate-100 overflow-y-auto dark:bg-zinc-700" 
-            data-testid="dropdown-model-create"
-            v-model="nodeStore.validatorToCreate.model" required>
-            <option v-for="model in nodeStore.nodeProviders[nodeStore.validatorToCreate.provider]" :key="model"
-              :value="model" :selected="model === nodeStore.validatorToCreate.model">
-              {{ model }}
-            </option>
-          </select>
-        </div>
-        <div class="flex flex-col p-2 mt-2">
-          <p class="text-md font-semibold">Stake:</p>
-          <input type="number" min="0.01" 
-            v-model="nodeStore.validatorToCreate.stake"
-            data-testid="input-stake-create"
-            :class="nodeStore.validatorToCreate.stake ? '' : 'border border-red-500'"
-            class="p-2 w-full bg-slate-100 dark:bg-zinc-700" required />
-        </div>
-        <div class="flex flex-col p-2 mt-2">
-          <p class="text-md font-semibold">Config:</p>
-
-          <textarea name="" id="" rows="5" cols="60" class="p-2 max-h-64 w-full bg-slate-100 dark:bg-zinc-700"
-            v-model="nodeStore.validatorToCreate.config">
-          </textarea>
-        </div>
-      </div>
-      <div class="flex flex-col mt-4 w-full">
-        <button @click="handleCreateNewValidator" :disabled="!nodeStore.createValidatorModelValid"
-          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded disabled:opacity-80"
-          data-testid="btn-create-validator">
-          Create
-        </button>
-      </div>
-    </Modal>
+    
     <Modal :open="nodeStore.deleteValidatorModalOpen" @close="nodeStore.closeDeleteValidatorModal">
       <div class="flex flex-col">
         <div class="flex justify-between">
