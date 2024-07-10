@@ -26,6 +26,5 @@ export interface IJsonRpcService {
   createValidator(request: CreateValidatorRequest): Promise<JsonRpcResult<any>>
   updateValidator(request: UpdateValidatorRequest): Promise<JsonRpcResult<any>>
   deleteValidator(request: DeleteValidatorRequest): Promise<JsonRpcResult<any>>
-  createAccount(): Promise<JsonRpcResult<any>>
   getTransactionById(txId: number): Promise<JsonRpcResult<any>>
 }

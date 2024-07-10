@@ -201,14 +201,6 @@ export class JsonRpcService implements IJsonRpcService {
     return result
   }
 
-  async createAccount(): Promise<JsonRpcResult<any>> {
-    const { result } = await this.rpcClient.call({
-      method: 'create_account',
-      params: []
-    })
-    return result
-  }
-
   async getTransactionById(txId: number): Promise<JsonRpcResult<TransactionItem>> {
     const { result } = await this.rpcClient.call<TransactionItem>({
       method: 'get_transaction_by_id',
