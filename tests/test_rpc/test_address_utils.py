@@ -16,7 +16,7 @@ def test_create_new_address_format():
 
 def test_address_is_in_correct_format_valid():
     valid_address = "0x" + "a" * 40
-    assert address_is_in_correct_format(valid_address) == True
+    assert address_is_in_correct_format(valid_address)
 
 
 def test_address_is_in_correct_format_invalid():
