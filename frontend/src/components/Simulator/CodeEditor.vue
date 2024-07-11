@@ -45,7 +45,7 @@ watch(
         formatOnType: true,
       })
       editorRef.value.onDidChangeModelContent(() => {
-        contractStore.updateContractFile(props.contract.id!, { content: editorRef.value?.getValue() || "" })
+        contractStore.updateContractFile(props.contract.id!, { content: editorRef.value?.getValue() || "", updatedAt: new Date().toISOString() })
       })
       resizeEditor()
     }

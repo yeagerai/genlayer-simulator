@@ -3,11 +3,12 @@ import type { CreateValidatorModel, NodeLog, UpdateValidatorModel, ValidatorMode
 import { webSocketClient } from '@/utils'
 import { defineStore } from 'pinia'
 import { computed, inject, ref } from 'vue'
+import { useContractsStore } from './contracts'
 
 export const useNodeStore = defineStore('nodeStore', () => {
   const logs = ref<NodeLog[]>([])
   const listenWebsocket = ref<boolean>(true)
-
+  const contractsStore = useContractsStore()
   const nodeProviders = ref<Record<string, string[]>>({})
   // state
   const $jsonRpc = inject<IJsonRpcService>('$jsonRpc')!
@@ -15,6 +16,8 @@ export const useNodeStore = defineStore('nodeStore', () => {
   const updateValidatorModalOpen = ref<boolean>(false)
   const createValidatorModalOpen = ref<boolean>(false)
   const deleteValidatorModalOpen = ref<boolean>(false)
+  const resetStorageModalOpen = ref<boolean>(false)
+  const resetingStorage = ref<boolean>(false)
 
   const validatorToUpdate = ref<UpdateValidatorModel>({
     model: '',
@@ -50,7 +53,9 @@ export const useNodeStore = defineStore('nodeStore', () => {
   if (!webSocketClient.connected) webSocketClient.connect()
   webSocketClient.on('status_update', (event) => {
     if (listenWebsocket.value) {
-      logs.value.push({ date: new Date().toISOString(), message: event.message })
+      if (event.message?.function !== 'get_transaction_by_id') {
+        logs.value.push({ date: new Date().toISOString(), message: event.message })
+      }
     }
   })
 
@@ -106,7 +111,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
       model,
       provider,
       stake,
-      config: JSON.stringify(config || '{ }', null, 2)
+      config: typeof config === 'string' ? config : JSON.stringify(config || '{ }', null, 2)
     }
     updateValidatorModalOpen.value = true
   }
@@ -199,6 +204,31 @@ export const useNodeStore = defineStore('nodeStore', () => {
       throw new Error('Error creating a new validator')
     }
   }
+
+  const openResetStorageModal = () => {
+    resetStorageModalOpen.value = true
+  }
+
+  const closeResetStorageModal = () => {
+    resetStorageModalOpen.value = false
+  }
+
+  const resetStorage = async () => {
+    resetingStorage.value = true
+    try {
+      await contractsStore.resetStorage()
+      resetingStorage.value = false
+    } catch (error) {
+      console.error(error)
+      resetingStorage.value = false
+      throw error
+    }
+  }
+
+  const contractsToDelete = computed(() =>
+    contractsStore.contracts.filter((c) => (c.example && !c.updatedAt )|| (!c.example && !c.updatedAt))
+  )
+  
   return {
     logs,
     listenWebsocket,
@@ -212,6 +242,10 @@ export const useNodeStore = defineStore('nodeStore', () => {
     validatorToCreate,
     updateValidatorModelValid,
     createValidatorModelValid,
+    resetStorageModalOpen,
+    resetingStorage,
+
+    contractsToDelete,
 
     initialize,
     getValidatorsData,
@@ -223,6 +257,9 @@ export const useNodeStore = defineStore('nodeStore', () => {
     openDeleteValidatorModal,
     closeDeleteValidatorModal,
     closeNewValidatorModal,
-    openCreateNewValidatorModal
+    openCreateNewValidatorModal,
+    openResetStorageModal,
+    closeResetStorageModal,
+    resetStorage
   }
 })

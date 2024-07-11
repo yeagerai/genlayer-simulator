@@ -1,6 +1,6 @@
 import json
-from genvm.base.equivalence_principle import EquivalencePrinciple
-from genvm.base.icontract import IContract
+from backend.node.genvm.icontract import IContract
+from backend.node.genvm.equivalence_principle import EquivalencePrinciple
 
 
 class PredictionMarket(IContract):
@@ -22,21 +22,23 @@ class PredictionMarket(IContract):
         """
         self.has_resolved = False
         self.game_date = game_date
-        self.resolution_url = 'https://www.bbc.com/sport/football/scores-fixtures/'+game_date
+        self.resolution_url = (
+            "https://www.bbc.com/sport/football/scores-fixtures/" + game_date
+        )
         self.team1 = team1
         self.team2 = team2
 
     async def resolve(self) -> None:
 
         if self.has_resolved:
-           return "Already resolved"
+            return "Already resolved"
 
         final_result = {}
         async with EquivalencePrinciple(
-                result=final_result,
-                principle="The score and the winner has to be exactly the same",
-                comparative=True,
-            ) as eq:
+            result=final_result,
+            principle="The score and the winner has to be exactly the same",
+            comparative=True,
+        ) as eq:
             web_data = await eq.get_webpage(self.resolution_url)
             print(web_data)
 
@@ -56,16 +58,19 @@ class PredictionMarket(IContract):
                 "score": str, // The score with numbers only, e.g, "1:2", or "-" if the game is not resolved yet
                 "winner": int, // The number of the winning team, 0 for draw, or -1 if the game is not yet finished
             }}
+            It is mandatory that you respond only using the JSON format above,
+            nothing else. Don't include any other words or characters,
+            your output must be only be JSON.
             """
             result = await eq.call_llm(task)
             print(result)
             eq.set(result)
 
-        result_json = json.loads(final_result['output'])
+        result_json = json.loads(final_result["output"])
 
-        if result_json['winner'] > -1:
+        if result_json["winner"] > -1:
             self.has_resolved = True
-            self.winner = result_json['winner']
-            self.score = result_json['score']
+            self.winner = result_json["winner"]
+            self.score = result_json["score"]
 
         return result_json
