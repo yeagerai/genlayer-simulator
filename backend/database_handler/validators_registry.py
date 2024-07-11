@@ -19,7 +19,7 @@ class ValidatorsRegistry:
             "stake": float(validator_data["stake"]),
             "provider": validator_data["provider"],
             "model": validator_data["model"],
-            "config": validator_data["config"],
+            "config": json.loads(validator_data["config"]),
             "created_at": validator_data["created_at"].isoformat(),
         }
 
