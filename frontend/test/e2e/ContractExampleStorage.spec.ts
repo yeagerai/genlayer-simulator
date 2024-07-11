@@ -1,6 +1,7 @@
 import { WebDriver, By, until } from 'selenium-webdriver'
 import { ContractsPage } from '../pages/ContractsPage.js'
 import { RunDebugPage } from '../pages/RunDebugPage.js'
+import { SettingsPage } from '../pages/SettingsPage.js'
 import { before, describe, after, it } from 'node:test'
 import { expect } from 'chai'
 import { getDriver } from '../utils/driver.js'
@@ -8,6 +9,7 @@ import { getDriver } from '../utils/driver.js'
 let driver: WebDriver
 let contractsPage: ContractsPage
 let runDebugPage: RunDebugPage
+let settingsPage: SettingsPage
 
 describe('Contract Example Storage', () => {
   before(async () => {
@@ -15,12 +17,31 @@ describe('Contract Example Storage', () => {
     await driver.manage().setTimeouts({ implicit: 10000 })
     contractsPage = new ContractsPage(driver)
     runDebugPage = new RunDebugPage(driver)
+    settingsPage = new SettingsPage(driver)
+
+    await contractsPage.navigate()
+    await contractsPage.waitUntilVisible()
+    await contractsPage.skipTutorial()
+    await settingsPage.navigate()
+
+    const initialValidators = await settingsPage.getValidatorsElements()
+    if (initialValidators.length < 1) {
+      await settingsPage.createValidator({
+        provider: 'heuristai',
+        model: 'mistralai/mixtral-8x7b-instruct',
+        stake: 7
+      })
+      const existingValidators = await settingsPage.getValidatorsElements()
+      expect(
+        existingValidators.length,
+        'number of validators should be greather than old validators list'
+      ).be.greaterThan(initialValidators.length)
+    }
   })
 
   it('should open Storage example contract', async () => {
     await contractsPage.navigate()
     await contractsPage.waitUntilVisible()
-    await contractsPage.skipTutorial()
     await contractsPage.openContract('storage.gpy')
     const tabs = await driver.findElements(By.xpath("//div[contains(@class, 'contract-item')]"))
     expect(tabs.length, 'Number of tabs should be 2').equal(2)
@@ -84,7 +105,6 @@ describe('Contract Example Storage', () => {
   })
 
   it('should call get_storage state', async () => {
-  
     const stateBtn = await driver.wait(
       until.elementLocated(By.xpath("//button[text()='get_storage']")),
       25000

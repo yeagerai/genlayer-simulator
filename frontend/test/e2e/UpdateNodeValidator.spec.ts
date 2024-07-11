@@ -67,7 +67,7 @@ describe('Settings - Update Node Validator', () => {
     // call save validator button
     await updateValidatorBtn.click()
 
-    driver.sleep(5000)
+    driver.sleep(10000)
     const validators = await settingsPage.getValidatorsElements()
     const provider = await validators[0].findElement(By.xpath("//span[@data-testid = 'validator-item-provider']"))
     const model = await validators[0].findElement(By.xpath("//span[@data-testid = 'validator-item-model']"))
