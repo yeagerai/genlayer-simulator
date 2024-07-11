@@ -39,7 +39,9 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
             })
             break
           case 'updateContractFile':
-            await db.contractFiles.update(args[0] as string, args[1] as ContractFile)
+            await db.contractFiles.update(args[0] as string, {
+              ...(args[1] as ContractFile)
+            })
             break
           case 'removeContractFile':
             await db.contractFiles.delete(args[0])
@@ -58,9 +60,6 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
             break
           case 'addDeployedContract':
             await upsertDeployedContract(args[0] as DeployedContract)
-            break
-          case 'deployContract':
-            await upsertDeployedContract(result as DeployedContract)
             break
           case 'setCurrentContractId':
             localStorage.setItem('contractsStore.currentContractId', args[0] as string)
@@ -105,7 +104,6 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
             break
         }
       }
-
       console.log('PersistStorePlugin:::', { name, args, result })
     })
   })

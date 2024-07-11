@@ -3,7 +3,6 @@ import { onMounted } from 'vue'
 import { notify } from '@kyvg/vue3-notification'
 import Modal from '@/components/ModalComponent.vue'
 import { TrashIcon } from '@heroicons/vue/24/solid'
-
 import { useNodeStore } from '@/stores'
 
 const nodeStore = useNodeStore()
@@ -77,6 +76,26 @@ async function handleDeleteValidator() {
   }
 }
 
+const handleResetStorage = async () => {
+  try {
+    await nodeStore.resetStorage()
+    notify({
+      title: 'Success',
+      text: 'Storage reset successfully',
+      type: 'success'
+    })
+  } catch (error) {
+    console.error(error)
+    notify({
+      title: 'Error',
+      text: (error as Error)?.message || 'Error resetting the storage',
+      type: 'error'
+    })
+  } finally {
+    nodeStore.closeResetStorageModal()
+  }
+}
+
 const handleNumberInput = (event: Event) => {
   const formattedValue = parseInt((event?.target as any)?.value || '', 10);
 
@@ -100,7 +119,8 @@ const handleNumberInput = (event: Event) => {
         {{ nodeStore.validators.length }}
       </div>
     </div>
-    <div class="flex flex-col p-2 w-full">
+
+    <div class="flex flex-col p-2 w-full bg-slate-100 dark:dark:bg-zinc-700">
       <h4 class="text-md" id="tutorial-validators">Validators Configuration</h4>
     </div>
     <div class="flex flex-col" id="tutorial-validators">
@@ -108,16 +128,18 @@ const handleNumberInput = (event: Event) => {
         <div data-testid="validator-item-container"
           class="flex px-2 justify-between items-center hover:bg-slate-100 p-1 dark:hover:bg-zinc-700"
           v-for="validator in nodeStore.validators" :key="validator.id">
-          <div class="flex items-center cursor-pointer" data-testid="validator-item" @click="nodeStore.openUpdateValidatorModal(validator)">
+          <div class="flex items-center cursor-pointer" data-testid="validator-item"
+            @click="nodeStore.openUpdateValidatorModal(validator)">
             <div class="flex dark:text-white text-primary">{{ validator.id }} -</div>
             <div class="flex flex-col items-start ml-2">
               <div class="flex">
                 <span class="font-semibold mr-1">Model: </span>
-                <span class="dark:text-white text-primary" data-testid="validator-item-model">{{ validator.model }}</span>
+                <span class="dark:text-white text-primary" data-testid="validator-item-model">{{ validator.model
+                  }}</span>
               </div>
               <div class="flex">
                 <span class="font-semibold mr-1">Provider: </span>
-                <span data-testid="validator-item-provider" >{{ validator.provider }}</span>
+                <span data-testid="validator-item-provider">{{ validator.provider }}</span>
               </div>
             </div>
           </div>
@@ -136,6 +158,18 @@ const handleNumberInput = (event: Event) => {
         New Validator
       </button>
     </div>
+    <div class="mt-10 flex flex-col p-2 w-full bg-slate-100 dark:dark:bg-zinc-700">
+      <h4 class="text-md" id="tutorial-validators">Simulator Storage</h4>
+    </div>
+    <div class="flex flex-col mt-4 w-full px-2">
+      <button @click="nodeStore.openResetStorageModal" :disabled="nodeStore.contractsToDelete.length < 1"
+        class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
+        Reset Storage
+
+      </button>
+      <ToolTip text="No Contracts file to delete" :options="{ placement: 'right' }"
+        v-if="nodeStore.contractsToDelete.length < 1" />
+    </div>
     <Modal :open="nodeStore.createValidatorModalOpen" @close="nodeStore.closeNewValidatorModal">
       <div class="flex flex-col w-full">
         <div class="flex justify-between">
@@ -144,8 +178,7 @@ const handleNumberInput = (event: Event) => {
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Provider:</p>
           <select :class="nodeStore.validatorToCreate.provider ? '' : 'border border-red-500'"
-            class="p-2 w-full bg-slate-100 dark:bg-zinc-700 overflow-y-auto" 
-             data-testid="dropdown-provider-create"
+            class="p-2 w-full bg-slate-100 dark:bg-zinc-700 overflow-y-auto" data-testid="dropdown-provider-create"
             v-model="nodeStore.validatorToCreate.provider" required>
             <option v-for="(_, provider) in nodeStore.nodeProviders" :key="provider" :value="provider"
               :selected="provider === nodeStore.validatorToCreate.provider">
@@ -156,8 +189,7 @@ const handleNumberInput = (event: Event) => {
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Model:</p>
           <select :class="nodeStore.validatorToCreate.model ? '' : 'border border-red-500'"
-            class="p-2 w-full bg-slate-100 overflow-y-auto dark:bg-zinc-700"
-            data-testid="dropdown-model-create"
+            class="p-2 w-full bg-slate-100 overflow-y-auto dark:bg-zinc-700" data-testid="dropdown-model-create"
             v-model="nodeStore.validatorToCreate.model" required>
             <option v-for="model in nodeStore.nodeProviders[nodeStore.validatorToCreate.provider]" :key="model"
               :value="model" :selected="model === nodeStore.validatorToCreate.model">
@@ -167,9 +199,8 @@ const handleNumberInput = (event: Event) => {
         </div>
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Stake:</p>
-          <input type="number" min="1" step="1" 
-          data-testid="input-stake-create"
-            @input="handleNumberInput" v-model="nodeStore.validatorToCreate.stake"
+          <input type="number" min="1" step="1" data-testid="input-stake-create" @input="handleNumberInput"
+            v-model="nodeStore.validatorToCreate.stake"
             :class="nodeStore.validatorToCreate.stake ? '' : 'border border-red-500'"
             class="p-2 w-full bg-slate-100 dark:bg-zinc-700" required />
         </div>
@@ -183,7 +214,7 @@ const handleNumberInput = (event: Event) => {
       </div>
       <div class="flex flex-col mt-4 w-full">
         <button @click="handleCreateNewValidator" :disabled="!nodeStore.createValidatorModelValid"
-        data-testid="btn-create-validator"
+          data-testid="btn-create-validator"
           class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded disabled:opacity-80">
           Create
         </button>
@@ -205,9 +236,8 @@ const handleNumberInput = (event: Event) => {
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Provider:</p>
           <select :class="nodeStore.validatorToUpdate.provider ? '' : 'border border-red-500'"
-                  data-testid="dropdown-provider-update"
-                  class="p-2 w-full bg-slate-100 dark:bg-zinc-700 overflow-y-auto"
-                  v-model="nodeStore.validatorToUpdate.provider" required>
+            data-testid="dropdown-provider-update" class="p-2 w-full bg-slate-100 dark:bg-zinc-700 overflow-y-auto"
+            v-model="nodeStore.validatorToUpdate.provider" required>
             <option v-for="(_, provider) in nodeStore.nodeProviders" :key="provider" :value="provider"
               :selected="provider === nodeStore.validatorToUpdate.provider">
               {{ provider }}
@@ -218,8 +248,7 @@ const handleNumberInput = (event: Event) => {
           <p class="text-md font-semibold">Model:</p>
           <select :class="nodeStore.validatorToUpdate.model ? '' : 'border border-red-500'"
             class="p-2 w-full bg-slate-100 overflow-y-auto dark:bg-zinc-700" name="dropdown-model"
-            data-testid="dropdown-model-update"
-            v-model="nodeStore.validatorToUpdate.model" required>
+            data-testid="dropdown-model-update" v-model="nodeStore.validatorToUpdate.model" required>
             <option v-for="model in nodeStore.nodeProviders[nodeStore.validatorToUpdate.provider]" :key="model"
               :value="model" :selected="model === nodeStore.validatorToUpdate.model">
               {{ model }}
@@ -229,8 +258,7 @@ const handleNumberInput = (event: Event) => {
         <div class="flex flex-col p-2 mt-2">
           <p class="text-md font-semibold">Stake:</p>
           <input type="number" min="1" step="1" @input="handleNumberInput" v-model="nodeStore.validatorToUpdate.stake"
-            :class="nodeStore.validatorToUpdate.stake ? '' : 'border border-red-500'"
-            data-testid="input-stake-update"
+            :class="nodeStore.validatorToUpdate.stake ? '' : 'border border-red-500'" data-testid="input-stake-update"
             class="p-2 w-full bg-slate-100 dark:bg-zinc-700" required />
         </div>
         <div class="flex flex-col p-2 mt-2">
@@ -242,16 +270,13 @@ const handleNumberInput = (event: Event) => {
         </div>
       </div>
       <div class="flex flex-col mt-4 w-full">
-        <button @click="handleUpdateValidator" 
-        :disabled="!nodeStore.updateValidatorModelValid"
+        <button @click="handleUpdateValidator" :disabled="!nodeStore.updateValidatorModelValid"
           data-testid="btn-update-validator"
           class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded disabled:opacity-80">
           Save
         </button>
       </div>
     </Modal>
-
-    
     <Modal :open="nodeStore.deleteValidatorModalOpen" @close="nodeStore.closeDeleteValidatorModal">
       <div class="flex flex-col">
         <div class="flex justify-between">
@@ -282,10 +307,43 @@ const handleNumberInput = (event: Event) => {
         </div>
       </div>
       <div class="flex flex-col mt-4 w-full">
-        <button @click="handleDeleteValidator"
-        data-testid="btn-delete-validator"
+        <button @click="handleDeleteValidator" data-testid="btn-delete-validator"
           class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
           Delete Validator
+        </button>
+      </div>
+    </Modal>
+    <Modal :open="nodeStore.resetStorageModalOpen" @close="nodeStore.closeResetStorageModal">
+      <div class="flex flex-col">
+        <div class="flex justify-between">
+          <div class="text-xl">Reset Simulator Storage</div>
+        </div>
+        <div class="flex justify-between font-bold bg-slate-100 p-2 mt-4">
+          Are you sure you want to reset the simulator storage?
+        </div>
+        <div class="flex flex-col p-2 mt-2">
+          <div class="py-2 w-full">
+            All the examples will be restored, and the following intelligent contracts will be removed.
+          </div>
+        </div>
+        <div class="flex flex-col p-2 mt-2 overflow-y-auto">
+          <ul class="list-disc list-inside">
+            <li class="text-md font-semibold" v-for="contract in nodeStore.contractsToDelete" :key="contract.id">
+              {{ contract.name }}
+            </li>
+          </ul>
+        </div>
+        <div class="flex flex-col p-2 mt-2">
+          <div class="text-md italic"><span class="font-semibold">Note:</span> if you want to preserve any of these
+            contracts, make a copy of them in the files section.</div>
+        </div>
+      </div>
+      <div class="flex flex-col mt-4 w-full">
+        <button @click="handleResetStorage"
+          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
+          <LoadingIndicator v-if="nodeStore.resetingStorage" :color="'white'">
+          </LoadingIndicator>
+          <span v-else>Reset</span>
         </button>
       </div>
     </Modal>
