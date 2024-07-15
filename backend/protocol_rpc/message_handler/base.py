@@ -49,7 +49,7 @@ class MessageHandler:
         logging_status = self.status_mappings[status]
         if hasattr(self.app.logger, logging_status):
             log_method = getattr(self.app.logger, logging_status)
-            log_method(function_name + ": " + str(result))
+            log_method(function_name + ": " + str(result[:200]))
         else:
             raise Exception(f"Logger does not have the method {status}")
 
