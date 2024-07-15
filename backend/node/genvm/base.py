@@ -11,6 +11,8 @@ import sys
 from backend.database_handler.contract_snapshot import ContractSnapshot
 from backend.node.genvm.equivalence_principle import EquivalencePrinciple
 from backend.node.genvm.code_enforcement import code_enforcement_check
+from backend.node.genvm.std.vector_store import VectorStore
+from backend.node.genvm.std.models import get_model
 
 
 class GenVM:
