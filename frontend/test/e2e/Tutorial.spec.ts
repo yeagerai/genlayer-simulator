@@ -55,7 +55,7 @@ async function validateTutorialStep({
   }
 }
 
-describe.skip('Tutorial - Run all tutorial steps', () => {
+describe('Tutorial - Run all tutorial steps', () => {
   before(async () => {
     driver = await getDriver()
     await driver.manage().setTimeouts({ implicit: 10000 })
