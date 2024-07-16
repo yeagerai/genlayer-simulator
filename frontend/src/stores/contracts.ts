@@ -1,6 +1,6 @@
 import type { IJsonRpcService } from '@/services'
 import type { ContractFile, DeployedContract, TransactionItem } from '@/types'
-import { getContractFileName } from '@/utils'
+import { db, getContractFileName, setupStores } from '@/utils'
 import { defineStore } from 'pinia'
 import { ref, inject, computed } from 'vue'
 import { useAccountsStore } from './accounts'
@@ -43,13 +43,13 @@ export const useContractsStore = defineStore('contractsStore', () => {
     deployedContracts.value = [...deployedContracts.value.filter((c) => c.contractId !== id)]
   }
 
-  function updateContractFile(id: string, { name, content }: { name?: string; content?: string }) {
+  function updateContractFile(id: string, { name, content, updatedAt }: { name?: string; content?: string, updatedAt?: string }) {
     contracts.value = [
       ...contracts.value.map((c) => {
         if (c.id === id) {
           const _name = getContractFileName(name || c.name)
           const _content = content || c.content
-          return { ...c, name: _name, content: _content }
+          return { ...c, name: _name, content: _content, updatedAt }
         }
         return c
       })
@@ -92,6 +92,33 @@ export const useContractsStore = defineStore('contractsStore', () => {
     currentContractId.value = id || ''
   }
 
+  async function resetStorage(): Promise<void> {
+    try {
+      const idsToDelete = contracts.value
+        .filter((c) => c.example || (!c.example && !c.updatedAt))
+        .map((c) => c.id)
+
+      await db.deployedContracts.where('contractId').anyOf(idsToDelete).delete()
+      await db.contractFiles.where('id').anyOf(idsToDelete).delete()
+
+      deployedContracts.value = [
+        ...deployedContracts.value.filter((c) => !idsToDelete.includes(c.contractId))
+      ]
+      contracts.value = [...contracts.value.filter((c) => !idsToDelete.includes(c.id))]
+      openedFiles.value = [...openedFiles.value.filter((c) => !idsToDelete.includes(c))]
+      if (currentContractId.value && idsToDelete.includes(currentContractId.value)) {
+        currentContractId.value = ''
+      }
+
+      localStorage.setItem('mainStore.currentContractId', currentContractId.value || '')
+      localStorage.setItem('mainStore.openedFiles', openedFiles.value.join(','))
+
+      await setupStores()
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
   async function callContractMethod({
     userAccount,
     localContractId,
@@ -115,7 +142,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
 
       callingContractMethod.value = false
       if (result?.status === 'success') {
-        
         transactionsStore.addTransaction({
           contractAddress: contract?.address || '',
           localContractId: contract?.contractId || '',
@@ -274,7 +300,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
     }
   }
 
-
   const currentContract = computed(() => {
     return contracts.value.find((c) => c.id === currentContractId.value)
   })
@@ -288,7 +313,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
     openedFiles,
     currentContractId,
     deployedContracts,
-
     currentContractState,
     callingContractState,
     callingContractMethod,
@@ -311,6 +335,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
     addDeployedContract,
     removeDeployedContract,
     setCurrentContractId,
+    resetStorage,
     getCurrentContractAbi,
     callContractMethod,
     getContractState,

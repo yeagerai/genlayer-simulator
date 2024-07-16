@@ -2,6 +2,8 @@ export interface ContractFile {
   id: string
   name: string
   content: string
+  example?: boolean
+  updatedAt?: string
 }
 
 export interface OpenedFile {

@@ -7,12 +7,12 @@ on:
     types:
       - opened
   pull_request_review:
-    branches:
-      - staging
-    types: [approved]
+    types:
+      - submitted
 
 jobs:
   test:
+    if: ${{ github.event.review.state == 'APPROVED' || github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
 
     env:
@@ -69,7 +69,7 @@ jobs:
           pip install -r requirements.test.txt
 
       - name: Run tests
-        run: pytest tests/e2e/
+        run: pytest tests/integration/
 
       - name: Shutdown Docker Compose
         if: always()

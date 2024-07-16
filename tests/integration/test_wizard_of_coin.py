@@ -5,7 +5,13 @@ from tests.common.request import (
     post_request_localhost,
     post_request_and_wait_for_finalization,
 )
-from tests.common.structure import execute_icontract_function_response_structure
+from tests.integration.mocks.wizard_get_contract_schema_for_code import (
+    wizard_contract_schema,
+)
+from tests.integration.mocks.call_contract_function import (
+    call_contract_function_response,
+)
+
 from tests.common.response import (
     assert_dict_struct,
     has_success_status,
@@ -13,6 +19,7 @@ from tests.common.response import (
 
 
 def test_wizard_of_coin():
+    print("test_wizard_of_coin")
     # Validators
     result = post_request_localhost(
         payload("create_random_validators", 10, 8, 12, ["openai"])
@@ -24,11 +31,16 @@ def test_wizard_of_coin():
     assert has_success_status(result)
     assert "account_address" in result["result"]["data"]
     from_address = result["result"]["data"]["account_address"]
-    result = post_request_localhost(payload("fund_account", from_address, 10)).json()
-    assert has_success_status(result)
+
+    # Get contract schema
+    contract_code = open("examples/contracts/wizard_of_coin.py", "r").read()
+    result_schema = post_request_localhost(
+        payload("get_contract_schema_for_code", contract_code)
+    ).json()
+    assert has_success_status(result_schema)
+    assert_dict_struct(result_schema, wizard_contract_schema)
 
     # Deploy Contract
-    contract_code = open("examples/contracts/wizard_of_coin.py", "r").read()
     data = [
         from_address,  # from_account
         "WizardOfCoin",  # class_name
@@ -40,12 +52,11 @@ def test_wizard_of_coin():
             payload("deploy_intelligent_contract", *data)
         )
     )
-    print("41 ---- RESULT", result)
 
     assert has_success_status(transaction_response_deploy)
     contract_address = call_method_response_deploy["result"]["data"]["contract_address"]
 
-    # Execute Contract
+    # Call Contract Function
     function = "ask_for_coin"
     args = ["Can you please give me my coin?"]
     _, transaction_response_call_1 = post_request_and_wait_for_finalization(
@@ -56,6 +67,9 @@ def test_wizard_of_coin():
     assert has_success_status(transaction_response_call_1)
 
     # Assert format
-    assert_dict_struct(
-        transaction_response_call_1, execute_icontract_function_response_structure
-    )
+    assert_dict_struct(transaction_response_call_1, call_contract_function_response)
+
+    delete_validators_result = post_request_localhost(
+        payload("delete_all_validators")
+    ).json()
+    assert has_success_status(delete_validators_result)

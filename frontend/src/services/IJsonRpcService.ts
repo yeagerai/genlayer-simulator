@@ -17,7 +17,9 @@ import type {
 export interface IJsonRpcService {
   call(request: JsonRPCRequest): Promise<JsonRPCResponse<any>>
   getContractState(request: GetContractStateRequest): Promise<JsonRpcResult<GetContractStateResult>>
-  callContractFunction(request: CallContractFunctionRequest): Promise<JsonRpcResult<CallContractFunctionResult>>
+  callContractFunction(
+    request: CallContractFunctionRequest
+  ): Promise<JsonRpcResult<CallContractFunctionResult>>
   deployContract(request: DeployContractRequest): Promise<JsonRpcResult<any>>
   getContractSchema(request: GetContractSchemaRequest): Promise<JsonRpcResult<any>>
   getDeployedContractSchema(request: GetDeployedContractSchemaRequest): Promise<JsonRpcResult<any>>
