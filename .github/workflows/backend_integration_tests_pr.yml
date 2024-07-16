@@ -28,7 +28,7 @@ jobs:
       - name: Set OPENAIKEY in the .env file so it can be loaded from the environment
         env:
           OPENAIKEY: ${{ secrets.OPENAIKEY }}
-        run: sed -i "/<add_your_openai_api_key_here>/${OPENAIKEY}/g" .env
+        run: sed -i "s/<add_your_openai_api_key_here>/${OPENAIKEY}/g" .env
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
