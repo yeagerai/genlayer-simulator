@@ -26,7 +26,9 @@ UPDATED_STATE_USER_B = "user_b_updated_state"
 def test_user_storage():
     # Validators Setup
     result = post_request_localhost(
-        payload("create_random_validators", 10, 8, 12, ["openai"])
+        payload(
+            "create_random_validators", 10, 8, 12, ["openai"], None, "gpt-3.5-turbo"
+        )
     ).json()
     assert has_success_status(result)
 
