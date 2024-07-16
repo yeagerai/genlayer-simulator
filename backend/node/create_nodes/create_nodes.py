@@ -48,7 +48,7 @@ def get_random_provider_using_weights(defaults):
             return key
 
 
-def get_provider_models(defaults: str, provider: str) -> list:
+def get_provider_models(defaults: dict, provider: str) -> list:
 
     if provider == "ollama":
         ollama_models_result = requests.get(get_ollama_url("tags")).json()
