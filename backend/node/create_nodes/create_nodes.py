@@ -19,7 +19,7 @@ def base_node_json(provider: str, model: str) -> dict:
     return {"provider": provider, "model": model, "config": {}}
 
 
-def get_random_provider_using_weights(defaults):
+def get_random_provider_using_weights(defaults: dict) -> str:
     # remove providers if no api key
     provider_weights = defaults["provider_weights"]
     if "openai" in provider_weights and (
@@ -32,7 +32,7 @@ def get_random_provider_using_weights(defaults):
         or os.environ["HEURISTAIAPIKEY"] == default_provider_key_value
     ):
         provider_weights.pop("heuristai")
-    if get_provider_models({}, "ollama") == []:
+    if "ollama" in provider_weights and get_provider_models({}, "ollama") == []:
         provider_weights.pop("ollama")
 
     if len(provider_weights) == 0:
