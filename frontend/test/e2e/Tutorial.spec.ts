@@ -1,9 +1,8 @@
 import { WebDriver, By, until } from 'selenium-webdriver'
-
 import { TutorialPage } from '../pages/TutorialPage.js'
-import { ContractsPage } from '../pages/ContractsPage.js'
 import { before, describe, after, it } from 'node:test'
 import { expect } from 'chai'
+import { PageFactory } from '../utils/pages.js'
 import { getDriver } from '../utils/driver.js'
 
 let driver: WebDriver
@@ -58,8 +57,8 @@ async function validateTutorialStep({
 describe('Tutorial - Run all tutorial steps', () => {
   before(async () => {
     driver = await getDriver()
-    await driver.manage().setTimeouts({ implicit: 10000 })
-    tutorialPage = new TutorialPage(driver)
+    const factory = new PageFactory(driver)
+    tutorialPage = factory.getTutorialPage()
   })
 
   it('Should show the welcome step and navigate to the next', async () => {

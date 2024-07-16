@@ -4,7 +4,7 @@ import { RunDebugPage } from '../pages/RunDebugPage.js'
 import { SettingsPage } from '../pages/SettingsPage.js'
 import { before, describe, after, it } from 'node:test'
 import { expect } from 'chai'
-import { getDriver } from '../utils/driver.js'
+import { PageFactory } from '../utils/pages.js'
 
 let driver: WebDriver
 let contractsPage: ContractsPage
@@ -13,11 +13,10 @@ let settingsPage: SettingsPage
 
 describe('Contract Example Storage', () => {
   before(async () => {
-    driver = await getDriver()
-    await driver.manage().setTimeouts({ implicit: 10000 })
-    contractsPage = new ContractsPage(driver)
-    runDebugPage = new RunDebugPage(driver)
-    settingsPage = new SettingsPage(driver)
+    driver = await PageFactory.getDriver()
+    contractsPage = await PageFactory.getContractsPage()
+    runDebugPage = await PageFactory.getRunDebugPage()
+    settingsPage = await PageFactory.getSettingsPage()
 
     await contractsPage.navigate()
     await contractsPage.waitUntilVisible()

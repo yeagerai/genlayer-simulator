@@ -4,6 +4,7 @@ import { SettingsPage } from '../pages/SettingsPage.js'
 import { ContractsPage } from '../pages/ContractsPage.js'
 import { before, describe, after, it } from 'node:test'
 import { expect } from 'chai'
+import { PageFactory } from '../utils/pages.js'
 import { getDriver } from '../utils/driver.js'
 
 let driver: WebDriver
@@ -13,9 +14,9 @@ let contractsPage: ContractsPage
 describe('Settings - Update Node Validator', () => {
   before(async () => {
     driver = await getDriver()
-    await driver.manage().setTimeouts({ implicit: 10000 })
-    settingsPage = new SettingsPage(driver)
-    contractsPage = new ContractsPage(driver)
+    const factory = new PageFactory(driver)
+    contractsPage = factory.getContractsPage()
+    settingsPage = factory.getSettingsPage()
   })
 
   it('should update an existing validator', async () => {

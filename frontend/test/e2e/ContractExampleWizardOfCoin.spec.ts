@@ -4,6 +4,7 @@ import { RunDebugPage } from '../pages/RunDebugPage.js'
 import { SettingsPage } from '../pages/SettingsPage.js'
 import { before, describe, after, it } from 'node:test'
 import { expect } from 'chai'
+import { PageFactory } from '../utils/pages.js'
 import { getDriver } from '../utils/driver.js'
 
 let driver: WebDriver
@@ -14,10 +15,10 @@ let settingsPage: SettingsPage
 describe('Contract Example WizardOfCoin', () => {
   before(async () => {
     driver = await getDriver()
-    await driver.manage().setTimeouts({ implicit: 10000 })
-    contractsPage = new ContractsPage(driver)
-    runDebugPage = new RunDebugPage(driver)
-    settingsPage = new SettingsPage(driver)
+    const factory = new PageFactory(driver)
+    contractsPage = factory.getContractsPage()
+    runDebugPage = factory.getRunDebugPage()
+    settingsPage = factory.getSettingsPage()
 
     await contractsPage.navigate()
     await contractsPage.waitUntilVisible()
