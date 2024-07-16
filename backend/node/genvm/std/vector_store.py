@@ -1,10 +1,11 @@
 # backend/node/genvm/std/vector_store.py
 
 import numpy as np
+from backend.node.genvm.std.models import get_model
 
 
 class VectorStore:
-    def __init__(self, model):
+    def __init__(self, model_name: str = None):
         """
         Initialize the VectorStore with a custom embedding model.
 
@@ -13,7 +14,7 @@ class VectorStore:
         """
         self.vector_data = {}  # Dictionary to store vectors
         self.metadata = {}  # Dictionary to store metadata
-        self.model = model
+        self.model_name = model_name
 
     def add_text(self, text, metadata):
         """
@@ -26,7 +27,8 @@ class VectorStore:
         if "log_id" not in metadata or not isinstance(metadata["log_id"], int):
             raise ValueError("Metadata must contain an integer 'log_id'")
 
-        embedding = self.model.encode([text])[0]
+        model = get_model(self.model_name)
+        embedding = model.encode([text])[0]
         vector_id = len(self.vector_data)
         self.vector_data[vector_id] = embedding
         self.metadata[vector_id] = metadata
@@ -39,7 +41,7 @@ class VectorStore:
             text (str): The text for which to find the closest vector.
 
         Returns:
-            tuple: A tuple containing the similarity percentage, the closest vector, and the metadata.
+            tuple: A dictionary containing the similarity percentage, the closest vector, and the metadata.
         """
         result = self.get_k_closest_vectors(text, k=1)
         return result[0]
@@ -53,9 +55,10 @@ class VectorStore:
             k (int): The number of closest vectors to return.
 
         Returns:
-            list: A list of tuples, each containing the similarity percentage, the vector, and the metadata.
+            list: A list of dictionaries, each containing the similarity percentage, the vector, and the metadata.
         """
-        query_embedding = self.model.encode([text])[0]
+        model = get_model(self.model_name)
+        query_embedding = model.encode([text])[0]
 
         # Convert vector_data to a NumPy array for efficient calculations
         all_embeddings = np.array(list(self.vector_data.values()))
@@ -69,11 +72,11 @@ class VectorStore:
         # Get the top k similarities
         top_k_indices = similarities.argsort()[-k:][::-1]
         results = [
-            (
-                similarities[i] * 100,
-                self.vector_data[all_ids[i]],
-                self.metadata[all_ids[i]],
-            )
+            {
+                "similarity": similarities[i] * 100,
+                "vector": self.vector_data[all_ids[i]].tolist(),
+                "metadata": self.metadata[all_ids[i]],
+            }
             for i in top_k_indices
         ]
         return results
@@ -93,7 +96,8 @@ class VectorStore:
         if "log_id" not in new_metadata or not isinstance(new_metadata["log_id"], int):
             raise ValueError("Metadata must contain an integer 'log_id'")
 
-        embedding = self.model.encode([new_text])[0]
+        model = get_model(self.model_name)
+        embedding = model.encode([new_text])[0]
         self.vector_data[vector_id] = embedding
         self.metadata[vector_id] = new_metadata
 

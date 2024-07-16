@@ -12,7 +12,6 @@ from backend.database_handler.contract_snapshot import ContractSnapshot
 from backend.node.genvm.equivalence_principle import EquivalencePrinciple
 from backend.node.genvm.code_enforcement import code_enforcement_check
 from backend.node.genvm.std.vector_store import VectorStore
-from backend.node.genvm.std.models import get_model
 
 
 class GenVM:
@@ -71,6 +70,7 @@ class GenVM:
 
         local_namespace = {}
         globals()["contract_runner"] = self.contract_runner
+        globals()["VectorStore"] = VectorStore
         exec(code_to_deploy, globals(), local_namespace)
 
         class_name = self._get_contract_class_name(code_to_deploy)
@@ -86,6 +86,7 @@ class GenVM:
 
         ## Clean up
         del globals()["contract_runner"]
+        del globals()["VectorStore"]
         delattr(module, class_name)
 
         return self._generate_receipt(
@@ -107,6 +108,7 @@ class GenVM:
             globals()[name] = value
 
         globals()["contract_runner"] = self.contract_runner
+        globals()["VectorStore"] = VectorStore
 
         self.eq_principle.contract_runner = self.contract_runner
 
@@ -127,6 +129,11 @@ class GenVM:
         pickled_object = pickle.dumps(current_contract)
         encoded_pickled_object = base64.b64encode(pickled_object).decode("utf-8")
         class_name = self._get_contract_class_name(contract_code)
+
+        ## Clean up
+        del globals()["contract_runner"]
+        del globals()["VectorStore"]
+
         return self._generate_receipt(
             class_name, encoded_pickled_object, function_name, [args]
         )

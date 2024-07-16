@@ -5,7 +5,7 @@ import os
 import json
 from logging.config import dictConfig
 
-MAX_LOG_MESSAGE_LENGTH = 1000
+MAX_LOG_MESSAGE_LENGTH = 3000
 
 
 def setup_logging_config():
