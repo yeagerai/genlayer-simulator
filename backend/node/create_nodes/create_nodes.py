@@ -1,5 +1,6 @@
 import os
 import json
+import re
 import requests
 import numpy as np
 from random import random, choice, uniform
@@ -8,7 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-default_provider_key_value = "<add_your_api_key_here>"
+default_provider_key_regex = r"<add_your_.*_api_key_here>"
 
 
 def get_ollama_url(endpoint: str) -> str:
@@ -19,17 +20,18 @@ def base_node_json(provider: str, model: str) -> dict:
     return {"provider": provider, "model": model, "config": {}}
 
 
-def get_random_provider_using_weights(defaults: dict) -> str:
+def get_random_provider_using_weights(defaults: dict[str]) -> str:
     # remove providers if no api key
-    provider_weights = defaults["provider_weights"]
+    provider_weights: dict[str, float] = defaults["provider_weights"]
+
     if "openai" in provider_weights and (
         "OPENAIKEY" not in os.environ
-        or os.environ["OPENAIKEY"] == default_provider_key_value
+        or re.match(default_provider_key_regex, os.environ["OPENAIKEY"])
     ):
         provider_weights.pop("openai")
     if "heuristai" in provider_weights and (
-        "HEURISTAIAPIKEY" not in os.environ
-        or os.environ["HEURISTAIAPIKEY"] == default_provider_key_value
+        "HEURISTAIAPIKEY" not in os.environ.get()
+        or re.match(os.environ["HEURISTAIAPIKEY"])
     ):
         provider_weights.pop("heuristai")
     if "ollama" in provider_weights and get_provider_models({}, "ollama") == []:
@@ -123,8 +125,8 @@ def random_validator_config(providers: list = []):
 
     if (
         not len(ollama_models)
-        and os.environ["OPENAIKEY"] == default_provider_key_value
-        and os.environ["HEURISTAIAPIKEY"] == default_provider_key_value
+        and os.environ["OPENAIKEY"] == default_provider_key_regex
+        and os.environ["HEURISTAIAPIKEY"] == default_provider_key_regex
     ):
         raise Exception("No providers avaliable.")
 
