@@ -265,8 +265,10 @@ def create_random_validators(
     count: int,
     min_stake: int,
     max_stake: int,
-    providers: list = [],
+    providers: list = None,
 ) -> dict:
+    providers = providers or []
+
     for _ in range(count):
         stake = random.uniform(min_stake, max_stake)
         validator_address = create_new_address()
