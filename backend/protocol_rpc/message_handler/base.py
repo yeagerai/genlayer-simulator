@@ -5,6 +5,8 @@ import os
 import json
 from logging.config import dictConfig
 
+MAX_LOG_MESSAGE_LENGTH = 1000
+
 
 def setup_logging_config():
     logging_env = os.environ["LOGCONFIG"]
@@ -51,8 +53,9 @@ class MessageHandler:
             log_method = getattr(self.app.logger, logging_status)
             result_string = str(result)
             function_result = (
-                (result_string[:200] + "...")
-                if result_string is not None and len(result_string) > 200
+                (result_string[:MAX_LOG_MESSAGE_LENGTH] + "...")
+                if result_string is not None
+                and len(result_string) > MAX_LOG_MESSAGE_LENGTH
                 else result_string
             )
             log_method(function_name + ": " + function_result)
