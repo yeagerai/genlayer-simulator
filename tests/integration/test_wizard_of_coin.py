@@ -22,7 +22,9 @@ def test_wizard_of_coin():
     print("test_wizard_of_coin")
     # Validators
     result = post_request_localhost(
-        payload("create_random_validators", 10, 8, 12, ["openai"])
+        payload(
+            "create_random_validators", 10, 8, 12, ["openai"], None, "gpt-3.5-turbo"
+        )
     ).json()
     assert has_success_status(result)
 
