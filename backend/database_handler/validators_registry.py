@@ -1,7 +1,7 @@
 # consensus/domain/state.py
 
 import json
-
+from psycopg2.extras import Json
 from backend.database_handler.db_client import DBClient
 
 from backend.errors.errors import ValidatorNotFound
@@ -57,7 +57,7 @@ class ValidatorsRegistry:
             "stake": stake,
             "provider": provider,
             "model": model,
-            "config": json.dumps(config),
+            "config": Json(config),
             "created_at": "CURRENT_TIMESTAMP",
         }
         self.db_client.insert(self.db_validators_table, new_validator)
@@ -78,7 +78,7 @@ class ValidatorsRegistry:
             "stake": stake,
             "provider": provider,
             "model": model,
-            "config": json.dumps(config),
+            "config": Json(config),
         }
 
         self.db_client.update(self.db_validators_table, validator, update_condition)
