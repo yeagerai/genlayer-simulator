@@ -103,7 +103,7 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
           default:
             break
         }
-      } 
+      }
       console.log('PersistStorePlugin:::', { name, args, result })
     })
   })

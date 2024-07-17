@@ -17,7 +17,6 @@ export const TransactionsListenerPlugin = {
 
       transactionsStore.processingQueue.push(...pendingTxs)
       if (transactionsStore.processingQueue.length > 0) {
-
         for (const item of transactionsStore.processingQueue) {
           const tx = await transactionsStore.getTransaction(item.txId)
           if (!tx?.data) {
@@ -41,9 +40,8 @@ export const TransactionsListenerPlugin = {
               })
             }
           }
-         
         }
-        
+
         console.log(`There are ${pendingTxs.length} pending transactions`)
       }
     }
