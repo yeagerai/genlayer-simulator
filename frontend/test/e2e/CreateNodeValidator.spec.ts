@@ -13,7 +13,6 @@ let contractsPage: ContractsPage
 describe('Settings - Create Node Validator', () => {
   before(async () => {
     driver = await getDriver()
-    await driver.manage().setTimeouts({ implicit: 10000 })
     settingsPage = new SettingsPage(driver)
     contractsPage = new ContractsPage(driver)
   })

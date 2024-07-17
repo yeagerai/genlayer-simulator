@@ -1,5 +1,6 @@
 import { By, Locator, WebElement, until, Select } from 'selenium-webdriver'
 import { BasePage } from './BasePage'
+import { expect } from 'chai'
 
 export class SettingsPage extends BasePage {
   override baseurl = 'http://localhost:8080/simulator/settings'
@@ -51,5 +52,21 @@ export class SettingsPage extends BasePage {
     // call create validator button
     await createValidatorBtn.click()
     await this.driver.navigate().refresh()
+  }
+
+  async createValidatorIfRequired() {
+    const initialValidators = await this.getValidatorsElements()
+    if (initialValidators.length < 1) {
+      await this.createValidator({
+        provider: 'heuristai',
+        model: 'mistralai/mixtral-8x7b-instruct',
+        stake: 7
+      })
+      const existingValidators = await this.getValidatorsElements()
+      expect(
+        existingValidators.length,
+        'number of validators should be greather than old validators list'
+      ).be.greaterThan(initialValidators.length)
+    }
   }
 }

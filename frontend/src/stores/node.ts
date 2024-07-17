@@ -3,11 +3,12 @@ import type { CreateValidatorModel, NodeLog, UpdateValidatorModel, ValidatorMode
 import { webSocketClient } from '@/utils'
 import { defineStore } from 'pinia'
 import { computed, inject, ref } from 'vue'
+import { useContractsStore } from './contracts'
 
 export const useNodeStore = defineStore('nodeStore', () => {
   const logs = ref<NodeLog[]>([])
   const listenWebsocket = ref<boolean>(true)
-
+  const contractsStore = useContractsStore()
   const nodeProviders = ref<Record<string, string[]>>({})
   // state
   const $jsonRpc = inject<IJsonRpcService>('$jsonRpc')!
@@ -15,6 +16,8 @@ export const useNodeStore = defineStore('nodeStore', () => {
   const updateValidatorModalOpen = ref<boolean>(false)
   const createValidatorModalOpen = ref<boolean>(false)
   const deleteValidatorModalOpen = ref<boolean>(false)
+  const resetStorageModalOpen = ref<boolean>(false)
+  const resetingStorage = ref<boolean>(false)
 
   const validatorToUpdate = ref<UpdateValidatorModel>({
     model: '',
@@ -108,7 +111,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
       model,
       provider,
       stake,
-      config: JSON.stringify(config || '{ }', null, 2)
+      config: typeof config === 'string' ? config : JSON.stringify(config || '{ }', null, 2)
     }
     updateValidatorModalOpen.value = true
   }
@@ -135,13 +138,13 @@ export const useNodeStore = defineStore('nodeStore', () => {
     if (stake <= 0 || !provider || !model || !config) {
       throw new Error('Please fill all the required fields')
     }
-    const contractConfig = JSON.parse(config || '{}')
+    const validatorConfig = JSON.parse(config || '{}')
     const result = await $jsonRpc.updateValidator({
       address: selectedValidator.value?.address || '',
       stake,
       provider,
       model,
-      config: contractConfig
+      config: validatorConfig
     })
     if (result?.status === 'success') {
       const index = validators.value.findIndex(
@@ -193,7 +196,8 @@ export const useNodeStore = defineStore('nodeStore', () => {
       throw new Error('Please fill the stake field')
     }
     const { stake, provider, model, config } = validatorToCreate.value
-    const result = await $jsonRpc.createValidator({ stake, provider, model, config })
+    const validatorConfig = JSON.parse(config || '{}')
+    const result = await $jsonRpc.createValidator({ stake, provider, model, config: validatorConfig })
     if (result?.status === 'success') {
       validators.value.push(result.data)
       closeNewValidatorModal()
@@ -201,6 +205,31 @@ export const useNodeStore = defineStore('nodeStore', () => {
       throw new Error('Error creating a new validator')
     }
   }
+
+  const openResetStorageModal = () => {
+    resetStorageModalOpen.value = true
+  }
+
+  const closeResetStorageModal = () => {
+    resetStorageModalOpen.value = false
+  }
+
+  const resetStorage = async () => {
+    resetingStorage.value = true
+    try {
+      await contractsStore.resetStorage()
+      resetingStorage.value = false
+    } catch (error) {
+      console.error(error)
+      resetingStorage.value = false
+      throw error
+    }
+  }
+
+  const contractsToDelete = computed(() =>
+    contractsStore.contracts.filter((c) => (c.example && !c.updatedAt )|| (!c.example && !c.updatedAt))
+  )
+  
   return {
     logs,
     listenWebsocket,
@@ -214,6 +243,10 @@ export const useNodeStore = defineStore('nodeStore', () => {
     validatorToCreate,
     updateValidatorModelValid,
     createValidatorModelValid,
+    resetStorageModalOpen,
+    resetingStorage,
+
+    contractsToDelete,
 
     initialize,
     getValidatorsData,
@@ -225,6 +258,9 @@ export const useNodeStore = defineStore('nodeStore', () => {
     openDeleteValidatorModal,
     closeDeleteValidatorModal,
     closeNewValidatorModal,
-    openCreateNewValidatorModal
+    openCreateNewValidatorModal,
+    openResetStorageModal,
+    closeResetStorageModal,
+    resetStorage
   }
 })

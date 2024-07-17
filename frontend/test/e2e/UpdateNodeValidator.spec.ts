@@ -13,7 +13,6 @@ let contractsPage: ContractsPage
 describe('Settings - Update Node Validator', () => {
   before(async () => {
     driver = await getDriver()
-    await driver.manage().setTimeouts({ implicit: 10000 })
     settingsPage = new SettingsPage(driver)
     contractsPage = new ContractsPage(driver)
   })
@@ -67,7 +66,7 @@ describe('Settings - Update Node Validator', () => {
     // call save validator button
     await updateValidatorBtn.click()
 
-    driver.sleep(5000)
+    driver.sleep(10000)
     const validators = await settingsPage.getValidatorsElements()
     const provider = await validators[0].findElement(By.xpath("//span[@data-testid = 'validator-item-provider']"))
     const model = await validators[0].findElement(By.xpath("//span[@data-testid = 'validator-item-model']"))

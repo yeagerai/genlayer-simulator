@@ -39,7 +39,9 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
             })
             break
           case 'updateContractFile':
-            await db.contractFiles.update(args[0] as string, args[1] as ContractFile)
+            await db.contractFiles.update(args[0] as string, {
+              ...(args[1] as ContractFile)
+            })
             break
           case 'removeContractFile':
             await db.contractFiles.delete(args[0])
@@ -59,9 +61,6 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
           case 'addDeployedContract':
             await upsertDeployedContract(args[0] as DeployedContract)
             break
-          case 'deployContract':
-            await upsertDeployedContract(result as DeployedContract)
-            break
           case 'setCurrentContractId':
             localStorage.setItem('contractsStore.currentContractId', args[0] as string)
             break
@@ -78,8 +77,8 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
       } else if (store.$id === 'accountsStore') {
         switch (name) {
           case 'generateNewAccount':
-            localStorage.setItem('accountsStore.accounts', store.accounts.join(','))
-            localStorage.setItem('accountsStore.currentUserAddress', store.currentUserAddress)
+            localStorage.setItem('accountsStore.privateKeys', store.privateKeys.join(','))
+            localStorage.setItem('accountsStore.currentPrivateKey', store.currentPrivateKey)
             break
           default:
             break
@@ -92,7 +91,7 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
           case 'removeTransaction':
             await db.transactions
               .where('txId')
-              .equals(args[0] as string)
+              .equals((args[0] as any).id)
               .delete()
             break
           case 'updateTransaction':
@@ -104,8 +103,7 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
           default:
             break
         }
-      }
-
+      } 
       console.log('PersistStorePlugin:::', { name, args, result })
     })
   })
