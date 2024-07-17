@@ -1,6 +1,5 @@
 import { useContractsStore, useTransactionsStore } from '@/stores'
 import type { TransactionItem } from '@/types'
-import { notify } from '@kyvg/vue3-notification'
 import type { App } from 'vue'
 
 export const TransactionsListenerPlugin = {

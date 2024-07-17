@@ -2,8 +2,7 @@
 import { useAccountsStore, useContractsStore, useTransactionsStore } from '@/stores'
 import { computed, onMounted, onUnmounted, watch } from 'vue'
 import { notify } from '@kyvg/vue3-notification'
-import ContractState from '@/components/Simulator/ContractState.vue'
-import ExecuteTransactions from '@/components/Simulator/ExecuteTransactions.vue'
+import ExecuteContractMethods from '@/components/Simulator/ExecuteContractMethods.vue'
 import TransactionsList from '@/components/Simulator/TransactionsList.vue'
 import ConstructorParameters from '@/components/Simulator/ConstructorParameters.vue'
 import { debounce } from 'vue-debounce'
@@ -15,13 +14,9 @@ const transactionsStore = useTransactionsStore()
 let deploymentSubscription: () => void
 const contractTransactions = computed(() => transactionsStore.transactions.filter((t) => t.localContractId === contractsStore.currentContractId))
 
-const handleGetContractState = async (
-  contractAddress: string,
-  method: string,
-  methodArguments: string[]
-) => {
+const handleGetContractState = async ({ method, params }: { method: string; params: any[] }) => {
   try {
-    await contractsStore.getContractState(contractAddress, method, methodArguments)
+    await contractsStore.getContractState(contractsStore.deployedContract?.address || '', method, params)
   } catch (error) {
     notify({
       title: 'Error',
@@ -75,6 +70,11 @@ const handleClearTransactions = () => {
   transactionsStore.transactions = transactionsStore.transactions.filter((t) => t.localContractId !== contractsStore.currentContractId)
 }
 
+const setCurentUserAddress = (event: Event) => {
+  if ((event.target as HTMLSelectElement)?.value) {
+    accountsStore.currentPrivateKey = (event.target as HTMLSelectElement)?.value as `0x${string}`
+  }
+}
 
 const debouncedGetConstructorInputs = debounce(() => contractsStore.getConstructorInputs(), 3000)
 
@@ -148,16 +148,41 @@ onUnmounted(() => {
           :loading="contractsStore.loadingConstructorInputs" :error="contractsStore.currentErrorConstructorInputs"
           @deploy-contract="handleDeployContract" :deploying="contractsStore.deployingContract" />
       </div>
-      <div class="flex flex-col">
+      <div v-if="contractsStore.deployedContract?.address" class="flex flex-col w-full mt-4">
+        <div class="flex flex-col justify-start w-full px-4">
+          <p>Deployed Contract: </p>
+          <span class="text-xs dark:text-white text-primary">{{ contractsStore.deployedContract?.address }}</span>
+        </div>
+      </div>
+      <div class="flex flex-col w-full">
+        <div class="flex flex-col px-2 mt-6 py-2 w-full bg-slate-100 dark:bg-zinc-700">
+          <h5 class="text-sm">Current Account</h5>
+        </div>
+        <div class="flex flex-col p-2 my-4 items-start w-full">
+          <select name="dropdown-current-account" @change="setCurentUserAddress" class="text-xs w-full dark:bg-zinc-700"
+            :value="accountsStore.currentUserAddress">
+            <option :value="accountsStore.currentUserAddress">
+              {{ accountsStore.currentUserAddress }}
+            </option>
+            <option v-for="privateKey in accountsStore.privateKeys" :key="privateKey" :value="privateKey">
+              {{ accountsStore.accountFromPrivateKey(privateKey).address }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex flex-col" id="tutorial-contract-state">
         <div class="flex flex-col" v-show="contractsStore.deployedContract">
-          <ContractState :abi="contractsStore.currentDeployedContractAbi"
-            :contract-state="contractsStore.currentContractState" :deployed-contract="contractsStore.deployedContract"
-            :get-contract-state="handleGetContractState" :calling-state="contractsStore.callingContractState" />
+          <ExecuteContractMethods :abi="contractsStore.currentDeployedContractAbi" @call-method="handleGetContractState"
+            :calling-method="contractsStore.callingContractState" title="Read Methods" mode="read" 
+            :contract-state="contractsStore.currentContractState"/>
         </div>
 
         <div class="flex flex-col" v-show="contractsStore.deployedContract">
-          <ExecuteTransactions :abi="contractsStore.currentDeployedContractAbi" @call-method="handleCallContractMethod"
-            :calling-method="contractsStore.callingContractMethod" />
+          <ExecuteContractMethods :abi="contractsStore.currentDeployedContractAbi"
+            @call-method="handleCallContractMethod" :calling-method="contractsStore.callingContractMethod"
+            title="Execute Transactions" mode="write" />
+          <div id="tutorial-creating-transactions" class="flex"></div>
         </div>
         <div class="flex flex-col">
           <TransactionsList :transactions="contractTransactions" @clear-transactions="handleClearTransactions" />

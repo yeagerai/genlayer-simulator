@@ -11,7 +11,14 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
   const transactions = ref<TransactionItem[]>([])
 
   function addTransaction(tx: TransactionItem) {
-    transactions.value.push(tx)
+
+    const index = transactions.value.findIndex((t) => t.txId === tx.txId)
+    if (index !== -1) {
+      const current = transactions.value[index]
+      transactions.value.splice(index, 1, { ...current, status: tx.status, data: tx })
+    } else {
+      transactions.value.push(tx)
+    }
   }
 
   function removeTransaction(tx: TransactionItem) {

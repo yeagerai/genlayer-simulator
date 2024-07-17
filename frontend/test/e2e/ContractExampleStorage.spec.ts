@@ -67,7 +67,7 @@ describe('Contract Example Storage', () => {
     const contractStateTitle = await driver.wait(
       until.elementLocated(
         By.xpath(
-          "//h5[contains(@class, 'text-sm') and contains(text(), 'Current Intelligent Contract State')]"
+          "//h5[contains(@class, 'text-sm') and contains(text(), 'Read Methods')]"
         )
       ),
       15000
