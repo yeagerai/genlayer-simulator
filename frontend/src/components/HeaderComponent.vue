@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { SunIcon, PresentationChartLineIcon } from '@heroicons/vue/24/solid'
+import { SunIcon, MoonIcon, PresentationChartLineIcon } from '@heroicons/vue/24/solid'
 import { useUIStore, useAccountsStore } from '@/stores'
 import { shortenAddress } from '@/utils'
 import { RouterLink } from 'vue-router'
@@ -29,13 +29,12 @@ const showTutorial = () => {
             </RouterLink>
 
             <button class="mx-3" @click="toggleMode">
-                <SunIcon class="h-5 w-5 fill-gray-700" v-if="uiStore.mode === 'light'" />
-                <SunIcon class="h-5 w-5 fill-gray-200" v-else />
+                <SunIcon v-if="uiStore.mode === 'light'" class="h-5 w-5 fill-gray-700" />
+                <MoonIcon v-else class="h-5 w-5 fill-gray-200" />
                 <ToolTip text="Switch Theme" :options="{ placement: 'bottom' }" />
             </button>
             <button class="mx-3" @click="showTutorial">
-                <PresentationChartLineIcon class="h-5 w-5 fill-gray-700" v-if="uiStore.mode === 'light'" />
-                <PresentationChartLineIcon class="h-5 w-5 fill-gray-200" v-else />
+                <PresentationChartLineIcon class="h-5 w-5 fill-gray-700" :class="uiStore.mode === 'light' ? 'fill-gray-700' : 'fill-gray-200'" />
                 <ToolTip text="Show Tutorial" :options="{ placement: 'bottom' }" />
             </button>
         </div>
