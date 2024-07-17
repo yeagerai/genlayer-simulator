@@ -15,12 +15,14 @@ from backend.node.genvm.code_enforcement import code_enforcement_check
 
 class ContractRunner:
     def __init__(self, mode: str, node_config: dict):
-        self.mode = mode
-        self.node_config = node_config
-        self.from_address = None
-        self.gas_used = 0
-        self.eq_num = 0
-        self.eq_outputs = {"leader": {}}
+        self.mode = mode  # if the node is acting as "validator" or "leader"
+        self.node_config = node_config  # provider, model, config, stake
+        self.from_address = None  # the address of the transaction sender
+        self.gas_used = 0  # the amount of gas used by the contract
+        self.eq_num = 0  # keeps track of the eq principle number being executed
+        self.eq_outputs = {
+            "leader": {}
+        }  # the eq principle outputs for the leader and validators
 
 
 class GenVM:
