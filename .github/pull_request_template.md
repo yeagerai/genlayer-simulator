@@ -37,3 +37,7 @@ Fixes #issue-number-here
 # Reviewing tips
 
 <!-- What can you tell the reviewer to make the review easier? -->
+
+# User facing release notes
+
+<!-- What should the user know about this change? Think of it going into public forums for end users to read -->
