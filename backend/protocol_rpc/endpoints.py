@@ -265,8 +265,12 @@ def create_random_validators(
     count: int,
     min_stake: int,
     max_stake: int,
-    providers: list = [],
+    providers: list = None,
+    fixed_provider: str = None,
+    fixed_model: str = None,
 ) -> dict:
+    providers = providers or []
+
     for _ in range(count):
         stake = random.uniform(min_stake, max_stake)
         validator_address = create_new_address()
@@ -274,8 +278,8 @@ def create_random_validators(
         new_validator = validators_registry.create_validator(
             validator_address,
             stake,
-            details["provider"],
-            details["model"],
+            fixed_provider or details["provider"],
+            fixed_model or details["model"],
             details["config"],
         )
         if not "id" in new_validator:
