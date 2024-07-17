@@ -4,6 +4,7 @@ import { notify } from '@kyvg/vue3-notification'
 import Modal from '@/components/ModalComponent.vue'
 import { TrashIcon } from '@heroicons/vue/24/solid'
 import { useNodeStore } from '@/stores'
+import LoadingIndicator from '@/components/LoadingIndicator.vue'
 
 const nodeStore = useNodeStore()
 
@@ -341,8 +342,7 @@ const handleNumberInput = (event: Event) => {
       <div class="flex flex-col mt-4 w-full">
         <button @click="handleResetStorage"
           class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
-          <LoadingIndicator v-if="nodeStore.resetingStorage" :color="'white'">
-          </LoadingIndicator>
+          <LoadingIndicator v-if="nodeStore.resetingStorage" :color="'white'" />
           <span v-else>Reset</span>
         </button>
       </div>
