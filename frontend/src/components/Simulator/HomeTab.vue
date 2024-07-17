@@ -26,7 +26,6 @@
                         <h1 class="text-2xl">What you can do with the GenLayer Simulator:</h1>
                     </div>
                     <div class="flex pt-2 flex-col">
-                        <p class="pb-3">
                         <ul>
                             <li><b>Experiment with AI smart contracts:</b> Intelligent Contracts leverage LLMs, such as
                                 <a href="https://openai.com/research/gpt-4" target="_blank"
@@ -48,7 +47,6 @@
                                 and string management are not a big headache.
                             </li>
                         </ul>
-                        </p>
 
                     </div>
                     <div class="flex pt-2 flex-col">
