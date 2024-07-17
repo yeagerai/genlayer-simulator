@@ -7,8 +7,8 @@ import { RouterLink } from 'vue-router'
 
 const uiStore = useUIStore()
 const accounts = useAccountsStore()
-const toogleMode = () => {
-    uiStore.toogleMode()
+const toggleMode = () => {
+    uiStore.toggleMode()
 }
 const showTutorial = () => {
     uiStore.runTutorial()
@@ -28,10 +28,10 @@ const showTutorial = () => {
                 <ToolTip :text="accounts.currentUserAddress" :options="{ placement: 'bottom' }" />
             </RouterLink>
 
-            <button class="mx-3" @click="toogleMode">
+            <button class="mx-3" @click="toggleMode">
                 <SunIcon class="h-5 w-5 fill-gray-700" v-if="uiStore.mode === 'light'" />
                 <SunIcon class="h-5 w-5 fill-gray-200" v-else />
-                <ToolTip text="Swtitch Theme" :options="{ placement: 'bottom' }" />
+                <ToolTip text="Switch Theme" :options="{ placement: 'bottom' }" />
             </button>
             <button class="mx-3" @click="showTutorial">
                 <PresentationChartLineIcon class="h-5 w-5 fill-gray-700" v-if="uiStore.mode === 'light'" />

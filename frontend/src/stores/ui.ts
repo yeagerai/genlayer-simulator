@@ -9,7 +9,7 @@ export const useUIStore = defineStore('ui', {
     }
   },
   actions: {
-    toogleMode() {
+    toggleMode() {
       if (this.mode === 'light') {
         this.mode = 'dark'
       } else {

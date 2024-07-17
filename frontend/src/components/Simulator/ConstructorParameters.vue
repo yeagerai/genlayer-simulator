@@ -81,7 +81,7 @@ const handleDeployContract = () => {
     emit('deployContract', { params })
   }
 }
-const toogleMode = () => {
+const toggleMode = () => {
   mode.value = mode.value === 'json' ? 'form' : 'json'
   if (mode.value === 'json') {
     jsonParams.value = JSON.stringify(inputParams.value || {}, null, 2)
@@ -136,7 +136,7 @@ onMounted(() => {
       <div class="flex flex-col">
         <div class="flex justify-between align-middle">
           <div class="text-xs flex align-middle h-full">Constructor Parameters</div>
-          <button class="bg-primary hover:opacity-80 text-white px-2 rounded texm-xs" @click="toogleMode">{{ mode ===
+          <button class="bg-primary hover:opacity-80 text-white px-2 rounded texm-xs" @click="toggleMode">{{ mode ===
     'json' ? 'Inputs' : 'JSON' }}
             <ToolTip :text="mode === 'json' ? 'See the inputs' : 'Write raw JSON'" :options="{ placement: 'top' }" />
           </button>
