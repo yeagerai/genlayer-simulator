@@ -77,8 +77,8 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
       } else if (store.$id === 'accountsStore') {
         switch (name) {
           case 'generateNewAccount':
-            localStorage.setItem('accountsStore.accounts', store.accounts.join(','))
-            localStorage.setItem('accountsStore.currentUserAddress', store.currentUserAddress)
+            localStorage.setItem('accountsStore.privateKeys', store.privateKeys.join(','))
+            localStorage.setItem('accountsStore.currentPrivateKey', store.currentPrivateKey)
             break
           default:
             break
@@ -103,7 +103,7 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
           default:
             break
         }
-      }
+      } 
       console.log('PersistStorePlugin:::', { name, args, result })
     })
   })
