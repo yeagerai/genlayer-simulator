@@ -159,9 +159,8 @@ onMounted(() => {
       <ToolTip text="Deploy" :options="{ placement: 'top' }" />
       <button @click="handleDeployContract"
         class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
-        <LoadingIndicator v-if="props.deploying" :color="'white'">
-          </LoadingIndicator>
-          <template v-else>Deploy</template>
+        <LoadingIndicator v-if="props.deploying" :color="'white'" />
+        <template v-else>Deploy</template>
       </button>
     </div>
   </div>
