@@ -4,7 +4,6 @@ import { RunDebugPage } from '../pages/RunDebugPage.js'
 import { SettingsPage } from '../pages/SettingsPage.js'
 import { before, describe, after, it } from 'node:test'
 import { expect } from 'chai'
-import { PageFactory } from '../utils/pages.js'
 import { getDriver } from '../utils/driver.js'
 
 let driver: WebDriver
@@ -15,29 +14,15 @@ let settingsPage: SettingsPage
 describe('Contract Example WizardOfCoin', () => {
   before(async () => {
     driver = await getDriver()
-    const factory = new PageFactory(driver)
-    contractsPage = factory.getContractsPage()
-    runDebugPage = factory.getRunDebugPage()
-    settingsPage = factory.getSettingsPage()
+    contractsPage = new ContractsPage(driver)
+    runDebugPage = new RunDebugPage(driver)
+    settingsPage = new SettingsPage(driver)
 
     await contractsPage.navigate()
     await contractsPage.waitUntilVisible()
     await contractsPage.skipTutorial()
     await settingsPage.navigate()
-    
-    const initialValidators = await settingsPage.getValidatorsElements()
-    if(initialValidators.length < 1) {
-      await settingsPage.createValidator({
-        provider: 'heuristai',
-        model: 'mistralai/mixtral-8x7b-instruct',
-        stake: 7
-      })
-      const existingValidators = await settingsPage.getValidatorsElements()
-    expect(
-      existingValidators.length,
-      'number of validators should be greather than old validators list'
-    ).be.greaterThan(initialValidators.length)
-    }
+    await settingsPage.createValidatorIfRequired()
   })
 
   it('should open WizardOfCoin example contract', async () => {
