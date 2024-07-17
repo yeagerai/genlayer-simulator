@@ -27,5 +27,11 @@ export const useAccountsStore = defineStore('accountsStore', () => {
     return getAccountFromPrivatekey(privateKey)
   }
 
-  return { currentUserAddress, currentPrivateKey, privateKeys, generateNewAccount, accountFromPrivateKey }
+  return {
+    currentUserAddress,
+    currentPrivateKey,
+    privateKeys,
+    generateNewAccount,
+    accountFromPrivateKey
+  }
 })
