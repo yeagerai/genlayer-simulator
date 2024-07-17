@@ -42,11 +42,11 @@ export const setupStores = async () => {
 
   contractsStore.deployedContracts = await db.deployedContracts.toArray()
   transactionsStore.transactions = await db.transactions.toArray()
-  if (accountsStore.accounts.length < 1) {
-    await accountsStore.generateNewAccount()
+  if ( accountsStore.privateKeys.length < 1) {
+    accountsStore.generateNewAccount()
   } else {
-    accountsStore.accounts = localStorage.getItem('accountsStore.accounts')
-      ? (localStorage.getItem('accountsStore.accounts') || '').split(',')
+    accountsStore.privateKeys = localStorage.getItem('accountsStore.privateKeys')
+      ? ((localStorage.getItem('accountsStore.privateKeys') || '').split(',') as `0x${string}`[])
       : []
   }
 }
