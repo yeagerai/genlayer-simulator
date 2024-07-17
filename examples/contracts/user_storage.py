@@ -17,4 +17,4 @@ class UserStorage(IContract):
 
     # write method
     def update_storage(self, new_storage: str) -> None:
-        self.storage[contract_runner["from_address"]] = new_storage
+        self.storage[contract_runner.from_address] = new_storage
