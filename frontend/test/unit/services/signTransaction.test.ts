@@ -17,15 +17,10 @@ describe('JsonRprService', () => {
 
   describe('signTransaction', () => {
     const privateKey = getPrivateKey()
-    const input = {
-      contractAddress: '0x58FaA28cbAA1b52F8Ec8D3c6FFCE6f1AaF8bEEB1',
-      method: 'get_have_coin',
-      params: []
-    }
 
     const data = {
-      method: 'get_contract_state',
-      params: [input.contractAddress, input.method, []]
+        to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+        value: 1000000000000000000n
     }
 
     it('it should sign a transaction and verify', async () => {
