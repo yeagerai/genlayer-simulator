@@ -35,12 +35,13 @@ const showHome = computed(() => store.currentContractId === '')
         <nav class="border-b text-sm flex justify-between items-center">
             <div class="flex justify-start items-center">
                 <div id="tutorial-welcome"
-                    class="font-semibold flex justify-between px-2 py-2 text-neutral-500 hover:border-primary hover: dark:text-white"
+                    class="font-semibold flex justify-between px-2 py-2 text-neutral-500  hover:border-primary hover: dark:text-white"
                     :class="{ 'border-b-2 border-primary  dark:text-white text-primary': showHome }">
                     <button class="bg-transparent mr-2 flex" @click="setCurrentContractTab('')">
                         <HomeIcon class="mx-2 h-4 w-4" :class="{ 'dark:fill-white fill-primary': showHome }" />
                     </button>
                 </div>
+
                 <ContractTab v-for="contract in contracts" :key="contract.id" :contract="contract"
                     :isActive="contract.id === store.currentContractId"
                     @closeContract="handleCloseContract(contract.id)"

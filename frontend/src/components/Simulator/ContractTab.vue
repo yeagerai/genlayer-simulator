@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { XMarkIcon, DocumentCheckIcon } from '@heroicons/vue/24/solid'
+import { XMarkIcon, DocumentCheckIcon } from '@heroicons/vue/16/solid'
 import { type ContractFile } from '@/types';
 
 defineProps<{
@@ -11,14 +11,22 @@ const emit = defineEmits(['closeContract', 'selectContract'])
 </script>
 
 <template>
-    <div :id="`contract-item-${contract.id}`"
-        :class="['contract-item font-semibold flex justify-between text-neutral-500', isActive ? 'border-b-2 border-primary dark:text-white text-primary' : '']">
-        <button class="bg-transparent flex p-2" @click="emit('selectContract')" @click.middle="emit('closeContract')">
-            <DocumentCheckIcon class="h-4 w-4 mr-2" :class="{ 'dark:fill-white fill-primary': isActive }" />
+    <div :id="`contract-item-${contract.id}`" :class="['group contract-item font-semibold flex items-center relative border-r border-r-gray-200 dark:border-r-zinc-900',
+        !isActive && 'bg-gray-100 hover:bg-gray-50 text-neutral-500 dark:bg-zinc-800 hover:dark:bg-zinc-700',
+        isActive && 'text-primary bg-white hover:bg-white dark:text-white dark:bg-zinc-600 hover:dark:bg-zinc-600']">
+
+        <button class="flex items-center p-2 gap-1 pr-7" @click="emit('selectContract')"
+            @click.middle="emit('closeContract')">
+            <DocumentCheckIcon class="h-4 w-4" :class="{ 'dark:fill-white fill-primary': isActive }" />
             {{ contract.name }}
         </button>
-        <button class="bg-transparent" @click="emit('closeContract')">
-            <XMarkIcon class="ml-4 h-4 w-4" />
+
+        <button
+            :class="['absolute p-2 right-0 opacity-50 hover:opacity-100', !isActive && 'opacity-0 group-hover:opacity-100']"
+            @click="emit('closeContract')">
+            <XMarkIcon class="h-4 w-4" />
         </button>
+
+        <div v-if="isActive" class="absolute bottom-0 w-full h-[2px] bg-primary dark:bg-accent" />
     </div>
 </template>
