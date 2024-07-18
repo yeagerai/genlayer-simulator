@@ -71,7 +71,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
     if (openedFiles.value.length > 0) {
       currentContractId.value = openedFiles.value[openedFiles.value.length - 1]
     } else {
-      currentContractId.value = undefined
+      currentContractId.value = ''
     }
   }
 
