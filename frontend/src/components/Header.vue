@@ -34,7 +34,7 @@ const showTutorial = () => {
                 <ToolTip text="Switch Theme" :options="{ placement: 'bottom' }" />
             </button>
             <button class="mx-3" @click="showTutorial">
-                <PresentationChartLineIcon class="h-5 w-5" :class="uiStore.mode === 'light' ? 'fill-gray-200' : 'fill-gray-200'" />
+                <PresentationChartLineIcon class="h-5 w-5" :class="uiStore.mode === 'light' ? 'fill-gray-700' : 'fill-gray-200'" />
                 <ToolTip text="Show Tutorial" :options="{ placement: 'bottom' }" />
             </button>
         </div>
