@@ -14,7 +14,7 @@ const transactionsStore = useTransactionsStore()
 let deploymentSubscription: () => void
 const contractTransactions = computed(() => transactionsStore.transactions.filter((t) => t.localContractId === contractsStore.currentContractId))
 
-const handleGetContractState = async ({ method, params }: { method: string; params: any[] }) => {
+const handleCalllContractGetter = async ({ method, params }: { method: string; params: any[] }) => {
   try {
     await contractsStore.getContractState(contractsStore.deployedContract?.address || '', method, params)
   } catch (error) {
@@ -26,7 +26,7 @@ const handleGetContractState = async ({ method, params }: { method: string; para
   }
 }
 
-const handleCallContractMethod = async ({ method, params }: { method: string; params: any[] }) => {
+const handleCallContractWriter = async ({ method, params }: { method: string; params: any[] }) => {
   const result = await contractsStore.callContractMethod({
     userAccount: accountsStore.currentUserAddress || '',
     localContractId: contractsStore.deployedContract?.contractId || '',
@@ -172,18 +172,13 @@ onUnmounted(() => {
       </div>
 
       <div class="flex flex-col" id="tutorial-contract-state">
-        <div class="flex flex-col" v-show="contractsStore.deployedContract">
-          <ExecuteContractMethods :abi="contractsStore.currentDeployedContractAbi" @call-method="handleGetContractState"
-            :calling-method="contractsStore.callingContractState" title="Read Methods" mode="read" 
-            :contract-state="contractsStore.currentContractState"/>
-        </div>
-
-        <div class="flex flex-col" v-show="contractsStore.deployedContract">
-          <ExecuteContractMethods :abi="contractsStore.currentDeployedContractAbi"
-            @call-method="handleCallContractMethod" :calling-method="contractsStore.callingContractMethod"
-            title="Execute Transactions" mode="write" />
-          <div id="tutorial-creating-transactions" class="flex"></div>
-        </div>
+        <ExecuteContractMethods v-show="contractsStore.deployedContract"
+          :abi="contractsStore.currentDeployedContractAbi"
+          :calling-getter="contractsStore.callingContractState"
+          :calling-writer="contractsStore.callingContractState" 
+          :contract-state="contractsStore.currentContractState" 
+          @call-getter="handleCalllContractGetter"
+          @call-writer="handleCallContractWriter" />
         <div class="flex flex-col">
           <TransactionsList :transactions="contractTransactions" @clear-transactions="handleClearTransactions" />
         </div>
