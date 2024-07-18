@@ -24,7 +24,6 @@ const emit = defineEmits(['callWriter', 'callGetter'])
 const getters = ref<ContractMethod[]>([])
 const writers = ref<ContractMethod[]>([])
 
-
 watch(() => props.abi, (newValue) => {
   const methods = Object.entries(newValue?.methods || {})
   getters.value = methods

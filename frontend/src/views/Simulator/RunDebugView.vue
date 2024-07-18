@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import { useAccountsStore, useContractsStore, useTransactionsStore } from '@/stores'
-import { computed, onMounted, onUnmounted, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { notify } from '@kyvg/vue3-notification'
 import ExecuteContractMethods from '@/components/Simulator/ExecuteContractMethods.vue'
 import TransactionsList from '@/components/Simulator/TransactionsList.vue'
 import ConstructorParameters from '@/components/Simulator/ConstructorParameters.vue'
 import { debounce } from 'vue-debounce'
-
+import { ChevronDownIcon } from '@heroicons/vue/24/solid'
 
 const contractsStore = useContractsStore()
 const accountsStore = useAccountsStore()
 const transactionsStore = useTransactionsStore()
 let deploymentSubscription: () => void
 const contractTransactions = computed(() => transactionsStore.transactions.filter((t) => t.localContractId === contractsStore.currentContractId))
-
+const deployCollapsed = ref(false)
 const handleCalllContractGetter = async ({ method, params }: { method: string; params: any[] }) => {
   try {
     await contractsStore.getContractState(contractsStore.deployedContract?.address || '', method, params)
@@ -68,6 +68,10 @@ const handleDeployContract = async ({
 const handleClearTransactions = () => {
   transactionsStore.processingQueue = transactionsStore.processingQueue.filter((t) => t.localContractId !== contractsStore.currentContractId)
   transactionsStore.transactions = transactionsStore.transactions.filter((t) => t.localContractId !== contractsStore.currentContractId)
+}
+
+const toogleDeployColapsed = () => {
+  deployCollapsed.value = !deployCollapsed.value
 }
 
 const setCurentUserAddress = (event: Event) => {
@@ -138,53 +142,58 @@ onUnmounted(() => {
     </div>
     <div class="flex flex-col overflow-y-auto" v-if="!!contractsStore.currentContractId">
       <div class="flex flex-col">
-        <div class="flex flex-col px-2 py-2 w-full bg-slate-100 dark:bg-zinc-700">
-          <div class="text-sm">Intelligent Contract:</div>
-          <div class="text-xs text-neutral-800 dark:text-neutral-200">
+        <div class="flex justify-between items-center px-2 py-2 w-full bg-slate-100 dark:bg-zinc-700">
+          <div class="flex flex-wrap items-center">
+            <div class="text-sm mr-1">Intelligent Contract:</div>
+          <div class="text-xs flex-1 text-neutral-800 dark:text-neutral-200">
             {{ contractsStore.currentContract?.name }}
           </div>
+          </div>
+          <ChevronDownIcon @click="toogleDeployColapsed"
+            :class="`cursor-pointer h-4 w-4 dark:fill-white fill-primary transition duration-450 ease-in self-end${deployCollapsed ? ' rotate-0' : ' rotate-180'}`" />
         </div>
-        <ConstructorParameters :inputs="contractsStore.currentConstructorInputs"
-          :loading="contractsStore.loadingConstructorInputs" :error="contractsStore.currentErrorConstructorInputs"
-          @deploy-contract="handleDeployContract" :deploying="contractsStore.deployingContract" />
-      </div>
-      <div v-if="contractsStore.deployedContract?.address" class="flex flex-col w-full mt-4">
-        <div class="flex flex-col justify-start w-full px-4">
-          <p>Deployed Contract: </p>
-          <span class="text-xs dark:text-white text-primary">{{ contractsStore.deployedContract?.address }}</span>
+        <div :class="`flex flex-col w-full transition duration-1000 ease-in ${deployCollapsed ? 'max-h-0' : 'max-h-auto'}`">
+          <div class="flex w-full px-2 mt-4 flex-wrap">
+              <div class="text-sm mr-1">Current Account: </div>
+              <select name="dropdown-current-account" @change="setCurentUserAddress"
+                class="text-xs flex-1 dark:bg-zinc-700" :value="accountsStore.currentUserAddress">
+                <option :value="accountsStore.currentUserAddress">
+                  {{ accountsStore.currentUserAddress }}
+                </option>
+                <option v-for="privateKey in accountsStore.privateKeys" :key="privateKey" :value="privateKey">
+                  {{ accountsStore.accountFromPrivateKey(privateKey).address }}
+                </option>
+              </select>
+            </div>
+          <ConstructorParameters :inputs="contractsStore.currentConstructorInputs"
+            :loading="contractsStore.loadingConstructorInputs" :error="contractsStore.currentErrorConstructorInputs"
+            @deploy-contract="handleDeployContract" :deploying="contractsStore.deployingContract" />
         </div>
-      </div>
-      <div class="flex flex-col w-full">
-        <div class="flex flex-col px-2 mt-6 py-2 w-full bg-slate-100 dark:bg-zinc-700">
-          <h5 class="text-sm">Current Account</h5>
-        </div>
-        <div class="flex flex-col p-2 my-4 items-start w-full">
-          <select name="dropdown-current-account" @change="setCurentUserAddress" class="text-xs w-full dark:bg-zinc-700"
-            :value="accountsStore.currentUserAddress">
-            <option :value="accountsStore.currentUserAddress">
-              {{ accountsStore.currentUserAddress }}
-            </option>
-            <option v-for="privateKey in accountsStore.privateKeys" :key="privateKey" :value="privateKey">
-              {{ accountsStore.accountFromPrivateKey(privateKey).address }}
-            </option>
-          </select>
-        </div>
+        <div class="flex flex-col w-full mt-4">
+            <div class="flex justify-start items-center w-full px-2 flex-wrap">
+<template v-if="contractsStore.deployedContract?.address">
+  <div class="text-sm mr-1">Deployed Contract: </div>
+              <span class="text-xs dark:text-white text-primary flex-1">{{ contractsStore.deployedContract?.address
+                }}</span>
+</template>
+<template v-else>
+  <div class="text-sm mr-1">Not Deployed </div>
+</template>
+            </div>
+          </div>
       </div>
 
-      <div class="flex flex-col" id="tutorial-contract-state">
+      <div class="flex flex-col bg-white dark:bg-zinc-800" id="tutorial-contract-state">
         <ExecuteContractMethods v-show="contractsStore.deployedContract"
-          :abi="contractsStore.currentDeployedContractAbi"
-          :calling-getter="contractsStore.callingContractState"
-          :calling-writer="contractsStore.callingContractState" 
-          :contract-state="contractsStore.currentContractState" 
-          @call-getter="handleCalllContractGetter"
-          @call-writer="handleCallContractWriter" />
+          :abi="contractsStore.currentDeployedContractAbi" :calling-getter="contractsStore.callingContractState"
+          :calling-writer="contractsStore.callingContractState" :contract-state="contractsStore.currentContractState"
+          @call-getter="handleCalllContractGetter" @call-writer="handleCallContractWriter" />
         <div class="flex flex-col">
           <TransactionsList :transactions="contractTransactions" @clear-transactions="handleClearTransactions" />
         </div>
       </div>
     </div>
-    <div class="flex flex-col px-2 py-2 w-full bg-slate-100 dark:dark:bg-zinc-700" v-else>
+    <div class="flex flex-col px-2 py-2 w-full bg-slate-100 dark:bg-zinc-700" v-else>
       <div class="text-sm">
         Please select an intelligent contract first, you can go to
         <RouterLink :to="{ name: 'simulator.contracts' }" class="text-primary dark:text-white">
