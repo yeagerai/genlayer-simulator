@@ -14,13 +14,13 @@ import { LINKS } from '@/constants/links'
 
 <template>
   <nav
-    class="flex flex-col h-full items-center w-12 justify-between border-r border-r-slate-300 dark:border-r-white/60 dark:bg-zinc-800 dark:text-white text-primary"
+    class="flex flex-col h-full items-center w-12 justify-between border-r dark:border-r-zinc-700 dark:bg-zinc-800 dark:text-white text-primary"
   >
     <div class="flex flex-col items-center">
       <RouterLink
         :to="{ name: 'simulator.contracts' }"
         id="tutorial-how-to-change-example"
-        class="link-contracts p-3 border-r-4 border-transparent hover:border-r-primary hover:opacity-100"
+        class="link-contracts p-3 border-r-4 border-transparent hover:border-r-primary dark:hover:border-r-accent hover:opacity-100"
       >
         <DocumentIcon class="h-6 w-6 dark:fill-white fill-primary" />
         <ToolTip text="Contracts" :options="{ placement: 'right' }" />
@@ -28,14 +28,14 @@ import { LINKS } from '@/constants/links'
       <RouterLink
         :to="{ name: 'simulator.run-debug' }"
         id="tutorial-how-to-deploy"
-        class="p-3 border-r-4 border-transparent hover:border-r-primary hover:opacity-100"
+        class="p-3 border-r-4 border-transparent hover:border-r-primary dark:hover:border-r-accent hover:opacity-100"
       >
         <CommandLineIcon class="h-6 w-6 dark:fill-white fill-primary" />
         <ToolTip text="Run and Debug" :options="{ placement: 'right' }" />
       </RouterLink>
       <RouterLink
         :to="{ name: 'simulator.settings' }"
-        class="p-3 border-r-4 border-transparent hover:border-r-primary hover:opacity-100"
+        class="p-3 border-r-4 border-transparent hover:border-r-primary dark:hover:border-r-accent hover:opacity-100"
       >
         <AdjustmentsHorizontalIcon class="h-6 w-6 dark:fill-white fill-primary" />
         <ToolTip text="Settings" :options="{ placement: 'right' }" />
@@ -45,7 +45,7 @@ import { LINKS } from '@/constants/links'
       <a
         :href="LINKS.docs"
         target="_blank"
-        class="link-docs p-3 border-r-4 border-transparent hover:border-r-primary hover:opacity-100"
+        class="link-docs p-3 border-r-4 border-transparent hover:border-r-primary dark:hover:border-r-accent hover:opacity-100"
       >
         <DocumentTextIcon class="h-6 w-6 dark:fill-white fill-primary" />
         <ToolTip text="GenLayer Docs" :options="{ placement: 'right' }" />
@@ -53,7 +53,7 @@ import { LINKS } from '@/constants/links'
       <a
         :href="LINKS.discord"
         target="_blank"
-        class="p-3 border-r-4 border-transparent hover:border-r-primary hover:opacity-100"
+        class="p-3 border-r-4 border-transparent hover:border-r-primary dark:hover:border-r-accent hover:opacity-100"
       >
         <DiscordIcon class="h-6 w-6 dark:fill-white fill-primary" />
         <ToolTip text="Discord" :options="{ placement: 'right' }" />
@@ -61,14 +61,14 @@ import { LINKS } from '@/constants/links'
       <a
         :href="LINKS.feedbackForm"
         target="_blank"
-        class="p-3 border-r-4 border-transparent hover:border-r-primary hover:opacity-100"
+        class="p-3 border-r-4 border-transparent hover:border-r-primary dark:hover:border-r-accent hover:opacity-100"
       >
         <HandThumbUpIcon class="h-6 w-6 dark:fill-white fill-primary" />
         <ToolTip text="Feedback form" :options="{ placement: 'right' }" />
       </a>
       <RouterLink
         :to="{ name: 'profile' }"
-        class="p-3 border-r-4 border-transparent hover:border-r-primary hover:opacity-100"
+        class="p-3 border-r-4 border-transparent hover:border-r-primary dark:hover:border-r-accent hover:opacity-100"
       >
         <UserCircleIcon class="h-6 w-6 dark:fill-white fill-primary" />
         <ToolTip text="Profile" :options="{ placement: 'right' }" />

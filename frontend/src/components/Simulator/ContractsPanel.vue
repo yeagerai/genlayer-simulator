@@ -40,7 +40,7 @@ const handleHorizontalScroll = (event: Event) => {
 
 <template>
     <div class="flex flex-col w-full h-full">
-        <nav class="border-b text-sm flex justify-between items-stretch">
+        <nav class="border-b dark:border-zinc-700 text-sm flex justify-between items-stretch">
             <div ref="scrollContainer" class="flex justify-start items-stretch overflow-x-auto no-scrollbar"
                 @wheel.stop="handleHorizontalScroll">
 

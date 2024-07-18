@@ -38,7 +38,7 @@ const handleLogsResize = (event: any) => {
             <Pane class="flex flex-col w-full h-full" min-size="20" size="80" max-size="80">
               <ContractsPanel class="w-full h-full" />
             </Pane>
-            <Pane class="flex flex-col w-full" min-size="20" :size="20" max-size="80">
+            <Pane class="flex flex-col w-full " min-size="20" :size="20" max-size="80">
               <NodeLogs />
             </Pane>
           </Splitpanes>
@@ -54,23 +54,35 @@ const handleLogsResize = (event: any) => {
 }
 
 .splitpanes.default-theme .splitpanes__pane {
-  background-color: transparent !important;
+  background-color: transparent;
 }
 
 .splitpanes.default-theme .splitpanes__splitter {
-  background-color: transparent !important;
+  background-color: transparent;
+  border-color:#cbd5e1;
+}
 
+[data-mode="dark"] .splitpanes.default-theme .splitpanes__splitter {
+  border-color: #3f3f46 !important;
 }
 
 .splitpanes.default-theme .splitpanes__splitter:hover,
 .splitpanes.default-theme .splitpanes__splitter:active {
-  background-color: #cbd5e1 !important;
+  background-color: #cbd5e1;
 }
 
-.splitpanes--vertical>.splitpanes__splitter,
-.default-theme .splitpanes--vertical>.splitpanes__splitter {
-  border-left: none !important;
-  border-right: 1px solid #eee;
+[data-mode="dark"] .splitpanes.default-theme .splitpanes__splitter:hover,
+[data-mode="dark"] .splitpanes.default-theme .splitpanes__splitter:active {
+  background-color: #3f3f46;
+}
 
+.splitpanes--vertical .splitpanes__splitter {
+  min-width: 6px;
+  border-left: none !important;
+  border-right: 1px solid;
+}
+
+.splitpanes--horizontal .splitpanes__splitter {
+  min-height: 6px;
 }
 </style>

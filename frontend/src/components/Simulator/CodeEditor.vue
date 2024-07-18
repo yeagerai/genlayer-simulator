@@ -25,7 +25,7 @@ const editorHeight = ref(0)
 const resizeEditor = () => {
   nextTick(() => {
     const height = editorElement.value?.parentNode?.parentElement?.clientHeight || 600
-    editorHeight.value = height - 40
+    editorHeight.value = height
     editorWidth.value = editorElement.value?.parentNode?.parentElement?.clientWidth || 950
   })
 }
