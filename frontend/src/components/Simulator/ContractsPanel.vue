@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { HomeIcon, XMarkIcon, DocumentCheckIcon, PlayIcon } from '@heroicons/vue/24/solid'
+import { HomeIcon, PlayIcon } from '@heroicons/vue/24/solid'
+import ContractTab from '@/components/Simulator/ContractTab.vue'
 import CodeEditor from '@/components/Simulator/CodeEditor.vue'
 import { useContractsStore } from '@/stores';
 import { computed } from 'vue';
 import HomeTab from './HomeTab.vue'
 import { useRouter } from 'vue-router';
-
 
 const store = useContractsStore()
 const router = useRouter()
@@ -18,6 +18,7 @@ const setCurrentContractTab = (id?: string) => {
     console.log(' setCurrentContractTab', id)
     store.setCurrentContractId(id)
 }
+
 const handleCloseContract = (id?: string) => {
     store.closeFile(id || '')
 }
@@ -25,8 +26,10 @@ const handleCloseContract = (id?: string) => {
 const contracts = computed(() => {
     return store.contracts.filter(contract => store.openedFiles.includes(contract.id || ''))
 })
+
 const showHome = computed(() => store.currentContractId === '')
 </script>
+
 <template>
     <div class="flex flex-col w-full h-full">
         <nav class="border-b text-sm flex justify-between items-center">
@@ -38,18 +41,10 @@ const showHome = computed(() => store.currentContractId === '')
                         <HomeIcon class="mx-2 h-4 w-4" :class="{ 'dark:fill-white fill-primary': showHome }" />
                     </button>
                 </div>
-                <div v-for="(contract) in contracts" :key="contract.id" 
-                    :id="`contract-item-${contract.id}`"
-                    :class="['contract-item font-semibold flex justify-between px-2 py-2 text-neutral-500', contract.id === store.currentContractId ? 'border-b-2 border-primary dark:text-white text-primary' : '']">
-                    <button class="bg-transparent flex" @click="setCurrentContractTab(contract.id)" @click.middle="handleCloseContract(contract.id)">
-                        <DocumentCheckIcon class="h-4 w-4 mr-2"
-                            :class="{ 'dark:fill-white fill-primary': contract.id === store.currentContractId }" />
-                        {{ contract.name }}
-                    </button>
-                    <button class="bg-transparent" @click="handleCloseContract(contract.id)">
-                        <XMarkIcon class="ml-4 h-4 w-4" />
-                    </button>
-                </div>
+                <ContractTab v-for="contract in contracts" :key="contract.id" :contract="contract"
+                    :isActive="contract.id === store.currentContractId"
+                    @closeContract="handleCloseContract(contract.id)"
+                    @selectContract="setCurrentContractTab(contract.id)" />
             </div>
             <div class="flex p-2 mr-3">
                 <button class="flex ml-3" @click="handleRunDebug">
@@ -63,7 +58,7 @@ const showHome = computed(() => store.currentContractId === '')
         </div>
         <div v-for="contract in contracts" :key="contract.id" class="flex w-full h-full relative"
             v-show="contract.id === store.currentContractId">
-            <CodeEditor :contract="contract" @run-debug="handleRunDebug"/>
+            <CodeEditor :contract="contract" @run-debug="handleRunDebug" />
         </div>
     </div>
 </template>
