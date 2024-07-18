@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
-import Header from '@/components/HeaderComponent.vue'
+import Header from '@/components/Header.vue'
 import TutorialContainer from '@/components/Tutorial/TutorialContainer.vue'
 import { useUIStore } from '@/stores/ui'
 import { onBeforeMount } from 'vue'

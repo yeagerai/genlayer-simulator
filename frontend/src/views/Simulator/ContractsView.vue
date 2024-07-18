@@ -4,7 +4,7 @@ import { DocumentCheckIcon, ArrowUpTrayIcon, PlusIcon, TrashIcon, PencilIcon } f
 import { nextTick, ref, watchEffect } from "vue";
 import { v4 as uuidv4 } from 'uuid'
 import type { ContractFile } from "@/types";
-import Modal from '@/components/ModalComponent.vue'
+import Modal from '@/components/Modal.vue'
 
 const store = useContractsStore()
 const showFileOptionsId = ref('')

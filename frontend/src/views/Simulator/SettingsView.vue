@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { notify } from '@kyvg/vue3-notification'
-import Modal from '@/components/ModalComponent.vue'
+import Modal from '@/components/Modal.vue'
 import { TrashIcon } from '@heroicons/vue/24/solid'
 import { useNodeStore } from '@/stores'
 import LoadingIndicator from '@/components/LoadingIndicator.vue'

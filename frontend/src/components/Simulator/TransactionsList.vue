@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Modal from '@/components/ModalComponent.vue'
+import Modal from '@/components/Modal.vue'
 import { ref } from 'vue';
 import JsonViewer from '@/components/JsonViewer/json-viewer.vue'
 import { useUIStore } from '@/stores';
