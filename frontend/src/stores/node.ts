@@ -138,13 +138,13 @@ export const useNodeStore = defineStore('nodeStore', () => {
     if (stake <= 0 || !provider || !model || !config) {
       throw new Error('Please fill all the required fields')
     }
-    const contractConfig = JSON.parse(config || '{}')
+    const validatorConfig = JSON.parse(config || '{}')
     const result = await $jsonRpc.updateValidator({
       address: selectedValidator.value?.address || '',
       stake,
       provider,
       model,
-      config: contractConfig
+      config: validatorConfig
     })
     if (result?.status === 'success') {
       const index = validators.value.findIndex(
@@ -196,7 +196,8 @@ export const useNodeStore = defineStore('nodeStore', () => {
       throw new Error('Please fill the stake field')
     }
     const { stake, provider, model, config } = validatorToCreate.value
-    const result = await $jsonRpc.createValidator({ stake, provider, model, config })
+    const validatorConfig = JSON.parse(config || '{}')
+    const result = await $jsonRpc.createValidator({ stake, provider, model, config: validatorConfig })
     if (result?.status === 'success') {
       validators.value.push(result.data)
       closeNewValidatorModal()

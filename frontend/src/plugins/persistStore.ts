@@ -77,8 +77,8 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
       } else if (store.$id === 'accountsStore') {
         switch (name) {
           case 'generateNewAccount':
-            localStorage.setItem('accountsStore.accounts', store.accounts.join(','))
-            localStorage.setItem('accountsStore.currentUserAddress', store.currentUserAddress)
+            localStorage.setItem('accountsStore.privateKeys', store.privateKeys.join(','))
+            localStorage.setItem('accountsStore.currentPrivateKey', store.currentPrivateKey)
             break
           default:
             break
@@ -91,7 +91,7 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
           case 'removeTransaction':
             await db.transactions
               .where('txId')
-              .equals(args[0] as string)
+              .equals((args[0] as any).id)
               .delete()
             break
           case 'updateTransaction':

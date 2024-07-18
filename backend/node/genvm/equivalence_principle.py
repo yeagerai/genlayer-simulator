@@ -46,18 +46,18 @@ class EquivalencePrinciple:
         if self.principle == None:
             return
 
-        if self.contract_runner["mode"] == "validator" and self.comparative == True:
+        if self.contract_runner.mode == "validator" and self.comparative == True:
             llm_function = self.__get_llm_function()
             eq_prompt = f"""Given the equivalence principle '{self.principle}', 
             decide whether the following two outputs can be considered equivalent.
             
-            Leader's Output: {self.contract_runner["eq_outputs"]['leader'][str(self.contract_runner["eq_num"] - 1)]}
+            Leader's Output: {self.contract_runner.eq_outputs['leader'][str(self.contract_runner.eq_num - 1)]}
             
             Validator's Output: {self.result['validator_value']}
             
             Respond with: TRUE or FALSE"""
             validation_response = await llm_function(
-                self.contract_runner["node_config"], eq_prompt, None, None
+                self.contract_runner.node_config, eq_prompt, None, None
             )
             print("validation_response", validation_response)
             # if TRUE => nothing, FALSE => fuera todo y un state de disagree
@@ -70,25 +70,25 @@ class EquivalencePrinciple:
     async def call_llm(self, prompt: str):
         llm_function = self.__get_llm_function()
         final_response = await llm_function(
-            self.contract_runner["node_config"], prompt, None, None
+            self.contract_runner.node_config, prompt, None, None
         )
         return final_response
 
     def set(self, value):
-        if self.contract_runner["mode"] == "leader":
+        if self.contract_runner.mode == "leader":
             self.result["output"] = value
-            self.contract_runner["eq_outputs"]["leader"][
-                str(self.contract_runner["eq_num"])
+            self.contract_runner.eq_outputs["leader"][
+                str(self.contract_runner.eq_num)
             ] = value
         else:
             self.result["validator_value"] = value
-            self.result["output"] = self.contract_runner["eq_outputs"]["leader"][
-                str(self.contract_runner["eq_num"])
+            self.result["output"] = self.contract_runner.eq_outputs["leader"][
+                str(self.contract_runner.eq_num)
             ]
-        self.contract_runner["eq_num"] += 1
+        self.contract_runner.eq_num += 1
 
     def __get_llm_function(self):
-        function_name = "call_" + self.contract_runner["node_config"]["provider"]
+        function_name = "call_" + self.contract_runner.node_config["provider"]
         llm_function = getattr(llms, function_name)
         return llm_function
 

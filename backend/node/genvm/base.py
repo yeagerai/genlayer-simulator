@@ -13,6 +13,18 @@ from backend.node.genvm.equivalence_principle import EquivalencePrinciple
 from backend.node.genvm.code_enforcement import code_enforcement_check
 
 
+class ContractRunner:
+    def __init__(self, mode: str, node_config: dict):
+        self.mode = mode  # if the node is acting as "validator" or "leader"
+        self.node_config = node_config  # provider, model, config, stake
+        self.from_address = None  # the address of the transaction sender
+        self.gas_used = 0  # the amount of gas used by the contract
+        self.eq_num = 0  # keeps track of the eq principle number being executed
+        self.eq_outputs = {
+            "leader": {}
+        }  # the eq principle outputs for the leader and validators
+
+
 class GenVM:
     eq_principle = EquivalencePrinciple
 
@@ -25,14 +37,7 @@ class GenVM:
         self.snapshot = snapshot
         self.validator_mode = validator_mode
 
-        self.contract_runner = {
-            "mode": validator_mode,
-            "node_config": validator_info,
-            "from_address": None,
-            "gas_used": 0,
-            "eq_num": 0,
-            "eq_outputs": {"leader": {}},
-        }
+        self.contract_runner = ContractRunner(validator_mode, validator_info)
 
     @staticmethod
     def _get_contract_class_name(contract_code: str) -> str:
@@ -48,11 +53,11 @@ class GenVM:
             "class": class_name,
             "method": method_name,
             "args": args,
-            "gas_used": self.contract_runner["gas_used"],
-            "mode": self.contract_runner["mode"],
+            "gas_used": self.contract_runner.gas_used,
+            "mode": self.contract_runner.mode,
             "contract_state": encoded_object,
-            "node_config": self.contract_runner["node_config"],
-            "eq_outputs": self.contract_runner["eq_outputs"],
+            "node_config": self.contract_runner.node_config,
+            "eq_outputs": self.contract_runner.eq_outputs,
         }
 
         return receipt
@@ -65,7 +70,7 @@ class GenVM:
         constructor_args: dict,
     ):
         code_enforcement_check(code_to_deploy, class_name)
-        self.contract_runner["from_address"] = from_address
+        self.contract_runner.from_address = from_address
 
         local_namespace = {}
         globals()["contract_runner"] = self.contract_runner
@@ -93,7 +98,7 @@ class GenVM:
     async def run_contract(
         self, from_address: str, function_name: str, args: list, leader_receipt: dict
     ):
-        self.contract_runner["from_address"] = from_address
+        self.contract_runner.from_address = from_address
         contract_code = self.snapshot.contract_code
 
         local_namespace = {}
@@ -112,9 +117,9 @@ class GenVM:
         decoded_pickled_object = base64.b64decode(contract_encoded_state)
         current_contract = pickle.loads(decoded_pickled_object)
 
-        if self.contract_runner["mode"] == "validator":
+        if self.contract_runner.mode == "validator":
             leader_receipt_eq_result = leader_receipt["result"]["eq_outputs"]["leader"]
-            self.contract_runner["eq_outputs"]["leader"] = leader_receipt_eq_result
+            self.contract_runner.eq_outputs["leader"] = leader_receipt_eq_result
 
         function_to_run = getattr(current_contract, function_name, None)
         if asyncio.iscoroutinefunction(function_to_run):

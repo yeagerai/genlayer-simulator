@@ -340,6 +340,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
     callContractMethod,
     getContractState,
     deployContract,
-    getConstructorInputs
+    getConstructorInputs,
   }
 })
