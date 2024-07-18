@@ -10,9 +10,8 @@ const uiStore = useUIStore()
 onBeforeMount(() => {
   uiStore.initialize()
 })
-
-
 </script>
+
 <template>
   <TutorialContainer />
   <main :data-mode="uiStore.mode" class="h-screen w-full bg-white dark:bg-zinc-800 dark:text-white text-primary flex flex-col">
