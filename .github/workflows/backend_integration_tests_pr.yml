@@ -2,17 +2,16 @@ name: CI
 
 on:
   pull_request:
-    branches:
-      - staging
     types:
       - opened
+      - ready_for_review
   pull_request_review:
     types:
       - submitted
 
 jobs:
   test:
-    if: ${{ github.event.review.state == 'APPROVED' || github.event_name == 'pull_request' }}
+    if: ${{ github.event.review.state == 'APPROVED' || (github.event_name == 'pull_request' && github.base_ref) }}
     runs-on: ubuntu-latest
 
     env:
