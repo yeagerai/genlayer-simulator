@@ -21,7 +21,7 @@ from tests.common.response import (
 def test_football_prediction_market():
     # Validators Setup
     result = post_request_localhost(
-        payload("create_random_validators", 5, 8, 12, ["openai"])
+        payload("create_random_validators", 5, 8, 12, ["openai"], None, "gpt-3.5-turbo")
     ).json()
     assert has_success_status(result)
 
