@@ -9,9 +9,15 @@ from backend.errors.errors import ValidatorNotFound
 
 
 def to_dict(validator: models.Validators) -> dict:
-    out = vars(validator)
-    out.pop("_sa_instance_state")
-    return out
+    return {
+        "id": validator.id,
+        "address": validator.address,
+        "stake": validator.stake,
+        "provider": validator.provider,
+        "model": validator.model,
+        "config": validator.config,
+        "created_at": validator.created_at.isoformat(),
+    }
 
 
 class ValidatorsRegistry:
@@ -44,7 +50,7 @@ class ValidatorsRegistry:
 
         if not validator_data:
             raise ValidatorNotFound(validator_address)
-        return to_dict(validator_data)
+        return validator_data.to_dict()
 
     def count_validators(self):
         return self.db_client.count(self.db_validators_table)
