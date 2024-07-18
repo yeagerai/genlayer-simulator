@@ -3,12 +3,13 @@ import { HomeIcon, PlayIcon } from '@heroicons/vue/24/solid'
 import ContractTab from '@/components/Simulator/ContractTab.vue'
 import CodeEditor from '@/components/Simulator/CodeEditor.vue'
 import { useContractsStore } from '@/stores';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import HomeTab from './HomeTab.vue'
 import { useRouter } from 'vue-router';
 
 const store = useContractsStore()
 const router = useRouter()
+const scrollContainer = ref('')
 
 const handleRunDebug = () => {
     router.push({ name: 'simulator.run-debug' })
@@ -28,12 +29,20 @@ const contracts = computed(() => {
 })
 
 const showHome = computed(() => store.currentContractId === '')
+
+const handleHorizontalScroll = (event: Event) => {
+    if (!event.shiftKey) {
+        event.preventDefault();
+        scrollContainer.value.scrollLeft += event.deltaY;
+    }
+}
 </script>
 
 <template>
     <div class="flex flex-col w-full h-full">
         <nav class="border-b text-sm flex justify-between items-center">
-            <div class="flex justify-start items-center">
+            <div ref="scrollContainer" class="flex justify-start items-center overflow-x-auto no-scrollbar"
+                @wheel.stop="handleHorizontalScroll">
                 <div id="tutorial-welcome"
                     class="font-semibold flex justify-between px-2 py-2 text-neutral-500  hover:border-primary hover: dark:text-white"
                     :class="{ 'border-b-2 border-primary  dark:text-white text-primary': showHome }">
