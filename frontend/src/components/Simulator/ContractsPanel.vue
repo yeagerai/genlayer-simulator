@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { HomeIcon, PlayIcon } from '@heroicons/vue/24/solid'
+import { PlayIcon } from '@heroicons/vue/24/solid'
 import ContractTab from '@/components/Simulator/ContractTab.vue'
 import CodeEditor from '@/components/Simulator/CodeEditor.vue'
 import { useContractsStore } from '@/stores';
@@ -40,19 +40,15 @@ const handleHorizontalScroll = (event: Event) => {
 
 <template>
     <div class="flex flex-col w-full h-full">
-        <nav class="border-b text-sm flex justify-between items-center">
-            <div ref="scrollContainer" class="flex justify-start items-center overflow-x-auto no-scrollbar"
+        <nav class="border-b text-sm flex justify-between items-stretch">
+            <div ref="scrollContainer" class="flex justify-start items-stretch overflow-x-auto no-scrollbar"
                 @wheel.stop="handleHorizontalScroll">
-                <div id="tutorial-welcome"
-                    class="font-semibold flex justify-between px-2 py-2 text-neutral-500  hover:border-primary hover: dark:text-white"
-                    :class="{ 'border-b-2 border-primary  dark:text-white text-primary': showHome }">
-                    <button class="bg-transparent mr-2 flex" @click="setCurrentContractTab('')">
-                        <HomeIcon class="mx-2 h-4 w-4" :class="{ 'dark:fill-white fill-primary': showHome }" />
-                    </button>
-                </div>
+
+                <ContractTab id="tutorial-welcome" :isHomeTab="true" :isActive="showHome"
+                    @selectContract="setCurrentContractTab('')" />
 
                 <ContractTab v-for="contract in contracts" :key="contract.id" :contract="contract"
-                    :isActive="contract.id === store.currentContractId"
+                    :id="`contract-item-${contract.id}`" :isActive="contract.id === store.currentContractId"
                     @closeContract="handleCloseContract(contract.id)"
                     @selectContract="setCurrentContractTab(contract.id)" />
             </div>
