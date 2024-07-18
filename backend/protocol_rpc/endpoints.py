@@ -4,7 +4,7 @@ import random
 import json
 from functools import partial
 from flask_jsonrpc import JSONRPC
-from flask import Flask
+from configuration import GlobalConfiguration
 
 from backend.database_handler.db_client import DBClient
 from backend.protocol_rpc.message_handler.base import MessageHandler
@@ -262,6 +262,7 @@ def get_providers_and_models() -> dict:
 # and reuse the generate single random validator function
 def create_random_validators(
     validators_registry: ValidatorsRegistry,
+    config: GlobalConfiguration,
     count: int,
     min_stake: int,
     max_stake: int,
@@ -274,7 +275,7 @@ def create_random_validators(
     for _ in range(count):
         stake = random.uniform(min_stake, max_stake)
         validator_address = create_new_address()
-        details = random_validator_config(providers=providers)
+        details = random_validator_config(config.get_ollama_url, providers=providers)
         new_validator = validators_registry.create_validator(
             validator_address,
             stake,
@@ -289,10 +290,10 @@ def create_random_validators(
 
 
 def create_random_validator(
-    validators_registry: ValidatorsRegistry, stake: int
+    validators_registry: ValidatorsRegistry, config: GlobalConfiguration, stake: int
 ) -> dict:
     validator_address = create_new_address()
-    details = random_validator_config()
+    details = random_validator_config(config.get_ollama_url)
     response = validators_registry.create_validator(
         validator_address,
         stake,
@@ -312,13 +313,13 @@ def clear_db_tables(db_client: DBClient, tables: list) -> dict:
 
 
 def register_all_rpc_endpoints(
-    app: Flask,
     jsonrpc: JSONRPC,
     msg_handler: MessageHandler,
     genlayer_db_client: DBClient,
     accounts_manager: AccountsManager,
     transactions_processor: TransactionsProcessor,
     validators_registry: ValidatorsRegistry,
+    config: GlobalConfiguration,
 ):
     register_rpc_endpoint = partial(generate_rpc_endpoint, jsonrpc, msg_handler)
     register_rpc_endpoint_for_partial = partial(
@@ -338,8 +339,12 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint_for_partial(get_validator, validators_registry)
     register_rpc_endpoint_for_partial(delete_all_validators, validators_registry)
     register_rpc_endpoint_for_partial(get_all_validators, validators_registry)
-    register_rpc_endpoint_for_partial(create_random_validator, validators_registry)
-    register_rpc_endpoint_for_partial(create_random_validators, validators_registry)
+    register_rpc_endpoint_for_partial(
+        create_random_validator, validators_registry, config
+    )
+    register_rpc_endpoint_for_partial(
+        create_random_validators, validators_registry, config
+    )
     register_rpc_endpoint_for_partial(send_transaction, transactions_processor)
     register_rpc_endpoint_for_partial(
         deploy_intelligent_contract, transactions_processor

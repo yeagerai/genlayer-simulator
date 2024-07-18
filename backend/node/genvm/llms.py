@@ -93,7 +93,7 @@ async def call_heuristai(
         # raise Exception(chunk.json(), dir(chunk), chunk.choices[0].delta.content)
         try:
             output += chunk.choices[0].delta.content
-        except Exception as e:
+        except Exception:
             raise Exception(chunk.json(), dir(chunk))
     # return stream.choices[0].message.content
     return output
