@@ -23,7 +23,7 @@ const emit = defineEmits(['closeContract', 'selectContract'])
 
         <button
             :class="['absolute p-2 right-0', isActive && 'opacity-50 hover:opacity-100', !isActive && 'opacity-0 group-hover:opacity-100']"
-            @click="emit('closeContract')">
+            @click="emit('closeContract')" @click.middle="emit('closeContract')">
             <XMarkIcon class="h-4 w-4" />
         </button>
 
