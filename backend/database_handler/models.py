@@ -96,3 +96,9 @@ class Validators(Base):
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(
         DateTime(True), server_default=text("CURRENT_TIMESTAMP")
     )
+
+    def to_dict(self):
+        out = vars(self)
+        out.pop("_sa_instance_state")
+
+        return out

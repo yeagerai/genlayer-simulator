@@ -2,6 +2,7 @@
 
 import json
 from psycopg2.extras import Json
+from backend.database_handler import models
 from backend.database_handler.db_client import DBClient
 
 from backend.errors.errors import ValidatorNotFound
@@ -25,14 +26,19 @@ class ValidatorsRegistry:
 
     def _get_validator_or_fail(self, validator_address: str):
         """Private method to check if an account exists, and raise an error if not."""
-        condition = f"address = '{validator_address}'"
-        result = self.db_client.get(self.db_validators_table, condition)
 
-        validator_data = result[0] if result else None
+        from sqlalchemy.orm import Session
+
+        with Session(self.db_client.engine) as session:
+            validator_data = (
+                session.query(models.Validators)
+                .filter_by(address=validator_address)
+                .first()
+            )
 
         if not validator_data:
             raise ValidatorNotFound(validator_address)
-        return self._parse_validator_data(validator_data)
+        return validator_data.to_dict()
 
     def count_validators(self):
         return self.db_client.count(self.db_validators_table)
