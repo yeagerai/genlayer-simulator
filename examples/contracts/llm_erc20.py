@@ -6,7 +6,7 @@ from backend.node.genvm.equivalence_principle import EquivalencePrinciple
 class LlmErc20(IContract):
     def __init__(self, total_supply: int) -> None:
         self.balances = {}
-        self.balances[contract_runner["from_address"]] = total_supply
+        self.balances[contract_runner.from_address] = total_supply
 
     async def transfer(self, amount: int, to_address: str) -> None:
         prompt = f"""
@@ -14,7 +14,7 @@ You keep track of transactions between users and their balance in coins.
 The current balance for all users in JSON format is:
 {json.dumps(self.balances)}
 The transaction to compute is: {{
-sender: "{contract_runner["from_address"]}",
+sender: "{contract_runner.from_address}",
 recipient: "{to_address}",
 amount: {amount},
 }}
