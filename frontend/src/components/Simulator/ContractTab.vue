@@ -12,8 +12,8 @@ const emit = defineEmits(['closeContract', 'selectContract'])
 
 <template>
     <div :id="`contract-item-${contract.id}`"
-        :class="['contract-item font-semibold flex justify-between px-2 py-2 text-neutral-500', isActive ? 'border-b-2 border-primary dark:text-white text-primary' : '']">
-        <button class="bg-transparent flex" @click="emit('selectContract')" @click.middle="emit('closeContract')">
+        :class="['contract-item font-semibold flex justify-between text-neutral-500', isActive ? 'border-b-2 border-primary dark:text-white text-primary' : '']">
+        <button class="bg-transparent flex p-2" @click="emit('selectContract')" @click.middle="emit('closeContract')">
             <DocumentCheckIcon class="h-4 w-4 mr-2" :class="{ 'dark:fill-white fill-primary': isActive }" />
             {{ contract.name }}
         </button>
