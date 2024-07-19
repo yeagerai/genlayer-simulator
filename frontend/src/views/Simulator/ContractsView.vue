@@ -168,8 +168,7 @@ const closeDeleteFileModal = () => {
       </div>
     </div>
     <div class="flex flex-col mt-4 w-full">
-      <button @click="handleRemoveFile"
-        class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">Delete</button>
+      <Btn @click="handleRemoveFile">Delete</Btn>
     </div>
   </Modal>
 </template>
