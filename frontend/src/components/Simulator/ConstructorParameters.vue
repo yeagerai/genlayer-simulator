@@ -4,7 +4,6 @@ import { InputTypesMap } from '@/utils'
 import { notify } from '@kyvg/vue3-notification';
 import { useUIStore } from '@/stores';
 import { ExclamationTriangleIcon } from '@heroicons/vue/24/solid'
-import LoadingIndicator from '@/components/LoadingIndicator.vue'
 
 interface Props {
   inputs: { [k: string]: string }
@@ -137,7 +136,7 @@ onMounted(() => {
         <div class="flex justify-between align-middle">
           <div class="text-xs flex align-middle h-full">Constructor Parameters</div>
           <button class="bg-primary hover:opacity-80 text-white px-2 rounded texm-xs" @click="toggleMode">{{ mode ===
-    'json' ? 'Inputs' : 'JSON' }}
+            'json' ? 'Inputs' : 'JSON' }}
             <ToolTip :text="mode === 'json' ? 'See the inputs' : 'Write raw JSON'" :options="{ placement: 'top' }" />
           </button>
         </div>
@@ -156,12 +155,9 @@ onMounted(() => {
       </div>
     </div>
     <div class="flex flex-col p-2 w-full justify-center">
-      <ToolTip text="Deploy" :options="{ placement: 'top' }" />
-      <button @click="handleDeployContract"
-        class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
-        <LoadingIndicator v-if="props.deploying" :color="'white'" />
-        <template v-else>Deploy</template>
-      </button>
+      <Btn @click="handleDeployContract" :loading="deploying">
+        {{ deploying ? 'Deploying...' : 'Deploy' }}
+      </Btn>
     </div>
   </div>
 </template>

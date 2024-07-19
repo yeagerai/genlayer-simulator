@@ -10,7 +10,7 @@ const props = defineProps({
 </script>
 
 <template>
-    <button :id="id" class="flex items-center justify-center gap-2 bg-primary dark:bg-accent hover:opacity-80 text-white font-semibold px-4 py-2 rounded"
+    <button :id="id" class="flex items-center justify-center gap-2 bg-primary dark:bg-accent hover:bg-opacity-90 text-white font-semibold px-4 py-2 rounded"
         :disabled="disabled || loading" @click="emit('click')">
         <LoadingIndicator v-if="loading" color="white" />
         <slot />
