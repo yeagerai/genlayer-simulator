@@ -83,6 +83,6 @@ const handleLogsResize = (event: any) => {
 }
 
 .splitpanes--horizontal .splitpanes__splitter {
-  min-height: 6px;
+  z-index: 6!important; /* Avoid having the code editor minimap go over the splitter */
 }
 </style>
