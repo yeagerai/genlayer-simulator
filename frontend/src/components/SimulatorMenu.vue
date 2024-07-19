@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
 import {
   DocumentIcon,
   AdjustmentsHorizontalIcon,
@@ -10,71 +9,43 @@ import {
 } from '@heroicons/vue/24/solid'
 import DiscordIcon from '@/assets/icons/DiscordIcon.vue'
 import { LINKS } from '@/constants/links'
+import SimulatorMenuItem from './SimulatorMenuItem.vue'
 </script>
 
 <template>
   <nav
-    class="flex flex-col h-full items-center w-12 justify-between border-r dark:border-r-zinc-700 dark:bg-zinc-800 dark:text-white text-primary"
-  >
+    class="flex flex-col h-full items-center w-12 justify-between border-r dark:border-r-zinc-700 dark:bg-zinc-800 dark:text-white text-primary">
     <div class="flex flex-col items-center">
-      <RouterLink
-        :to="{ name: 'simulator.contracts' }"
-        id="tutorial-how-to-change-example"
-        class="link-contracts p-3 border-r-4 border-transparent hover:border-r-primary dark:hover:border-r-accent hover:opacity-100"
-      >
-        <DocumentIcon class="h-6 w-6 dark:fill-white fill-primary" />
-        <ToolTip text="Contracts" :options="{ placement: 'right' }" />
-      </RouterLink>
-      <RouterLink
-        :to="{ name: 'simulator.run-debug' }"
-        id="tutorial-how-to-deploy"
-        class="p-3 border-r-4 border-transparent hover:border-r-primary dark:hover:border-r-accent hover:opacity-100"
-      >
-        <CommandLineIcon class="h-6 w-6 dark:fill-white fill-primary" />
-        <ToolTip text="Run and Debug" :options="{ placement: 'right' }" />
-      </RouterLink>
-      <RouterLink
-        :to="{ name: 'simulator.settings' }"
-        class="p-3 border-r-4 border-transparent hover:border-r-primary dark:hover:border-r-accent hover:opacity-100"
-      >
-        <AdjustmentsHorizontalIcon class="h-6 w-6 dark:fill-white fill-primary" />
-        <ToolTip text="Settings" :options="{ placement: 'right' }" />
-      </RouterLink>
+      <SimulatorMenuItem id="tutorial-how-to-change-example" :to="{ name: 'simulator.contracts' }" tooltip="Contracts"
+        class="link-contracts">
+        <DocumentIcon />
+      </SimulatorMenuItem>
+
+      <SimulatorMenuItem id="tutorial-how-to-deploy" :to="{ name: 'simulator.run-debug' }" tooltip="Run and Debug">
+        <CommandLineIcon />
+      </SimulatorMenuItem>
+
+      <SimulatorMenuItem :to="{ name: 'simulator.settings' }" tooltip="Settings">
+        <AdjustmentsHorizontalIcon />
+      </SimulatorMenuItem>
     </div>
+
     <div class="flex flex-col items-center">
-      <a
-        :href="LINKS.docs"
-        target="_blank"
-        class="link-docs p-3 border-r-4 border-transparent hover:border-r-primary dark:hover:border-r-accent hover:opacity-100"
-      >
-        <DocumentTextIcon class="h-6 w-6 dark:fill-white fill-primary" />
-        <ToolTip text="GenLayer Docs" :options="{ placement: 'right' }" />
-      </a>
-      <a
-        :href="LINKS.discord"
-        target="_blank"
-        class="p-3 border-r-4 border-transparent hover:border-r-primary dark:hover:border-r-accent hover:opacity-100"
-      >
-        <DiscordIcon class="h-6 w-6 dark:fill-white fill-primary" />
-        <ToolTip text="Discord" :options="{ placement: 'right' }" />
-      </a>
-      <a
-        :href="LINKS.feedbackForm"
-        target="_blank"
-        class="p-3 border-r-4 border-transparent hover:border-r-primary dark:hover:border-r-accent hover:opacity-100"
-      >
-        <HandThumbUpIcon class="h-6 w-6 dark:fill-white fill-primary" />
-        <ToolTip text="Feedback form" :options="{ placement: 'right' }" />
-      </a>
-      <RouterLink
-        :to="{ name: 'profile' }"
-        class="p-3 border-r-4 border-transparent hover:border-r-primary dark:hover:border-r-accent hover:opacity-100"
-      >
-        <UserCircleIcon class="h-6 w-6 dark:fill-white fill-primary" />
-        <ToolTip text="Profile" :options="{ placement: 'right' }" />
-      </RouterLink>
+      <SimulatorMenuItem :href="LINKS.docs" tooltip="GenLayer Docs" class="link-docs">
+        <DocumentTextIcon />
+      </SimulatorMenuItem>
+
+      <SimulatorMenuItem :href="LINKS.discord" tooltip="Discord">
+        <DiscordIcon />
+      </SimulatorMenuItem>
+
+      <SimulatorMenuItem :href="LINKS.feedbackForm" tooltip="Feedback form">
+        <HandThumbUpIcon />
+      </SimulatorMenuItem>
+
+      <SimulatorMenuItem :to="{ name: 'profile' }" tooltip="Profile">
+        <UserCircleIcon />
+      </SimulatorMenuItem>
     </div>
   </nav>
 </template>
-
-<style scoped></style>
