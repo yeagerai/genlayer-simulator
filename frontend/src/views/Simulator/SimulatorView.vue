@@ -59,7 +59,8 @@ const handleLogsResize = (event: any) => {
 
 .splitpanes.default-theme .splitpanes__splitter {
   background-color: transparent;
-  border-color:#cbd5e1;
+  border-color: #cbd5e1;
+  transition: background-color 0.1s;
 }
 
 [data-mode="dark"] .splitpanes.default-theme .splitpanes__splitter {
@@ -83,6 +84,28 @@ const handleLogsResize = (event: any) => {
 }
 
 .splitpanes--horizontal .splitpanes__splitter {
-  z-index: 6!important; /* Avoid having the code editor minimap go over the splitter */
+  z-index: 6 !important;
+  /* Avoid having the code editor minimap go over the splitter */
+}
+
+.default-theme.splitpanes--horizontal>.splitpanes__splitter:before {
+  margin-top: -1px;
+}
+
+.default-theme.splitpanes--horizontal>.splitpanes__splitter:after {
+  display: none;
+}
+
+.default-theme.splitpanes--vertical>.splitpanes__splitter:before {
+  display: none;
+}
+
+.default-theme.splitpanes--vertical>.splitpanes__splitter:after {
+  margin-left: 0;
+}
+
+[data-mode="dark"] .splitpanes.default-theme .splitpanes__splitter:before,
+[data-mode="dark"] .splitpanes.default-theme .splitpanes__splitter:after {
+  background: #313137;
 }
 </style>
