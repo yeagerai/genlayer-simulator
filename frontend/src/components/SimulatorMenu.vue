@@ -10,6 +10,7 @@ import {
 import DiscordIcon from '@/assets/icons/DiscordIcon.vue'
 import { LINKS } from '@/constants/links'
 import SimulatorMenuItem from './SimulatorMenuItem.vue'
+import SimulatorMenuLink from './SimulatorMenuLink.vue'
 </script>
 
 <template>
@@ -31,17 +32,17 @@ import SimulatorMenuItem from './SimulatorMenuItem.vue'
     </div>
 
     <div class="flex flex-col items-center">
-      <SimulatorMenuItem :href="LINKS.docs" tooltip="GenLayer Docs" class="link-docs">
+      <SimulatorMenuLink :href="LINKS.docs" tooltip="GenLayer Docs" class="link-docs">
         <DocumentTextIcon />
-      </SimulatorMenuItem>
+      </SimulatorMenuLink>
 
-      <SimulatorMenuItem :href="LINKS.discord" tooltip="Discord">
+      <SimulatorMenuLink :href="LINKS.discord" tooltip="Discord">
         <DiscordIcon />
-      </SimulatorMenuItem>
+      </SimulatorMenuLink>
 
-      <SimulatorMenuItem :href="LINKS.feedbackForm" tooltip="Feedback form">
+      <SimulatorMenuLink :href="LINKS.feedbackForm" tooltip="Feedback form">
         <HandThumbUpIcon />
-      </SimulatorMenuItem>
+      </SimulatorMenuLink>
 
       <SimulatorMenuItem :to="{ name: 'profile' }" tooltip="Profile">
         <UserCircleIcon />
