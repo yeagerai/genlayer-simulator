@@ -91,9 +91,9 @@ const setCurentUserAddress = (privateKey: `0x${string}`) => {
             </div>
           </div>
           <div class="flex flex-col mt-4">
-            <button @click="handleCreateNewAccount"
-              class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">Generate New
-              Address</button>
+            <Btn @click="handleCreateNewAccount">
+              Generate New Address
+            </Btn>
           </div>
         </div>
       </div>

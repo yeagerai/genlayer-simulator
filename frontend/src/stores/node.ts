@@ -17,7 +17,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
   const createValidatorModalOpen = ref<boolean>(false)
   const deleteValidatorModalOpen = ref<boolean>(false)
   const resetStorageModalOpen = ref<boolean>(false)
-  const resetingStorage = ref<boolean>(false)
+  const resettingStorage = ref<boolean>(false)
 
   const validatorToUpdate = ref<UpdateValidatorModel>({
     model: '',
@@ -215,13 +215,13 @@ export const useNodeStore = defineStore('nodeStore', () => {
   }
 
   const resetStorage = async () => {
-    resetingStorage.value = true
+    resettingStorage.value = true
     try {
       await contractsStore.resetStorage()
-      resetingStorage.value = false
+      resettingStorage.value = false
     } catch (error) {
       console.error(error)
-      resetingStorage.value = false
+      resettingStorage.value = false
       throw error
     }
   }
@@ -244,7 +244,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
     updateValidatorModelValid,
     createValidatorModelValid,
     resetStorageModalOpen,
-    resetingStorage,
+    resettingStorage,
 
     contractsToDelete,
 
