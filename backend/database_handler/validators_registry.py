@@ -7,6 +7,8 @@ from backend.database_handler.db_client import DBClient
 
 from backend.errors.errors import ValidatorNotFound
 
+from sqlalchemy.orm import Session
+
 
 def to_dict(validator: models.Validators) -> dict:
     return {
@@ -38,8 +40,6 @@ class ValidatorsRegistry:
 
     def _get_validator_or_fail(self, validator_address: str):
         """Private method to check if an account exists, and raise an error if not."""
-
-        from sqlalchemy.orm import Session
 
         with Session(self.db_client.engine) as session:
             validator_data = (
