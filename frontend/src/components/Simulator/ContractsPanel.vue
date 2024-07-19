@@ -3,13 +3,12 @@ import { PlayIcon } from '@heroicons/vue/24/solid'
 import ContractTab from '@/components/Simulator/ContractTab.vue'
 import CodeEditor from '@/components/Simulator/CodeEditor.vue'
 import { useContractsStore } from '@/stores';
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import HomeTab from './HomeTab.vue'
 import { useRouter } from 'vue-router';
 
 const store = useContractsStore()
 const router = useRouter()
-const scrollContainer = ref('')
 
 const handleRunDebug = () => {
     router.push({ name: 'simulator.run-debug' })
@@ -30,10 +29,10 @@ const contracts = computed(() => {
 
 const showHome = computed(() => store.currentContractId === '')
 
-const handleHorizontalScroll = (event: Event) => {
-    if (!event.shiftKey) {
+const handleHorizontalScroll = (event: WheelEvent) => {
+    if (!event.shiftKey && event.currentTarget instanceof HTMLElement) {
         event.preventDefault();
-        scrollContainer.value.scrollLeft += event.deltaY;
+        event.currentTarget.scrollLeft += event.deltaY;
     }
 }
 </script>
@@ -41,7 +40,7 @@ const handleHorizontalScroll = (event: Event) => {
 <template>
     <div class="flex flex-col w-full h-full">
         <nav class="border-b dark:border-zinc-700 text-sm flex justify-between items-stretch">
-            <div ref="scrollContainer" class="flex justify-start items-stretch overflow-x-auto no-scrollbar"
+            <div class="flex justify-start items-stretch overflow-x-auto no-scrollbar"
                 @wheel.stop="handleHorizontalScroll">
 
                 <ContractTab id="tutorial-welcome" :isHomeTab="true" :isActive="showHome"
