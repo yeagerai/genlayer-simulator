@@ -1,7 +1,7 @@
 <script setup lang="ts">
 </script>
 <template>
-    <div class="flex px-6 py-2">
+    <div class="flex px-6 py-2 overflow-y-auto">
         <div class="flex">
             <div class="flex flex-col w-full md:w-3/5">
                 <div class="flex flex-col">
