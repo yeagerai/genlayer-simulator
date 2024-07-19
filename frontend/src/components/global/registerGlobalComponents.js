@@ -1,13 +1,7 @@
-export default function registerGlobalComponents(app) {
-  const components = import.meta.glob('@/components/global/*.vue')
+import Modal from '@/components/global/Modal.vue'
+import Btn from '@/components/global/Btn.vue'
 
-  for (const path in components) {
-    components[path]().then((module) => {
-      const componentName = path
-        .split('/')
-        .pop()
-        .replace(/\.\w+$/, '')
-      app.component(componentName, module.default)
-    })
-  }
+export default function registerGlobalComponents(app) {
+  app.component('Modal', Modal)
+  app.component('Btn', Btn)
 }

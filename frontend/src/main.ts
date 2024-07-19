@@ -13,8 +13,6 @@ import registerGlobalComponents from '@/components/global/registerGlobalComponen
 const app = createApp(App)
 const pinia = createPinia()
 
-registerGlobalComponents(app)
-
 pinia.use(persistStorePlugin)
 app.use(pinia)
 
@@ -30,5 +28,8 @@ app.use(VueSpinnersPlugin)
 app.use(TransactionsListenerPlugin, {
   interval: 5000
 })
+
+registerGlobalComponents(app)
+
 app.mount('#app')
 setupStores()
