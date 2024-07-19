@@ -15,15 +15,19 @@ def get_database_credentials(database: str) -> str:
     if database not in ["genlayer", "postgres"]:
         raise ValueError("Invalid database specified")
 
-    db_name = "genlayer_state" if database == "genlayer" else database
+    db_name = get_db_name(database)
     return f"dbname={db_name} user={environ.get('DBUSER')} password={environ.get('DBPASSWORD')} host={environ.get('DBHOST')}"
+
+
+def get_db_name(database: str) -> str:
+    return "genlayer_state" if database == "genlayer" else database
 
 
 class DBClient:
     def __init__(self, database: str) -> None:
         self.engine = db.create_engine(
-            f"postgresql+psycopg2://{environ.get('DBUSER')}:{environ.get('DBPASSWORD')}@{environ.get('DBHOST')}/genlayer_state"
-        )  # TODO: merge database name logic
+            f"postgresql+psycopg2://{environ.get('DBUSER')}:{environ.get('DBPASSWORD')}@{environ.get('DBHOST')}/{get_db_name(database)}"
+        )
 
         """Initialize the DBClient with connection parameters."""
         database_credentials = get_database_credentials(database)
