@@ -18,10 +18,10 @@ const showTutorial = () => {
 <template>
     <header
         class="flex justify-between items-center p-2 border-b border-b-slate-500 dark:border-b-zinc-500 dark:bg-zinc-800">
-        <a href="/">
+        <RouterLink to="/">
             <img v-if="uiStore.mode === 'light'" alt="GenLayer Logo" class="logo" src="@/assets/images/logo.png" width="125" height="125"/>
             <img v-else alt="GenLayer Logo" class="logo" src="@/assets/images/logo_white.png" width="125" height="125"/>
-        </a>
+        </RouterLink>
         <div class="flex items-center" id="tutorial-end">
             <RouterLink :to="{ name: 'profile' }" class="text-sm  text-primary dark:text-white">
                 {{ shortenAddress(accounts.currentUserAddress || '') }}
