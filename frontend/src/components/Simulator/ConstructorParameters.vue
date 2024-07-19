@@ -102,7 +102,6 @@ onMounted(() => {
 </script>
 
 <template>
-
   <div v-if="props.error">
     <div class="flex flex-col p-2 my-4">
       <div class="flex flex-col">
