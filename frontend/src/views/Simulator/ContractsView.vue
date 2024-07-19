@@ -7,7 +7,6 @@ import type { ContractFile } from "@/types";
 import Modal from '@/components/Modal.vue'
 
 const store = useContractsStore()
-const showFileOptionsId = ref('')
 const editingFileId = ref('')
 const newFileName = ref('.gpy')
 const showNewFileInput = ref(false)
@@ -89,10 +88,6 @@ const handleSaveFile = (e: Event) => {
   editingFileName.value = ""
 }
 
-const showFileOptions = (id?: string) => {
-  showFileOptionsId.value = id || ''
-}
-
 const openContract = (id?: string) => {
   store.openFile(id || '')
 }
@@ -126,8 +121,8 @@ const closeDeleteFileModal = () => {
       </label>
     </div>
     <div v-for="(contract) in store.contracts" :key="contract.id" class="flex flex-col w-full">
-      <div @mouseover="showFileOptions(contract.id)" @mouseout="showFileOptions()"
-        :class="['flex items-center text-xs dark:text-neutral-100 text-neutral-500 py-1 px-2 font-semibold hover:text-primary hover:underline', (contract.id === store.currentContractId ? 'text-primary underline' : '')]">
+      <div
+        :class="['group flex items-center text-xs dark:text-neutral-100 text-neutral-500 py-1 px-2 font-semibold hover:text-primary hover:underline', (contract.id === store.currentContractId ? 'text-primary underline' : '')]">
         <DocumentCheckIcon class="h-4 w-4 dark:fill-white fill-primary mr-1" />
 
         <div class="flex items-center justify-between w-full" v-if="editingFileId === contract.id">
@@ -138,7 +133,7 @@ const closeDeleteFileModal = () => {
           <div class="truncate ... cursor-pointer" @click="openContract(contract.id)">
             {{ contract.name }}
           </div>
-          <div class="flex" v-show="showFileOptionsId === contract.id">
+          <div class="hidden group-hover:flex">
             <button @click="handleEditFile({ id: contract.id, name: contract.name })">
               <ToolTip text="Edit Name" :options="{ placement: 'bottom' }" />
               <PencilIcon class="h-3 w-4 mr-1" />
