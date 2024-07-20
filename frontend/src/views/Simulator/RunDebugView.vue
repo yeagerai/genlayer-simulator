@@ -142,45 +142,47 @@ onUnmounted(() => {
     </div>
     <div class="flex flex-col overflow-y-auto" v-if="!!contractsStore.currentContractId">
       <div class="flex flex-col">
+        <div class="flex w-full px-2 my-4 flex-wrap">
+          <div class="text-sm mr-1">Current Account: </div>
+          <select name="dropdown-current-account" @change="setCurentUserAddress" class="text-xs flex-1 dark:bg-zinc-700"
+            :value="accountsStore.currentUserAddress">
+            <option :value="accountsStore.currentUserAddress">
+              {{ accountsStore.currentUserAddress }}
+            </option>
+            <option v-for="privateKey in accountsStore.privateKeys" :key="privateKey" :value="privateKey">
+              {{ accountsStore.accountFromPrivateKey(privateKey).address }}
+            </option>
+          </select>
+        </div>
         <div class="flex justify-between items-center px-2 py-2 w-full bg-slate-100 dark:bg-zinc-700">
           <div class="flex flex-wrap items-center">
             <div class="text-sm mr-1">Intelligent Contract:</div>
-          <div class="text-xs flex-1 text-neutral-800 dark:text-neutral-200">
-            {{ contractsStore.currentContract?.name }}
-          </div>
+            <div class="text-xs flex-1 text-neutral-800 dark:text-neutral-200">
+              {{ contractsStore.currentContract?.name }}
+            </div>
           </div>
           <ChevronDownIcon @click="toogleDeployColapsed"
             :class="`cursor-pointer h-4 w-4 dark:fill-white fill-primary transition duration-450 ease-in self-end${deployCollapsed ? ' rotate-0' : ' rotate-180'}`" />
         </div>
-        <div :class="`flex flex-col w-full transition duration-1000 ease-in ${deployCollapsed ? 'max-h-0' : 'max-h-auto'}`">
-          <div class="flex w-full px-2 mt-4 flex-wrap">
-              <div class="text-sm mr-1">Current Account: </div>
-              <select name="dropdown-current-account" @change="setCurentUserAddress"
-                class="text-xs flex-1 dark:bg-zinc-700" :value="accountsStore.currentUserAddress">
-                <option :value="accountsStore.currentUserAddress">
-                  {{ accountsStore.currentUserAddress }}
-                </option>
-                <option v-for="privateKey in accountsStore.privateKeys" :key="privateKey" :value="privateKey">
-                  {{ accountsStore.accountFromPrivateKey(privateKey).address }}
-                </option>
-              </select>
-            </div>
+       <div  :class="`flex flex-col w-full transition duration-1000 ease-in ${deployCollapsed ? 'max-h-0' : 'max-h-auto'}`">
+        <div class="flex flex-col">
           <ConstructorParameters :inputs="contractsStore.currentConstructorInputs"
             :loading="contractsStore.loadingConstructorInputs" :error="contractsStore.currentErrorConstructorInputs"
             @deploy-contract="handleDeployContract" :deploying="contractsStore.deployingContract" />
         </div>
         <div class="flex flex-col w-full mt-4">
-            <div class="flex justify-start items-center w-full px-2 flex-wrap">
-<template v-if="contractsStore.deployedContract?.address">
-  <div class="text-sm mr-1">Deployed Contract: </div>
+          <div class="flex justify-start items-center w-full px-2 flex-wrap">
+            <template v-if="contractsStore.deployedContract?.address">
+              <div class="text-sm mr-1">Deployed Contract: </div>
               <span class="text-xs dark:text-white text-primary flex-1">{{ contractsStore.deployedContract?.address
                 }}</span>
-</template>
-<template v-else>
-  <div class="text-sm mr-1">Not Deployed </div>
-</template>
-            </div>
+            </template>
+            <template v-else>
+              <div class="text-sm mr-1">Not Deployed </div>
+            </template>
           </div>
+        </div>
+       </div>
       </div>
 
       <div class="flex flex-col bg-white dark:bg-zinc-800" id="tutorial-contract-state">
