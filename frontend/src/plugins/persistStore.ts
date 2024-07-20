@@ -89,16 +89,21 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
             await db.transactions.add(args[0])
             break
           case 'removeTransaction':
-            await db.transactions
+            if((args[0] as any).id) {
+              await db.transactions
               .where('txId')
               .equals((args[0] as any).id)
               .delete()
+            }
             break
           case 'updateTransaction':
-            await db.transactions
+            if((args[0] as any).id) {
+              await db.transactions
               .where('txId')
               .equals((args[0] as any).id)
               .modify({ data: args[0], status: args[0].status })
+            }
+            
             break
           default:
             break

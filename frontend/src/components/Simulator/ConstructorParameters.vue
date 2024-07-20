@@ -108,7 +108,7 @@ onMounted(() => {
     <div class="flex flex-col p-2 my-4">
       <div class="flex flex-col">
         <div class="flex justify-between align-middle flex-col">
-          <div class="text-xs flex align-middle h-full">Constructor Parameters</div>
+          <div class="text-sm flex align-middle h-full">Constructor Parameters</div>
           <div class="flex p-5 items-center flex-col text-xs  text-red-500 dark:color-neutral-100">
             <ExclamationTriangleIcon class="h-6 w-6" /> Error Loading Constructor Parameters please refresh the page and
             try again.
@@ -121,7 +121,7 @@ onMounted(() => {
     <div class="flex flex-col p-2 my-4">
       <div class="flex flex-col">
         <div class="flex justify-between align-middle flex-col">
-          <div class="text-xs flex align-middle h-full">Constructor Parameters</div>
+          <div class="text-sm flex align-middle h-full">Constructor Parameters</div>
           <div class="flex p-5 items-center flex-col">
 
             <VueSpinnerOval size="30" :color="uiStore.mode === 'light' ? '#1a3851' : 'white'" width="50" />
@@ -135,7 +135,7 @@ onMounted(() => {
     <div class="flex flex-col p-2 my-4">
       <div class="flex flex-col">
         <div class="flex justify-between align-middle">
-          <div class="text-xs flex align-middle h-full">Constructor Parameters</div>
+          <div class="text-sm flex align-middle h-full">Constructor Parameters</div>
           <button class="bg-primary hover:opacity-80 text-white px-2 rounded texm-xs" @click="toogleMode">{{ mode ===
     'json' ? 'Inputs' : 'JSON' }}
             <ToolTip :text="mode === 'json' ? 'See the inputs' : 'Write raw JSON'" :options="{ placement: 'top' }" />
