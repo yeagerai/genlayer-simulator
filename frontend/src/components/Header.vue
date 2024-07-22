@@ -4,7 +4,7 @@ import { SunIcon, MoonIcon } from '@heroicons/vue/16/solid'
 import { useUIStore, useAccountsStore } from '@/stores'
 import { shortenAddress } from '@/utils'
 import { RouterLink } from 'vue-router'
-
+import Logo from '@/assets/images/logo.svg'
 
 const uiStore = useUIStore()
 const accounts = useAccountsStore()
@@ -20,10 +20,8 @@ const showTutorial = () => {
     <header
         class="flex justify-between items-center p-2 border-b border-b-slate-500 dark:border-b-zinc-500 dark:bg-zinc-800">
         <RouterLink to="/">
-            <img v-if="uiStore.mode === 'light'" alt="GenLayer Logo" class="logo" src="@/assets/images/logo.png"
-                width="125" height="125" />
-            <img v-else alt="GenLayer Logo" class="logo" src="@/assets/images/logo_white.png" width="125"
-                height="125" />
+            <Logo alt="GenLayer Logo" height="36"
+                :class="['block', uiStore.mode === 'light' ? 'text-primary' : 'text-white']" />
         </RouterLink>
         <div class="flex items-center gap-2 pr-2" id="tutorial-end">
             <RouterLink :to="{ name: 'profile' }"
