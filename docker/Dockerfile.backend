@@ -5,6 +5,8 @@ ARG path=/app
 WORKDIR $path
 
 ADD backend/protocol_rpc/requirements.txt backend/protocol_rpc/requirements.txt
+RUN echo 'deb http://deb.debian.org/debian testing main' >> /etc/apt/sources.list \
+    && apt-get update && apt-get install -y --no-install-recommends -o APT::Immediate-Configure=false gcc g++
 RUN pip install --no-cache-dir -r backend/protocol_rpc/requirements.txt
 
 ENV PYTHONPATH "${PYTHONPATH}:/${path}"

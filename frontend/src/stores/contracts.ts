@@ -1,10 +1,17 @@
 import type { IJsonRpcService } from '@/services'
 import type { ContractFile, DeployedContract, TransactionItem } from '@/types'
-import { db, getContractFileName, setupStores } from '@/utils'
+import {
+  db,
+  getContractFileName,
+  setupStores,
+  signTransaction,
+  serializeTransaction
+} from '@/utils'
 import { defineStore } from 'pinia'
 import { ref, inject, computed } from 'vue'
 import { useAccountsStore } from './accounts'
 import { useTransactionsStore } from './transactions'
+import { toHex, toRlp } from 'viem'
 const getInitialOPenedFiles = (): string[] => {
   const storage = localStorage.getItem('contractsStore.openedFiles')
   if (storage) return storage.split(',')
@@ -43,7 +50,10 @@ export const useContractsStore = defineStore('contractsStore', () => {
     deployedContracts.value = [...deployedContracts.value.filter((c) => c.contractId !== id)]
   }
 
-  function updateContractFile(id: string, { name, content, updatedAt }: { name?: string; content?: string, updatedAt?: string }) {
+  function updateContractFile(
+    id: string,
+    { name, content, updatedAt }: { name?: string; content?: string; updatedAt?: string }
+  ) {
     contracts.value = [
       ...contracts.value.map((c) => {
         if (c.id === id) {
@@ -217,36 +227,50 @@ export const useContractsStore = defineStore('contractsStore', () => {
           deployingContract.value = true
           try {
             const constructorParamsAsString = JSON.stringify(constructorParams)
-            const result = await $jsonRpc?.deployContract({
-              userAccount: accountsStore.currentUserAddress || '',
-              className: contractSchema.class,
-              code: currentContract.value.content,
-              constructorParams: constructorParamsAsString
-            })
-            deployingContract.value = false
-            if (result?.status === 'success') {
-              deployedContracts.value = deployedContracts.value.filter(
-                (c) => c.contractId !== currentContract.value?.id
-              )
-              const tx: TransactionItem = {
-                contractAddress: result?.data.contract_address,
-                localContractId: currentContract.value.id,
-                txId: result?.data.transaction_id,
-                type: 'deploy',
-                status: 'PENDING',
-                data: {}
+            if (accountsStore.currentPrivateKey) {
+              const data = toRlp([
+                toHex(contractSchema.class),
+                toHex(currentContract.value.content),
+                toHex(constructorParamsAsString)
+              ])
+
+              const signed = await signTransaction(accountsStore.currentPrivateKey, {
+                from: accountsStore.currentUserAddress,
+                data
+              })
+
+              const resp = await $jsonRpc?.call({
+                method: 'send_raw_transaction',
+                params: [accountsStore.currentUserAddress, signed]
+              })
+
+              deployingContract.value = false
+              if (resp?.result?.status === 'success') {
+                deployedContracts.value = deployedContracts.value.filter(
+                  (c) => c.contractId !== currentContract.value?.id
+                )
+                const tx: TransactionItem = {
+                  contractAddress: resp?.result?.data.contract_address,
+                  localContractId: currentContract.value.id,
+                  txId: resp?.result?.data.transaction_id,
+                  type: 'deploy',
+                  status: 'PENDING',
+                  data: {}
+                }
+
+                transactionsStore.addTransaction(tx)
+
+                return tx
+              } else {
+                throw new Error(
+                  typeof resp?.result?.message === 'string'
+                    ? resp?.result.message
+                    : 'Error Deploying the contract'
+                )
               }
-
-              transactionsStore.addTransaction(tx)
-
-              return tx
-            } else {
-              throw new Error(
-                typeof result?.message === 'string'
-                  ? result.message
-                  : 'Error Deploying the contract'
-              )
             }
+
+            deployingContract.value = false
           } catch (error) {
             console.error(error)
             throw new Error('Error Deploying the contract')
@@ -340,6 +364,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
     callContractMethod,
     getContractState,
     deployContract,
-    getConstructorInputs,
+    getConstructorInputs
   }
 })

@@ -3,6 +3,7 @@ import {
   createWalletClient,
   http,
   recoverTransactionAddress,
+  serializeTransaction as _serializeTransaction,
   type TransactionSerializedLegacy
 } from 'viem'
 import { mainnet } from 'viem/chains'
@@ -26,5 +27,14 @@ export async function getSignedTransactionAddress(
 ) {
   return await recoverTransactionAddress({
     serializedTransaction: signedTransaction
+  })
+}
+
+
+export async function serializeTransaction (data: any) {
+  return _serializeTransaction({
+    ...data,
+    gas: '0x', //TODO: we need to fix this later
+    type: 'legacy'
   })
 }

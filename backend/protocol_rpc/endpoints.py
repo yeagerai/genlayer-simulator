@@ -1,5 +1,4 @@
 # rpc/endpoints.py
-import asyncio
 import random
 import json
 from functools import partial
@@ -26,9 +25,12 @@ from backend.protocol_rpc.address_utils import (
     address_is_in_correct_format,
     create_new_address,
 )
-from backend.errors.errors import (
-    InvalidAddressError,
+from backend.protocol_rpc.transaction_utils import (
+    decode_signed_transaction_and_verify,
+    decode_method_call_data,
+    decode_deployment_data,
 )
+from backend.errors.errors import InvalidAddressError, InvalidTransactionError
 
 from backend.database_handler.transactions_processor import TransactionsProcessor
 from backend.node.base import Node
@@ -311,6 +313,61 @@ def clear_db_tables(db_client: DBClient, tables: list) -> dict:
     db_client.clear_tables(tables)
 
 
+def send_raw_transaction(
+    transactions_processor: TransactionsProcessor,
+    from_address: str,
+    signed_transaction: str,
+) -> dict:
+
+    decoded_transaction = decode_signed_transaction_and_verify(signed_transaction)
+
+    if decoded_transaction is None:
+        raise InvalidTransactionError(signed_transaction)
+
+    from_address = decoded_transaction["from"]
+    if not address_is_in_correct_format(from_address):
+        raise InvalidAddressError(from_address)
+
+    to_address = decoded_transaction["to"]
+    
+    transaction_data = {}
+    result = {}
+    if to_address and to_address != "0x":
+        # Contract Call
+        if not address_is_in_correct_format(to_address):
+            raise InvalidAddressError(to_address)
+        decoded_data = decode_method_call_data(decoded_transaction["data"])
+        transaction_data = {
+            "function_name": decoded_data["function_name"],
+            "function_args": decoded_data["function_args"],
+        }
+    else:
+        # Contract deployment
+        decoded_data = decode_deployment_data(decoded_transaction["data"])
+        to_address = create_new_address()
+
+        transaction_data = {
+            "contract_address": to_address,
+            "class_name": decoded_data["class_name"],
+            "contract_code": decoded_data["contract_code"],
+            "constructor_args": decoded_data["constructor_args"],
+        }
+        result["contract_address"] = to_address
+
+    transaction_id = transactions_processor.insert_transaction(
+        from_address, to_address, transaction_data, 0, 2
+    )
+
+    print("decoded_transaction", decoded_transaction, transaction_data)
+
+    transaction_id = transactions_processor.insert_transaction(
+        from_address, decoded_transaction["to"], [], 0, 2
+    )
+    result["transaction_id"] = transaction_id
+
+    return result
+
+
 def register_all_rpc_endpoints(
     app: Flask,
     jsonrpc: JSONRPC,
@@ -350,3 +407,4 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint_for_partial(get_contract_schema, accounts_manager)
     register_rpc_endpoint_for_partial(get_contract_state, accounts_manager)
     register_rpc_endpoint_for_partial(get_transaction_by_id, transactions_processor)
+    register_rpc_endpoint_for_partial(send_raw_transaction, transactions_processor)

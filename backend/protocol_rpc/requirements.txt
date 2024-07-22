@@ -15,3 +15,5 @@ aiohttp==3.9.3
 openai==1.16.1
 SQLAlchemy==2.0.31
 alembic==1.13.2
+eth-account==0.13.0
+
