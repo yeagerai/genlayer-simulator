@@ -3,7 +3,7 @@ import { XMarkIcon } from '@heroicons/vue/16/solid';
 </script>
 
 <template>
-    <notifications position="top right">
+    <notifications position="bottom right">
         <template #body="props">
             <div class="rounded p-2 text-sm mt-[10px] text-white relative border-l-4 " :class="[
                 !props.item.type && 'bg-slate-600 border-blue-400',
