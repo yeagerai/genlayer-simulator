@@ -8,15 +8,15 @@ import ProfileView from '@/views/ProfileView.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/', redirect: { name: 'simulator.contracts' } },
+    { path: '/', redirect: { name: 'contracts' } },
     {
       path: '/simulator',
       component: SimulatorView,
       children: [
-        { path: '', redirect: { name: 'simulator.contracts' } },
-        { path: 'contracts', name: 'simulator.contracts', component: ContractsView, props: true },
-        { path: 'run-debug', name: 'simulator.run-debug', component: RunDebugView, props: true },
-        { path: 'settings', name: 'simulator.settings', component: SettingsView, props: true }
+        { path: '', redirect: { name: 'contracts' } },
+        { path: 'contracts', name: 'contracts', component: ContractsView, props: true },
+        { path: 'run-debug', name: 'run-debug', component: RunDebugView, props: true },
+        { path: 'settings', name: 'settings', component: SettingsView, props: true }
       ]
     },
     { path: '/profile', name: 'profile', component: ProfileView }

@@ -11,7 +11,7 @@ const store = useContractsStore()
 const router = useRouter()
 
 const handleRunDebug = () => {
-    router.push({ name: 'simulator.run-debug' })
+    router.push({ name: 'run-debug' })
 }
 
 const setCurrentContractTab = (id?: string) => {
@@ -40,6 +40,7 @@ const handleHorizontalScroll = (event: WheelEvent) => {
 <template>
     <div class="flex flex-col w-full h-full">
         <nav class="border-b dark:border-zinc-700 text-sm flex justify-between items-stretch">
+
             <div class="flex justify-start items-stretch overflow-x-auto no-scrollbar"
                 @wheel.stop="handleHorizontalScroll">
 

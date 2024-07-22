@@ -17,22 +17,22 @@ import SimulatorMenuLink from './SimulatorMenuLink.vue'
   <nav
     class="flex flex-col h-full items-center w-12 justify-between border-r dark:border-r-zinc-700 dark:bg-zinc-800 dark:text-white text-primary">
     <div class="flex flex-col items-center">
-      <SimulatorMenuItem id="tutorial-how-to-change-example" :to="{ name: 'simulator.contracts' }" tooltip="Contracts"
-        class="link-contracts">
+      <SimulatorMenuItem id="tutorial-how-to-change-example" :to="{ name: 'contracts' }" tooltip="Contracts"
+        >
         <DocumentIcon />
       </SimulatorMenuItem>
 
-      <SimulatorMenuItem id="tutorial-how-to-deploy" :to="{ name: 'simulator.run-debug' }" tooltip="Run and Debug">
+      <SimulatorMenuItem id="tutorial-how-to-deploy" :to="{ name: 'run-debug' }" tooltip="Run and Debug">
         <CommandLineIcon />
       </SimulatorMenuItem>
 
-      <SimulatorMenuItem :to="{ name: 'simulator.settings' }" tooltip="Settings">
+      <SimulatorMenuItem :to="{ name: 'settings' }" tooltip="Settings">
         <AdjustmentsHorizontalIcon />
       </SimulatorMenuItem>
     </div>
 
     <div class="flex flex-col items-center">
-      <SimulatorMenuLink :href="LINKS.docs" tooltip="GenLayer Docs" class="link-docs">
+      <SimulatorMenuLink :href="LINKS.docs" tooltip="GenLayer Docs">
         <DocumentTextIcon />
       </SimulatorMenuLink>
 

@@ -167,7 +167,7 @@ onUnmounted(() => {
     <div class="flex flex-col px-2 py-2 w-full bg-slate-100 dark:dark:bg-zinc-700" v-else>
       <div class="text-sm">
         Please first select an intelligent contract in the 
-        <RouterLink :to="{ name: 'simulator.contracts' }" class="text-primary dark:text-white underline">
+        <RouterLink :to="{ name: 'contracts' }" class="text-primary dark:text-white underline">
           Files list.
         </RouterLink>
       </div>

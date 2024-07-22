@@ -30,7 +30,7 @@ const steps = ref([
     },
     content: `Write and edit your Intelligent Contracts here. This example contract is preloaded for you.`,
     onNextStep: async () => {
-      router.push({ name: 'simulator.run-debug', query: { tutorial: 1 } })
+      router.push({ name: 'run-debug', query: { tutorial: 1 } })
     }
   },
   {
@@ -85,7 +85,7 @@ const steps = ref([
     },
     content: 'See the results of your transaction interaction with the contract in this area.',
     onNextStep: async () => {
-      router.push({ name: 'simulator.contracts' })
+      router.push({ name: 'contracts' })
     }
   },
   {
@@ -95,7 +95,7 @@ const steps = ref([
     target:'#tutorial-how-to-change-example',
     content: "Switch between different example contracts to explore various features and functionalities.",
     onNextStep: async () => {
-      await router.push({ name: 'simulator.settings' })
+      await router.push({ name: 'settings' })
     }
   },
   {
@@ -162,7 +162,7 @@ function handleKeyup(e: KeyboardEvent) {
   }
 }
 async function start(startStep?: number) {
-  router.replace({ name: 'simulator.contracts' })
+  router.replace({ name: 'contracts' })
   contractsStore.setCurrentContractId('')
   // Register keyup listeners for this tour
   if (options.value.useKeyboardNavigation) {
