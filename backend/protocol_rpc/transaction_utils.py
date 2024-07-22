@@ -86,7 +86,6 @@ def decode_method_call_data(data: str) -> str:
     }
 
 def decode_deployment_data(data: str) -> str:
-    print("decode_deployment_data", data)
     data_bytes = HexBytes(data)
     data_decoded = rlp.decode(data_bytes, DeploymentContractTransactionPayload)
 
