@@ -13,7 +13,7 @@ const emit = defineEmits(['closeContract', 'selectContract'])
 </script>
 
 <template>
-    <div :class="['group contract-item font-semibold flex items-center relative border-r border-r-gray-200 dark:border-r-zinc-900',
+    <div :class="['group font-semibold flex items-center relative border-r border-r-gray-200 dark:border-r-zinc-900',
         !isActive && 'bg-gray-100 hover:bg-gray-50 text-neutral-500 dark:bg-zinc-800 hover:dark:bg-zinc-700',
         isActive && 'text-primary bg-white hover:bg-white dark:text-white dark:bg-zinc-600 hover:dark:bg-zinc-600']">
 

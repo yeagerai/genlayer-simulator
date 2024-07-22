@@ -46,7 +46,7 @@ const handleHorizontalScroll = (event: WheelEvent) => {
                 <ContractTab id="tutorial-welcome" :isHomeTab="true" :isActive="showHome"
                     @selectContract="setCurrentContractTab('')" />
 
-                <ContractTab v-for="contract in contracts" :key="contract.id" :contract="contract"
+                <ContractTab v-for="contract in contracts" :key="contract.id" :contract="contract" class="contract-item"
                     :id="`contract-item-${contract.id}`" :isActive="contract.id === store.currentContractId"
                     @closeContract="handleCloseContract(contract.id)"
                     @selectContract="setCurrentContractTab(contract.id)" />
