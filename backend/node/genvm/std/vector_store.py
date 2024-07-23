@@ -72,11 +72,12 @@ class VectorStore:
         # Get the top k similarities
         top_k_indices = similarities.argsort()[-k:][::-1]
         results = [
-            {
-                "similarity": similarities[i] * 100,
-                "vector": self.vector_data[all_ids[i]].tolist(),
-                "metadata": self.metadata[all_ids[i]],
-            }
+            (
+                float(similarities[i] * 100),
+                int(all_ids[i]),
+                self.metadata[all_ids[i]],
+                self.vector_data[all_ids[i]].tolist(),
+            )
             for i in top_k_indices
         ]
         return results
@@ -124,6 +125,8 @@ class VectorStore:
         Returns:
             tuple: The vector and its metadata.
         """
+
+        vector_id = int(vector_id)
         if vector_id in self.vector_data:
             return self.vector_data[vector_id], self.metadata[vector_id]
         else:
