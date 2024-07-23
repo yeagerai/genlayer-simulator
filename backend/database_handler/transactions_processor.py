@@ -69,9 +69,9 @@ class TransactionsProcessor:
     def get_transaction_by_id(self, transaction_id: int) -> dict:
         condition = f"id = {transaction_id}"
         transaction_data = self.db_client.get(self.db_transactions_table, condition)
-        if(len(transaction_data) == 0):
+        if len(transaction_data) == 0:
             return None
-        return self._parse_transaction_data(transaction_data)
+        return self._parse_transaction_data(transaction_data[0])
 
     def update_transaction_status(
         self, transaction_id: int, new_status: TransactionStatus
