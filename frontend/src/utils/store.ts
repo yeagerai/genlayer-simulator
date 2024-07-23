@@ -1,4 +1,8 @@
-import { useAccountsStore, useContractsStore, useTransactionsStore } from '@/stores'
+import {
+  useAccountsStore,
+  useContractsStore,
+  useTransactionsStore,
+} from '@/stores'
 import { db } from './db'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -8,7 +12,7 @@ export const examplesNames = [
   'llm_erc20.py',
   'storage.py',
   'user_storage.py',
-  'wizard_of_coin.py'
+  'wizard_of_coin.py',
 ]
 
 export const setupStores = async () => {
@@ -16,22 +20,24 @@ export const setupStores = async () => {
   const accountsStore = useAccountsStore()
   const transactionsStore = useTransactionsStore()
   const contractFiles = await db.contractFiles.toArray()
-  const filteredFiles = contractFiles.filter((c) => (c.example && !c.updatedAt ) || (!c.example && !c.updatedAt))
-  
+  const filteredFiles = contractFiles.filter(
+    (c) => (c.example && !c.updatedAt) || (!c.example && !c.updatedAt)
+  )
+
   if (filteredFiles.length === 0) {
     const contractsBlob = import.meta.glob('@/assets/examples/contracts/*.py', {
       query: '?raw',
-      import: 'default'
+      import: 'default',
     })
     for (const key of Object.keys(contractsBlob)) {
       const raw = await contractsBlob[key]()
       const name = key.split('/').pop() || 'ExampleContract.py'
-      if(!contractFiles.some((c) => c.name === name)) {
+      if (!contractFiles.some((c) => c.name === name)) {
         const contract = {
           id: uuidv4(),
           name,
           content: ((raw as string) || '').trim(),
-          example: true
+          example: true,
         }
         contractsStore.addContractFile(contract)
       }
@@ -42,11 +48,15 @@ export const setupStores = async () => {
 
   contractsStore.deployedContracts = await db.deployedContracts.toArray()
   transactionsStore.transactions = await db.transactions.toArray()
-  if ( accountsStore.privateKeys.length < 1) {
+  if (accountsStore.privateKeys.length < 1) {
     accountsStore.generateNewAccount()
   } else {
-    accountsStore.privateKeys = localStorage.getItem('accountsStore.privateKeys')
-      ? ((localStorage.getItem('accountsStore.privateKeys') || '').split(',') as `0x${string}`[])
+    accountsStore.privateKeys = localStorage.getItem(
+      'accountsStore.privateKeys'
+    )
+      ? ((localStorage.getItem('accountsStore.privateKeys') || '').split(
+          ','
+        ) as `0x${string}`[])
       : []
   }
 }

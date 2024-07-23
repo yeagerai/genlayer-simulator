@@ -1,13 +1,13 @@
 <script>
-import { h } from "vue"
+import { h } from 'vue'
 export default {
   name: 'JsonFunction',
   functional: true,
   props: {
     jsonValue: {
       type: Function,
-      required: true
-    }
+      required: true,
+    },
   },
   render() {
     return h('span', {
@@ -16,10 +16,10 @@ export default {
         'jv-function': true,
       },
       attrs: {
-        title: this.jsonValue.toString()
+        title: this.jsonValue.toString(),
       },
-      innerHTML: '&lt;function&gt;'
+      innerHTML: '&lt;function&gt;',
     })
-  }
+  },
 }
 </script>

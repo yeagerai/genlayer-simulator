@@ -4,13 +4,13 @@ export const DEFAULT_OPTIONS = {
     buttonSkip: 'Skip tutorial',
     buttonPrevious: 'Previous',
     buttonNext: 'Next',
-    buttonStop: 'Finish'
+    buttonStop: 'Finish',
   },
   enabledButtons: {
     buttonSkip: true,
     buttonPrevious: true,
     buttonNext: true,
-    buttonStop: true
+    buttonStop: true,
   },
   startTimeout: 1000,
   stopOnTargetNotFound: false,
@@ -18,18 +18,18 @@ export const DEFAULT_OPTIONS = {
   enabledNavigationKeys: {
     escape: false,
     arrowRight: false,
-    arrowLeft: false
+    arrowLeft: false,
   },
-  debug: false
+  debug: false,
 }
 
 export const HIGHLIGHT = {
   classes: {
     active: 'v-tour--active',
     targetHighlighted: 'v-tour__target--highlighted',
-    targetRelative: 'v-tour__target--relative'
+    targetRelative: 'v-tour__target--relative',
   },
-  transition: 'box-shadow 0s ease-in-out 0s'
+  transition: 'box-shadow 0s ease-in-out 0s',
 }
 
 export const DEFAULT_STEP_OPTIONS = {
@@ -41,27 +41,27 @@ export const DEFAULT_STEP_OPTIONS = {
       name: 'arrow',
       options: {
         element: '.v-step__arrow',
-        padding: 10
-      }
+        padding: 10,
+      },
     },
     {
       name: 'preventOverflow',
       options: {
-        rootBoundary: 'window'
-      }
+        rootBoundary: 'window',
+      },
     },
     {
       name: 'offset',
       options: {
-        offset: [0, 10]
-      }
-    }
+        offset: [0, 10],
+      },
+    },
   ],
-  placement: 'bottom'
+  placement: 'bottom',
 }
 
 export const KEYS = {
   ARROW_RIGHT: 39,
   ARROW_LEFT: 37,
-  ESCAPE: 27
+  ESCAPE: 27,
 }

@@ -8,21 +8,30 @@
       </span>
     </div>
     <div class="jv-code" :class="{ open: expandCode, boxed }">
-      <json-box ref="jsonBox" :value="value" :sort="sort" :preview-mode="previewMode" />
+      <json-box
+        ref="jsonBox"
+        :value="value"
+        :sort="sort"
+        :preview-mode="previewMode"
+      />
     </div>
-    <div v-if="expandableCode && boxed" class="jv-more" @click="toggleExpandCode">
+    <div
+      v-if="expandableCode && boxed"
+      class="jv-more"
+      @click="toggleExpandCode"
+    >
       <span class="jv-toggle" :class="{ open: !!expandCode }" />
     </div>
   </div>
 </template>
 
 <script>
-import JsonBox from "./json-box.vue";
-import Clipboard from "clipboard";
+import JsonBox from './json-box.vue'
+import Clipboard from 'clipboard'
 import { debounce } from 'vue-debounce'
 
 export default {
-  name: "JsonViewer",
+  name: 'JsonViewer',
   components: {
     JsonBox,
   },
@@ -53,7 +62,7 @@ export default {
     },
     theme: {
       type: String,
-      default: "light",
+      default: 'light',
     },
     timeformat: {
       type: Function,
@@ -69,85 +78,85 @@ export default {
       expandDepth: this.expandDepth,
       timeformat: this.timeformat,
       keyClick: this.keyClick,
-    };
+    }
   },
   data() {
     return {
       copied: false,
       expandableCode: false,
       expandCode: false,
-    };
+    }
   },
-  emits: ["onKeyClick"],
+  emits: ['onKeyClick'],
   computed: {
     jvClass() {
-      return "jv-container " + "jv-"+this.theme + (this.boxed ? " boxed" : "");
+      return 'jv-container ' + 'jv-' + this.theme + (this.boxed ? ' boxed' : '')
     },
     copyText() {
-      const { copyText, copiedText, timeout, align } = this.copyable;
+      const { copyText, copiedText, timeout, align } = this.copyable
 
       return {
-        copyText: copyText || "copy",
-        copiedText: copiedText || "copied!",
+        copyText: copyText || 'copy',
+        copiedText: copiedText || 'copied!',
         timeout: timeout || 2000,
         align,
-      };
+      }
     },
   },
   watch: {
     value() {
-      this.onResized();
+      this.onResized()
     },
   },
   mounted: function () {
-    this.debounceResized = debounce(this.debResized.bind(this), 200);
+    this.debounceResized = debounce(this.debResized.bind(this), 200)
     if (this.boxed && this.$refs.jsonBox) {
-      this.onResized();
-      this.$refs.jsonBox.$el.addEventListener("resized", this.onResized, true);
+      this.onResized()
+      this.$refs.jsonBox.$el.addEventListener('resized', this.onResized, true)
     }
     if (this.copyable) {
       const clipBoard = new Clipboard(this.$refs.clip, {
         text: () => {
-          return JSON.stringify(this.value, null, 2);
+          return JSON.stringify(this.value, null, 2)
         },
-      });
-      clipBoard.on("success", (e) => {
-        this.onCopied(e);
-      });
+      })
+      clipBoard.on('success', (e) => {
+        this.onCopied(e)
+      })
     }
   },
   methods: {
     onResized() {
-      this.debounceResized();
+      this.debounceResized()
     },
     debResized() {
       this.$nextTick(() => {
-        if (!this.$refs.jsonBox) return;
+        if (!this.$refs.jsonBox) return
         if (this.$refs.jsonBox.$el.clientHeight >= 250) {
-          this.expandableCode = true;
+          this.expandableCode = true
         } else {
-          this.expandableCode = false;
+          this.expandableCode = false
         }
-      });
+      })
     },
     keyClick(keyName) {
-      this.$emit("onKeyClick", keyName);
+      this.$emit('onKeyClick', keyName)
     },
     onCopied(copyEvent) {
       if (this.copied) {
-        return;
+        return
       }
-      this.copied = true;
+      this.copied = true
       setTimeout(() => {
-        this.copied = false;
-      }, this.copyText.timeout);
-      this.$emit("copied", copyEvent);
+        this.copied = false
+      }, this.copyText.timeout)
+      this.$emit('copied', copyEvent)
     },
     toggleExpandCode() {
-      this.expandCode = !this.expandCode;
+      this.expandCode = !this.expandCode
     },
   },
-};
+}
 </script>
 
 <style>
@@ -341,7 +350,7 @@ export default {
   transform: rotate(-90deg);
 }
 .jv-container .jv-more:after {
-  content: "";
+  content: '';
   width: 100%;
   height: 100%;
   position: absolute;

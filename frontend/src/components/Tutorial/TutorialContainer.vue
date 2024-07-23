@@ -10,108 +10,117 @@ const contractsStore = useContractsStore()
 const tutorialStore = useTutorialStore()
 const uiStore = useUIStore()
 const router = useRouter()
-const contract = computed(() =>(contractsStore.contracts[0]))
-const contracts = computed(() =>(contractsStore.contracts))
+const contract = computed(() => contractsStore.contracts[0])
+const contracts = computed(() => contractsStore.contracts)
 const steps = ref([
   {
-    target:'#tutorial-welcome',
+    target: '#tutorial-welcome',
     header: {
-      title: 'Welcome to GenLayer Simulator!'
+      title: 'Welcome to GenLayer Simulator!',
     },
-    content: 'This tutorial will guide you through the basics. Click “Next” to begin!',
+    content:
+      'This tutorial will guide you through the basics. Click “Next” to begin!',
     onNextStep: async () => {
       contractsStore.openFile(contract.value?.id)
-    }
+    },
   },
   {
-    target:`.contract-item`,
+    target: `.contract-item`,
     header: {
-      title: 'Code Editor'
+      title: 'Code Editor',
     },
     content: `Write and edit your Intelligent Contracts here. This example contract is preloaded for you.`,
     onNextStep: async () => {
       router.push({ name: 'run-debug', query: { tutorial: 1 } })
-    }
+    },
   },
   {
-    target:'#tutorial-how-to-deploy',
+    target: '#tutorial-how-to-deploy',
     header: {
-      title: 'Deploying Contracts'
+      title: 'Deploying Contracts',
     },
-    content: "Click “Next” to automatically deploy your Intelligent Contract to the GenLayer network.",
+    content:
+      'Click “Next” to automatically deploy your Intelligent Contract to the GenLayer network.',
     onNextStep: async () => {
       await tutorialStore.deployContract()
       notify({
         title: 'OK',
         text: 'Contract deployed',
-        type: 'success'
+        type: 'success',
       })
-    }
+    },
   },
   {
-    target:'#tutorial-creating-transactions',
+    target: '#tutorial-creating-transactions',
     header: {
-      title: 'Creating Transactions'
+      title: 'Creating Transactions',
     },
-    content: "This is where you can interact with the deployed contract. You can select a method you want to use from the dropdown, and provide the parameters.  Click “Next” to automatically create a transaction and interact with your deployed contract.",
+    content:
+      'This is where you can interact with the deployed contract. You can select a method you want to use from the dropdown, and provide the parameters.  Click “Next” to automatically create a transaction and interact with your deployed contract.',
     onNextStep: async () => {
       tutorialStore.callContractMethod()
       notify({
         title: 'OK',
         text: 'Contract method called',
-        type: 'success'
+        type: 'success',
       })
-    }
+    },
   },
   {
-    target:'#tutorial-node-output',
+    target: '#tutorial-node-output',
     header: {
-      title: 'Node Output'
+      title: 'Node Output',
     },
-    content: "View real-time feedback as your transaction execution and debug any issues."
+    content:
+      'View real-time feedback as your transaction execution and debug any issues.',
   },
 
   {
-    target:'#tutorial-contract-state',
+    target: '#tutorial-contract-state',
     header: {
-      title: 'Contract State'
+      title: 'Contract State',
     },
-    content: "This panel shows the contract's data after executing transactions."
+    content:
+      "This panel shows the contract's data after executing transactions.",
   },
   {
-    target:'#tutorial-tx-response',
+    target: '#tutorial-tx-response',
     header: {
-      title: 'Transaction Response'
+      title: 'Transaction Response',
     },
-    content: 'See the results of your transaction interaction with the contract in this area.',
+    content:
+      'See the results of your transaction interaction with the contract in this area.',
     onNextStep: async () => {
       router.push({ name: 'contracts' })
-    }
+    },
   },
   {
     header: {
-      title: 'Switching Examples'
+      title: 'Switching Examples',
     },
-    target:'#tutorial-how-to-change-example',
-    content: "Switch between different example contracts to explore various features and functionalities.",
+    target: '#tutorial-how-to-change-example',
+    content:
+      'Switch between different example contracts to explore various features and functionalities.',
     onNextStep: async () => {
       await router.push({ name: 'settings' })
-    }
+    },
   },
   {
     header: {
-      title: 'Validators'
+      title: 'Validators',
     },
-    target:'#tutorial-validators',
-    content: "Configure the number of validators and set up their parameters here."
+    target: '#tutorial-validators',
+    content:
+      'Configure the number of validators and set up their parameters here.',
   },
   {
     header: {
-      title: 'Congratulations!'
+      title: 'Congratulations!',
     },
-    target:'#tutorial-end',
-    content: "You've completed the GenLayer Simulator tutorial. Feel free to revisit any step or start experimenting with your own contracts. Happy coding!"
-  }
+    target: '#tutorial-end',
+    content:
+      "You've completed the GenLayer Simulator tutorial. Feel free to revisit any step or start experimenting with your own contracts. Happy coding!",
+  },
 ])
 
 const currentStep = ref(-1)
@@ -139,7 +148,10 @@ function finish() {
 }
 
 function isKeyEnabled(key: 'escape' | 'arrowRight' | 'arrowLeft'): boolean {
-  if (options.value.enabledNavigationKeys && options.value.enabledNavigationKeys[key]) {
+  if (
+    options.value.enabledNavigationKeys &&
+    options.value.enabledNavigationKeys[key]
+  ) {
     return options.value.enabledNavigationKeys[key]
   }
   return false
@@ -206,7 +218,7 @@ async function previousStep() {
           currentStep.value = futureStep
           setTimeout(() => {
             resolve(0)
-          }, 300);
+          }, 300)
         })
       } else {
         currentStep.value = futureStep
@@ -240,7 +252,7 @@ async function nextStep() {
           currentStep.value = futureStep
           setTimeout(() => {
             resolve(0)
-          }, 300);
+          }, 300)
         })
       } else {
         currentStep.value = futureStep
@@ -282,19 +294,43 @@ watch(showTutorial, () => {
     stop()
   }
 })
-
 </script>
 <template>
   <div class="v-tour bg-slate-300 dark:bg-zinc-700">
-    <slot :current-step="currentStep" :steps="steps" :previous-step="previousStep" :next-step="nextStep" :stop="stop"
-      :skip="skip" :finish="finish" :is-first="isFirst" :is-last="isLast" :labels="options.labels"
-      :enabled-buttons="options.enabledButtons" :highlight="options.highlight" :debug="options.debug">
+    <slot
+      :current-step="currentStep"
+      :steps="steps"
+      :previous-step="previousStep"
+      :next-step="nextStep"
+      :stop="stop"
+      :skip="skip"
+      :finish="finish"
+      :is-first="isFirst"
+      :is-last="isLast"
+      :labels="options.labels"
+      :enabled-buttons="options.enabledButtons"
+      :highlight="options.highlight"
+      :debug="options.debug"
+    >
       <!--Default slot {{ currentStep }}-->
-      <TutorialStep v-if="steps[currentStep]" :step="steps[currentStep]" :key="currentStep"
-        :previous-step="previousStep" :next-step="nextStep" :stop="stop" :skip="skip" :finish="finish"
-        :is-first="isFirst" :is-last="isLast" :labels="options.labels" :enabled-buttons="options.enabledButtons"
-        :highlight="options.highlight" :stop-on-fail="options.stopOnTargetNotFound" :debug="options.debug"
-        @targetNotFound="$emit('targetNotFound', $event)">
+      <TutorialStep
+        v-if="steps[currentStep]"
+        :step="steps[currentStep]"
+        :key="currentStep"
+        :previous-step="previousStep"
+        :next-step="nextStep"
+        :stop="stop"
+        :skip="skip"
+        :finish="finish"
+        :is-first="isFirst"
+        :is-last="isLast"
+        :labels="options.labels"
+        :enabled-buttons="options.enabledButtons"
+        :highlight="options.highlight"
+        :stop-on-fail="options.stopOnTargetNotFound"
+        :debug="options.debug"
+        @targetNotFound="$emit('targetNotFound', $event)"
+      >
         <!--<div v-if="index === 2" slot="actions">
             <a @click="nextStep">Next step</a>
           </div>-->

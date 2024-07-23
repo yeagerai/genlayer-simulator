@@ -16,7 +16,6 @@ export interface CallContractFunctionRequest {
   params: any[]
 }
 
-
 export interface DeployContractRequest {
   userAccount: string
   className: string

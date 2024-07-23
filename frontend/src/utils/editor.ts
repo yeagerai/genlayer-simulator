@@ -135,13 +135,13 @@ export const pythonSyntaxDefinition: monaco.languages.IMonarchLanguage = {
     '__mro__',
     '__subclasses__',
     '__init__',
-    '__import__'
+    '__import__',
   ],
 
   brackets: [
     { open: '{', close: '}', token: 'delimiter.curly' },
     { open: '[', close: ']', token: 'delimiter.bracket' },
-    { open: '(', close: ')', token: 'delimiter.parenthesis' }
+    { open: '(', close: ')', token: 'delimiter.parenthesis' },
   ],
 
   tokenizer: {
@@ -159,10 +159,10 @@ export const pythonSyntaxDefinition: monaco.languages.IMonarchLanguage = {
         {
           cases: {
             '@keywords': 'keyword',
-            '@default': 'identifier'
-          }
-        }
-      ]
+            '@default': 'identifier',
+          },
+        },
+      ],
     ],
 
     // Deal with white space, including single and multi-line comments
@@ -171,23 +171,23 @@ export const pythonSyntaxDefinition: monaco.languages.IMonarchLanguage = {
       [/(^#.*$)/, 'comment'],
       [/('''.*''')|(""".*""")/, 'string'],
       [/'''.*$/, 'string', '@endDocString'],
-      [/""".*$/, 'string', '@endDblDocString']
+      [/""".*$/, 'string', '@endDblDocString'],
     ],
     endDocString: [
       [/\\'/, 'string'],
       [/.*'''/, 'string', '@popall'],
-      [/.*$/, 'string']
+      [/.*$/, 'string'],
     ],
     endDblDocString: [
       [/\\"/, 'string'],
       [/.*"""/, 'string', '@popall'],
-      [/.*$/, 'string']
+      [/.*$/, 'string'],
     ],
 
     // Recognize hex, negatives, decimals, imaginaries, longs, and scientific notation
     numbers: [
       [/-?0x([abcdef]|[ABCDEF]|\d)+[lL]?/, 'number.hex'],
-      [/-?(\d*\.)?\d+([eE][+\-]?\d+)?[jJ]?[lL]?/, 'number']
+      [/-?(\d*\.)?\d+([eE][+\-]?\d+)?[jJ]?[lL]?/, 'number'],
     ],
 
     // Recognize strings, including those broken across lines with \ (but not without)
@@ -195,21 +195,21 @@ export const pythonSyntaxDefinition: monaco.languages.IMonarchLanguage = {
       [/'$/, 'string.escape', '@popall'],
       [/'/, 'string.escape', '@stringBody'],
       [/"$/, 'string.escape', '@popall'],
-      [/"/, 'string.escape', '@dblStringBody']
+      [/"/, 'string.escape', '@dblStringBody'],
     ],
     stringBody: [
       [/[^\\']+$/, 'string', '@popall'],
       [/[^\\']+/, 'string'],
       [/\\./, 'string'],
       [/'/, 'string.escape', '@popall'],
-      [/\\$/, 'string']
+      [/\\$/, 'string'],
     ],
     dblStringBody: [
       [/[^\\"]+$/, 'string', '@popall'],
       [/[^\\"]+/, 'string'],
       [/\\./, 'string'],
       [/"/, 'string.escape', '@popall'],
-      [/\\$/, 'string']
-    ]
-  }
+      [/\\$/, 'string'],
+    ],
+  },
 }

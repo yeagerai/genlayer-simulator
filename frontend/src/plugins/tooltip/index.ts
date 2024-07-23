@@ -9,7 +9,7 @@ type PluginOptions = Partial<Props>
 export function createToolTipPlugin(options: PluginOptions) {
   return (app: App) => {
     options = defu(options, {
-      arrow: false
+      arrow: false,
     })
 
     app.config.globalProperties.$hideAllTooltips = hideAll

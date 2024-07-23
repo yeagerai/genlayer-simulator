@@ -1,10 +1,7 @@
-
-
 export * from './results'
 export * from './requests'
 export * from './responses'
 export * from './store'
-
 
 export interface ValidatorModel {
   address: string

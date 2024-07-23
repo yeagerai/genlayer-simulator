@@ -7,21 +7,23 @@ export interface IRpcClient {
 }
 
 export class RpcClient implements IRpcClient {
-
-  async call <T>({ method, params }: JsonRPCRequest): Promise<JsonRPCResponse<T>> {
+  async call<T>({
+    method,
+    params,
+  }: JsonRPCRequest): Promise<JsonRPCResponse<T>> {
     const requestId = uuidv4()
     const data = {
       jsonrpc: '2.0',
       method,
       params,
-      id: requestId
+      id: requestId,
     }
     const response = await fetch(JSON_RPC_SERVER_URL, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     })
     return response.json() as Promise<JsonRPCResponse<T>>
   }

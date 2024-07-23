@@ -1,13 +1,13 @@
 <script>
-import { h } from "vue"
+import { h } from 'vue'
 export default {
   name: 'JsonUndefined',
   functional: true,
   props: {
     jsonValue: {
       type: Object,
-      default: null
-    }
+      default: null,
+    },
   },
   render() {
     return h('span', {
@@ -15,8 +15,8 @@ export default {
         'jv-item': true,
         'jv-undefined': true,
       },
-      innerText: this.jsonValue === null ? 'null' : 'undefined'
+      innerText: this.jsonValue === null ? 'null' : 'undefined',
     })
-  }
+  },
 }
 </script>

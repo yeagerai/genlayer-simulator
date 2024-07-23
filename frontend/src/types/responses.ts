@@ -1,4 +1,4 @@
-import type { JsonRpcResult } from "./results"
+import type { JsonRpcResult } from './results'
 
 export interface JsonRPCResponse<T> {
   id: string

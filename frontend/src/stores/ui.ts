@@ -5,7 +5,7 @@ export const useUIStore = defineStore('ui', {
   state: (): UIState => {
     return {
       mode: (localStorage.getItem('genLayer.ui-mode') as UIMode) || 'light',
-      showTutorial: false
+      showTutorial: false,
     }
   },
   actions: {
@@ -23,6 +23,6 @@ export const useUIStore = defineStore('ui', {
     },
     runTutorial() {
       this.showTutorial = true
-    }
-  }
+    },
+  },
 })

@@ -16,7 +16,11 @@ const props = defineProps<{
   abi?: Abi
   contractState: any
   deployedContract?: DeployedContract
-  getContractState: (contractAddress: string, method: string, methodArguments: string[]) => void
+  getContractState: (
+    contractAddress: string,
+    method: string,
+    methodArguments: string[]
+  ) => void
   callingState: boolean
 }>()
 
@@ -37,27 +41,31 @@ const getInputPlaceholder = (methodInputs: { [k: string]: string }) => {
 </script>
 <template>
   <div
-    class="flex flex-col px-2 mt-6 py-2 w-full bg-slate-100 dark:bg-zinc-700"
+    class="mt-6 flex w-full flex-col bg-slate-100 px-2 py-2 dark:bg-zinc-700"
     id="tutorial-contract-state"
   >
     <h5 class="text-sm">Current Intelligent Contract State</h5>
   </div>
-  <div class="flex flex-col p-2 overflow-y-auto">
-    <div class="flex justify-start w-full px-1">
-      <span class="text-xs dark:text-white text-primary">{{ deployedContract?.address }}</span>
+  <div class="flex flex-col overflow-y-auto p-2">
+    <div class="flex w-full justify-start px-1">
+      <span class="text-xs text-primary dark:text-white">{{
+        deployedContract?.address
+      }}</span>
     </div>
-    <div v-if="deployedContract" class="flex flex-col w-full px-1 mt-2">
+    <div v-if="deployedContract" class="mt-2 flex w-full flex-col px-1">
       <div v-for="method in methodList" :key="method.name" class="flex">
-        <div class="flex justify-between flex-1">
+        <div class="flex flex-1 justify-between">
           <button
             @click="
               getContractState(
                 deployedContract.address,
                 method.name,
-                inputParams[method.name] ? inputParams[method.name].split(',') : []
+                inputParams[method.name]
+                  ? inputParams[method.name].split(',')
+                  : []
               )
             "
-            class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded text-ellipsis w-[40%] overflow-hidden whitespace-nowrap"
+            class="w-[40%] overflow-hidden text-ellipsis whitespace-nowrap rounded bg-primary px-4 py-2 font-semibold text-white hover:opacity-80"
           >
             <LoadingIndicator v-if="props.callingState" :color="'white'" />
             <template v-else>{{ method.name }}</template>
@@ -68,11 +76,16 @@ const getInputPlaceholder = (methodInputs: { [k: string]: string }) => {
             :name="`${method.name}`"
             type="text"
             :placeholder="getInputPlaceholder(method.inputs)"
-            class="bg-slate-100 dark:dark:bg-zinc-700 p-2 w-[60%]"
+            class="w-[60%] bg-slate-100 p-2 dark:dark:bg-zinc-700"
             label="Input"
           />
         </div>
-        <div class="flex mt-2 mb-6" :data-testid="`contract-state-item-${method.name}`">{{ contractState[method.name] }}</div>
+        <div
+          class="mb-6 mt-2 flex"
+          :data-testid="`contract-state-item-${method.name}`"
+        >
+          {{ contractState[method.name] }}
+        </div>
       </div>
     </div>
   </div>

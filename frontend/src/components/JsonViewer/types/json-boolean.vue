@@ -1,10 +1,10 @@
 <script>
-import { h } from "vue"
+import { h } from 'vue'
 export default {
   name: 'JsonBoolean',
   functional: true,
   props: {
-    jsonValue: Boolean
+    jsonValue: Boolean,
   },
   render() {
     return h('span', {
@@ -12,8 +12,8 @@ export default {
         'jv-item': true,
         'jv-boolean': true,
       },
-      innerText: this.jsonValue.toString()
+      innerText: this.jsonValue.toString(),
     })
-  }
+  },
 }
 </script>
