@@ -10,6 +10,7 @@ from backend.errors.errors import ValidatorNotFound
 from sqlalchemy.orm import Session
 
 
+# the to_dict function lives in this module and not in models.py because it's on this layer of abstraction where we convert database objects to our custom data structures
 def to_dict(validator: models.Validators) -> dict:
     return {
         "id": validator.id,
@@ -50,7 +51,7 @@ class ValidatorsRegistry:
 
         if not validator_data:
             raise ValidatorNotFound(validator_address)
-        return validator_data.to_dict()
+        return to_dict(validator_data)
 
     def count_validators(self):
         return self.db_client.count(self.db_validators_table)
