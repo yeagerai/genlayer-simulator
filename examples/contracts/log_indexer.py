@@ -3,7 +3,7 @@ from backend.node.genvm.std.vector_store import VectorStore
 
 
 # contract class
-class VectorStoreTester(IContract):
+class LogIndexer(IContract):
 
     # constructor
     def __init__(self):
