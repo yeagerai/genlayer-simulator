@@ -4,9 +4,9 @@ import random
 import json
 from functools import partial
 from flask_jsonrpc import JSONRPC
-from configuration import GlobalConfiguration
 
 from backend.database_handler.db_client import DBClient
+from backend.protocol_rpc.configuration import GlobalConfiguration
 from backend.protocol_rpc.message_handler.base import MessageHandler
 from backend.database_handler.accounts_manager import AccountsManager
 from backend.database_handler.validators_registry import ValidatorsRegistry
