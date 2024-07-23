@@ -3,8 +3,8 @@ import { XMarkIcon } from '@heroicons/vue/24/solid'
 const props = defineProps({
     open: { type: Boolean, default: false }
 })
-
 </script>
+
 <template>
     <div v-show="props.open"
         className="fixed top-0 left-0 flex justify-center items-center w-full h-full bg-black bg-opacity-50 z-50">

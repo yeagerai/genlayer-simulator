@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import Modal from '@/components/ModalComponent.vue'
 import { ref } from 'vue';
 import JsonViewer from '@/components/JsonViewer/json-viewer.vue'
 import { useUIStore } from '@/stores';
@@ -53,7 +52,7 @@ const handleCloseModal = () => {
       <div class="flex flex-col p-1" v-for="transaction in props.transactions" :key="transaction.txId">
         <div class="flex cursor-pointer dark:text-white text-primary hover:bg-slate-100 items-center justify-between"
           @click="handleSelectTransaction(transaction)">#{{
-      transaction.txId }} <div class="p-1 justify-between flex items-center">
+            transaction.txId }} <div class="p-1 justify-between flex items-center">
             <VueSpinnerOval size="15" v-if="transaction.status !== 'FINALIZED'"
               :color="uiStore.mode === 'light' ? '#1a3851' : 'white'" />
             <span class="text-xs ml-1 font-semibold">{{ transaction.status }}</span>
@@ -95,10 +94,9 @@ const handleCloseModal = () => {
       </div>
     </div>
     <div class="flex flex-col mt-4 w-full">
-      <button @click="handleClearTransactions"
-        class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
+      <Btn @click="handleClearTransactions">
         Clear Transactions List
-      </button>
+      </Btn>
     </div>
   </Modal>
 </template>
