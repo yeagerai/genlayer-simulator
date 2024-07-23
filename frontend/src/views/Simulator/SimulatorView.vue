@@ -38,7 +38,7 @@ const handleLogsResize = (event: any) => {
             <Pane class="flex flex-col w-full h-full" min-size="20" size="80" max-size="80">
               <ContractsPanel class="w-full h-full" />
             </Pane>
-            <Pane class="flex flex-col w-full " min-size="20" :size="20" max-size="80">
+            <Pane class="flex flex-col w-full" min-size="20" :size="20" max-size="80">
               <NodeLogs />
             </Pane>
           </Splitpanes>
