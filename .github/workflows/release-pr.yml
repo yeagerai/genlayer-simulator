@@ -7,6 +7,9 @@ on:
 jobs:
   release-notes-pr:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
 
     steps:
       - name: Extract branch
@@ -28,6 +31,7 @@ jobs:
         id: get_latest_release
         run: |
           latest_release=$(gh release view --json tagName --jq .tagName)
+          echo $latest_release
           echo "tag=$latest_release" >> "$GITHUB_OUTPUT"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
