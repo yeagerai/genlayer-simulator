@@ -8,7 +8,7 @@ jobs:
   release-notes-pr:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       pull-requests: write
 
     steps:
@@ -40,14 +40,15 @@ jobs:
         id: generate_release_notes
         # https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#generate-release-notes-content-for-a-release
         run: |
-          notes=$(curl -L \
+          response=$(curl -L \
             -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/yeagerai/genlayer-simulator/releases/generate-notes \
             -d '{"tag_name":"${{ steps.extract_tag.outputs.tag }}","target_commitish":"${{ steps.extract_branch.outputs.branch }}","previous_tag_name":"${{ steps.get_latest_release.outputs.tag}}"}' )
-          echo $notes
+          echo $response
+          notes=$(echo $response | jq -r .body)
           echo "notes=$notes" >> "$GITHUB_OUTPUT"
 
       - name: Create pull request
