@@ -25,5 +25,5 @@ class LogIndexer(IContract):
         self.vector_store.delete_vector(id)
 
     def get_vector_metadata(self, id: int) -> None:
-        data, metadata = self.vector_store.get_vector(id)
+        _, metadata = self.vector_store.get_vector(id)
         return metadata
