@@ -21,8 +21,8 @@ const props = withDefaults(
   <Modal @close="emit('close')">
     <template #title v-if="!$slots.title">Are you sure?</template>
     <template #title v-else><slot name="title" /></template>
-
-    <template #description><slot name="description" /></template>
+    <template #description v-if="$slots.description"><slot name="description" /></template>
+    <template #info v-if="$slots.info"><slot name="info" /></template>
 
     <slot />
 

@@ -356,7 +356,7 @@ const handleNumberInput = (event: Event) => {
         </Btn>
       </div>
     </Modal>
-    
+
     <ConfirmationModal
       :open="nodeStore.deleteValidatorModalOpen"
       @confirm="handleDeleteValidator"
@@ -397,26 +397,23 @@ const handleNumberInput = (event: Event) => {
     >
       <template #title>Reset Simulator Storage</template>
       <template #description
-        >Are you sure? All the examples will be restored,
-        and the following intelligent contracts will be removed.</template
+        >Are you sure? All the examples will be restored, and the following intelligent contracts
+        will be removed.</template
       >
 
-      <div class="mt-2 flex flex-col overflow-y-auto p-2">
-        <ul class="list-inside list-disc">
-          <li
-            class="text-md font-semibold"
-            v-for="contract in nodeStore.contractsToDelete"
-            :key="contract.id"
-          >
-            {{ contract.name }}
-          </li>
-        </ul>
-      </div>
-      <div class="mt-2 flex flex-col p-2">
-        <div class="text-md italic">
-          <span class="font-semibold">Note:</span> if you want to preserve any of these contracts,
-          make a copy of them in the files section.
+      <template #info>
+        <div
+          class="text-md font-semibold"
+          v-for="contract in nodeStore.contractsToDelete"
+          :key="contract.id"
+        >
+          {{ contract.name }}
         </div>
+      </template>
+
+      <div class="mt-1 text-xs italic">
+        <span class="font-semibold">Note:</span> if you want to preserve any of these contracts,
+        make a copy of them in the files section.
       </div>
     </ConfirmationModal>
   </div>
