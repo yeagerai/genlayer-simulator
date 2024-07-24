@@ -39,14 +39,13 @@ jobs:
           notes=$(curl -L \
             -X POST \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/yeagerai/genlayer-simulator/releases/generate-notes \
             -d '{"tag_name":"${{ steps.extract_tag.outputs.tag }}","target_commitish":"${{ steps.extract_branch.outputs.branch }}","previous_tag_name":"${{ steps.get_latest_release.outputs.tag}}"}' \
           )
+          echo $notes
           echo "notes=$notes" >> "$GITHUB_OUTPUT"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@v6
