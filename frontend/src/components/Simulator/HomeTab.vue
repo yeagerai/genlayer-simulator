@@ -73,8 +73,8 @@
                 <div class="flex mt-4 mb-2">
                     <h2 class="text-xl">Intelligent Contracts Templates </h2>
                 </div>
-                <div class="flex flex-col p-6 bg-slate-400 rounded-md">
-                    <div class="flex flex-col bg-slate-100 p-6 rounded-md m-2">
+                <div class="flex flex-col p-6 bg-slate-400 dark:bg-slate-600 rounded-md">
+                    <div class="flex flex-col bg-slate-100 dark:bg-slate-500 p-6 rounded-md m-2">
                         <div class="flex">
                             <h4 class="text-md font-semibold">Wizard of Coin</h4>
                         </div>
@@ -86,7 +86,7 @@
                             control in a fun and engaging way.
                         </div>
                     </div>
-                    <div class="flex flex-col bg-slate-100 p-6 rounded-md m-2">
+                    <div class="flex flex-col bg-slate-100 dark:bg-slate-500 p-6 rounded-md m-2">
                         <div class="flex">
                             <h4 class="text-md font-semibold">Simple Storage</h4>
                         </div>
