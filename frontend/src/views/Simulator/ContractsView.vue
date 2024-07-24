@@ -1,25 +1,14 @@
 <script setup lang="ts">
 import { useContractsStore } from '@/stores'
-import {
-  DocumentCheckIcon,
-  ArrowUpTrayIcon,
-  PlusIcon,
-  TrashIcon,
-  PencilIcon
-} from '@heroicons/vue/20/solid'
+import { ArrowUpTrayIcon, PlusIcon } from '@heroicons/vue/20/solid'
 import { nextTick, ref, watchEffect } from 'vue'
 import { v4 as uuidv4 } from 'uuid'
-import type { ContractFile } from '@/types'
-import ConfirmationModal from '@/components/global/ConfirmationModal.vue'
+import ContractItem from '@/components/Simulator/ContractItem.vue'
 
 const store = useContractsStore()
-const editingFileId = ref('')
 const newFileName = ref('.gpy')
 const showNewFileInput = ref(false)
-const editingFileName = ref('')
 const newFileNameInputRef = ref<HTMLInputElement | null>(null)
-const deleteFileModalIsOpen = ref(false)
-const fileToDelete = ref<ContractFile | null>(null)
 /**
  * Loads content from a file and adds it to the contract file store.
  *
@@ -69,43 +58,6 @@ const handleSaveNewFile = () => {
   showNewFileInput.value = false
   newFileName.value = '.gpy'
 }
-
-const handleRemoveFile = () => {
-  if (fileToDelete.value) {
-    store.removeContractFile(fileToDelete.value.id)
-    if (store.currentContractId === fileToDelete.value.id) {
-      store.setCurrentContractId('')
-    }
-  }
-
-  deleteFileModalIsOpen.value = false
-}
-
-const handleEditFile = ({ id, name }: { id: string; name: string }) => {
-  editingFileId.value = id
-  editingFileName.value = name
-}
-
-const handleSaveFile = (e: Event) => {
-  e.preventDefault()
-  store.updateContractFile(editingFileId.value, { name: editingFileName.value })
-  editingFileId.value = ''
-  editingFileName.value = ''
-}
-
-const openContract = (id?: string) => {
-  store.openFile(id || '')
-}
-
-const openDeleteFileModal = (contract: ContractFile) => {
-  fileToDelete.value = contract
-  deleteFileModalIsOpen.value = true
-}
-
-const closeDeleteFileModal = () => {
-  deleteFileModalIsOpen.value = false
-  fileToDelete.value = null
-}
 </script>
 <template>
   <div class="flex w-full flex-col">
@@ -127,41 +79,14 @@ const closeDeleteFileModal = () => {
       </div>
     </div>
 
-    <div v-for="contract in store.contracts" :key="contract.id" class="flex w-full flex-col">
-      <div
-        :class="[
-          'group flex items-center px-2 py-1 text-xs font-semibold text-neutral-500 hover:text-primary hover:underline dark:text-neutral-100',
-          contract.id === store.currentContractId ? 'text-primary underline' : ''
-        ]"
-      >
-        <DocumentCheckIcon class="mr-1 h-4 w-4 fill-primary dark:fill-white" />
+    <ContractItem
+     @click="store.openFile(contract.id)"
+      v-for="contract in store.contracts"
+      :key="contract.id"
+      :contract="contract"
+      :isActive="contract.id === store.currentContractId"
+    />
 
-        <div class="flex w-full items-center justify-between" v-if="editingFileId === contract.id">
-          <input
-            type="text"
-            class="w-full bg-slate-100 dark:bg-zinc-700"
-            v-model="editingFileName"
-            @blur="handleSaveFile"
-            @keyup.enter="handleSaveFile"
-          />
-        </div>
-        <div v-else class="flex w-full items-center justify-between truncate">
-          <div class="... cursor-pointer truncate" @click="openContract(contract.id)">
-            {{ contract.name }}
-          </div>
-          <div class="hidden group-hover:flex">
-            <button @click="handleEditFile({ id: contract.id, name: contract.name })">
-              <ToolTip text="Edit Name" :options="{ placement: 'bottom' }" />
-              <PencilIcon class="mr-1 h-3 w-4" />
-            </button>
-            <button @click="openDeleteFileModal(contract)">
-              <ToolTip text="Delete file" :options="{ placement: 'bottom' }" />
-              <TrashIcon class="mr-1 h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
     <div
       class="flex w-full flex-col items-center justify-between border border-transparent px-2 py-1 font-semibold text-neutral-500"
       v-show="showNewFileInput"
@@ -177,21 +102,6 @@ const closeDeleteFileModal = () => {
       />
     </div>
   </div>
-
-  <ConfirmationModal
-    :open="deleteFileModalIsOpen"
-    @close="closeDeleteFileModal"
-    @confirm="handleRemoveFile"
-    buttonText="Delete Contract"
-    dangerous>
-    <template #title>Delete Contract</template>
-    <template #description>Are you sure you want to delete this contract?</template>
-    <div class="flex flex-col p-2">
-        <div class="w-full bg-slate-100 py-2 text-center font-bold">
-          {{ fileToDelete?.name }}
-        </div>
-      </div>
-  </ConfirmationModal>
 </template>
 
 <style scoped>
