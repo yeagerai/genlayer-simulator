@@ -160,6 +160,7 @@ const closeDeleteFileModal = () => {
         <div v-else class="flex w-full items-center justify-between truncate">
           <div
             class="... cursor-pointer truncate"
+            data-testid="contract-file"
             @click="openContract(contract.id)"
           >
             {{ contract.name }}
