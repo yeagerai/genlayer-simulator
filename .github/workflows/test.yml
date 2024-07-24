@@ -13,6 +13,7 @@ jobs:
         uses: heinrichreimer/action-github-changelog-generator@v2.3
         with:
           unreleasedOnly: true
+          unreleasedLabel: "Next release"
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "echo changelog"
