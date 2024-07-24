@@ -56,7 +56,6 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: true
-          branch: ${{ steps.extract_branch.outputs.branch }}
           base: main
           title: Release ${{ steps.get_latest_release.outputs.tag }}
           body: ${{ steps.generate_release_notes.outputs.notes }}
