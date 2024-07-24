@@ -8,6 +8,7 @@ on:
   pull_request_review:
     types:
       - submitted
+  workflow_dispatch:
 
 jobs:
   test:
@@ -63,6 +64,10 @@ jobs:
 
       - name: Run tests
         run: pytest tests/integration/
+
+      - name: Dump Docker Compose logs
+        run: docker compose logs
+        if: failure()
 
       - name: Shutdown Docker Compose
         if: always()

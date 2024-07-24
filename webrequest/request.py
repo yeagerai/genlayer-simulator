@@ -3,8 +3,6 @@ from bs4 import BeautifulSoup
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 
 options = Options()
 options.add_argument("--headless")
@@ -13,9 +11,7 @@ options.add_argument("--disable-dev-shm-usage")
 
 
 def get_webdriver() -> object:
-    return webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()), options=options
-    )
+    return webdriver.Chrome(options=options)
 
 
 def remove_unwanted_characters(text: str):
