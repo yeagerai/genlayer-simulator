@@ -15,6 +15,10 @@ jobs:
         with:
           unreleasedOnly: true
           unreleasedLabel: "Next release"
+          stripGeneratorNotice: true
+          issues: false
+          # futureRelease:
+          releaseBranch: release-0.1.1
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "echo changelog"
