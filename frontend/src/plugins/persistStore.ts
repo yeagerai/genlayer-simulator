@@ -9,7 +9,7 @@ import { type PiniaPluginContext } from 'pinia';
  * @return {Promise<void>} A Promise that resolves once the contract is upserted.
  */
 const upsertDeployedContract = async (
-  contract: DeployedContract
+  contract: DeployedContract,
 ): Promise<void> => {
   const existingContract = await db.deployedContracts
     .where('contractId')
@@ -34,7 +34,7 @@ const upsertDeployedContract = async (
 export function persistStorePlugin(context: PiniaPluginContext): void {
   context.store.$onAction(({ store, name, args, after }) => {
     console.log(
-      `Called Action "${name}" with params [${JSON.stringify(args)}].`
+      `Called Action "${name}" with params [${JSON.stringify(args)}].`,
     );
     after(async (result) => {
       if (store.$id === 'contractsStore') {
@@ -60,21 +60,21 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
           case 'openFile':
             localStorage.setItem(
               'contractsStore.currentContractId',
-              args[0] as string
+              args[0] as string,
             );
             localStorage.setItem(
               'contractsStore.openedFiles',
-              store.openedFiles.join(',')
+              store.openedFiles.join(','),
             );
             break;
           case 'closeFile':
             localStorage.setItem(
               'contractsStore.currentContractId',
-              store.currentContractId
+              store.currentContractId,
             );
             localStorage.setItem(
               'contractsStore.openedFiles',
-              store.openedFiles.join(',')
+              store.openedFiles.join(','),
             );
             break;
           case 'addDeployedContract':
@@ -83,7 +83,7 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
           case 'setCurrentContractId':
             localStorage.setItem(
               'contractsStore.currentContractId',
-              args[0] as string
+              args[0] as string,
             );
             break;
 
@@ -101,11 +101,11 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
           case 'generateNewAccount':
             localStorage.setItem(
               'accountsStore.privateKeys',
-              store.privateKeys.join(',')
+              store.privateKeys.join(','),
             );
             localStorage.setItem(
               'accountsStore.currentPrivateKey',
-              store.currentPrivateKey
+              store.currentPrivateKey,
             );
             break;
           default:

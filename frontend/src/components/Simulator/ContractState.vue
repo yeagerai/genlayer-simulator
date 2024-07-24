@@ -19,7 +19,7 @@ const props = defineProps<{
   getContractState: (
     contractAddress: string,
     method: string,
-    methodArguments: string[]
+    methodArguments: string[],
   ) => void;
   callingState: boolean;
 }>();
@@ -62,7 +62,7 @@ const getInputPlaceholder = (methodInputs: { [k: string]: string }) => {
                 method.name,
                 inputParams[method.name]
                   ? inputParams[method.name].split(',')
-                  : []
+                  : [],
               )
             "
             class="w-[40%] overflow-hidden text-ellipsis whitespace-nowrap rounded bg-primary px-4 py-2 font-semibold text-white hover:opacity-80"

@@ -19,7 +19,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
   const openedFiles = ref<string[]>(getInitialOPenedFiles());
 
   const currentContractId = ref<string | undefined>(
-    localStorage.getItem('contractsStore.currentContractId') || ''
+    localStorage.getItem('contractsStore.currentContractId') || '',
   );
   const deployedContracts = ref<DeployedContract[]>([]);
   const callingContractMethod = ref<boolean>(false);
@@ -51,7 +51,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
       name,
       content,
       updatedAt,
-    }: { name?: string; content?: string; updatedAt?: string }
+    }: { name?: string; content?: string; updatedAt?: string },
   ) {
     contracts.value = [
       ...contracts.value.map((c) => {
@@ -90,7 +90,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
     defaultState,
   }: DeployedContract): void {
     const index = deployedContracts.value.findIndex(
-      (c) => c.contractId === contractId
+      (c) => c.contractId === contractId,
     );
     const newItem = { contractId, address, defaultState };
     if (index === -1) deployedContracts.value.push(newItem);
@@ -98,7 +98,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
       deployedContracts.value = deployedContracts.value.splice(
         index,
         1,
-        newItem
+        newItem,
       );
   }
 
@@ -126,7 +126,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
 
       deployedContracts.value = [
         ...deployedContracts.value.filter(
-          (c) => !idsToDelete.includes(c.contractId)
+          (c) => !idsToDelete.includes(c.contractId),
         ),
       ];
       contracts.value = [
@@ -144,11 +144,11 @@ export const useContractsStore = defineStore('contractsStore', () => {
 
       localStorage.setItem(
         'mainStore.currentContractId',
-        currentContractId.value || ''
+        currentContractId.value || '',
       );
       localStorage.setItem(
         'mainStore.openedFiles',
-        openedFiles.value.join(',')
+        openedFiles.value.join(','),
       );
 
       await setupStores();
@@ -171,7 +171,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
     callingContractMethod.value = true;
     try {
       const contract = deployedContracts.value.find(
-        (c) => c.contractId === localContractId
+        (c) => c.contractId === localContractId,
       );
       const result = await $jsonRpc?.callContractFunction({
         userAccount,
@@ -203,7 +203,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
   async function getContractState(
     contractAddress: string,
     method: string,
-    methodArguments: string[]
+    methodArguments: string[],
   ) {
     callingContractState.value = true;
     try {
@@ -270,7 +270,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
             deployingContract.value = false;
             if (result?.status === 'success') {
               deployedContracts.value = deployedContracts.value.filter(
-                (c) => c.contractId !== currentContract.value?.id
+                (c) => c.contractId !== currentContract.value?.id,
               );
               const tx: TransactionItem = {
                 contractAddress: result?.data.contract_address,
@@ -288,7 +288,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
               throw new Error(
                 typeof result?.message === 'string'
                   ? result.message
-                  : 'Error Deploying the contract'
+                  : 'Error Deploying the contract',
               );
             }
           } catch (error) {
@@ -351,7 +351,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
   });
   const deployedContract = computed(() => {
     return deployedContracts.value.find(
-      (c) => c.contractId === currentContractId.value
+      (c) => c.contractId === currentContractId.value,
     );
   });
 

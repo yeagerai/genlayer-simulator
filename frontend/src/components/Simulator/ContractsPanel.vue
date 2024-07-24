@@ -25,7 +25,7 @@ const handleCloseContract = (id?: string) => {
 
 const contracts = computed(() => {
   return store.contracts.filter((contract) =>
-    store.openedFiles.includes(contract.id || '')
+    store.openedFiles.includes(contract.id || ''),
   );
 });
 

@@ -17,7 +17,7 @@ export function createToolTipPlugin(options: PluginOptions) {
     app.provide(tooltipOptionsInject, options);
     app.component(
       'ToolTip',
-      defineAsyncComponent(() => import('./ToolTip.vue'))
+      defineAsyncComponent(() => import('./ToolTip.vue')),
     );
   };
 }

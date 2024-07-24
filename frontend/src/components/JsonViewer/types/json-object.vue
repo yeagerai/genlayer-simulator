@@ -79,7 +79,7 @@ export default {
             open: !!this.expand,
           },
           onClick: this.toggle,
-        })
+        }),
       );
     }
 
@@ -90,7 +90,7 @@ export default {
           'jv-object': true,
         },
         innerText: '{',
-      })
+      }),
     );
 
     if (this.expand) {
@@ -110,7 +110,7 @@ export default {
               depth: this.depth + 1,
               value,
               previewMode: this.previewMode,
-            })
+            }),
           );
         }
       }
@@ -128,7 +128,7 @@ export default {
           onClick: this.toggle,
           title: `click to reveal object content (keys: ${Object.keys(this.ordered).join(', ')})`,
           innerText: '...',
-        })
+        }),
       );
     }
 
@@ -139,7 +139,7 @@ export default {
           'jv-object': true,
         },
         innerText: '}',
-      })
+      }),
     );
 
     return h('span', elements);

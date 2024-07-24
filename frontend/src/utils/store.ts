@@ -21,7 +21,7 @@ export const setupStores = async () => {
   const transactionsStore = useTransactionsStore();
   const contractFiles = await db.contractFiles.toArray();
   const filteredFiles = contractFiles.filter(
-    (c) => (c.example && !c.updatedAt) || (!c.example && !c.updatedAt)
+    (c) => (c.example && !c.updatedAt) || (!c.example && !c.updatedAt),
   );
 
   if (filteredFiles.length === 0) {
@@ -52,10 +52,10 @@ export const setupStores = async () => {
     accountsStore.generateNewAccount();
   } else {
     accountsStore.privateKeys = localStorage.getItem(
-      'accountsStore.privateKeys'
+      'accountsStore.privateKeys',
     )
       ? ((localStorage.getItem('accountsStore.privateKeys') || '').split(
-          ','
+          ',',
         ) as `0x${string}`[])
       : [];
   }

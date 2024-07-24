@@ -17,7 +17,7 @@ export function useElementResize(el: Ref<HTMLElement | null | undefined>) {
         });
         ro.observe(el.value!);
       }
-    }
+    },
   );
   onUnmounted(() => {
     if (el.value) ro.unobserve(el.value!);

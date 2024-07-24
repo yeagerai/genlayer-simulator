@@ -24,7 +24,7 @@ app.use(router);
 app.use(
   createToolTipPlugin({
     arrow: true,
-  })
+  }),
 );
 app.use(Notifications);
 app.provide('$jsonRpc', new JsonRpcService(new RpcClient()));

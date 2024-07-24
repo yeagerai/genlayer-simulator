@@ -5,7 +5,7 @@ import { getAccountFromPrivatekey, getPrivateKey } from '@/utils';
 export const useAccountsStore = defineStore('accountsStore', () => {
   const key = localStorage.getItem('accountsStore.currentPrivateKey');
   const currentPrivateKey = ref<`0x${string}` | null>(
-    key ? (key as `0x${string}`) : null
+    key ? (key as `0x${string}`) : null,
   );
 
   const currentUserAddress = computed(() => {
@@ -17,9 +17,9 @@ export const useAccountsStore = defineStore('accountsStore', () => {
   const privateKeys = ref<`0x${string}`[]>(
     localStorage.getItem('accountsStore.privateKeys')
       ? ((localStorage.getItem('accountsStore.privateKeys') || '').split(
-          ','
+          ',',
         ) as `0x${string}`[])
-      : []
+      : [],
   );
 
   function generateNewAccount(): `0x${string}` {

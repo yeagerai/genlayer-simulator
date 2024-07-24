@@ -157,7 +157,7 @@ export default {
           ' of .v-step[id="' +
           this.hash +
           '"] is:',
-        this.targetElement
+        this.targetElement,
       );
       if (this.debug) {
         console.log(
@@ -166,7 +166,7 @@ export default {
             ' of .v-step[id="' +
             this.hash +
             '"] is:',
-          this.targetElement
+          this.targetElement,
         );
       }
 
@@ -180,7 +180,7 @@ export default {
           createPopper(
             this.targetElement,
             this.$refs['v-step-' + this.hash],
-            this.params
+            this.params,
           );
         } else {
           if (this.debug) {
@@ -189,7 +189,7 @@ export default {
                 this.step.target +
                 ' of .v-step[id="' +
                 this.hash +
-                '"] does not exist!'
+                '"] does not exist!',
             );
           }
           this.$emit('targetNotFound', this.step);
@@ -219,7 +219,7 @@ export default {
     isHighlightEnabled() {
       if (this.debug) {
         console.log(
-          `[Vue Tour] Highlight is ${this.params.highlight ? 'enabled' : 'disabled'} for .v-step[id="${this.hash}"]`
+          `[Vue Tour] Highlight is ${this.params.highlight ? 'enabled' : 'disabled'} for .v-step[id="${this.hash}"]`,
         );
       }
       return this.params.highlight;
@@ -251,7 +251,7 @@ export default {
         if (target) {
           const currentTransition = this.targetElement.style.transition;
           this.targetElement.classList.remove(
-            HIGHLIGHT.classes.targetHighlighted
+            HIGHLIGHT.classes.targetHighlighted,
           );
           this.targetElement.classList.remove(HIGHLIGHT.classes.targetRelative);
           // Remove our transition when step is finished.
@@ -259,7 +259,7 @@ export default {
             setTimeout(() => {
               target.style.transition = currentTransition.replace(
                 `, ${HIGHLIGHT.transition}`,
-                ''
+                '',
               );
             }, 0);
           }

@@ -41,7 +41,7 @@ watch(
         name: m[0],
         inputs: m[1].inputs,
       }));
-  }
+  },
 );
 
 const handleMethodCall = () => {

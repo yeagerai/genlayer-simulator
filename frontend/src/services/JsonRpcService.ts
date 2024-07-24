@@ -210,7 +210,7 @@ export class JsonRpcService implements IJsonRpcService {
   }
 
   async getTransactionById(
-    txId: number
+    txId: number,
   ): Promise<JsonRpcResult<TransactionItem>> {
     const { result } = await this.rpcClient.call<TransactionItem>({
       method: 'get_transaction_by_id',

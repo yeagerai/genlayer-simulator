@@ -94,7 +94,7 @@ watch(
   () => props.inputs,
   (newValue) => {
     setInputParams(newValue || {});
-  }
+  },
 );
 
 onMounted(() => {

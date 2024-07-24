@@ -5,7 +5,7 @@ import type { TransactionItem } from '@/types';
 export const useTransactionsStore = defineStore('transactionsStore', () => {
   const $jsonRpc = inject<IJsonRpcService>('$jsonRpc');
   const pendingTransactions = computed<TransactionItem[]>(() =>
-    transactions.value.filter((t) => t.status === 'PENDING')
+    transactions.value.filter((t) => t.status === 'PENDING'),
   );
   const processingQueue = ref<TransactionItem[]>([]);
   const transactions = ref<TransactionItem[]>([]);

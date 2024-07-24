@@ -17,17 +17,17 @@ import type {
 export interface IJsonRpcService {
   call(request: JsonRPCRequest): Promise<JsonRPCResponse<any>>;
   getContractState(
-    request: GetContractStateRequest
+    request: GetContractStateRequest,
   ): Promise<JsonRpcResult<GetContractStateResult>>;
   callContractFunction(
-    request: CallContractFunctionRequest
+    request: CallContractFunctionRequest,
   ): Promise<JsonRpcResult<CallContractFunctionResult>>;
   deployContract(request: DeployContractRequest): Promise<JsonRpcResult<any>>;
   getContractSchema(
-    request: GetContractSchemaRequest
+    request: GetContractSchemaRequest,
   ): Promise<JsonRpcResult<any>>;
   getDeployedContractSchema(
-    request: GetDeployedContractSchemaRequest
+    request: GetDeployedContractSchemaRequest,
   ): Promise<JsonRpcResult<any>>;
   getValidators(): Promise<JsonRpcResult<any>>;
   getProvidersAndModels(): Promise<JsonRpcResult<any>>;

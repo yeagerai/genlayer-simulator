@@ -159,7 +159,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
     });
     if (result?.status === 'success') {
       const index = validators.value.findIndex(
-        (v) => v.address === selectedValidator.value?.address
+        (v) => v.address === selectedValidator.value?.address,
       );
 
       if (index >= 0) {
@@ -244,8 +244,8 @@ export const useNodeStore = defineStore('nodeStore', () => {
 
   const contractsToDelete = computed(() =>
     contractsStore.contracts.filter(
-      (c) => (c.example && !c.updatedAt) || (!c.example && !c.updatedAt)
-    )
+      (c) => (c.example && !c.updatedAt) || (!c.example && !c.updatedAt),
+    ),
   );
 
   return {

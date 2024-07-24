@@ -39,7 +39,7 @@ watch(
       monaco.languages.register({ id: 'python' });
       monaco.languages.setMonarchTokensProvider(
         'python',
-        pythonSyntaxDefinition
+        pythonSyntaxDefinition,
       );
       editorRef.value = monaco.editor.create(editorElement.value!, {
         value: props.contract.content || '',
@@ -57,7 +57,7 @@ watch(
       });
       resizeEditor();
     }
-  }
+  },
 );
 
 watch(
@@ -67,33 +67,33 @@ watch(
       editorRef.value.updateOptions({
         theme: newValue === 'light' ? 'vs' : 'vs-dark',
       });
-  }
+  },
 );
 //resize watchers
 watch(
   () => windowWidth.value,
   () => {
     resizeEditor();
-  }
+  },
 );
 watch(
   () => windowHeight.value,
   () => {
     resizeEditor();
-  }
+  },
 );
 
 watch(
   () => containerWidth.value,
   () => {
     resizeEditor();
-  }
+  },
 );
 watch(
   () => containerHeight.value,
   () => {
     resizeEditor();
-  }
+  },
 );
 </script>
 

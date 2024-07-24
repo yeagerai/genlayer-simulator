@@ -18,20 +18,20 @@ const transactionsStore = useTransactionsStore();
 let deploymentSubscription: () => void;
 const contractTransactions = computed(() =>
   transactionsStore.transactions.filter(
-    (t) => t.localContractId === contractsStore.currentContractId
-  )
+    (t) => t.localContractId === contractsStore.currentContractId,
+  ),
 );
 
 const handleGetContractState = async (
   contractAddress: string,
   method: string,
-  methodArguments: string[]
+  methodArguments: string[],
 ) => {
   try {
     await contractsStore.getContractState(
       contractAddress,
       method,
-      methodArguments
+      methodArguments,
     );
   } catch (error) {
     notify({
@@ -89,16 +89,16 @@ const handleDeployContract = async ({
 
 const handleClearTransactions = () => {
   transactionsStore.processingQueue = transactionsStore.processingQueue.filter(
-    (t) => t.localContractId !== contractsStore.currentContractId
+    (t) => t.localContractId !== contractsStore.currentContractId,
   );
   transactionsStore.transactions = transactionsStore.transactions.filter(
-    (t) => t.localContractId !== contractsStore.currentContractId
+    (t) => t.localContractId !== contractsStore.currentContractId,
   );
 };
 
 const debouncedGetConstructorInputs = debounce(
   () => contractsStore.getConstructorInputs(),
-  3000
+  3000,
 );
 
 watch(
@@ -107,7 +107,7 @@ watch(
     if (newValue) {
       contractsStore.getCurrentContractAbi();
     }
-  }
+  },
 );
 
 watch(
@@ -116,7 +116,7 @@ watch(
     if (newValue && newValue !== oldValue) {
       contractsStore.getConstructorInputs();
     }
-  }
+  },
 );
 
 watch(
@@ -129,7 +129,7 @@ watch(
     ) {
       debouncedGetConstructorInputs();
     }
-  }
+  },
 );
 watch(
   () => contractsStore.currentErrorConstructorInputs,
@@ -141,7 +141,7 @@ watch(
         type: 'error',
       });
     }
-  }
+  },
 );
 
 onMounted(async () => {
@@ -160,7 +160,7 @@ onMounted(async () => {
           });
         });
       }
-    }
+    },
   );
 });
 

@@ -69,7 +69,7 @@ export default {
             open: !!this.expand,
           },
           onClick: this.toggle,
-        })
+        }),
       );
     }
 
@@ -80,7 +80,7 @@ export default {
           'jv-array': true,
         },
         innerText: '[',
-      })
+      }),
     );
     if (this.expand) {
       this.value.forEach((value, key) => {
@@ -95,7 +95,7 @@ export default {
             depth: this.depth + 1,
             value,
             previewMode: this.previewMode,
-          })
+          }),
         );
       });
     }
@@ -112,7 +112,7 @@ export default {
           onClick: this.toggle,
           title: `click to reveal ${this.value.length} hidden items`,
           innerText: '...',
-        })
+        }),
       );
     }
 
@@ -123,7 +123,7 @@ export default {
           'jv-array': true,
         },
         innerText: ']',
-      })
+      }),
     );
 
     return h('span', elements);

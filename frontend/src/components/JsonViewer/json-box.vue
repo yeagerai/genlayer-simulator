@@ -93,7 +93,7 @@ export default {
             open: !!this.expand,
           },
           onClick: this.toggle,
-        })
+        }),
       );
     }
 
@@ -107,7 +107,7 @@ export default {
             this.keyClick(this.keyName);
           },
           innerText: `${this.keyName}:`,
-        })
+        }),
       );
     }
 
@@ -125,7 +125,7 @@ export default {
         'onUpdate:expand': (value) => {
           this.expand = value;
         },
-      })
+      }),
     );
 
     return h(
@@ -137,7 +137,7 @@ export default {
           toggle: !this.previewMode && complex,
         },
       },
-      elements
+      elements,
     );
   },
 };
