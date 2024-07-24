@@ -6,6 +6,9 @@ export default {
   darkMode: ['selector', '[data-mode="dark"]'],
   theme: {
     extend: {
+      transitionDuration: {
+        DEFAULT: '100ms',
+      },
       colors: {
         'primary': '#1a3851',
         'accent': colors.blue[500],
