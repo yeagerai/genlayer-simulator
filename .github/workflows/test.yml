@@ -1,0 +1,17 @@
+name: Changelog
+on:
+  push:
+    branches:
+      - 211-sim-ops-generate-pr-from-staging-to-main-with-changelog
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "✏️ Generate release changelog"
+        uses: heinrichreimer/action-github-changelog-generator@v2.3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "echo changelog"
+        run: echo "${{ steps.changelog.outputs.changelog }}"
