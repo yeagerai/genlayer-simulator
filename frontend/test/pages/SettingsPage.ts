@@ -7,7 +7,7 @@ export class SettingsPage extends BasePage {
   override visibleLocator: Locator = By.xpath("//h3[contains(text(), 'Settings')]")
 
   async openNewValidatorModal() {
-    const locator = By.xpath(`//button[contains(text(), 'New Validator')]`)
+    const locator = By.xpath("//button[@data-testid='create-new-validator-btn']")
     return this.driver.wait(until.elementLocated(locator), 5000).click()
   }
   async getValidatorsElements(): Promise<WebElement[]> {

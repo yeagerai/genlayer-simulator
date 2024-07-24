@@ -54,23 +54,58 @@ const handleLogsResize = (event: any) => {
 }
 
 .splitpanes.default-theme .splitpanes__pane {
-  background-color: transparent !important;
+  background-color: transparent;
 }
 
 .splitpanes.default-theme .splitpanes__splitter {
-  background-color: transparent !important;
+  background-color: transparent;
+  border-color: #cbd5e1;
+  transition: background-color 0.1s;
+}
 
+[data-mode="dark"] .splitpanes.default-theme .splitpanes__splitter {
+  border-color: #3f3f46 !important;
 }
 
 .splitpanes.default-theme .splitpanes__splitter:hover,
 .splitpanes.default-theme .splitpanes__splitter:active {
-  background-color: #cbd5e1 !important;
+  background-color: #cbd5e1;
 }
 
-.splitpanes--vertical>.splitpanes__splitter,
-.default-theme .splitpanes--vertical>.splitpanes__splitter {
-  border-left: none !important;
-  border-right: 1px solid #eee;
+[data-mode="dark"] .splitpanes.default-theme .splitpanes__splitter:hover,
+[data-mode="dark"] .splitpanes.default-theme .splitpanes__splitter:active {
+  background-color: #3f3f46;
+}
 
+.splitpanes--vertical .splitpanes__splitter {
+  min-width: 6px;
+  border-left: none !important;
+  border-right: 1px solid;
+}
+
+.splitpanes--horizontal .splitpanes__splitter {
+  z-index: 6 !important;
+  /* Avoid having the code editor minimap go over the splitter */
+}
+
+.default-theme.splitpanes--horizontal>.splitpanes__splitter:before {
+  margin-top: -1px;
+}
+
+.default-theme.splitpanes--horizontal>.splitpanes__splitter:after {
+  display: none;
+}
+
+.default-theme.splitpanes--vertical>.splitpanes__splitter:before {
+  display: none;
+}
+
+.default-theme.splitpanes--vertical>.splitpanes__splitter:after {
+  margin-left: 0;
+}
+
+[data-mode="dark"] .splitpanes.default-theme .splitpanes__splitter:before,
+[data-mode="dark"] .splitpanes.default-theme .splitpanes__splitter:after {
+  background: #313137;
 }
 </style>

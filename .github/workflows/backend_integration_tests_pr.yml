@@ -2,17 +2,17 @@ name: CI
 
 on:
   pull_request:
-    branches:
-      - staging
     types:
       - opened
+      - ready_for_review
   pull_request_review:
     types:
       - submitted
+  workflow_dispatch:
 
 jobs:
   test:
-    if: ${{ github.event.review.state == 'APPROVED' || github.event_name == 'pull_request' }}
+    if: ${{ github.event.review.state == 'APPROVED' || (github.event_name == 'pull_request' && github.base_ref == 'staging') }}
     runs-on: ubuntu-latest
 
     env:
@@ -64,6 +64,10 @@ jobs:
 
       - name: Run tests
         run: pytest tests/integration/
+
+      - name: Dump Docker Compose logs
+        run: docker compose logs
+        if: failure()
 
       - name: Shutdown Docker Compose
         if: always()

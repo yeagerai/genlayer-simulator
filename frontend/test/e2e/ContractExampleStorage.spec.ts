@@ -40,7 +40,7 @@ describe('Contract Example Storage', () => {
     const nameOfContract = await driver.wait(
       until.elementLocated(
         By.xpath(
-          "//div[contains(@class, 'text-xs text-neutral-800 dark:text-neutral-200') and contains(text(), 'storage.gpy')]"
+          "//div[contains(@class, 'text-xs text-neutral-800 dark:text-neutral-200') and text()='storage.gpy']"
         )
       )
     )

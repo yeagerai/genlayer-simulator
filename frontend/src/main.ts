@@ -8,6 +8,7 @@ import { persistStorePlugin, createToolTipPlugin, TransactionsListenerPlugin } f
 import { RpcClient, setupStores } from '@/utils'
 import { JsonRpcService } from './services/JsonRpcService'
 import { VueSpinnersPlugin } from 'vue3-spinners'
+import registerGlobalComponents from '@/components/global/registerGlobalComponents'
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -27,6 +28,8 @@ app.use(VueSpinnersPlugin)
 app.use(TransactionsListenerPlugin, {
   interval: 5000
 })
+
+registerGlobalComponents(app)
+
 app.mount('#app')
 setupStores()
-
