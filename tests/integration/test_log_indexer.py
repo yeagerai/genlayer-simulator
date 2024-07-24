@@ -58,6 +58,20 @@ def test_log_indexer():
     assert has_success_status(transaction_response_deploy)
     contract_address = call_method_response_deploy["result"]["data"]["contract_address"]
 
+    # ##########################################
+    # ##### Get closest vector when empty ######
+    # ##########################################
+    closest_vector_log_0 = post_request_localhost(
+        payload(
+            "get_contract_state",
+            contract_address,
+            "get_closest_vector",
+            ["I like mango"],
+        )
+    ).json()
+    assert has_success_status(closest_vector_log_0)
+    assert closest_vector_log_0["result"]["data"] is None
+
     # ########################################
     # ############## Add log 0 ###############
     # ########################################
@@ -84,8 +98,8 @@ def test_log_indexer():
         )
     ).json()
     assert has_success_status(closest_vector_log_0)
-    assert float(closest_vector_log_0["result"]["data"]["similarity"]) > 86
-    assert float(closest_vector_log_0["result"]["data"]["similarity"]) < 87
+    assert float(closest_vector_log_0["result"]["data"]["similarity"]) > 0.86
+    assert float(closest_vector_log_0["result"]["data"]["similarity"]) < 0.87
 
     # ########################################
     # ######### Get log 0 metadata ###########
@@ -127,7 +141,7 @@ def test_log_indexer():
         )
     ).json()
     assert has_success_status(closest_vector_log_1)
-    assert float(closest_vector_log_1["result"]["data"]["similarity"]) == 100
+    assert float(closest_vector_log_1["result"]["data"]["similarity"]) == 1
 
     # ########################################
     # ########### Update log 0 ##############
@@ -155,8 +169,8 @@ def test_log_indexer():
         )
     ).json()
     assert has_success_status(closest_vector_log_0_2)
-    assert float(closest_vector_log_0_2["result"]["data"]["similarity"]) > 85
-    assert float(closest_vector_log_0_2["result"]["data"]["similarity"]) < 86
+    assert float(closest_vector_log_0_2["result"]["data"]["similarity"]) > 0.85
+    assert float(closest_vector_log_0_2["result"]["data"]["similarity"]) < 0.86
 
     # ########################################
     # ########### Remove log 0 ##############
@@ -184,5 +198,40 @@ def test_log_indexer():
         )
     ).json()
     assert has_success_status(closest_vector_log_0_3)
-    assert float(closest_vector_log_0_3["result"]["data"]["similarity"]) > 50
-    assert float(closest_vector_log_0_3["result"]["data"]["similarity"]) < 51
+    assert float(closest_vector_log_0_3["result"]["data"]["similarity"]) > 0.50
+    assert float(closest_vector_log_0_3["result"]["data"]["similarity"]) < 0.51
+
+
+    # ########################################
+    # ##### Test id uniqueness after deletion #
+    # ########################################
+    
+    # Add third log
+    _, transaction_response_add_log_2 = post_request_and_wait_for_finalization(
+        payload(
+            "call_contract_function",
+            from_address,
+            contract_address,
+            "add_log",
+            ["This is the third log", 3],
+        )
+    )
+    assert has_success_status(transaction_response_add_log_2)
+
+    # Check if new item got id 2
+    closest_vector_log_2 = post_request_localhost(
+        payload(
+            "get_contract_state",
+            contract_address,
+            "get_closest_vector",
+            ["This is the third log"],
+        )
+    ).json()
+    assert has_success_status(closest_vector_log_2)
+    assert float(closest_vector_log_2["result"]["data"]["similarity"]) > 0.99
+    assert closest_vector_log_2["result"]["data"]["id"] == 2
+    assert closest_vector_log_2["result"]["data"]["text"] == "This is the third log"
+
+   
+
+  

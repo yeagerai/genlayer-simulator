@@ -11,8 +11,10 @@ class LogIndexer(IContract):
 
     # read methods must start with get_
     def get_closest_vector(self, text: str) -> dict:
-        similarity, id, metadata, _ = self.vector_store.get_closest_vector(text)
-        return {"similarity": similarity, "id": id, "metadata": metadata}
+        result = self.vector_store.get_closest_vector(text)
+        if result is None:
+            return None
+        return {"similarity": result[0], "id": result[1], "text": result[2], "metadata": result[3], "vector": result[4]}
 
     # write method
     def add_log(self, log: str, log_id: int) -> None:

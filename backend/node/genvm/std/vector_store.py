@@ -12,28 +12,33 @@ class VectorStore:
         Args:
             model: A model with an encode method to generate embeddings.
         """
+        self.texts = {}  # Dictionary to store texts
         self.vector_data = {}  # Dictionary to store vectors
         self.metadata = {}  # Dictionary to store metadata
         self.model_name = model_name
+        self.next_id = 0
 
-    def add_text(self, text, metadata):
+    def add_text(self, text: str, metadata: any):
         """
         Add a new text to the store with its metadata.
 
         Args:
             text (str): The text to be added.
-            metadata (dict): The metadata containing log_id.
+            metadata (any): The metadata.
         """
-        if "log_id" not in metadata or not isinstance(metadata["log_id"], int):
-            raise ValueError("Metadata must contain an integer 'log_id'")
 
         model = get_model(self.model_name)
         embedding = model.encode([text])[0]
-        vector_id = len(self.vector_data)
+        vector_id = self.next_id
+        self.next_id += 1
+
+        self.texts[vector_id] = text
         self.vector_data[vector_id] = embedding
         self.metadata[vector_id] = metadata
 
-    def get_closest_vector(self, text):
+        return vector_id
+
+    def get_closest_vector(self, text: str) -> tuple[float, int, str, any, list[float]]:
         """
         Get the closest vector to the given text along with the similarity percentage and metadata.
 
@@ -41,12 +46,17 @@ class VectorStore:
             text (str): The text for which to find the closest vector.
 
         Returns:
-            tuple: A dictionary containing the similarity percentage, the closest vector, and the metadata.
+            tuple: A tuple containing:
+                * the similarity percentage,
+                * the id,
+                * the text,
+                * the metadata, and
+                * the vector
         """
-        result = self.get_k_closest_vectors(text, k=1)
-        return result[0]
+        results = self.get_k_closest_vectors(text, k=1)
+        return results[0] if results else None
 
-    def get_k_closest_vectors(self, text, k=5):
+    def get_k_closest_vectors(self, text: str, k: int = 5) -> list[tuple[float, int, str, any, list[float]]]:
         """
         Get the closest k vectors to the given text along with the similarity percentages and metadata.
 
@@ -55,8 +65,16 @@ class VectorStore:
             k (int): The number of closest vectors to return.
 
         Returns:
-            list: A list of dictionaries, each containing the similarity percentage, the vector, and the metadata.
+            list: A list of tuples, each containing:
+                * the similarity percentage,
+                * the id,
+                * the text,
+                * the metadata, and
+                * the vector
         """
+        if len(self.vector_data) == 0:
+            return []
+
         model = get_model(self.model_name)
         query_embedding = model.encode([text])[0]
 
@@ -73,8 +91,9 @@ class VectorStore:
         top_k_indices = similarities.argsort()[-k:][::-1]
         results = [
             (
-                float(similarities[i] * 100),
+                float(similarities[i]),
                 int(all_ids[i]),
+                self.texts[all_ids[i]],
                 self.metadata[all_ids[i]],
                 self.vector_data[all_ids[i]].tolist(),
             )
@@ -82,7 +101,7 @@ class VectorStore:
         ]
         return results
 
-    def update_text(self, vector_id, new_text, new_metadata):
+    def update_text(self, vector_id: int, new_text: str, new_metadata: any):
         """
         Update the text and metadata of an existing vector.
 
@@ -94,15 +113,13 @@ class VectorStore:
         if vector_id not in self.vector_data:
             raise ValueError("Vector ID does not exist")
 
-        if "log_id" not in new_metadata or not isinstance(new_metadata["log_id"], int):
-            raise ValueError("Metadata must contain an integer 'log_id'")
-
         model = get_model(self.model_name)
         embedding = model.encode([new_text])[0]
+        self.texts[vector_id] = new_text
         self.vector_data[vector_id] = embedding
         self.metadata[vector_id] = new_metadata
 
-    def delete_vector(self, vector_id):
+    def delete_vector(self, vector_id: int):
         """
         Delete a vector and its metadata from the store.
 
@@ -110,12 +127,13 @@ class VectorStore:
             vector_id (int): The identifier of the vector to delete.
         """
         if vector_id in self.vector_data:
+            del self.texts[vector_id]
             del self.vector_data[vector_id]
             del self.metadata[vector_id]
         else:
             raise ValueError("Vector ID does not exist")
 
-    def get_vector(self, vector_id):
+    def get_vector(self, vector_id: int) -> tuple[str, any, list[float]]:
         """
         Retrieve a vector and its metadata from the store.
 
@@ -123,16 +141,16 @@ class VectorStore:
             vector_id (int): The identifier of the vector to retrieve.
 
         Returns:
-            tuple: The vector and its metadata.
+            tuple: The text, the metadata, the vector.
         """
 
         vector_id = int(vector_id)
         if vector_id in self.vector_data:
-            return self.vector_data[vector_id], self.metadata[vector_id]
+            return self.texts[vector_id], self.metadata[vector_id], self.vector_data[vector_id]
         else:
             raise ValueError("Vector ID does not exist")
 
-    def cosine_similarity(self, a, b):
+    def cosine_similarity(self, a: np.ndarray, b: np.ndarray) -> float:
         """
         Calculate the cosine similarity between two vectors.
 
@@ -147,3 +165,9 @@ class VectorStore:
         norm_a = np.linalg.norm(a)
         norm_b = np.linalg.norm(b)
         return dot_product / (norm_a * norm_b)
+    
+    def get_all_items(self) -> list[tuple[str, any]]:
+        """
+        Get all vectors and their metadata from the store.
+        """
+        return [(self.texts[i], self.metadata[i]) for i in self.vector_data]
