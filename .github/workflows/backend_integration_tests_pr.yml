@@ -68,6 +68,10 @@ jobs:
       - name: Run tests
         run: pytest tests/integration/
 
+      - name: Dump Docker Compose logs
+        run: docker compose logs
+        if: failure()
+
       - name: Shutdown Docker Compose
         if: always()
         run: docker compose down
