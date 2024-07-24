@@ -1,22 +1,89 @@
-<script setup lang="ts">
-import { XMarkIcon } from '@heroicons/vue/24/solid'
+<script setup>
+import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
+import { XMarkIcon } from '@heroicons/vue/16/solid'
+import { useUIStore } from '@/stores/ui'
+const uiStore = useUIStore()
+
 const props = defineProps({
-    open: { type: Boolean, default: false }
+  open: { type: Boolean, default: false },
 })
+
+const emit = defineEmits(['close'])
 </script>
 
 <template>
-    <div v-show="props.open"
-        className="fixed top-0 left-0 flex justify-center items-center w-full h-full bg-black bg-opacity-50 z-50">
-        <div className="relative bg-white rounded-lg p-8 dark:bg-zinc-800 dark:text-white text-primary min-w-[30%] max-w-[70%]">
-            <button
-                className="absolute top-2 right-2 hover:text-gray-500 focus:outline-none dark:bg-zinc-800 dark:text-white text-primary"
-                @click="$emit('close')">
-                <XMarkIcon class="ml-4 h-4 w-4" />
-            </button>
-            <div class="flex flex-col">
-                <slot></slot>
-            </div>
+  <TransitionRoot as="template" :show="open">
+    <Dialog class="relative z-20" @close="emit('close')" :data-mode="uiStore.mode">
+      <TransitionChild
+        as="template"
+        enter="ease-out duration-300"
+        enter-from="opacity-0"
+        enter-to="opacity-100"
+        leave="ease-in duration-200"
+        leave-from="opacity-100"
+        leave-to="opacity-0"
+      >
+        <div class="fixed inset-0 bg-zinc-900 bg-opacity-50 transition-opacity" />
+      </TransitionChild>
+
+      <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+        <div
+          class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0"
+        >
+          <TransitionChild
+            as="template"
+            enter="ease-out duration-150"
+            enter-from="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            enter-to="opacity-100 translate-y-0 sm:scale-100"
+            leave="ease-in duration-100"
+            leave-from="opacity-100 translate-y-0 sm:scale-100"
+            leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+          >
+            <DialogPanel
+              class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm sm:p-6 dark:bg-zinc-700"
+            >
+              <GhostBtn @click="emit('close')" class="absolute right-3 top-3">
+                <XMarkIcon class="h-5 w-5" />
+              </GhostBtn>
+
+              <div class="mt-4 flex flex-col gap-4">
+                <div
+                  v-if="$slots.icon"
+                  class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100"
+                >
+                  <slot name="icon" />
+                </div>
+
+                <DialogTitle
+                  v-if="$slots.title"
+                  as="h3"
+                  class="text-center text-xl font-semibold leading-6"
+                >
+                  <slot name="title" />
+                </DialogTitle>
+
+                <div v-if="$slots.description">
+                  <p class="text-center text-sm text-gray-600 dark:text-gray-300">
+                    <slot name="description" />
+                  </p>
+                </div>
+
+                <slot />
+              </div>
+
+              <!-- <div class="mt-5 sm:mt-6">
+                <button
+                  type="button"
+                  class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  @click="emit('close')"
+                >
+                  Go back to dashboard
+                </button>
+              </div> -->
+            </DialogPanel>
+          </TransitionChild>
         </div>
-    </div>
+      </div>
+    </Dialog>
+  </TransitionRoot>
 </template>
