@@ -8,6 +8,7 @@ jobs:
   changelog:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: "✏️ Generate release changelog"
         id: changelog
         uses: heinrichreimer/action-github-changelog-generator@v2.3
@@ -18,3 +19,6 @@ jobs:
 
       - name: "echo changelog"
         run: echo "${{ steps.changelog.outputs.changelog }}"
+
+      # - name: Create Pull Request
+      #   uses: peter-evans/create-pull-request@v6
