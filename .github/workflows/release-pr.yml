@@ -52,10 +52,8 @@ jobs:
           echo "notes=$notes" >> "$GITHUB_OUTPUT"
 
       - name: Create pull request
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          draft: true
-          base: main
-          title: Release ${{ steps.get_latest_release.outputs.tag }}
-          body: ${{ steps.generate_release_notes.outputs.notes }}
+        id: create_pull_request
+        run: |
+          gh pr create --title "Release ${{ steps.extract_tag.outputs.tag }}" --body "${{ steps.generate_release_notes.outputs.notes }}" --base main --head ${{ steps.extract_branch.outputs.branch }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
