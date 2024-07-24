@@ -41,6 +41,10 @@ export const useContractsStore = defineStore('contractsStore', () => {
   function removeContractFile(id: string): void {
     contracts.value = [...contracts.value.filter((c) => c.id !== id)]
     deployedContracts.value = [...deployedContracts.value.filter((c) => c.contractId !== id)]
+    
+    if (currentContractId.value === id) {
+      setCurrentContractId('')
+    }
   }
 
   function updateContractFile(id: string, { name, content, updatedAt }: { name?: string; content?: string, updatedAt?: string }) {
