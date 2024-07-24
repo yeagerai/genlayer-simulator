@@ -1,21 +1,18 @@
 name: CI
 
 on:
-  # pull_request:
-  #   types:
-  #     - opened
-  #     - ready_for_review
-  # pull_request_review:
-  #   types:
-  #     - submitted
-  # workflow_dispatch:
-  push:
-    branches:
-      - agustin/hotfix-e2e-tests
+  pull_request:
+    types:
+      - opened
+      - ready_for_review
+  pull_request_review:
+    types:
+      - submitted
+  workflow_dispatch:
 
 jobs:
   test:
-    # if: ${{ github.event.review.state == 'APPROVED' || (github.event_name == 'pull_request' && github.base_ref == 'staging') }}
+    if: ${{ github.event.review.state == 'APPROVED' || (github.event_name == 'pull_request' && github.base_ref == 'staging') }}
     runs-on: ubuntu-latest
 
     env:
