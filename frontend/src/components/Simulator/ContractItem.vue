@@ -20,8 +20,11 @@ const deleteModalOpen = ref(false)
 const handleEditFile = ({ id, name }: { id: string; name: string }) => {
   isEditing.value = true
   editingFileName.value = name
+  const dotPosition = name.indexOf('.')
+
   nextTick(() => {
     editInput.value?.focus()
+    editInput.value?.setSelectionRange(0, dotPosition)
   })
 }
 
@@ -33,7 +36,7 @@ const handleStopEditing = () => {
 
 const handleSaveFile = (e: Event) => {
   e.preventDefault()
-  
+
   if (isEditing.value === false) {
     return // Avoid double events with enter + blur
   }
