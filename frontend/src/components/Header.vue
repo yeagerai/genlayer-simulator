@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import { PresentationChartLineIcon } from '@heroicons/vue/24/solid'
-import { SunIcon, MoonIcon } from '@heroicons/vue/16/solid'
-import { useUIStore, useAccountsStore } from '@/stores'
-import { shortenAddress } from '@/utils'
-import { RouterLink } from 'vue-router'
-import Logo from '@/assets/images/logo.svg'
+import { PresentationChartLineIcon } from '@heroicons/vue/24/solid';
+import { SunIcon, MoonIcon } from '@heroicons/vue/16/solid';
+import { useUIStore, useAccountsStore } from '@/stores';
+import { shortenAddress } from '@/utils';
+import { RouterLink } from 'vue-router';
+import Logo from '@/assets/images/logo.svg';
 
-const uiStore = useUIStore()
-const accounts = useAccountsStore()
+const uiStore = useUIStore();
+const accounts = useAccountsStore();
 const toggleMode = () => {
-  uiStore.toggleMode()
-}
+  uiStore.toggleMode();
+};
 const showTutorial = () => {
-  uiStore.runTutorial()
-}
+  uiStore.runTutorial();
+};
 </script>
 
 <template>

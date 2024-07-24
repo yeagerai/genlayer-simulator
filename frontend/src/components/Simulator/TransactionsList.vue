@@ -1,40 +1,40 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import JsonViewer from '@/components/JsonViewer/json-viewer.vue'
-import { useUIStore } from '@/stores'
-import type { TransactionItem } from '@/types'
-import { TrashIcon } from '@heroicons/vue/24/solid'
+import { ref } from 'vue';
+import JsonViewer from '@/components/JsonViewer/json-viewer.vue';
+import { useUIStore } from '@/stores';
+import type { TransactionItem } from '@/types';
+import { TrashIcon } from '@heroicons/vue/24/solid';
 
 const props = defineProps<{
-  transactions: TransactionItem[]
-}>()
-const emit = defineEmits(['clear-transactions'])
-const uiStore = useUIStore()
-const selectedTransaction = ref<TransactionItem | null>(null)
-const clearTransactionsModalOpen = ref(false)
+  transactions: TransactionItem[];
+}>();
+const emit = defineEmits(['clear-transactions']);
+const uiStore = useUIStore();
+const selectedTransaction = ref<TransactionItem | null>(null);
+const clearTransactionsModalOpen = ref(false);
 
 const openClearTransactionsModal = () => {
-  clearTransactionsModalOpen.value = true
-}
+  clearTransactionsModalOpen.value = true;
+};
 
 const closeClearTransactionsModal = () => {
-  clearTransactionsModalOpen.value = false
-}
+  clearTransactionsModalOpen.value = false;
+};
 
 const handleSelectTransaction = (transaction: any) => {
-  selectedTransaction.value = transaction
-}
+  selectedTransaction.value = transaction;
+};
 
 const handleClearTransactions = () => {
-  emit('clear-transactions')
+  emit('clear-transactions');
   setTimeout(() => {
-    closeClearTransactionsModal()
-  }, 500)
-}
+    closeClearTransactionsModal();
+  }, 500);
+};
 
 const handleCloseModal = () => {
-  selectedTransaction.value = null
-}
+  selectedTransaction.value = null;
+};
 </script>
 <template>
   <div

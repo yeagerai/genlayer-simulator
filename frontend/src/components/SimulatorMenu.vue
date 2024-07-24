@@ -6,11 +6,11 @@ import {
   CommandLineIcon,
   HandThumbUpIcon,
   DocumentTextIcon,
-} from '@heroicons/vue/24/solid'
-import DiscordIcon from '@/assets/icons/DiscordIcon.vue'
-import { LINKS } from '@/constants/links'
-import SimulatorMenuItem from './SimulatorMenuItem.vue'
-import SimulatorMenuLink from './SimulatorMenuLink.vue'
+} from '@heroicons/vue/24/solid';
+import DiscordIcon from '@/assets/icons/DiscordIcon.vue';
+import { LINKS } from '@/constants/links';
+import SimulatorMenuItem from './SimulatorMenuItem.vue';
+import SimulatorMenuLink from './SimulatorMenuLink.vue';
 </script>
 
 <template>

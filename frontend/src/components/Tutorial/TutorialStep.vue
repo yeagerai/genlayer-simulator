@@ -67,10 +67,10 @@
 </template>
 
 <script>
-import { createPopper } from '@popperjs/core'
-import jump from 'jump.js'
-import sum from 'hash-sum'
-import { DEFAULT_STEP_OPTIONS, HIGHLIGHT } from './constants'
+import { createPopper } from '@popperjs/core';
+import jump from 'jump.js';
+import sum from 'hash-sum';
+import { DEFAULT_STEP_OPTIONS, HIGHLIGHT } from './constants';
 
 export default {
   name: 'TutorialStep',
@@ -90,13 +90,13 @@ export default {
     skip: {
       type: Function,
       default: function () {
-        this.stop()
+        this.stop();
       },
     },
     finish: {
       type: Function,
       default: function () {
-        this.stop()
+        this.stop();
       },
     },
     isFirst: {
@@ -125,7 +125,7 @@ export default {
     return {
       hash: sum(this.step.target),
       targetElement: document.querySelector(this.step.target),
-    }
+    };
   },
   computed: {
     params() {
@@ -134,19 +134,19 @@ export default {
         ...{ highlight: this.highlight }, // Use global tour highlight setting first
         ...{ enabledButtons: Object.assign({}, this.enabledButtons) },
         ...this.step.params, // Then use local step parameters if defined
-      }
+      };
     },
     /**
      * A step is considered sticky if it has no target.
      */
     isSticky() {
-      return !this.step.target
+      return !this.step.target;
     },
     content() {
       if (typeof this.step.content === 'function') {
-        return this.step.content()
+        return this.step.content();
       }
-      return this.step.content
+      return this.step.content;
     },
   },
   methods: {
@@ -158,7 +158,7 @@ export default {
           this.hash +
           '"] is:',
         this.targetElement
-      )
+      );
       if (this.debug) {
         console.log(
           '[Vue Tour] The target element ' +
@@ -167,21 +167,21 @@ export default {
             this.hash +
             '"] is:',
           this.targetElement
-        )
+        );
       }
 
       if (this.isSticky) {
-        document.body.appendChild(this.$refs['v-step-' + this.hash])
+        document.body.appendChild(this.$refs['v-step-' + this.hash]);
       } else {
         if (this.targetElement) {
-          this.enableScrolling()
-          this.createHighlight()
+          this.enableScrolling();
+          this.createHighlight();
 
           createPopper(
             this.targetElement,
             this.$refs['v-step-' + this.hash],
             this.params
-          )
+          );
         } else {
           if (this.debug) {
             console.error(
@@ -190,11 +190,11 @@ export default {
                 ' of .v-step[id="' +
                 this.hash +
                 '"] does not exist!'
-            )
+            );
           }
-          this.$emit('targetNotFound', this.step)
+          this.$emit('targetNotFound', this.step);
           if (this.stopOnFail) {
-            this.stop()
+            this.stop();
           }
         }
       }
@@ -207,12 +207,12 @@ export default {
             offset: this.step.offset || 0,
             callback: undefined,
             a11y: false,
-          }
+          };
 
-          jump(this.targetElement, jumpOptions)
+          jump(this.targetElement, jumpOptions);
         } else {
           // Use the native scroll by default if no scroll options has been defined
-          this.targetElement?.scrollIntoView({ behavior: 'smooth' })
+          this.targetElement?.scrollIntoView({ behavior: 'smooth' });
         }
       }
     },
@@ -220,48 +220,48 @@ export default {
       if (this.debug) {
         console.log(
           `[Vue Tour] Highlight is ${this.params.highlight ? 'enabled' : 'disabled'} for .v-step[id="${this.hash}"]`
-        )
+        );
       }
-      return this.params.highlight
+      return this.params.highlight;
     },
     createHighlight() {
       if (this.isHighlightEnabled()) {
-        document.body.classList.add(HIGHLIGHT.classes.active)
+        document.body.classList.add(HIGHLIGHT.classes.active);
         const transitionValue = window
           .getComputedStyle(this.targetElement)
-          .getPropertyValue('transition')
+          .getPropertyValue('transition');
 
         // Make sure our background doesn't flick on transitions
         if (transitionValue !== 'all 0s ease 0s' && this.targetElement) {
-          this.targetElement.style.transition = `${transitionValue}, ${HIGHLIGHT.transition}`
+          this.targetElement.style.transition = `${transitionValue}, ${HIGHLIGHT.transition}`;
         }
 
-        this.targetElement?.classList.add(HIGHLIGHT.classes.targetHighlighted)
+        this.targetElement?.classList.add(HIGHLIGHT.classes.targetHighlighted);
         // The element must have a position, if it doesn't have one, add a relative position class
         if (!this.targetElement?.style.position) {
-          this.targetElement?.classList.add(HIGHLIGHT.classes.targetRelative)
+          this.targetElement?.classList.add(HIGHLIGHT.classes.targetRelative);
         }
       } else {
-        document.body.classList.remove(HIGHLIGHT.classes.active)
+        document.body.classList.remove(HIGHLIGHT.classes.active);
       }
     },
     removeHighlight() {
       if (this.isHighlightEnabled()) {
-        const target = this.targetElement
+        const target = this.targetElement;
         if (target) {
-          const currentTransition = this.targetElement.style.transition
+          const currentTransition = this.targetElement.style.transition;
           this.targetElement.classList.remove(
             HIGHLIGHT.classes.targetHighlighted
-          )
-          this.targetElement.classList.remove(HIGHLIGHT.classes.targetRelative)
+          );
+          this.targetElement.classList.remove(HIGHLIGHT.classes.targetRelative);
           // Remove our transition when step is finished.
           if (currentTransition.includes(HIGHLIGHT.transition)) {
             setTimeout(() => {
               target.style.transition = currentTransition.replace(
                 `, ${HIGHLIGHT.transition}`,
                 ''
-              )
-            }, 0)
+              );
+            }, 0);
           }
         }
       }
@@ -269,16 +269,16 @@ export default {
     isButtonEnabled(name) {
       return this.params.enabledButtons[name]
         ? this.params.enabledButtons[name]
-        : true
+        : true;
     },
   },
   mounted() {
-    this.createStep()
+    this.createStep();
   },
   unmounted() {
-    this.removeHighlight()
+    this.removeHighlight();
   },
-}
+};
 </script>
 
 <style scoped>

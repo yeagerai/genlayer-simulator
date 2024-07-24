@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { XMarkIcon, DocumentCheckIcon } from '@heroicons/vue/16/solid'
-import { type ContractFile } from '@/types'
-import { HomeIcon } from '@heroicons/vue/24/solid'
+import { XMarkIcon, DocumentCheckIcon } from '@heroicons/vue/16/solid';
+import { type ContractFile } from '@/types';
+import { HomeIcon } from '@heroicons/vue/24/solid';
 
 defineProps<{
-  contract?: ContractFile
-  isHomeTab?: Boolean
-  isActive: Boolean
-}>()
+  contract?: ContractFile;
+  isHomeTab?: Boolean;
+  isActive: Boolean;
+}>();
 
-const emit = defineEmits(['closeContract', 'selectContract'])
+const emit = defineEmits(['closeContract', 'selectContract']);
 </script>
 
 <template>

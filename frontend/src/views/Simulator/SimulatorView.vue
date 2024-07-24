@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { RouterView } from 'vue-router'
-import SimulatorMenu from '@/components/SimulatorMenu.vue'
-import NodeLogs from '@/components/Simulator/NodeLogs.vue'
-import ContractsPanel from '@/components/Simulator/ContractsPanel.vue'
-import { Splitpanes, Pane } from 'splitpanes'
-import 'splitpanes/dist/splitpanes.css'
+import { ref } from 'vue';
+import { RouterView } from 'vue-router';
+import SimulatorMenu from '@/components/SimulatorMenu.vue';
+import NodeLogs from '@/components/Simulator/NodeLogs.vue';
+import ContractsPanel from '@/components/Simulator/ContractsPanel.vue';
+import { Splitpanes, Pane } from 'splitpanes';
+import 'splitpanes/dist/splitpanes.css';
 
-const showLogsTerminal = ref<boolean>(true)
+const showLogsTerminal = ref<boolean>(true);
 
 const handleLogsResize = (event: any) => {
   if (event[1]?.size <= 4) {
-    showLogsTerminal.value = false
+    showLogsTerminal.value = false;
   } else {
-    showLogsTerminal.value = true
+    showLogsTerminal.value = true;
   }
-}
+};
 </script>
 
 <template>

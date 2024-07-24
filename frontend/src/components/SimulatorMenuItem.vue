@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
+import { RouterLink } from 'vue-router';
 
 defineProps({
   to: { type: Object, default: null },
   tooltip: { type: String, default: '' },
-})
+});
 </script>
 
 <template>

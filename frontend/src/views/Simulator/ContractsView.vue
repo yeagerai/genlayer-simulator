@@ -1,114 +1,116 @@
 <script setup lang="ts">
-import { useContractsStore } from '@/stores'
+import { useContractsStore } from '@/stores';
 import {
   DocumentCheckIcon,
   ArrowUpTrayIcon,
   PlusIcon,
   TrashIcon,
   PencilIcon,
-} from '@heroicons/vue/24/solid'
-import { nextTick, ref, watchEffect } from 'vue'
-import { v4 as uuidv4 } from 'uuid'
-import type { ContractFile } from '@/types'
+} from '@heroicons/vue/24/solid';
+import { nextTick, ref, watchEffect } from 'vue';
+import { v4 as uuidv4 } from 'uuid';
+import type { ContractFile } from '@/types';
 
-const store = useContractsStore()
-const editingFileId = ref('')
-const newFileName = ref('.gpy')
-const showNewFileInput = ref(false)
-const editingFileName = ref('')
-const newFileNameInputRef = ref<HTMLInputElement | null>(null)
-const deleteFileModalIsOpen = ref(false)
-const fileToDelete = ref<ContractFile | null>(null)
+const store = useContractsStore();
+const editingFileId = ref('');
+const newFileName = ref('.gpy');
+const showNewFileInput = ref(false);
+const editingFileName = ref('');
+const newFileNameInputRef = ref<HTMLInputElement | null>(null);
+const deleteFileModalIsOpen = ref(false);
+const fileToDelete = ref<ContractFile | null>(null);
 /**
  * Loads content from a file and adds it to the contract file store.
  *
  * @param {Event} event - The event triggered by the file input element.
  */
 const loadContentFromFile = (event: Event) => {
-  const target = event.target as HTMLInputElement
+  const target = event.target as HTMLInputElement;
 
   if (target.files && target.files.length > 0) {
-    const [file] = target.files
-    const reader = new FileReader()
+    const [file] = target.files;
+    const reader = new FileReader();
 
     reader.onload = (ev: ProgressEvent<FileReader>) => {
       if (ev.target?.result) {
-        const id = uuidv4()
+        const id = uuidv4();
         store.addContractFile({
           id,
           name: file.name,
           content: (ev.target?.result as string) || '',
-        })
-        store.openFile(id)
+        });
+        store.openFile(id);
       }
-    }
+    };
 
-    reader.readAsText(file)
+    reader.readAsText(file);
   }
-}
+};
 
 const handleAddNewFile = () => {
   if (!showNewFileInput.value) {
-    showNewFileInput.value = true
+    showNewFileInput.value = true;
   }
-}
+};
 
 watchEffect(() => {
   if (showNewFileInput.value && newFileNameInputRef.value) {
     nextTick(() => {
-      newFileNameInputRef?.value?.focus()
-      newFileNameInputRef?.value?.setSelectionRange(0, 0)
-    })
+      newFileNameInputRef?.value?.focus();
+      newFileNameInputRef?.value?.setSelectionRange(0, 0);
+    });
   }
-})
+});
 
 const handleSaveNewFile = () => {
   if (newFileName.value && newFileName.value.replace('.gpy', '') !== '') {
-    const id = uuidv4()
-    store.addContractFile({ id, name: newFileName.value, content: '' })
-    store.openFile(id)
+    const id = uuidv4();
+    store.addContractFile({ id, name: newFileName.value, content: '' });
+    store.openFile(id);
   }
 
-  showNewFileInput.value = false
-  newFileName.value = '.gpy'
-}
+  showNewFileInput.value = false;
+  newFileName.value = '.gpy';
+};
 
 const handleRemoveFile = () => {
   if (fileToDelete.value) {
-    store.removeContractFile(fileToDelete.value.id)
+    store.removeContractFile(fileToDelete.value.id);
     if (store.currentContractId === fileToDelete.value.id) {
-      store.setCurrentContractId('')
+      store.setCurrentContractId('');
     }
   }
 
-  deleteFileModalIsOpen.value = false
-}
+  deleteFileModalIsOpen.value = false;
+};
 
 const handleEditFile = ({ id, name }: { id: string; name: string }) => {
-  editingFileId.value = id
-  editingFileName.value = name
-}
+  editingFileId.value = id;
+  editingFileName.value = name;
+};
 
 const handleSaveFile = (e: Event) => {
-  e.preventDefault()
-  store.updateContractFile(editingFileId.value, { name: editingFileName.value })
-  editingFileId.value = ''
-  editingFileName.value = ''
-}
+  e.preventDefault();
+  store.updateContractFile(editingFileId.value, {
+    name: editingFileName.value,
+  });
+  editingFileId.value = '';
+  editingFileName.value = '';
+};
 
 const openContract = (id?: string) => {
-  store.openFile(id || '')
-}
+  store.openFile(id || '');
+};
 
 const openDeleteFileModal = (contract: ContractFile) => {
-  fileToDelete.value = contract
-  deleteFileModalIsOpen.value = true
-}
+  fileToDelete.value = contract;
+  deleteFileModalIsOpen.value = true;
+};
 
 const closeDeleteFileModal = () => {
-  deleteFileModalIsOpen.value = false
-  fileToDelete.value = null
-}
+  deleteFileModalIsOpen.value = false;
+  fileToDelete.value = null;
+};
 </script>
 <template>
   <div class="flex w-full flex-col">

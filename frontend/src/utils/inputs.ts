@@ -3,4 +3,4 @@ export const InputTypesMap: { [k: string]: string } = {
   int: 'number',
   float: 'number',
   bool: 'checkbox',
-}
+};

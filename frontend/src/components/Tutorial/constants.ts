@@ -21,7 +21,7 @@ export const DEFAULT_OPTIONS = {
     arrowLeft: false,
   },
   debug: false,
-}
+};
 
 export const HIGHLIGHT = {
   classes: {
@@ -30,7 +30,7 @@ export const HIGHLIGHT = {
     targetRelative: 'v-tour__target--relative',
   },
   transition: 'box-shadow 0s ease-in-out 0s',
-}
+};
 
 export const DEFAULT_STEP_OPTIONS = {
   enableScrolling: true,
@@ -58,10 +58,10 @@ export const DEFAULT_STEP_OPTIONS = {
     },
   ],
   placement: 'bottom',
-}
+};
 
 export const KEYS = {
   ARROW_RIGHT: 39,
   ARROW_LEFT: 37,
   ESCAPE: 27,
-}
+};

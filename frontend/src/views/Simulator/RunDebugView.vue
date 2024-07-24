@@ -3,24 +3,24 @@ import {
   useAccountsStore,
   useContractsStore,
   useTransactionsStore,
-} from '@/stores'
-import { computed, onMounted, onUnmounted, watch } from 'vue'
-import { notify } from '@kyvg/vue3-notification'
-import ContractState from '@/components/Simulator/ContractState.vue'
-import ExecuteTransactions from '@/components/Simulator/ExecuteTransactions.vue'
-import TransactionsList from '@/components/Simulator/TransactionsList.vue'
-import ConstructorParameters from '@/components/Simulator/ConstructorParameters.vue'
-import { debounce } from 'vue-debounce'
+} from '@/stores';
+import { computed, onMounted, onUnmounted, watch } from 'vue';
+import { notify } from '@kyvg/vue3-notification';
+import ContractState from '@/components/Simulator/ContractState.vue';
+import ExecuteTransactions from '@/components/Simulator/ExecuteTransactions.vue';
+import TransactionsList from '@/components/Simulator/TransactionsList.vue';
+import ConstructorParameters from '@/components/Simulator/ConstructorParameters.vue';
+import { debounce } from 'vue-debounce';
 
-const contractsStore = useContractsStore()
-const accountsStore = useAccountsStore()
-const transactionsStore = useTransactionsStore()
-let deploymentSubscription: () => void
+const contractsStore = useContractsStore();
+const accountsStore = useAccountsStore();
+const transactionsStore = useTransactionsStore();
+let deploymentSubscription: () => void;
 const contractTransactions = computed(() =>
   transactionsStore.transactions.filter(
     (t) => t.localContractId === contractsStore.currentContractId
   )
-)
+);
 
 const handleGetContractState = async (
   contractAddress: string,
@@ -32,92 +32,92 @@ const handleGetContractState = async (
       contractAddress,
       method,
       methodArguments
-    )
+    );
   } catch (error) {
     notify({
       title: 'Error',
       text: (error as Error)?.message || 'Error getting contract state',
       type: 'error',
-    })
+    });
   }
-}
+};
 
 const handleCallContractMethod = async ({
   method,
   params,
 }: {
-  method: string
-  params: any[]
+  method: string;
+  params: any[];
 }) => {
   const result = await contractsStore.callContractMethod({
     userAccount: accountsStore.currentUserAddress || '',
     localContractId: contractsStore.deployedContract?.contractId || '',
     method: `${method}`,
     params,
-  })
+  });
   if (!result) {
     notify({
       title: 'Error',
       text: 'Error calling contract method',
       type: 'error',
-    })
+    });
   }
-}
+};
 
 const handleDeployContract = async ({
   params: constructorParams,
 }: {
-  params: { [k: string]: string }
+  params: { [k: string]: string };
 }) => {
   try {
     await contractsStore.deployContract({
       constructorParams,
-    })
+    });
     notify({
       title: 'OK',
       text: 'Started deploying the contract',
       type: 'success',
-    })
+    });
   } catch (err) {
     notify({
       title: 'Error',
       text: (err as Error)?.message || 'Error deploying contract',
       type: 'error',
-    })
+    });
   }
-}
+};
 
 const handleClearTransactions = () => {
   transactionsStore.processingQueue = transactionsStore.processingQueue.filter(
     (t) => t.localContractId !== contractsStore.currentContractId
-  )
+  );
   transactionsStore.transactions = transactionsStore.transactions.filter(
     (t) => t.localContractId !== contractsStore.currentContractId
-  )
-}
+  );
+};
 
 const debouncedGetConstructorInputs = debounce(
   () => contractsStore.getConstructorInputs(),
   3000
-)
+);
 
 watch(
   () => contractsStore.deployedContract?.contractId,
   (newValue) => {
     if (newValue) {
-      contractsStore.getCurrentContractAbi()
+      contractsStore.getCurrentContractAbi();
     }
   }
-)
+);
 
 watch(
   () => contractsStore.currentContract?.id,
   (newValue, oldValue) => {
     if (newValue && newValue !== oldValue) {
-      contractsStore.getConstructorInputs()
+      contractsStore.getConstructorInputs();
     }
   }
-)
+);
 
 watch(
   () => contractsStore.currentContract?.content,
@@ -127,10 +127,10 @@ watch(
       newValue !== oldValue &&
       !contractsStore.loadingConstructorInputs
     ) {
-      debouncedGetConstructorInputs()
+      debouncedGetConstructorInputs();
     }
   }
-)
+);
 watch(
   () => contractsStore.currentErrorConstructorInputs,
   (newValue, oldValue) => {
@@ -139,15 +139,15 @@ watch(
         title: 'Error',
         text: 'Error getting the contract schema',
         type: 'error',
-      })
+      });
     }
   }
-)
+);
 
 onMounted(async () => {
-  await contractsStore.getConstructorInputs()
+  await contractsStore.getConstructorInputs();
   if (contractsStore.deployedContract) {
-    contractsStore.getCurrentContractAbi()
+    contractsStore.getCurrentContractAbi();
   }
   deploymentSubscription = contractsStore.$onAction(
     ({ name, store, args, after }) => {
@@ -157,18 +157,18 @@ onMounted(async () => {
             title: 'Contract deployed',
             text: `to ${args[0]?.address}`,
             type: 'success',
-          })
-        })
+          });
+        });
       }
     }
-  )
-})
+  );
+});
 
 onUnmounted(() => {
   if (deploymentSubscription) {
-    deploymentSubscription()
+    deploymentSubscription();
   }
-})
+});
 </script>
 
 <template>

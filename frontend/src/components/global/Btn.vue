@@ -1,12 +1,12 @@
 <script setup>
-import LoadingIndicator from '@/components/LoadingIndicator.vue'
+import LoadingIndicator from '@/components/LoadingIndicator.vue';
 
-const emit = defineEmits(['click'])
+const emit = defineEmits(['click']);
 const props = defineProps({
   id: { type: String, default: null },
   disabled: { type: Boolean, default: false },
   loading: { type: Boolean, default: false },
-})
+});
 </script>
 
 <template>

@@ -1,5 +1,5 @@
-import type { IRpcClient } from '@/utils'
-import type { IJsonRpcService } from './IJsonRpcService'
+import type { IRpcClient } from '@/utils';
+import type { IJsonRpcService } from './IJsonRpcService';
 import type {
   JsonRpcResult,
   JsonRPCRequest,
@@ -14,7 +14,7 @@ import type {
   CreateValidatorRequest,
   UpdateValidatorRequest,
   TransactionItem,
-} from '@/types'
+} from '@/types';
 
 export class JsonRpcService implements IJsonRpcService {
   constructor(protected rpcClient: IRpcClient) {}
@@ -35,8 +35,8 @@ export class JsonRpcService implements IJsonRpcService {
     const { result } = await this.rpcClient.call<GetContractStateResult>({
       method: 'get_contract_state',
       params: [contractAddress, method, methodArguments],
-    })
-    return result
+    });
+    return result;
   }
   /**
    * Calls a contract function and returns the result.
@@ -59,8 +59,8 @@ export class JsonRpcService implements IJsonRpcService {
     const { result } = await this.rpcClient.call<CallContractFunctionResult>({
       method: 'call_contract_function',
       params: [userAccount, contractAddress, method, params],
-    })
-    return result
+    });
+    return result;
   }
 
   /**
@@ -82,8 +82,8 @@ export class JsonRpcService implements IJsonRpcService {
     const { result } = await this.rpcClient.call({
       method: 'deploy_intelligent_contract',
       params: [userAccount, className, code, constructorParams],
-    })
-    return result
+    });
+    return result;
   }
 
   /**
@@ -99,8 +99,8 @@ export class JsonRpcService implements IJsonRpcService {
     const { result } = await this.rpcClient.call({
       method: 'get_contract_schema_for_code',
       params: [code],
-    })
-    return result
+    });
+    return result;
   }
   /**
    * Retrieves the deployed contract schema for the given address.
@@ -115,8 +115,8 @@ export class JsonRpcService implements IJsonRpcService {
     const { result } = await this.rpcClient.call({
       method: 'get_contract_schema',
       params: [address],
-    })
-    return result
+    });
+    return result;
   }
   /**
    * Retrieves a list of validators from the JSON-RPC server.
@@ -127,8 +127,8 @@ export class JsonRpcService implements IJsonRpcService {
     const { result } = await this.rpcClient.call({
       method: 'get_all_validators',
       params: [],
-    })
-    return result
+    });
+    return result;
   }
 
   /**
@@ -140,8 +140,8 @@ export class JsonRpcService implements IJsonRpcService {
     const { result } = await this.rpcClient.call({
       method: 'get_providers_and_models',
       params: [],
-    })
-    return result
+    });
+    return result;
   }
   /**
    * Creates a validator on the JSON-RPC server.
@@ -162,8 +162,8 @@ export class JsonRpcService implements IJsonRpcService {
     const { result } = await this.rpcClient.call({
       method: 'create_validator',
       params: [stake, provider, model, config],
-    })
-    return result
+    });
+    return result;
   }
 
   /**
@@ -187,8 +187,8 @@ export class JsonRpcService implements IJsonRpcService {
     const { result } = await this.rpcClient.call({
       method: 'update_validator',
       params: [address, stake, provider, model, config],
-    })
-    return result
+    });
+    return result;
   }
   /**
    * Deletes a validator on the JSON-RPC server.
@@ -200,13 +200,13 @@ export class JsonRpcService implements IJsonRpcService {
   async deleteValidator({
     address,
   }: {
-    address: string
+    address: string;
   }): Promise<JsonRpcResult<any>> {
     const { result } = await this.rpcClient.call({
       method: 'delete_validator',
       params: [address],
-    })
-    return result
+    });
+    return result;
   }
 
   async getTransactionById(
@@ -215,8 +215,8 @@ export class JsonRpcService implements IJsonRpcService {
     const { result } = await this.rpcClient.call<TransactionItem>({
       method: 'get_transaction_by_id',
       params: [`${txId}`],
-    })
-    return result
+    });
+    return result;
   }
 
   /**
@@ -228,6 +228,6 @@ export class JsonRpcService implements IJsonRpcService {
    * @return {Promise<JsonRPCResponse<any>>} A promise that resolves to the JSON-RPC response.
    */
   call({ method, params }: JsonRPCRequest): Promise<JsonRPCResponse<any>> {
-    return this.rpcClient.call({ method, params })
+    return this.rpcClient.call({ method, params });
   }
 }

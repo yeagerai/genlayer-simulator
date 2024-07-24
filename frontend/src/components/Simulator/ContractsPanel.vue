@@ -1,42 +1,42 @@
 <script setup lang="ts">
-import { PlayIcon } from '@heroicons/vue/24/solid'
-import ContractTab from '@/components/Simulator/ContractTab.vue'
-import CodeEditor from '@/components/Simulator/CodeEditor.vue'
-import { useContractsStore } from '@/stores'
-import { computed } from 'vue'
-import HomeTab from './HomeTab.vue'
-import { useRouter } from 'vue-router'
+import { PlayIcon } from '@heroicons/vue/24/solid';
+import ContractTab from '@/components/Simulator/ContractTab.vue';
+import CodeEditor from '@/components/Simulator/CodeEditor.vue';
+import { useContractsStore } from '@/stores';
+import { computed } from 'vue';
+import HomeTab from './HomeTab.vue';
+import { useRouter } from 'vue-router';
 
-const store = useContractsStore()
-const router = useRouter()
+const store = useContractsStore();
+const router = useRouter();
 
 const handleRunDebug = () => {
-  router.push({ name: 'run-debug' })
-}
+  router.push({ name: 'run-debug' });
+};
 
 const setCurrentContractTab = (id?: string) => {
-  console.log(' setCurrentContractTab', id)
-  store.setCurrentContractId(id)
-}
+  console.log(' setCurrentContractTab', id);
+  store.setCurrentContractId(id);
+};
 
 const handleCloseContract = (id?: string) => {
-  store.closeFile(id || '')
-}
+  store.closeFile(id || '');
+};
 
 const contracts = computed(() => {
   return store.contracts.filter((contract) =>
     store.openedFiles.includes(contract.id || '')
-  )
-})
+  );
+});
 
-const showHome = computed(() => store.currentContractId === '')
+const showHome = computed(() => store.currentContractId === '');
 
 const handleHorizontalScroll = (event: WheelEvent) => {
   if (!event.shiftKey && event.currentTarget instanceof HTMLElement) {
-    event.preventDefault()
-    event.currentTarget.scrollLeft += event.deltaY
+    event.preventDefault();
+    event.currentTarget.scrollLeft += event.deltaY;
   }
-}
+};
 </script>
 
 <template>

@@ -1,6 +1,6 @@
 <script>
-import JsonBox from '../json-box.vue'
-import { h } from 'vue'
+import JsonBox from '../json-box.vue';
+import { h } from 'vue';
 export default {
   name: 'JsonObject',
   props: {
@@ -23,54 +23,54 @@ export default {
   data() {
     return {
       value: {},
-    }
+    };
   },
   computed: {
     ordered() {
       if (!this.sort) {
-        return this.value
+        return this.value;
       }
 
-      const ordered = {}
+      const ordered = {};
       Object.keys(this.value)
         .sort()
         .forEach((key) => {
-          ordered[key] = this.value[key]
-        })
-      return ordered
+          ordered[key] = this.value[key];
+        });
+      return ordered;
     },
   },
   watch: {
     jsonValue(newVal) {
-      this.setValue(newVal)
+      this.setValue(newVal);
     },
   },
   mounted() {
-    this.setValue(this.jsonValue)
+    this.setValue(this.jsonValue);
   },
   methods: {
     setValue(val) {
       setTimeout(() => {
-        this.value = val
-      }, 0)
+        this.value = val;
+      }, 0);
     },
     toggle() {
-      this.$emit('update:expand', !this.expand)
-      this.dispatchEvent()
+      this.$emit('update:expand', !this.expand);
+      this.dispatchEvent();
     },
     dispatchEvent() {
       try {
-        this.$el.dispatchEvent(new Event('resized'))
+        this.$el.dispatchEvent(new Event('resized'));
       } catch (e) {
         // handle IE not supporting Event constructor
-        var evt = document.createEvent('Event')
-        evt.initEvent('resized', true, false)
-        this.$el.dispatchEvent(evt)
+        var evt = document.createEvent('Event');
+        evt.initEvent('resized', true, false);
+        this.$el.dispatchEvent(evt);
       }
     },
   },
   render() {
-    let elements = []
+    let elements = [];
     if (!this.previewMode && !this.keyName) {
       elements.push(
         h('span', {
@@ -80,7 +80,7 @@ export default {
           },
           onClick: this.toggle,
         })
-      )
+      );
     }
 
     elements.push(
@@ -91,13 +91,13 @@ export default {
         },
         innerText: '{',
       })
-    )
+    );
 
     if (this.expand) {
       for (let key in this.ordered) {
         // eslint-disable-next-line no-prototype-builtins
         if (this.ordered.hasOwnProperty(key)) {
-          let value = this.ordered[key]
+          let value = this.ordered[key];
 
           elements.push(
             h(JsonBox, {
@@ -111,7 +111,7 @@ export default {
               value,
               previewMode: this.previewMode,
             })
-          )
+          );
         }
       }
     }
@@ -129,7 +129,7 @@ export default {
           title: `click to reveal object content (keys: ${Object.keys(this.ordered).join(', ')})`,
           innerText: '...',
         })
-      )
+      );
     }
 
     elements.push(
@@ -140,9 +140,9 @@ export default {
         },
         innerText: '}',
       })
-    )
+    );
 
-    return h('span', elements)
+    return h('span', elements);
   },
-}
+};
 </script>

@@ -1,5 +1,5 @@
 <script>
-import { h } from 'vue'
+import { h } from 'vue';
 export default {
   name: 'JsonUndefined',
   functional: true,
@@ -16,7 +16,7 @@ export default {
         'jv-undefined': true,
       },
       innerText: this.jsonValue === null ? 'null' : 'undefined',
-    })
+    });
   },
-}
+};
 </script>

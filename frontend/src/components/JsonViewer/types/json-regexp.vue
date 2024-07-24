@@ -2,8 +2,8 @@
 // const REG_LINK = /^\w+:\/\//;
 // eslint-disable-next-line no-useless-escape
 const REG_LINK =
-  /^([hH][tT]{2}[pP]:\/\/|[hH][tT]{2}[pP][sS]:\/\/)(([A-Za-z0-9-~]+)\.)+([A-Za-z0-9-~\/])+$/
-import { h } from 'vue'
+  /^([hH][tT]{2}[pP]:\/\/|[hH][tT]{2}[pP][sS]:\/\/)(([A-Za-z0-9-~]+)\.)+([A-Za-z0-9-~\/])+$/;
+import { h } from 'vue';
 export default {
   name: 'JsonString',
   props: {
@@ -16,22 +16,22 @@ export default {
     return {
       expand: true,
       canExtend: false,
-    }
+    };
   },
   mounted() {
     if (this.$refs.itemRef.offsetHeight > this.$refs.holderRef.offsetHeight) {
-      this.canExtend = true
+      this.canExtend = true;
     }
   },
   methods: {
     toggle() {
-      this.expand = !this.expand
+      this.expand = !this.expand;
     },
   },
   render() {
-    let value = this.jsonValue
-    const islink = REG_LINK.test(value)
-    let domItem
+    let value = this.jsonValue;
+    const islink = REG_LINK.test(value);
+    let domItem;
 
     if (!this.expand) {
       domItem = {
@@ -40,7 +40,7 @@ export default {
         },
         onClick: this.toggle,
         innerText: '...',
-      }
+      };
     } else {
       domItem = {
         class: {
@@ -48,12 +48,12 @@ export default {
           'jv-string': true,
         },
         ref: 'itemRef',
-      }
+      };
       if (islink) {
-        value = `<a href="${value}" target="_blank" class="jv-link">${value}</a>`
-        domItem.innerHTML = `${value.toString()}`
+        value = `<a href="${value}" target="_blank" class="jv-link">${value}</a>`;
+        domItem.innerHTML = `${value.toString()}`;
       } else {
-        domItem.innerText = `${value.toString()}`
+        domItem.innerText = `${value.toString()}`;
       }
     }
 
@@ -73,7 +73,7 @@ export default {
         ref: 'holderRef',
       }),
       h('span', domItem),
-    ])
+    ]);
   },
-}
+};
 </script>

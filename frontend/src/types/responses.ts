@@ -1,7 +1,7 @@
-import type { JsonRpcResult } from './results'
+import type { JsonRpcResult } from './results';
 
 export interface JsonRPCResponse<T> {
-  id: string
-  jsonrpc: string
-  result: JsonRpcResult<T>
+  id: string;
+  jsonrpc: string;
+  result: JsonRpcResult<T>;
 }

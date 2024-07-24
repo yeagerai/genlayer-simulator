@@ -1,14 +1,14 @@
-import { defineStore } from 'pinia'
-import { useContractsStore } from './contracts'
-import { useNodeStore } from './node'
-import { v4 as uuidv4 } from 'uuid'
-import { useTransactionsStore } from './transactions'
+import { defineStore } from 'pinia';
+import { useContractsStore } from './contracts';
+import { useNodeStore } from './node';
+import { v4 as uuidv4 } from 'uuid';
+import { useTransactionsStore } from './transactions';
 
 const deployedContract = {
   address: '0x3F9Fb6C6aBaBD0Ae6cB27c513E7b0fE4C0B3E9C8',
   contractId: '1a621cad-1cfd-4dbd-892a-f6bbde7a2fa1',
   defaultState: '{}',
-}
+};
 
 const contractFunctionLogs = [
   {
@@ -103,12 +103,12 @@ const contractFunctionLogs = [
       },
     },
   },
-]
+];
 
 export const useTutorialStore = defineStore('tutorialStore', () => {
-  const contractsStore = useContractsStore()
-  const transactionsStore = useTransactionsStore()
-  const nodeStore = useNodeStore()
+  const contractsStore = useContractsStore();
+  const transactionsStore = useTransactionsStore();
+  const nodeStore = useNodeStore();
 
   const addLog = async (message: any) => {
     return new Promise((resolve) => {
@@ -116,21 +116,21 @@ export const useTutorialStore = defineStore('tutorialStore', () => {
         nodeStore.logs.push({
           date: new Date().toISOString(),
           message,
-        })
-        resolve(0)
-      }, 1500)
-    })
-  }
+        });
+        resolve(0);
+      }, 1500);
+    });
+  };
 
   async function deployContract() {
-    contractsStore.loadingConstructorInputs = true
+    contractsStore.loadingConstructorInputs = true;
 
     setTimeout(() => {
-      contractsStore.loadingConstructorInputs = false
-      contractsStore.currentErrorConstructorInputs = undefined
+      contractsStore.loadingConstructorInputs = false;
+      contractsStore.currentErrorConstructorInputs = undefined;
 
       // Deploy the contract
-      contractsStore.deployingContract = true
+      contractsStore.deployingContract = true;
       nodeStore.logs.push({
         date: new Date().toISOString(),
         message: {
@@ -138,10 +138,10 @@ export const useTutorialStore = defineStore('tutorialStore', () => {
           trace_id: 'dstukqao9',
           response: { status: 'info', message: 'Starting...', data: {} },
         },
-      })
+      });
 
       setTimeout(() => {
-        contractsStore.deployingContract = false
+        contractsStore.deployingContract = false;
         nodeStore.logs.push({
           date: new Date().toISOString(),
           message: {
@@ -155,16 +155,16 @@ export const useTutorialStore = defineStore('tutorialStore', () => {
               },
             },
           },
-        })
-        contractsStore.addDeployedContract(deployedContract)
-        return deployedContract
-      }, 3000)
-    }, 2000)
+        });
+        contractsStore.addDeployedContract(deployedContract);
+        return deployedContract;
+      }, 3000);
+    }, 2000);
   }
   async function callContractMethod() {
-    contractsStore.callingContractMethod = true
+    contractsStore.callingContractMethod = true;
     for (const log of contractFunctionLogs) {
-      await addLog(log)
+      await addLog(log);
     }
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -175,11 +175,11 @@ export const useTutorialStore = defineStore('tutorialStore', () => {
           type: 'method',
           status: 'PENDING',
           data: {},
-        })
-        resolve(true)
-      }, 2000)
-    })
+        });
+        resolve(true);
+      }, 2000);
+    });
   }
 
-  return { deployContract, callContractMethod }
-})
+  return { deployContract, callContractMethod };
+});

@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
-import { InputTypesMap } from '@/utils'
-import { notify } from '@kyvg/vue3-notification'
-import { useUIStore } from '@/stores'
-import { ExclamationTriangleIcon } from '@heroicons/vue/24/solid'
+import { ref, watch, onMounted } from 'vue';
+import { InputTypesMap } from '@/utils';
+import { notify } from '@kyvg/vue3-notification';
+import { useUIStore } from '@/stores';
+import { ExclamationTriangleIcon } from '@heroicons/vue/24/solid';
 
 interface Props {
-  inputs: { [k: string]: string }
-  loading: boolean
-  error?: Error
-  deploying: boolean
+  inputs: { [k: string]: string };
+  loading: boolean;
+  error?: Error;
+  deploying: boolean;
 }
 
 // TODO: check if we need to update again also we have an issue with conversion
@@ -20,13 +20,13 @@ const mapInputs = (inputs: { [k: string]: string }) =>
     .map((key) => ({ name: key, type: InputTypesMap[key], value: inputs[key] }))
     .reduce((prev, curr) => {
       if (typeof curr.value === 'boolean') {
-        prev = { ...prev, [curr.name]: curr.value ? 'True' : 'False' }
+        prev = { ...prev, [curr.name]: curr.value ? 'True' : 'False' };
       } else {
-        prev = { ...prev, [curr.name]: curr.value }
+        prev = { ...prev, [curr.name]: curr.value };
       }
 
-      return prev
-    }, {})
+      return prev;
+    }, {});
 
 const setInputParams = (inputs: { [k: string]: string }) => {
   inputParams.value = Object.keys(inputs)
@@ -34,74 +34,74 @@ const setInputParams = (inputs: { [k: string]: string }) => {
     .reduce((prev, curr) => {
       switch (curr.value) {
         case 'bool':
-          prev = { ...prev, [curr.name]: false }
-          break
+          prev = { ...prev, [curr.name]: false };
+          break;
         case 'str':
-          prev = { ...prev, [curr.name]: '' }
-          break
+          prev = { ...prev, [curr.name]: '' };
+          break;
         case 'int':
-          prev = { ...prev, [curr.name]: 0 }
+          prev = { ...prev, [curr.name]: 0 };
 
-          break
+          break;
         case 'float':
-          prev = { ...prev, [curr.name]: 0.0 }
+          prev = { ...prev, [curr.name]: 0.0 };
 
-          break
+          break;
         default:
-          prev = { ...prev, [curr.name]: '' }
-          break
+          prev = { ...prev, [curr.name]: '' };
+          break;
       }
-      return prev
-    }, {})
+      return prev;
+    }, {});
 
-  jsonParams.value = JSON.stringify(inputParams.value || {}, null, 2)
-}
-const jsonParams = ref('{}')
-const inputParams = ref<{ [k: string]: any }>({})
-const props = defineProps<Props>()
-const emit = defineEmits(['deployContract'])
-const mode = ref<'json' | 'form'>('form')
-const uiStore = useUIStore()
+  jsonParams.value = JSON.stringify(inputParams.value || {}, null, 2);
+};
+const jsonParams = ref('{}');
+const inputParams = ref<{ [k: string]: any }>({});
+const props = defineProps<Props>();
+const emit = defineEmits(['deployContract']);
+const mode = ref<'json' | 'form'>('form');
+const uiStore = useUIStore();
 const handleDeployContract = () => {
   if (mode.value === 'json') {
     try {
-      const json = JSON.parse(jsonParams.value || '{}')
-      const params = mapInputs(json)
-      emit('deployContract', { params })
+      const json = JSON.parse(jsonParams.value || '{}');
+      const params = mapInputs(json);
+      emit('deployContract', { params });
     } catch (error) {
-      console.error(error)
+      console.error(error);
       notify({
         title: 'Error',
         text: 'You should provide a valid json',
         type: 'error',
-      })
+      });
     }
   } else {
-    const params = mapInputs(inputParams.value || {})
-    emit('deployContract', { params })
+    const params = mapInputs(inputParams.value || {});
+    emit('deployContract', { params });
   }
-}
+};
 const toggleMode = () => {
-  mode.value = mode.value === 'json' ? 'form' : 'json'
+  mode.value = mode.value === 'json' ? 'form' : 'json';
   if (mode.value === 'json') {
-    jsonParams.value = JSON.stringify(inputParams.value || {}, null, 2)
+    jsonParams.value = JSON.stringify(inputParams.value || {}, null, 2);
   } else {
-    inputParams.value = JSON.parse(jsonParams.value || '{}')
+    inputParams.value = JSON.parse(jsonParams.value || '{}');
   }
-}
+};
 
 watch(
   () => props.inputs,
   (newValue) => {
-    setInputParams(newValue || {})
+    setInputParams(newValue || {});
   }
-)
+);
 
 onMounted(() => {
   if (props.inputs) {
-    setInputParams(props.inputs)
+    setInputParams(props.inputs);
   }
-})
+});
 </script>
 
 <template>

@@ -1,109 +1,109 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { notify } from '@kyvg/vue3-notification'
-import { TrashIcon } from '@heroicons/vue/24/solid'
-import { useNodeStore } from '@/stores'
+import { onMounted } from 'vue';
+import { notify } from '@kyvg/vue3-notification';
+import { TrashIcon } from '@heroicons/vue/24/solid';
+import { useNodeStore } from '@/stores';
 
-const nodeStore = useNodeStore()
+const nodeStore = useNodeStore();
 
 // Hooks
 onMounted(async () => {
   try {
-    await nodeStore.getValidatorsData()
+    await nodeStore.getValidatorsData();
   } catch (error) {
-    console.error(error)
+    console.error(error);
     notify({
       title: 'Error',
       text: (error as Error)?.message || 'Error loading validators',
       type: 'error',
-    })
+    });
   }
-})
+});
 
 async function handleCreateNewValidator() {
   try {
-    await nodeStore.createNewValidator()
+    await nodeStore.createNewValidator();
     notify({
       title: 'OK',
       text: 'New validator created',
       type: 'success',
-    })
+    });
   } catch (error) {
-    console.error(error)
+    console.error(error);
     notify({
       title: 'Error',
       text: (error as Error)?.message || 'Error creating new validator',
       type: 'error',
-    })
+    });
   }
 }
 
 async function handleUpdateValidator() {
   try {
-    await nodeStore.updateValidator()
+    await nodeStore.updateValidator();
     notify({
       title: 'OK',
       text: 'Validator updated successfully',
       type: 'success',
-    })
+    });
   } catch (error) {
-    console.error(error)
+    console.error(error);
     notify({
       title: 'Error',
       text: (error as Error)?.message || 'Error udpating the validator',
       type: 'error',
-    })
+    });
   }
 }
 
 async function handleDeleteValidator() {
   try {
-    await nodeStore.deleteValidator()
+    await nodeStore.deleteValidator();
     notify({
       title: 'OK',
       text: 'Validator deleted successfully',
       type: 'success',
-    })
+    });
   } catch (error) {
-    console.error(error)
+    console.error(error);
     notify({
       title: 'Error',
       text: (error as Error)?.message || 'Error deleting a validator',
       type: 'error',
-    })
+    });
   }
 }
 
 const handleResetStorage = async () => {
   try {
-    await nodeStore.resetStorage()
+    await nodeStore.resetStorage();
     notify({
       title: 'Success',
       text: 'Storage reset successfully',
       type: 'success',
-    })
+    });
   } catch (error) {
-    console.error(error)
+    console.error(error);
     notify({
       title: 'Error',
       text: (error as Error)?.message || 'Error resetting the storage',
       type: 'error',
-    })
+    });
   } finally {
-    nodeStore.closeResetStorageModal()
+    nodeStore.closeResetStorageModal();
   }
-}
+};
 
 const handleNumberInput = (event: Event) => {
-  const formattedValue = parseInt((event?.target as any)?.value || '', 10)
+  const formattedValue = parseInt((event?.target as any)?.value || '', 10);
 
   if (!isNaN(formattedValue)) {
-    ;(event?.target as any).value = ''
-    ;(event?.target as any).value = formattedValue
+    (event?.target as any).value = '';
+    (event?.target as any).value = formattedValue;
   } else {
-    event.preventDefault()
+    event.preventDefault();
   }
-}
+};
 </script>
 
 <template>

@@ -1,43 +1,43 @@
 <script setup lang="ts">
-import type { DeployedContract, ContractMethod } from '@/types'
-import { computed, ref } from 'vue'
-import LoadingIndicator from '@/components/LoadingIndicator.vue'
+import type { DeployedContract, ContractMethod } from '@/types';
+import { computed, ref } from 'vue';
+import LoadingIndicator from '@/components/LoadingIndicator.vue';
 
 interface Abi {
   methods: {
     [k: string]: {
-      inputs: { [k: string]: string }
-    }
-  }
-  class: string
+      inputs: { [k: string]: string };
+    };
+  };
+  class: string;
 }
 
 const props = defineProps<{
-  abi?: Abi
-  contractState: any
-  deployedContract?: DeployedContract
+  abi?: Abi;
+  contractState: any;
+  deployedContract?: DeployedContract;
   getContractState: (
     contractAddress: string,
     method: string,
     methodArguments: string[]
-  ) => void
-  callingState: boolean
-}>()
+  ) => void;
+  callingState: boolean;
+}>();
 
-const inputParams = ref<{ [k: string]: any }>({})
+const inputParams = ref<{ [k: string]: any }>({});
 
 const methodList = computed<ContractMethod[]>(() => {
   const list = Object.entries(props.abi?.methods || {})
     .filter((m) => m[0].startsWith('get_'))
-    .map((m) => ({ name: m[0], inputs: m[1].inputs })) as ContractMethod[]
-  return list
-})
+    .map((m) => ({ name: m[0], inputs: m[1].inputs })) as ContractMethod[];
+  return list;
+});
 
 const getInputPlaceholder = (methodInputs: { [k: string]: string }) => {
   return Object.keys(methodInputs)
     .map((inputName) => `${inputName} ${methodInputs[inputName]}`)
-    .join(', ')
-}
+    .join(', ');
+};
 </script>
 <template>
   <div

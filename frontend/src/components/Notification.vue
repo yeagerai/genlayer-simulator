@@ -1,5 +1,5 @@
 <script setup>
-import { XMarkIcon } from '@heroicons/vue/16/solid'
+import { XMarkIcon } from '@heroicons/vue/16/solid';
 </script>
 
 <template>

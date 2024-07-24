@@ -1,5 +1,5 @@
 <script>
-import { h } from 'vue'
+import { h } from 'vue';
 export default {
   name: 'JsonFunction',
   functional: true,
@@ -19,7 +19,7 @@ export default {
         title: this.jsonValue.toString(),
       },
       innerHTML: '&lt;function&gt;',
-    })
+    });
   },
-}
+};
 </script>

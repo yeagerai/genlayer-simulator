@@ -1,26 +1,26 @@
 <script setup lang="ts">
-import { nextTick, ref, watch } from 'vue'
-import { useNodeStore, useUIStore } from '@/stores'
-import JsonViewer from '@/components/JsonViewer/json-viewer.vue'
+import { nextTick, ref, watch } from 'vue';
+import { useNodeStore, useUIStore } from '@/stores';
+import JsonViewer from '@/components/JsonViewer/json-viewer.vue';
 
-const nodeStore = useNodeStore()
-const uiStore = useUIStore()
-const scrollContainer = ref<HTMLDivElement>()
+const nodeStore = useNodeStore();
+const uiStore = useUIStore();
+const scrollContainer = ref<HTMLDivElement>();
 const colorMap: Record<string, string> = {
   info: 'text-blue-500',
   error: 'text-red-500',
   warning: 'text-yellow-500',
   success: 'text-green-500',
-}
+};
 
 watch(nodeStore.logs, () => {
   nextTick(() => {
     scrollContainer.value?.scrollTo({
       top: scrollContainer.value.scrollHeight,
       behavior: 'smooth',
-    })
-  })
-})
+    });
+  });
+});
 </script>
 
 <template>

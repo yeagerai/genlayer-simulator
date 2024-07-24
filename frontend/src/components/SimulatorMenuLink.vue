@@ -2,7 +2,7 @@
 defineProps({
   href: { type: String, default: '/' },
   tooltip: { type: String, default: '' },
-})
+});
 </script>
 
 <template>

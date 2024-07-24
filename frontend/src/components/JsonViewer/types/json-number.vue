@@ -1,5 +1,5 @@
 <script>
-import { h } from 'vue'
+import { h } from 'vue';
 export default {
   name: 'JsonNumber',
   functional: true,
@@ -10,7 +10,7 @@ export default {
     },
   },
   render() {
-    const isInteger = Number.isInteger(this.jsonValue)
+    const isInteger = Number.isInteger(this.jsonValue);
 
     return h('span', {
       class: {
@@ -20,7 +20,7 @@ export default {
         'jv-number-float': !isInteger,
       },
       innerText: this.jsonValue.toString(),
-    })
+    });
   },
-}
+};
 </script>

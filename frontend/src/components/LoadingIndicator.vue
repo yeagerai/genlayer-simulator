@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useUIStore } from '@/stores'
-const uiStore = useUIStore()
-const props = defineProps<{ color?: string }>()
+import { useUIStore } from '@/stores';
+const uiStore = useUIStore();
+const props = defineProps<{ color?: string }>();
 </script>
 <template>
   <div class="flex flex-col items-center">

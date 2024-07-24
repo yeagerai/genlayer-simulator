@@ -1,46 +1,46 @@
 <script setup lang="ts">
-import { useAccountsStore } from '@/stores'
-import { notify } from '@kyvg/vue3-notification'
-import SimulatorMenu from '@/components/SimulatorMenu.vue'
-import { CheckIcon } from '@heroicons/vue/24/solid'
-import { ref } from 'vue'
-const store = useAccountsStore()
+import { useAccountsStore } from '@/stores';
+import { notify } from '@kyvg/vue3-notification';
+import SimulatorMenu from '@/components/SimulatorMenu.vue';
+import { CheckIcon } from '@heroicons/vue/24/solid';
+import { ref } from 'vue';
+const store = useAccountsStore();
 
-const showSetDefaultAccount = ref<Record<string, boolean>>({})
+const showSetDefaultAccount = ref<Record<string, boolean>>({});
 const handleCreateNewAccount = async () => {
-  const privateKey = store.generateNewAccount()
+  const privateKey = store.generateNewAccount();
   if (privateKey) {
     notify({
       title: 'OK',
       text: 'New Account Created',
       type: 'success',
-    })
+    });
   } else {
     notify({
       title: 'Error',
       text: 'Error creating a new account',
       type: 'error',
-    })
+    });
   }
-}
+};
 
 const handleShowSetDefaultAccount = (privateKey: string) => {
-  showSetDefaultAccount.value[privateKey] = true
-}
+  showSetDefaultAccount.value[privateKey] = true;
+};
 const handleHideSetDefaultAccount = (privateKey: string) => {
-  showSetDefaultAccount.value[privateKey] = false
-}
+  showSetDefaultAccount.value[privateKey] = false;
+};
 const setCurentUserAddress = (privateKey: `0x${string}`) => {
   if (privateKey) {
-    store.currentPrivateKey = privateKey
-    showSetDefaultAccount.value = {}
+    store.currentPrivateKey = privateKey;
+    showSetDefaultAccount.value = {};
     notify({
       title: 'OK',
       text: 'Default account updated',
       type: 'success',
-    })
+    });
   }
-}
+};
 </script>
 
 <template>

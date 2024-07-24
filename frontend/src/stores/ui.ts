@@ -1,28 +1,28 @@
-import { defineStore } from 'pinia'
-import type { UIMode, UIState } from '@/types'
+import { defineStore } from 'pinia';
+import type { UIMode, UIState } from '@/types';
 
 export const useUIStore = defineStore('ui', {
   state: (): UIState => {
     return {
       mode: (localStorage.getItem('genLayer.ui-mode') as UIMode) || 'light',
       showTutorial: false,
-    }
+    };
   },
   actions: {
     toggleMode() {
       if (this.mode === 'light') {
-        this.mode = 'dark'
+        this.mode = 'dark';
       } else {
-        this.mode = 'light'
+        this.mode = 'light';
       }
 
-      this.initialize()
+      this.initialize();
     },
     initialize() {
-      localStorage.setItem('genLayer.ui-mode', this.mode)
+      localStorage.setItem('genLayer.ui-mode', this.mode);
     },
     runTutorial() {
-      this.showTutorial = true
+      this.showTutorial = true;
     },
   },
-})
+});

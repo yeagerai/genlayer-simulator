@@ -1,70 +1,70 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { InputTypesMap } from '@/utils'
-import { useAccountsStore } from '@/stores'
-import type { ContractMethod } from '@/types'
-import LoadingIndicator from '@/components/LoadingIndicator.vue'
+import { computed, ref, watch } from 'vue';
+import { InputTypesMap } from '@/utils';
+import { useAccountsStore } from '@/stores';
+import type { ContractMethod } from '@/types';
+import LoadingIndicator from '@/components/LoadingIndicator.vue';
 interface Abi {
   methods: {
     [k: string]: {
-      inputs: { [k: string]: string }
-    }
-  }
-  class: string
+      inputs: { [k: string]: string };
+    };
+  };
+  class: string;
 }
 
 interface Props {
-  abi?: Abi
-  callingMethod: boolean
+  abi?: Abi;
+  callingMethod: boolean;
 }
 
-const store = useAccountsStore()
-const props = defineProps<Props>()
-const emit = defineEmits(['callMethod'])
-const methodList = ref<ContractMethod[]>([])
-const method = ref<ContractMethod>()
+const store = useAccountsStore();
+const props = defineProps<Props>();
+const emit = defineEmits(['callMethod']);
+const methodList = ref<ContractMethod[]>([]);
+const method = ref<ContractMethod>();
 
 const inputs = computed<{ [k: string]: any }>(() => {
   return methodList.value.reduce((prev: any, curr) => {
-    prev[curr.name] = {}
-    return prev
-  }, {})
-})
+    prev[curr.name] = {};
+    return prev;
+  }, {});
+});
 
 watch(
   () => props.abi,
   (newValue) => {
-    method.value = undefined
+    method.value = undefined;
     methodList.value = Object.entries(newValue?.methods || {})
       .filter((m) => !m[0].startsWith('_') && !m[0].startsWith('get_'))
       .map((m) => ({
         name: m[0],
         inputs: m[1].inputs,
-      }))
+      }));
   }
-)
+);
 
 const handleMethodCall = () => {
   if (method.value) {
-    const params = Object.values(inputs.value[method.value.name] || {})
-    emit('callMethod', { method: method.value.name, params })
-    inputs.value[method.value.name] = {}
+    const params = Object.values(inputs.value[method.value.name] || {});
+    emit('callMethod', { method: method.value.name, params });
+    inputs.value[method.value.name] = {};
   }
-}
+};
 
 const onMethodChange = (event: Event) => {
-  const selectedMethod = (event.target as HTMLSelectElement).value
+  const selectedMethod = (event.target as HTMLSelectElement).value;
   if (selectedMethod) {
-    method.value = methodList.value.find((m) => m.name === selectedMethod)
-  } else method.value = undefined
-}
+    method.value = methodList.value.find((m) => m.name === selectedMethod);
+  } else method.value = undefined;
+};
 
 const setCurentUserAddress = (event: Event) => {
   if ((event.target as HTMLSelectElement)?.value) {
     store.currentPrivateKey = (event.target as HTMLSelectElement)
-      ?.value as `0x${string}`
+      ?.value as `0x${string}`;
   }
-}
+};
 </script>
 
 <template>

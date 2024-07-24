@@ -1,6 +1,6 @@
 <script>
-import JsonBox from '../json-box.vue'
-import { h } from 'vue'
+import JsonBox from '../json-box.vue';
+import { h } from 'vue';
 export default {
   name: 'JsonArray',
   props: {
@@ -23,43 +23,43 @@ export default {
   data() {
     return {
       value: [],
-    }
+    };
   },
   watch: {
     jsonValue(newVal) {
-      this.setValue(newVal)
+      this.setValue(newVal);
     },
   },
   mounted() {
-    this.setValue(this.jsonValue)
+    this.setValue(this.jsonValue);
   },
   methods: {
     setValue(vals, index = 0) {
       if (index === 0) {
-        this.value = []
+        this.value = [];
       }
       setTimeout(() => {
         if (vals.length > index) {
-          this.value.push(vals[index])
-          this.setValue(vals, index + 1)
+          this.value.push(vals[index]);
+          this.setValue(vals, index + 1);
         }
-      }, 0)
+      }, 0);
     },
     toggle() {
-      this.$emit('update:expand', !this.expand)
+      this.$emit('update:expand', !this.expand);
 
       try {
-        this.$el.dispatchEvent(new Event('resized'))
+        this.$el.dispatchEvent(new Event('resized'));
       } catch (e) {
         // handle IE not supporting Event constructor
-        var evt = document.createEvent('Event')
-        evt.initEvent('resized', true, false)
-        this.$el.dispatchEvent(evt)
+        var evt = document.createEvent('Event');
+        evt.initEvent('resized', true, false);
+        this.$el.dispatchEvent(evt);
       }
     },
   },
   render() {
-    let elements = []
+    let elements = [];
 
     if (!this.previewMode && !this.keyName) {
       elements.push(
@@ -70,7 +70,7 @@ export default {
           },
           onClick: this.toggle,
         })
-      )
+      );
     }
 
     elements.push(
@@ -81,7 +81,7 @@ export default {
         },
         innerText: '[',
       })
-    )
+    );
     if (this.expand) {
       this.value.forEach((value, key) => {
         elements.push(
@@ -96,8 +96,8 @@ export default {
             value,
             previewMode: this.previewMode,
           })
-        )
-      })
+        );
+      });
     }
 
     if (!this.expand && this.value.length) {
@@ -113,7 +113,7 @@ export default {
           title: `click to reveal ${this.value.length} hidden items`,
           innerText: '...',
         })
-      )
+      );
     }
 
     elements.push(
@@ -124,9 +124,9 @@ export default {
         },
         innerText: ']',
       })
-    )
+    );
 
-    return h('span', elements)
+    return h('span', elements);
   },
-}
+};
 </script>

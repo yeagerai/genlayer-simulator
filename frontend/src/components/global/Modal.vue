@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { XMarkIcon } from '@heroicons/vue/24/solid'
+import { XMarkIcon } from '@heroicons/vue/24/solid';
 const props = defineProps({
   open: { type: Boolean, default: false },
-})
+});
 </script>
 
 <template>
