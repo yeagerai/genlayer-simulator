@@ -28,7 +28,6 @@ jobs:
         id: get_latest_release
         run: |
           latest_release=$(gh release view --json tagName --jq .tagName)
-          e
           echo "tag=$latest_release" >> "$GITHUB_OUTPUT"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
