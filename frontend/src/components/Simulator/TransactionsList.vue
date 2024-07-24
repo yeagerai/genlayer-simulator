@@ -105,6 +105,7 @@ const handleCloseModal = () => {
     @close="closeClearTransactionsModal"
     @confirm="handleClearTransactions"
     buttonText="Clear Transactions"
+    dangerous
   >
     <template #title>Clear Transaction List</template>
     <template #description>Are you sure you want to clear all transactions?</template>
