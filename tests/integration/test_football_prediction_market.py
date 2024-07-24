@@ -65,7 +65,7 @@ def test_football_prediction_market():
             contract_address,
             "resolve",
             [],
-        )
+        ),
         retries=30,
     )
     assert has_success_status(transaction_response_call_1)
