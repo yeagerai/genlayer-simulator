@@ -31,7 +31,6 @@ const props = withDefaults(
       <Btn
         :dangerous="dangerous"
         @click="emit('confirm')"
-        :id="buttonTestId"
         :loading="confirming"
         class="flex-auto"
         >{{ buttonText }}</Btn

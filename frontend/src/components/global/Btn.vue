@@ -6,14 +6,14 @@ const emit = defineEmits(['click'])
 
 const props = withDefaults(
   defineProps<{
-    id?: string | undefined
+    testId?: string | undefined
     disabled?: boolean
     loading?: boolean
     secondary?: boolean
     dangerous?: boolean
   }>(),
   {
-    id: undefined,
+    testId: undefined,
     disabled: false,
     loading: false,
     secondary: false,
@@ -26,7 +26,6 @@ const primary = computed(() => !props.secondary && !props.dangerous)
 
 <template>
   <button
-    :id="id"
     class="flex items-center justify-center gap-2 rounded-md px-4 py-2 font-semibold transition-all active:scale-95"
     :class="[
       primary && 'bg-primary text-white hover:bg-opacity-90 hover:text-white dark:bg-accent',
@@ -37,6 +36,7 @@ const primary = computed(() => !props.secondary && !props.dangerous)
     ]"
     :disabled="disabled || loading"
     @click="emit('click')"
+    :data-testid="testId"
   >
     <LoadingIndicator v-if="loading" color="white" />
     <slot />

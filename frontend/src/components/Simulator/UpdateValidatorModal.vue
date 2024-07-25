@@ -59,6 +59,16 @@ const updateValidatorModelValid = computed(() => {
 
 <template>
   <Modal @close="emit('close')">
+    <template #title>Update Validator</template>
+    <template #info>
+      <div class="text-xs">
+        ID: {{ validator.id }}
+        Address: {{ validator.address }}
+      </div>
+    </template>
+
+
+    
     <div class="flex flex-col">
       <div class="flex justify-between">
         <div class="text-xl">Validator Details</div>

@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { useNodeStore } from '@/stores'
-import { type ValidatorModel, type CreateValidatorModel } from '@/types'
+import { type CreateValidatorModel } from '@/types'
 import { notify } from '@kyvg/vue3-notification'
 import { computed, ref } from 'vue'
 
 const nodeStore = useNodeStore()
 const emit = defineEmits(['close'])
+
+const props = defineProps<{
+  validator: ValidatorModel
+}>()
 
 async function handleCreateNewValidator() {
   try {
@@ -15,7 +19,7 @@ async function handleCreateNewValidator() {
       text: 'New validator created',
       type: 'success',
     })
-    emit('close')   
+    emit('close')
   } catch (error) {
     console.error(error)
     notify({
@@ -41,7 +45,7 @@ const handleNumberInput = (event: Event) => {
 const validatorToCreate = ref<CreateValidatorModel>({
   model: '',
   provider: '',
-  stake: 0,
+  stake: 1,
   config: '{ }',
 })
 
@@ -52,91 +56,77 @@ const createValidatorModelValid = computed(() => {
     validatorToCreate.value?.stake
   )
 })
+
+const providerOptions = computed(() => {
+  return Object.keys(nodeStore.nodeProviders)
+})
+
+const handleChangeProvider = () => {
+  validatorToCreate.value.model = nodeStore.nodeProviders[validatorToCreate.value.provider][0]
+}
+
+const initValues = () => {
+  try {
+    validatorToCreate.value.provider = Object.keys(nodeStore.nodeProviders)[0]
+    validatorToCreate.value.model = nodeStore.nodeProviders[validatorToCreate.value.provider][0]
+  } catch (err) {
+    console.error('Could not initialize values', err)
+  }
+}
 </script>
 
 <template>
-  <Modal @close="emit('close')">
+  <Modal @close="emit('close')" @onOpen="initValues">
     <template #title>Create New Validator</template>
-    <!-- <template #description>Create New Validator</template> -->
 
-    <div class="flex w-full flex-col">
-      <!-- <div class="flex justify-between">
-        <div class="text-xl">Create New Validator</div>
-      </div> -->
-      <div class="mt-2 flex flex-col p-2">
-        <p class="text-md font-semibold">Provider:</p>
-        <select
-          :class="validatorToCreate.provider ? '' : 'border border-red-500'"
-          class="w-full overflow-y-auto bg-slate-100 p-2 dark:bg-zinc-700"
-          data-testid="dropdown-provider-create"
-          v-model="validatorToCreate.provider"
-          required
-        >
-          <option
-            v-for="(_, provider) in nodeStore.nodeProviders"
-            :key="provider"
-            :value="provider"
-            :selected="provider === validatorToCreate.provider"
-          >
-            {{ provider }}
-          </option>
-        </select>
-      </div>
-      <div class="mt-2 flex flex-col p-2">
-        <p class="text-md font-semibold">Model:</p>
-        <select
-          :class="validatorToCreate.model ? '' : 'border border-red-500'"
-          class="w-full overflow-y-auto bg-slate-100 p-2 dark:bg-zinc-700"
-          data-testid="dropdown-model-create"
-          v-model="validatorToCreate.model"
-          required
-        >
-          <option
-            v-for="model in nodeStore.nodeProviders[validatorToCreate.provider]"
-            :key="model"
-            :value="model"
-            :selected="model === validatorToCreate.model"
-          >
-            {{ model }}
-          </option>
-        </select>
-      </div>
-      <div class="mt-2 flex flex-col p-2">
-        <p class="text-md font-semibold">Stake:</p>
-        <input
-          type="number"
-          min="1"
-          step="1"
-          data-testid="input-stake-create"
-          @input="handleNumberInput"
-          v-model="validatorToCreate.stake"
-          :class="validatorToCreate.stake ? '' : 'border border-red-500'"
-          class="w-full bg-slate-100 p-2 dark:bg-zinc-700"
-          required
-        />
-      </div>
-      <div class="mt-2 flex flex-col p-2">
-        <p class="text-md font-semibold">Config:</p>
+    <div>
+      <FieldLabel for="provider">Provider:</FieldLabel>
+      <SelectField
+        name="provider"
+        :options="providerOptions"
+        v-model="validatorToCreate.provider"
+        @change="handleChangeProvider"
+        :invalid="!validatorToCreate.provider"
+        testId="dropdown-provider-create"
+      />
+    </div>
 
-        <textarea
-          name=""
-          id=""
-          rows="5"
-          cols="60"
-          class="max-h-64 w-full bg-slate-100 p-2 dark:bg-zinc-700"
-          v-model="validatorToCreate.config"
-        >
-        </textarea>
-      </div>
+    <div>
+      <FieldLabel for="model">Model:</FieldLabel>
+      <SelectField
+        name="model"
+        :options="nodeStore.nodeProviders[validatorToCreate.provider] || []"
+        v-model="validatorToCreate.model"
+        :invalid="!validatorToCreate.model"
+        testId="dropdown-model-create"
+      />
     </div>
-    <div class="mt-4 flex w-full flex-col">
-      <Btn
-        @click="handleCreateNewValidator"
-        :disabled="!createValidatorModelValid"
-        data-testid="btn-create-validator"
-      >
-        Create
-      </Btn>
+
+    <div>
+      <FieldLabel for="stake">Stake:</FieldLabel>
+      <NumberField
+        name="stake"
+        :min="1"
+        :step="1"
+        :invalid="validatorToCreate.stake < 1"
+        v-model="validatorToCreate.stake"
+        @input="handleNumberInput"
+        required
+        testId="input-stake-create"
+      />
     </div>
+
+    <div>
+      <FieldLabel for="config">Config:</FieldLabel>
+      <TextAreaField name="config" :rows="5" :cols="60" v-model="validatorToCreate.config" />
+    </div>
+
+    <Btn
+      @click="handleCreateNewValidator"
+      :disabled="!createValidatorModelValid"
+      data-testid="btn-create-validator"
+    >
+      Create
+    </Btn>
   </Modal>
 </template>
