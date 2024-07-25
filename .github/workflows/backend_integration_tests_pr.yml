@@ -8,11 +8,16 @@ on:
   pull_request_review:
     types:
       - submitted
-  workflow_dispatch:
+  issue_comment:
+    types: created
+
+concurrency:
+  group: backend-e2e-${{ github.event.number }}
+  cancel-in-progress: true
 
 jobs:
   test:
-    if: ${{ github.event.review.state == 'APPROVED' || (github.event_name == 'pull_request' && github.base_ref == 'staging') || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event.review.state == 'APPROVED' || (github.event_name == 'pull_request' && github.base_ref == 'staging') || (github.event.issue.pull_request && (github.event.comment.body == '/test-unit' || github.event.comment.body == '/test')) }}
     runs-on: ubuntu-latest
 
     env:

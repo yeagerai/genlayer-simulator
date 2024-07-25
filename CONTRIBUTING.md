@@ -43,7 +43,7 @@ $ docker compose up
 1. Installing the Ollama model
 
    ```
-   $ docker exec -it ollama ollama run llama3
+   $ docker exec ollama ollama pull llama3
    ```
 
 2. Setup your environment
@@ -94,6 +94,15 @@ We strive to maintain high-quality code and ensure that all contributions align 
 - **Automated Tests**: Your PR will automatically be tested. Ensure all tests pass to proceed.
 - **Peer Review**: One or more core contributors will review your PR. They may suggest changes or improvements.
 - **Approval and Merge**: After approval from the reviewers, your PR will be merged into the project.
+
+### PR Checks
+
+On PRs we have the following checks:
+
+- Backend end-to-end tests
+- Frontend unit tests
+
+These will be run automatically when you open a PR (and would need an approval from a maintainer if you are not a maintainer). If you modify your PR afterwards, you'll need to manually run the checks again by commenting `/test` on the PR.
 
 ## Community
 
