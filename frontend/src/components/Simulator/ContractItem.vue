@@ -99,7 +99,7 @@ const handleRemoveFile = (id: string) => {
         <input
           type="text"
           ref="editInput"
-          class="-m-[1px] w-full rounded-[1px] !border-none bg-slate-100 p-[1px] font-semibold !shadow-none focus:outline focus:outline-gray-400 dark:bg-zinc-700 dark:text-gray-200"
+          class="-m-[1px] text-xs w-full rounded-[1px] !border-none bg-slate-100 p-[1px] font-semibold !shadow-none focus:outline focus:outline-gray-400 dark:bg-zinc-700 dark:text-gray-200"
           v-model="editingFileName"
           @blur="handleSaveFile"
           @keydown.enter="handleSaveFile"
