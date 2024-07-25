@@ -1,0 +1,29 @@
+name: Run Sonarless Scan
+
+on:
+  push:
+    branches:
+      - staging
+      - sonar-scan
+  workflow_dispatch:
+
+jobs:
+  Sonarless-Scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Sonarless Scan
+        uses: gitricko/sonarless@v1.2
+        # with:
+        #   sonar-source-path: 'src'
+        #   sonar-metrics-path: './sonar-mymetrics.json'
+
+      # Adjust Sonar metrics to minimum acceptable vulnerability count:
+      # - name: Check Sonar Metrics - No Vulnerabilities
+      #   run: |
+      #     echo "Checking for any vulnerabilities in Sonar Metrics JSON"
+      #     VULN=$(cat ./sonar-mymetrics.json | jq -r '.component.measures[] | select(.metric == "vulnerabilities").value')
+      #     echo "# of vulnerabilities = ${VULN}"
+      #     [ ${VULN} -eq "0" ]
