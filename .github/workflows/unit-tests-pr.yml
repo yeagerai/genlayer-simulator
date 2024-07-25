@@ -6,12 +6,12 @@ on:
       - opened
       - ready_for_review
       - reopened
+      - labeled
+      - synchronize
   pull_request_review:
     types:
       - submitted
       - edited
-  issue_comment:
-    types: created
   push:
     branches: main
 
@@ -25,7 +25,7 @@ permissions:
 jobs:
   test:
     name: Unit Tests
-    if: ${{ github.event.review.state == 'APPROVED' || github.event_name == 'pull_request' || (github.event.issue.pull_request && (github.event.comment.body == '/test-unit' || github.event.comment.body == '/test')) }}
+    if: ${{ github.event.pull_request.state == 'opened' || contains(github.event.pull_request.labels.*.name, 'run-tests') }}
     uses: ./.github/workflows/frontend-unit-tests.yml
     secrets:
       codecov_token: ${{ secrets.CODECOV_TOKEN }}
