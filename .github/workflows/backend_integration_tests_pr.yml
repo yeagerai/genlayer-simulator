@@ -4,12 +4,12 @@ on:
   pull_request:
     types:
       - opened
-      - ready_for_review
+      - labeled
+      - synchronize
   pull_request_review:
     types:
       - submitted
-  issue_comment:
-    types: created
+      - edited
 
 concurrency:
   group: backend-e2e-${{ github.event.number }}
@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   test:
-    if: ${{ github.event.review.state == 'APPROVED' || (github.event_name == 'pull_request' && github.base_ref == 'staging') || (github.event.issue.pull_request && (github.event.comment.body == '/test-unit' || github.event.comment.body == '/test')) }}
+    if: ${{ github.event.pull_request.state == 'opened' || github.event.review.state == 'APPROVED' || contains(github.event.pull_request.labels.*.name, 'run-tests') }}
     runs-on: ubuntu-latest
 
     env:
