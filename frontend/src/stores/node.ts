@@ -86,9 +86,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
   }
 
   async function createNewValidator(validatorToCreate: CreateValidatorModel) {
-    // if (!validatorToCreate.value.stake) {
-    //   throw new Error('Please fill the stake field')
-    // }
+
     const { stake, provider, model, config } = validatorToCreate
     const validatorConfig = JSON.parse(config || '{}')
     const result = await $jsonRpc.createValidator({ stake, provider, model, config: validatorConfig })

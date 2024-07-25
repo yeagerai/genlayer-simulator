@@ -51,18 +51,6 @@ async function handleUpdateValidator(validator: ValidatorModel) {
   }
 }
 
-// TODO: improve
-const handleNumberInput = (event: Event) => {
-  const formattedValue = parseInt((event?.target as any)?.value || '', 10)
-
-  if (!isNaN(formattedValue)) {
-    ;(event?.target as any).value = ''
-    ;(event?.target as any).value = formattedValue
-  } else {
-    event.preventDefault()
-  }
-}
-
 const newValidatorData = ref<CreateValidatorModel>({
   model: '',
   provider: '',
@@ -76,6 +64,21 @@ const validatorModelValid = computed(() => {
     newValidatorData.value?.provider !== '' &&
     newValidatorData.value?.stake > 0
   )
+})
+
+const isConfigValid = computed(() => {
+  // Allow empty config
+  if (!newValidatorData.value.config) {
+    return true
+  }
+
+  // Try to parse JSON
+  try {
+    JSON.parse(newValidatorData.value.config)
+    return true
+  } catch (error) {
+    return false
+  }
 })
 
 const providerOptions = computed(() => {
@@ -125,6 +128,7 @@ const tryInitValues = () => {
         v-model="newValidatorData.provider"
         @change="handleChangeProvider"
         :invalid="!newValidatorData.provider"
+        required
         testId="dropdown-provider-create"
       />
     </div>
@@ -136,6 +140,7 @@ const tryInitValues = () => {
         :options="nodeStore.nodeProviders[newValidatorData.provider] || []"
         v-model="newValidatorData.model"
         :invalid="!newValidatorData.model"
+        required
         testId="dropdown-model-create"
       />
     </div>
@@ -148,15 +153,24 @@ const tryInitValues = () => {
         :step="1"
         :invalid="newValidatorData.stake < 1"
         v-model="newValidatorData.stake"
-        @input="handleNumberInput"
         required
         testId="input-stake-create"
       />
+      <FieldError v-if="newValidatorData.stake < 1"
+        >Please enter a number greater than 0.</FieldError
+      >
     </div>
 
     <div>
       <FieldLabel for="config">Config:</FieldLabel>
-      <TextAreaField name="config" :rows="5" :cols="60" v-model="newValidatorData.config" />
+      <TextAreaField
+        name="config"
+        :rows="5"
+        :cols="60"
+        v-model="newValidatorData.config"
+        :invalid="!isConfigValid"
+      />
+      <FieldError v-if="!isConfigValid">Please enter valid JSON.</FieldError>
     </div>
 
     <Btn
