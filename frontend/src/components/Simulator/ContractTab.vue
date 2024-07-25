@@ -22,8 +22,8 @@ const emit = defineEmits(['closeContract', 'selectContract'])
         </button>
 
         <template v-else>
-            <button class="flex items-center p-2 gap-1 pr-7" @click="emit('selectContract')"
-                @click.middle="emit('closeContract')">
+            <button class="flex items-center p-2 gap-1 pr-7 flex-nowrap whitespace-nowrap"
+                @click="emit('selectContract')" @click.middle="emit('closeContract')">
                 <DocumentCheckIcon class="h-4 w-4" :class="{ 'dark:fill-white fill-primary': isActive }" />
                 {{ contract?.name }}
             </button>
