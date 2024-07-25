@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - sast-semgrep # Remove me after merge.
   schedule:
     - cron: '00 18 * * *' # Sets Semgrep to scan every day at 18:00 UTC.
   workflow_dispatch:
