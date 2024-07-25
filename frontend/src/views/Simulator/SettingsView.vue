@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { notify } from '@kyvg/vue3-notification'
-import Modal from '@/components/ModalComponent.vue'
 import { TrashIcon } from '@heroicons/vue/24/solid'
 import { useNodeStore } from '@/stores'
 
@@ -153,20 +152,17 @@ const handleNumberInput = (event: Event) => {
       </div>
     </div>
     <div class="flex flex-col mt-4 w-full px-2">
-      <button @click="nodeStore.openCreateNewValidatorModal" data-testid="create-new-validator-btn"
-        class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
+      <Btn @click="nodeStore.openCreateNewValidatorModal" data-testid="create-new-validator-btn">
         New Validator
-      </button>
+      </Btn>
     </div>
     <div class="mt-10 flex flex-col p-2 w-full bg-slate-100 dark:dark:bg-zinc-700">
       <h4 class="text-md" id="tutorial-validators">Simulator Storage</h4>
     </div>
     <div class="flex flex-col mt-4 w-full px-2">
-      <button @click="nodeStore.openResetStorageModal" :disabled="nodeStore.contractsToDelete.length < 1"
-        class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
+      <Btn @click="nodeStore.openResetStorageModal" :disabled="nodeStore.contractsToDelete.length < 1">
         Reset Storage
-
-      </button>
+      </Btn>
       <ToolTip text="No Contracts file to delete" :options="{ placement: 'right' }"
         v-if="nodeStore.contractsToDelete.length < 1" />
     </div>
@@ -213,11 +209,10 @@ const handleNumberInput = (event: Event) => {
         </div>
       </div>
       <div class="flex flex-col mt-4 w-full">
-        <button @click="handleCreateNewValidator" :disabled="!nodeStore.createValidatorModelValid"
-          data-testid="btn-create-validator"
-          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded disabled:opacity-80">
+        <Btn @click="handleCreateNewValidator" :disabled="!nodeStore.createValidatorModelValid"
+          data-testid="btn-create-validator">
           Create
-        </button>
+        </Btn>
       </div>
     </Modal>
     <Modal :open="nodeStore.updateValidatorModalOpen" @close="nodeStore.closeUpdateValidatorModal">
@@ -270,11 +265,10 @@ const handleNumberInput = (event: Event) => {
         </div>
       </div>
       <div class="flex flex-col mt-4 w-full">
-        <button @click="handleUpdateValidator" :disabled="!nodeStore.updateValidatorModelValid"
-          data-testid="btn-update-validator"
-          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded disabled:opacity-80">
+        <Btn @click="handleUpdateValidator" :disabled="!nodeStore.updateValidatorModelValid"
+          data-testid="btn-update-validator">
           Save
-        </button>
+        </Btn>
       </div>
     </Modal>
     <Modal :open="nodeStore.deleteValidatorModalOpen" @close="nodeStore.closeDeleteValidatorModal">
@@ -307,10 +301,9 @@ const handleNumberInput = (event: Event) => {
         </div>
       </div>
       <div class="flex flex-col mt-4 w-full">
-        <button @click="handleDeleteValidator" data-testid="btn-delete-validator"
-          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
+        <Btn @click="handleDeleteValidator" data-testid="btn-delete-validator">
           Delete Validator
-        </button>
+        </Btn>
       </div>
     </Modal>
     <Modal :open="nodeStore.resetStorageModalOpen" @close="nodeStore.closeResetStorageModal">
@@ -339,12 +332,9 @@ const handleNumberInput = (event: Event) => {
         </div>
       </div>
       <div class="flex flex-col mt-4 w-full">
-        <button @click="handleResetStorage"
-          class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
-          <LoadingIndicator v-if="nodeStore.resetingStorage" :color="'white'">
-          </LoadingIndicator>
-          <span v-else>Reset</span>
-        </button>
+        <Btn @click="handleResetStorage" :loading="nodeStore.resettingStorage">
+          {{ nodeStore.resettingStorage ? 'Resetting...' : 'Reset' }}
+        </Btn>
       </div>
     </Modal>
   </div>

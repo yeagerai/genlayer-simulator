@@ -159,6 +159,7 @@ def random_validator_config(providers: list = None):
                     random_value = None
                     if isinstance(option_config["step"], str):
                         random_value = choice(option_config["step"].split(","))
+                        node_config["config"][option] = int(random_value)
                     else:
                         random_value = choice(
                             np.arange(

@@ -103,8 +103,7 @@ const setCurentUserAddress = (event: Event) => {
         <ToolTip :text="`Execute ${method.name}()`" :options="{ placement: 'top' }" />
         <button @click="handleMethodCall"
           class="bg-primary hover:opacity-80 text-white font-semibold px-4 py-2 rounded">
-          <LoadingIndicator v-if="props.callingMethod" :color="'white'">
-          </LoadingIndicator>
+          <LoadingIndicator v-if="props.callingMethod" :color="'white'" />
           <template v-else>Execute{{ ` ${method.name}` }}()</template>
         </button>
       </div>
