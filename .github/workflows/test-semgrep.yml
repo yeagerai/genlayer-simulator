@@ -1,0 +1,24 @@
+name: Semgrep OSS scan
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '00 18 * * *' # Sets Semgrep to scan every day at 18:00 UTC.
+  workflow_dispatch:
+
+jobs:
+  semgrep:
+    name: semgrep-oss/scan
+    runs-on: ubuntu-latest
+    container:
+      # A Docker image with Semgrep installed. Do not change this.
+      image: semgrep/semgrep
+
+    # Skip any PR created by dependabot to avoid permission issues:
+    if: (github.actor != 'dependabot[bot]')
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: semgrep scan --config auto
