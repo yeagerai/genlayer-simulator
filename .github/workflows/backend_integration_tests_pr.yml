@@ -12,7 +12,7 @@ on:
 
 jobs:
   test:
-    if: ${{ github.event.review.state == 'APPROVED' || (github.event_name == 'pull_request' && github.base_ref == 'staging') }}
+    if: ${{ github.event.review.state == 'APPROVED' || (github.event_name == 'pull_request' && github.base_ref == 'staging') || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
 
     env:
