@@ -145,7 +145,7 @@ def random_validator_config(
     # for entry in heuristic_models_result:
     #    heuristic_models.append(entry['name'])
 
-    provider = get_random_provider_using_weights(get_ollama_url, config["providers"])
+    provider = get_random_provider_using_weights(config["providers"], get_ollama_url)
     options = get_options(provider, config)
 
     if provider == "openai":
