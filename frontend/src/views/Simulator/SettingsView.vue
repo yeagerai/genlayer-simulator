@@ -3,7 +3,7 @@ import { onMounted } from 'vue'
 import { notify } from '@kyvg/vue3-notification'
 import { useNodeStore } from '@/stores'
 import ValidatorItem from '@/components/Simulator/ValidatorItem.vue'
-import NewValidatorModal from '@/components/Simulator/NewValidatorModal.vue'
+import ValidatorModal from '@/components/Simulator/ValidatorModal.vue'
 import { ref } from 'vue'
 
 const nodeStore = useNodeStore()
@@ -92,7 +92,7 @@ const handleResetStorage = async () => {
       />
     </div>
 
-    <NewValidatorModal
+    <ValidatorModal
       :open="isNewValidatorModalOpen"
       @close="isNewValidatorModalOpen = false"
     />
