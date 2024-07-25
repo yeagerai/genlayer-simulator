@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { useContractsStore } from '@/stores'
 import { ArrowUpTrayIcon, PlusIcon } from '@heroicons/vue/20/solid'
-import { nextTick, ref, watchEffect } from 'vue'
+import { ref } from 'vue'
 import { v4 as uuidv4 } from 'uuid'
 import ContractItem from '@/components/Simulator/ContractItem.vue'
 
 const store = useContractsStore()
-const newFileName = ref('.gpy')
 const showNewFileInput = ref(false)
-const newFileNameInputRef = ref<HTMLInputElement | null>(null)
+
 /**
  * Loads content from a file and adds it to the contract file store.
  *
@@ -39,30 +38,21 @@ const handleAddNewFile = () => {
   }
 }
 
-watchEffect(() => {
-  if (showNewFileInput.value && newFileNameInputRef.value) {
-    nextTick(() => {
-      newFileNameInputRef?.value?.focus()
-      newFileNameInputRef?.value?.setSelectionRange(0, 0)
-    })
-  }
-})
-
-const handleSaveNewFile = () => {
-  if (newFileName.value && newFileName.value.replace('.gpy', '') !== '') {
+const handleSaveNewFile = (name: string) => {
+  if (name && name.replace('.gpy', '') !== '') {
     const id = uuidv4()
-    store.addContractFile({ id, name: newFileName.value, content: '' })
+    store.addContractFile({ id, name, content: '' })
     store.openFile(id)
   }
 
   showNewFileInput.value = false
-  newFileName.value = '.gpy'
 }
 </script>
 <template>
   <div class="flex w-full flex-col">
     <div class="flex w-full flex-row items-start justify-between gap-2 p-2">
       <h3 class="text-xl">Your Contracts</h3>
+
       <div class="flex flex-row items-center gap-2">
         <GhostBtn @click="handleAddNewFile">
           <PlusIcon class="h-5 w-5" />
@@ -80,27 +70,14 @@ const handleSaveNewFile = () => {
     </div>
 
     <ContractItem
-     @click="store.openFile(contract.id)"
-      v-for="contract in store.contracts"
+      @click="store.openFile(contract.id)"
+      v-for="contract in store.contractsOrderedByName"
       :key="contract.id"
       :contract="contract"
       :isActive="contract.id === store.currentContractId"
     />
 
-    <div
-      class="flex w-full flex-col items-center justify-between border border-transparent px-2 py-1 font-semibold text-neutral-500"
-      v-show="showNewFileInput"
-    >
-      <input
-        type="text"
-        ref="newFileNameInputRef"
-        class="w-full bg-slate-100 dark:dark:bg-zinc-700"
-        v-model="newFileName"
-        @blur="handleSaveNewFile"
-        @keyup.enter="handleSaveNewFile"
-        @keydown.escape="handleSaveNewFile"
-      />
-    </div>
+    <ContractItem v-if="showNewFileInput" :isNewFile="true" @save="handleSaveNewFile" />
   </div>
 </template>
 

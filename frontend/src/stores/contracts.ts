@@ -19,7 +19,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
   const openedFiles = ref<string[]>(getInitialOPenedFiles())
 
   const currentContractId = ref<string | undefined>(
-    localStorage.getItem('contractsStore.currentContractId') || ''
+    localStorage.getItem('contractsStore.currentContractId') || '',
   )
   const deployedContracts = ref<DeployedContract[]>([])
   const callingContractMethod = ref<boolean>(false)
@@ -41,13 +41,16 @@ export const useContractsStore = defineStore('contractsStore', () => {
   function removeContractFile(id: string): void {
     contracts.value = [...contracts.value.filter((c) => c.id !== id)]
     deployedContracts.value = [...deployedContracts.value.filter((c) => c.contractId !== id)]
-    
+
     if (currentContractId.value === id) {
       setCurrentContractId('')
     }
   }
 
-  function updateContractFile(id: string, { name, content, updatedAt }: { name?: string; content?: string, updatedAt?: string }) {
+  function updateContractFile(
+    id: string,
+    { name, content, updatedAt }: { name?: string; content?: string; updatedAt?: string },
+  ) {
     contracts.value = [
       ...contracts.value.map((c) => {
         if (c.id === id) {
@@ -56,7 +59,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
           return { ...c, name: _name, content: _content, updatedAt }
         }
         return c
-      })
+      }),
     ]
   }
 
@@ -88,7 +91,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
 
   function removeDeployedContract(contractId: string): void {
     deployedContracts.value = [
-      ...deployedContracts.value.filter((c) => c.contractId !== contractId)
+      ...deployedContracts.value.filter((c) => c.contractId !== contractId),
     ]
   }
 
@@ -106,7 +109,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
       await db.contractFiles.where('id').anyOf(idsToDelete).delete()
 
       deployedContracts.value = [
-        ...deployedContracts.value.filter((c) => !idsToDelete.includes(c.contractId))
+        ...deployedContracts.value.filter((c) => !idsToDelete.includes(c.contractId)),
       ]
       contracts.value = [...contracts.value.filter((c) => !idsToDelete.includes(c.id))]
       openedFiles.value = [...openedFiles.value.filter((c) => !idsToDelete.includes(c))]
@@ -127,7 +130,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
     userAccount,
     localContractId,
     method,
-    params
+    params,
   }: {
     userAccount: string
     localContractId: string
@@ -141,7 +144,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
         userAccount,
         contractAddress: contract?.address || '',
         method,
-        params
+        params,
       })
 
       callingContractMethod.value = false
@@ -152,7 +155,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
           txId: (result?.data as any).transaction_id,
           type: 'method',
           status: 'PENDING',
-          data: {}
+          data: {},
         })
 
         return true
@@ -167,7 +170,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
   async function getContractState(
     contractAddress: string,
     method: string,
-    methodArguments: string[]
+    methodArguments: string[],
   ) {
     callingContractState.value = true
     try {
@@ -175,7 +178,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
 
       currentContractState.value = {
         ...currentContractState.value,
-        [method]: result?.data
+        [method]: result?.data,
       }
       callingContractState.value = false
     } catch (error) {
@@ -186,7 +189,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
   }
 
   async function deployContract({
-    constructorParams
+    constructorParams,
   }: {
     constructorParams: { [k: string]: string }
   }) {
@@ -202,7 +205,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
         loadingConstructorInputs.value = true
         try {
           const result = await $jsonRpc?.getContractSchema({
-            code: currentContract.value.content
+            code: currentContract.value.content,
           })
 
           contractSchema = result?.data
@@ -225,12 +228,12 @@ export const useContractsStore = defineStore('contractsStore', () => {
               userAccount: accountsStore.currentUserAddress || '',
               className: contractSchema.class,
               code: currentContract.value.content,
-              constructorParams: constructorParamsAsString
+              constructorParams: constructorParamsAsString,
             })
             deployingContract.value = false
             if (result?.status === 'success') {
               deployedContracts.value = deployedContracts.value.filter(
-                (c) => c.contractId !== currentContract.value?.id
+                (c) => c.contractId !== currentContract.value?.id,
               )
               const tx: TransactionItem = {
                 contractAddress: result?.data.contract_address,
@@ -238,7 +241,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
                 txId: result?.data.transaction_id,
                 type: 'deploy',
                 status: 'PENDING',
-                data: {}
+                data: {},
               }
 
               transactionsStore.addTransaction(tx)
@@ -248,7 +251,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
               throw new Error(
                 typeof result?.message === 'string'
                   ? result.message
-                  : 'Error Deploying the contract'
+                  : 'Error Deploying the contract',
               )
             }
           } catch (error) {
@@ -263,7 +266,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
   async function getCurrentContractAbi() {
     try {
       const result = await $jsonRpc?.getDeployedContractSchema({
-        address: deployedContract.value?.address || ''
+        address: deployedContract.value?.address || '',
       })
       currentDeployedContractAbi.value = result?.data
     } catch (error) {
@@ -280,7 +283,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
         loadingConstructorInputs.value = true
         try {
           const result = await $jsonRpc?.getContractSchema({
-            code: currentContract.value.content
+            code: currentContract.value.content,
           })
           if (!currentConstructorInputs.value) {
             currentConstructorInputs.value = result?.data?.methods['__init__']?.inputs
@@ -310,6 +313,9 @@ export const useContractsStore = defineStore('contractsStore', () => {
   const deployedContract = computed(() => {
     return deployedContracts.value.find((c) => c.contractId === currentContractId.value)
   })
+  const contractsOrderedByName = computed(() => {
+    return contracts.value.slice().sort((a, b) => a.name.localeCompare(b.name))
+  })
 
   return {
     // state
@@ -329,6 +335,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
     //getters
     deployedContract,
     currentContract,
+    contractsOrderedByName,
 
     //actions
     addContractFile,
