@@ -21,14 +21,14 @@ permissions:
 jobs:
   test:
     name: Unit Tests
-    if: ${{ github.event.pull_request.state == 'opened' || github.event.review.state == 'APPROVED' || contains(github.event.pull_request.labels.*.name, 'run-tests') }}
+    if: ${{ github.event.pull_request.state == 'opened' || github.event.review.state == 'APPROVED' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-tests')) }}
     uses: ./.github/workflows/frontend-unit-tests.yml
     secrets:
       codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   load-test:
     name: Load Tests
-    if: ${{ github.event.pull_request.state == 'opened' || github.event.review.state == 'APPROVED' || contains(github.event.pull_request.labels.*.name, 'run-tests') }}
+    if: ${{ github.event.pull_request.state == 'opened' || github.event.review.state == 'APPROVED' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-tests')) }}
     uses: ./.github/workflows/load-test-oha.yml
     with:
       oha-version: "v1.4.5"
