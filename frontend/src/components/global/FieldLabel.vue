@@ -5,5 +5,5 @@ const props = defineProps<{
 </script>
 
 <template>
-  <label :for="for" class="mb-1 block text-sm font-medium leading-6"><slot /></label>
+  <label :for="for" class="block text-sm font-medium leading-8"><slot /></label>
 </template>
