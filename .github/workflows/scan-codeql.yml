@@ -5,10 +5,17 @@ on:
     branches:
       - staging
       - codeql-scan
-  # pull_request:
-  #   branches: [ "staging" ]
-  schedule:
-    - cron: '16 0 * * *'
+  pull_request:
+    types:
+      - opened
+      - ready_for_review
+      - reopened
+  pull_request_review:
+    types:
+      - submitted
+      - edited
+  # schedule:
+  #   - cron: '16 0 * * *'
 
 jobs:
   analyze:
