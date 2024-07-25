@@ -13,42 +13,8 @@ export const useNodeStore = defineStore('nodeStore', () => {
   // state
   const $jsonRpc = inject<IJsonRpcService>('$jsonRpc')!
   const validators = ref<ValidatorModel[]>([])
-  const updateValidatorModalOpen = ref<boolean>(false)
-  const createValidatorModalOpen = ref<boolean>(false)
-  const deleteValidatorModalOpen = ref<boolean>(false)
-  const resetStorageModalOpen = ref<boolean>(false)
+  const resetStorageModalOpen = ref<boolean>(false) // TODO: remove
   const resettingStorage = ref<boolean>(false)
-
-  const validatorToUpdate = ref<UpdateValidatorModel>({
-    model: '',
-    provider: '',
-    stake: 0,
-    config: '{ }'
-  })
-  const validatorToCreate = ref<CreateValidatorModel>({
-    model: '',
-    provider: '',
-    stake: 0,
-    config: '{ }'
-  })
-
-  const createValidatorModelValid = computed(() => {
-    return (
-      validatorToCreate.value?.model !== '' &&
-      validatorToCreate.value?.provider !== '' &&
-      validatorToCreate.value?.stake
-    )
-  })
-
-  const updateValidatorModelValid = computed(() => {
-    return (
-      validatorToUpdate.value?.model !== '' &&
-      validatorToUpdate.value?.provider !== '' &&
-      validatorToUpdate.value?.stake
-    )
-  })
-
-  const selectedValidator = ref<ValidatorModel>()
 
   if (!webSocketClient.connected) webSocketClient.connect()
   webSocketClient.on('status_update', (event) => {
@@ -58,27 +24,6 @@ export const useNodeStore = defineStore('nodeStore', () => {
       }
     }
   })
-
-  function initialize() {
-    selectedValidator.value = undefined
-    updateValidatorModalOpen.value = false
-    createValidatorModalOpen.value = false
-    deleteValidatorModalOpen.value = false
-    validators.value = []
-
-    validatorToUpdate.value = {
-      model: '',
-      provider: '',
-      stake: 0,
-      config: '{ }'
-    }
-    validatorToCreate.value = {
-      model: '',
-      provider: '',
-      stake: 0,
-      config: '{ }'
-    }
-  }
 
   async function getValidatorsData() {
     const [validatorsResult, modelsResult] = await Promise.all([
@@ -99,48 +44,15 @@ export const useNodeStore = defineStore('nodeStore', () => {
     }
   }
 
-  function openDeleteValidatorModal(validator: ValidatorModel) {
-    selectedValidator.value = validator
-    deleteValidatorModalOpen.value = true
-  }
-
-  function openUpdateValidatorModal(validator: ValidatorModel) {
-    selectedValidator.value = validator
-    const { model, provider, stake, config } = validator
-    validatorToUpdate.value = {
-      model,
-      provider,
-      stake,
-      config: typeof config === 'string' ? config : JSON.stringify(config || '{ }', null, 2)
-    }
-    updateValidatorModalOpen.value = true
-  }
-
-  function closeUpdateValidatorModal() {
-    selectedValidator.value = undefined
-    updateValidatorModalOpen.value = false
-    validatorToUpdate.value = {
-      model: '',
-      provider: '',
-      stake: 0,
-      config: '{ }'
-    }
-  }
-
-  function closeDeleteValidatorModal() {
-    selectedValidator.value = undefined
-    deleteValidatorModalOpen.value = false
-  }
-
-  async function updateValidator() {
-    const { stake, provider, model, config } = validatorToUpdate.value
+  async function updateValidator(validator: ValidatorModel, newValidatorData: UpdateValidatorModel) {
+    const { stake, provider, model, config } = newValidatorData
 
     if (stake <= 0 || !provider || !model || !config) {
       throw new Error('Please fill all the required fields')
     }
     const validatorConfig = JSON.parse(config || '{}')
     const result = await $jsonRpc.updateValidator({
-      address: selectedValidator.value?.address || '',
+      address: validator.address || '',
       stake,
       provider,
       model,
@@ -148,59 +60,40 @@ export const useNodeStore = defineStore('nodeStore', () => {
     })
     if (result?.status === 'success') {
       const index = validators.value.findIndex(
-        (v) => v.address === selectedValidator.value?.address
+        (v) => v.address === validator.address
       )
 
       if (index >= 0) {
         validators.value.splice(index, 1, result.data)
       }
-      closeUpdateValidatorModal()
     } else {
       throw new Error('Error udpating the validator')
     }
   }
 
-  const deleteValidator = async () => {
-    const address = selectedValidator.value?.address
+  const deleteValidator = async (validator: ValidatorModel) => {
     if (validators.value.length === 1) {
       throw new Error('You must have at least one validator')
     }
     const result = await $jsonRpc.deleteValidator({
-      address: address || ''
+      address: validator.address || ''
     })
     if (result?.status === 'success') {
-      validators.value = validators.value.filter((v) => v.address !== address)
+      validators.value = validators.value.filter((v) => v.address !== validator.address)
     } else {
       throw new Error('Error deleting the validator')
     }
-
-    closeDeleteValidatorModal()
   }
 
-  function openCreateNewValidatorModal() {
-    createValidatorModalOpen.value = true
-  }
-
-  function closeNewValidatorModal() {
-    createValidatorModalOpen.value = false
-    validatorToCreate.value = {
-      model: '',
-      provider: '',
-      stake: 0,
-      config: '{ }'
-    }
-  }
-
-  async function createNewValidator() {
-    if (!validatorToCreate.value.stake) {
-      throw new Error('Please fill the stake field')
-    }
-    const { stake, provider, model, config } = validatorToCreate.value
+  async function createNewValidator(validatorToCreate: CreateValidatorModel) {
+    // if (!validatorToCreate.value.stake) {
+    //   throw new Error('Please fill the stake field')
+    // }
+    const { stake, provider, model, config } = validatorToCreate
     const validatorConfig = JSON.parse(config || '{}')
     const result = await $jsonRpc.createValidator({ stake, provider, model, config: validatorConfig })
     if (result?.status === 'success') {
       validators.value.push(result.data)
-      closeNewValidatorModal()
     } else {
       throw new Error('Error creating a new validator')
     }
@@ -235,30 +128,14 @@ export const useNodeStore = defineStore('nodeStore', () => {
     listenWebsocket,
     validators,
     nodeProviders,
-    updateValidatorModalOpen,
-    createValidatorModalOpen,
-    deleteValidatorModalOpen,
-    selectedValidator,
-    validatorToUpdate,
-    validatorToCreate,
-    updateValidatorModelValid,
-    createValidatorModelValid,
     resetStorageModalOpen,
     resettingStorage,
-
     contractsToDelete,
 
-    initialize,
     getValidatorsData,
     createNewValidator,
     deleteValidator,
     updateValidator,
-    openUpdateValidatorModal,
-    closeUpdateValidatorModal,
-    openDeleteValidatorModal,
-    closeDeleteValidatorModal,
-    closeNewValidatorModal,
-    openCreateNewValidatorModal,
     openResetStorageModal,
     closeResetStorageModal,
     resetStorage

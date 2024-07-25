@@ -94,6 +94,7 @@ const handleRemoveFile = (id: string) => {
     >
       <DocumentPlusIcon v-if="isNewFile" class="mr-1 h-4 w-4 fill-primary dark:fill-white" />
       <DocumentCheckIcon v-else class="mr-1 h-4 w-4 fill-primary dark:fill-white" />
+
       <div class="w-full" v-if="isEditing">
         <input
           type="text"
