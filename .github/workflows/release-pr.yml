@@ -11,6 +11,7 @@ jobs:
       contents: read
       pull-requests: write
       issues: read
+      actions: read
 
     steps:
       - name: Extract branch
