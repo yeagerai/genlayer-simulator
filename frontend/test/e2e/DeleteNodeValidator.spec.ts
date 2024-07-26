@@ -40,6 +40,9 @@ describe('Settings - Delete Node Validator', () => {
     const deleteBtn = await existingValidators[0].findElement(
       By.xpath("//button[@data-testid = 'validator-item-delete']")
     )
+
+    await driver.actions().move({ origin: deleteBtn }).perform();
+
     await deleteBtn.click()
 
     const deleteValidatorBtn = await driver.wait(

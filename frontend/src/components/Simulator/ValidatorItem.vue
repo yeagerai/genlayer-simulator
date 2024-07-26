@@ -45,7 +45,7 @@ const props = defineProps<{
         <ToolTip text="Update Validator" :options="{ placement: 'bottom' }" />
       </button>
 
-      <button @click.stop="isDeleteModalOpen = true">
+      <button data-testid="validator-item-delete" @click.stop="isDeleteModalOpen = true">
         <TrashIcon
           class="h-5 w-5 p-[2px] text-slate-400 transition-all hover:text-slate-800 active:scale-90 dark:hover:text-white"
         />

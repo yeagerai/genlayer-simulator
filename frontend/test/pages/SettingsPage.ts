@@ -4,7 +4,9 @@ import { expect } from 'chai'
 
 export class SettingsPage extends BasePage {
   override baseurl = 'http://localhost:8080/simulator/settings'
-  override visibleLocator: Locator = By.xpath("//h3[contains(text(), 'Settings')]")
+  override visibleLocator: Locator = By.xpath(
+    "//*[@data-testid='settings-page-title']",
+  )
 
   async openNewValidatorModal() {
     const locator = By.xpath("//button[@data-testid='create-new-validator-btn']")
@@ -28,20 +30,20 @@ export class SettingsPage extends BasePage {
     await this.openNewValidatorModal()
     // provider select
     const selectProviderElement = await this.driver.wait(
-      until.elementLocated(By.xpath("//select[contains(@data-testid, 'dropdown-provider-create')]"))
+      until.elementLocated(By.xpath("//select[contains(@data-testid, 'dropdown-provider')]"))
     )
     const selectProvider = new Select(selectProviderElement)
     await selectProvider.selectByValue(provider)
 
     // model select
     const selectModelElement = await this.driver.wait(
-      until.elementLocated(By.xpath("//select[contains(@data-testid, 'dropdown-model-create')]"))
+      until.elementLocated(By.xpath("//select[contains(@data-testid, 'dropdown-model')]"))
     )
     const selectModel = new Select(selectModelElement)
     await selectModel.selectByValue(model)
 
     const stakeInput = await this.driver.wait(
-      until.elementLocated(By.xpath("//input[@data-testid='input-stake-create']"))
+      until.elementLocated(By.xpath("//input[@data-testid='input-stake']"))
     )
     await stakeInput.clear()
     await stakeInput.sendKeys(stake)

@@ -129,7 +129,7 @@ const tryInitValues = () => {
         @change="handleChangeProvider"
         :invalid="!newValidatorData.provider"
         required
-        testId="dropdown-provider-create"
+        testId="dropdown-provider"
       />
     </div>
 
@@ -141,7 +141,7 @@ const tryInitValues = () => {
         v-model="newValidatorData.model"
         :invalid="!newValidatorData.model"
         required
-        testId="dropdown-model-create"
+        testId="dropdown-model"
       />
     </div>
 
@@ -154,7 +154,7 @@ const tryInitValues = () => {
         :invalid="newValidatorData.stake < 1"
         v-model="newValidatorData.stake"
         required
-        testId="input-stake-create"
+        testId="input-stake"
       />
       <FieldError v-if="newValidatorData.stake < 1"
         >Please enter a number greater than 0.</FieldError

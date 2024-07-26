@@ -52,11 +52,10 @@ const handleSaveNewFile = (name: string) => {
 
 <template>
   <div class="flex w-full flex-col">
-    
-    <MainTitle>
+    <MainTitle data-testid="contracts-page-title">
       Your Contracts
 
-      <div class="flex flex-row items-center gap-2">
+      <template #actions>
         <GhostBtn @click="handleAddNewFile">
           <PlusIcon class="h-5 w-5" />
           <ToolTip text="New Contract" :options="{ placement: 'bottom' }" />
@@ -69,7 +68,7 @@ const handleSaveNewFile = (name: string) => {
             <ToolTip text="Add From File" :options="{ placement: 'bottom' }" />
           </label>
         </GhostBtn>
-      </div>
+      </template>
     </MainTitle>
 
     <ContractItem
