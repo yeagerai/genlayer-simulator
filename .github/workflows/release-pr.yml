@@ -8,11 +8,8 @@ jobs:
   release-notes-pr:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       pull-requests: write
-      issues: read
-      actions: read
-      repository-projects: read
 
     steps:
       - name: Extract branch
