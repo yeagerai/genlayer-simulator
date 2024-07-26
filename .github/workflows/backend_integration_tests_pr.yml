@@ -4,15 +4,31 @@ on:
   pull_request:
     types:
       - opened
-      - ready_for_review
+      - labeled
+      - synchronize
   pull_request_review:
     types:
       - submitted
-  workflow_dispatch:
+      - edited
+
+concurrency:
+  group: backend-e2e-${{ github.event.number }}
+  cancel-in-progress: true
 
 jobs:
+  triggers:
+    name: Get Triggers
+    runs-on: ubuntu-latest
+    outputs:
+      is_pull_request_opened: ${{ github.event_name == 'pull_request' && github.event.action == 'opened'}}
+      is_pull_request_review_approved: ${{ github.event_name == 'pull_request_review' && github.event.review.state == 'APPROVED'}}
+      is_pull_request_labeled_with_run_tests: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-tests')}}
+    steps:
+      - run: true
   test:
-    if: ${{ github.event.review.state == 'APPROVED' || (github.event_name == 'pull_request' && github.base_ref == 'staging') || github.event_name == 'workflow_dispatch' }}
+    needs: triggers
+    if: ${{ needs.triggers.outputs.is_pull_request_opened || needs.triggers.outputs.is_pull_request_review_approved || needs.triggers.outputs.is_pull_request_labeled_with_run_tests }}
+
     runs-on: ubuntu-latest
 
     env:
