@@ -40,24 +40,33 @@ async function handleDeleteValidator() {
     dangerous
   >
     <template #title>Delete Validator</template>
-    <div class="mt-2 flex flex-col p-2">
-      <p class="text-md font-semibold">Address:</p>
 
-      <div class="w-full py-2">
+    <div>
+      <FieldLabel>Address</FieldLabel>
+      <div class="rounded bg-gray-200 dark:bg-gray-500 text-center p-1 text-xs">
         {{ validator.address }}
       </div>
     </div>
-    <div class="mt-2 flex flex-col p-2">
-      <p class="text-md font-semibold">Provider:</p>
-      {{ validator.provider }}
+
+    <div>
+      <FieldLabel>Provider</FieldLabel>
+      <div class="rounded bg-gray-200 dark:bg-gray-500 p-1 text-xs">
+        {{ validator.provider }}
+      </div>
     </div>
-    <div class="mt-2 flex flex-col p-2">
-      <p class="text-md font-semibold">Model:</p>
-      {{ validator.model }}
+
+    <div>
+      <FieldLabel>Model</FieldLabel>
+      <div class="rounded bg-gray-200 dark:bg-gray-500 p-1 text-xs">
+        {{ validator.model }}
+      </div>
     </div>
-    <div class="mt-2 flex flex-col p-2">
-      <p class="text-md font-semibold">Stake:</p>
-      {{ validator.stake }}
+
+    <div>
+      <FieldLabel>Stake</FieldLabel>
+      <div class="rounded bg-gray-200 dark:bg-gray-500 p-1 text-xs">
+        {{ validator.stake }}
+      </div>
     </div>
   </ConfirmationModal>
 </template>
