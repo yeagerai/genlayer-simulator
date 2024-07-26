@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { type ValidatorModel } from '@/types'
-import { PencilSquareIcon, TrashIcon } from '@heroicons/vue/24/solid'
-import ValidatorModal from '@/components/Simulator/ValidatorModal.vue'
-import DeleteValidatorModal from '@/components/Simulator/DeleteValidatorModal.vue'
-import { ref } from 'vue'
+import { type ValidatorModel } from '@/types';
+import { PencilSquareIcon, TrashIcon } from '@heroicons/vue/24/solid';
+import ValidatorModal from '@/components/Simulator/ValidatorModal.vue';
+import DeleteValidatorModal from '@/components/Simulator/DeleteValidatorModal.vue';
+import { ref } from 'vue';
 
-const isUpdateModalMopen = ref(false)
-const isDeleteModalOpen = ref(false)
+const isUpdateModalMopen = ref(false);
+const isDeleteModalOpen = ref(false);
 
 defineProps<{
-  validator: ValidatorModel
-}>()
+  validator: ValidatorModel;
+}>();
 </script>
 
 <template>

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-const emit = defineEmits(['click'])
+const emit = defineEmits(['click']);
 defineProps({
   id: { type: String, default: null },
-  disabled: { type: Boolean, default: false }
-})
+  disabled: { type: Boolean, default: false },
+});
 </script>
 
 <template>

@@ -1,25 +1,25 @@
 <script setup>
-import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
-import { XMarkIcon } from '@heroicons/vue/16/solid'
-import { useUIStore } from '@/stores/ui'
-import { watch } from 'vue'
-const uiStore = useUIStore()
+import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
+import { XMarkIcon } from '@heroicons/vue/16/solid';
+import { useUIStore } from '@/stores/ui';
+import { watch } from 'vue';
+const uiStore = useUIStore();
 
 const props = defineProps({
   open: { type: Boolean, default: false },
   wide: { type: Boolean, default: false },
-})
+});
 
-const emit = defineEmits(['close', 'onOpen'])
+const emit = defineEmits(['close', 'onOpen']);
 
 watch(
   () => props.open,
   (newVal) => {
     if (newVal) {
-      emit('onOpen')
+      emit('onOpen');
     }
   },
-)
+);
 </script>
 
 <template>

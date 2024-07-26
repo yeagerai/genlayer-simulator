@@ -1,53 +1,53 @@
 <script setup lang="ts">
-import { useNodeStore } from '@/stores'
-import { type ValidatorModel, type NewValidatorDataModel } from '@/types'
-import { notify } from '@kyvg/vue3-notification'
-import { computed, ref } from 'vue'
+import { useNodeStore } from '@/stores';
+import { type ValidatorModel, type NewValidatorDataModel } from '@/types';
+import { notify } from '@kyvg/vue3-notification';
+import { computed, ref } from 'vue';
 
-const nodeStore = useNodeStore()
-const emit = defineEmits(['close'])
+const nodeStore = useNodeStore();
+const emit = defineEmits(['close']);
 
 const props = defineProps<{
-  validator?: ValidatorModel
-}>()
+  validator?: ValidatorModel;
+}>();
 
-const isCreateMode = computed(() => !props.validator)
+const isCreateMode = computed(() => !props.validator);
 
 async function handleCreateValidator() {
   try {
-    await nodeStore.createNewValidator(newValidatorData.value)
+    await nodeStore.createNewValidator(newValidatorData.value);
     notify({
       title: 'OK',
       text: 'New validator created',
       type: 'success',
-    })
-    emit('close')
+    });
+    emit('close');
   } catch (error) {
-    console.error(error)
+    console.error(error);
     notify({
       title: 'Error',
       text: (error as Error)?.message || 'Error creating new validator',
       type: 'error',
-    })
+    });
   }
 }
 
 async function handleUpdateValidator(validator: ValidatorModel) {
   try {
-    await nodeStore.updateValidator(validator, newValidatorData.value)
+    await nodeStore.updateValidator(validator, newValidatorData.value);
     notify({
       title: 'OK',
       text: 'Validator updated successfully',
       type: 'success',
-    })
-    emit('close')
+    });
+    emit('close');
   } catch (error) {
-    console.error(error)
+    console.error(error);
     notify({
       title: 'Error',
       text: (error as Error)?.message || 'Error udpating the validator',
       type: 'error',
-    })
+    });
   }
 }
 
@@ -56,46 +56,46 @@ const newValidatorData = ref<NewValidatorDataModel>({
   provider: '',
   stake: 1,
   config: '{ }',
-})
+});
 
 const validatorModelValid = computed(() => {
   return (
     newValidatorData.value?.model !== '' &&
     newValidatorData.value?.provider !== '' &&
     newValidatorData.value?.stake > 0
-  )
-})
+  );
+});
 
 const isConfigValid = computed(() => {
   // Allow empty config
   if (!newValidatorData.value.config) {
-    return true
+    return true;
   }
 
   // Try to parse JSON
   try {
-    JSON.parse(newValidatorData.value.config)
-    return true
+    JSON.parse(newValidatorData.value.config);
+    return true;
   } catch (error) {
-    return false
+    return false;
   }
-})
+});
 
 const providerOptions = computed(() => {
-  return Object.keys(nodeStore.nodeProviders)
-})
+  return Object.keys(nodeStore.nodeProviders);
+});
 
 const handleChangeProvider = () => {
-  newValidatorData.value.model = nodeStore.nodeProviders[newValidatorData.value.provider][0]
-}
+  newValidatorData.value.model = nodeStore.nodeProviders[newValidatorData.value.provider][0];
+};
 
 const tryInitValues = () => {
   if (!props.validator) {
     try {
-      newValidatorData.value.provider = Object.keys(nodeStore.nodeProviders)[0]
-      newValidatorData.value.model = nodeStore.nodeProviders[newValidatorData.value.provider][0]
+      newValidatorData.value.provider = Object.keys(nodeStore.nodeProviders)[0];
+      newValidatorData.value.model = nodeStore.nodeProviders[newValidatorData.value.provider][0];
     } catch (err) {
-      console.error('Could not initialize values', err)
+      console.error('Could not initialize values', err);
     }
   } else {
     newValidatorData.value = {
@@ -103,9 +103,9 @@ const tryInitValues = () => {
       provider: props.validator.provider,
       stake: props.validator.stake,
       config: JSON.stringify(props.validator.config, null, 2),
-    }
+    };
   }
-}
+};
 </script>
 
 <template>

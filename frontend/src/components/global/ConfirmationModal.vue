@@ -1,12 +1,12 @@
 <script setup lang="ts">
-const emit = defineEmits(['confirm', 'close'])
+const emit = defineEmits(['confirm', 'close']);
 
 withDefaults(
   defineProps<{
-    buttonText?: string
-    buttonTestId?: string
-    dangerous?: boolean
-    confirming?: boolean
+    buttonText?: string;
+    buttonTestId?: string;
+    dangerous?: boolean;
+    confirming?: boolean;
   }>(),
   {
     buttonText: 'Confirm',
@@ -14,7 +14,7 @@ withDefaults(
     dangerous: false,
     confirming: false,
   },
-)
+);
 </script>
 
 <template>

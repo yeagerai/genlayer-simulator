@@ -1,5 +1,4 @@
 {
-
   "[vue]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   }

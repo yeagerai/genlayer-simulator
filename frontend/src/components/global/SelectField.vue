@@ -1,12 +1,12 @@
 <script setup lang="ts">
 defineProps<{
-  name: string
-  testId?: string
-  invalid?: boolean
-  options: Array<string> | Array<Object> | Object
-}>()
+  name: string;
+  testId?: string;
+  invalid?: boolean;
+  options: Array<string> | Array<Object> | Object;
+}>();
 
-const model = defineModel()
+const model = defineModel();
 </script>
 
 <template>

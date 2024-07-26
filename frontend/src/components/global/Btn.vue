@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import LoadingIndicator from '@/components/LoadingIndicator.vue'
+import { computed } from 'vue';
+import LoadingIndicator from '@/components/LoadingIndicator.vue';
 
-const emit = defineEmits(['click'])
+const emit = defineEmits(['click']);
 
 const props = withDefaults(
   defineProps<{
-    testId?: string | undefined
-    disabled?: boolean
-    loading?: boolean
-    secondary?: boolean
-    dangerous?: boolean
+    testId?: string | undefined;
+    disabled?: boolean;
+    loading?: boolean;
+    secondary?: boolean;
+    dangerous?: boolean;
   }>(),
   {
     testId: undefined,
@@ -19,9 +19,9 @@ const props = withDefaults(
     secondary: false,
     dangerous: false,
   },
-)
+);
 
-const primary = computed(() => !props.secondary && !props.dangerous)
+const primary = computed(() => !props.secondary && !props.dangerous);
 </script>
 
 <template>

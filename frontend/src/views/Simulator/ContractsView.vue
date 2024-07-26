@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { useContractsStore } from '@/stores'
-import { ArrowUpTrayIcon, PlusIcon } from '@heroicons/vue/20/solid'
-import { ref } from 'vue'
-import { v4 as uuidv4 } from 'uuid'
-import ContractItem from '@/components/Simulator/ContractItem.vue'
-import MainTitle from '@/components/Simulator/MainTitle.vue'
+import { useContractsStore } from '@/stores';
+import { ArrowUpTrayIcon, PlusIcon } from '@heroicons/vue/20/solid';
+import { ref } from 'vue';
+import { v4 as uuidv4 } from 'uuid';
+import ContractItem from '@/components/Simulator/ContractItem.vue';
+import MainTitle from '@/components/Simulator/MainTitle.vue';
 
-const store = useContractsStore()
-const showNewFileInput = ref(false)
+const store = useContractsStore();
+const showNewFileInput = ref(false);
 
 /**
  * Loads content from a file and adds it to the contract file store.
@@ -15,39 +15,43 @@ const showNewFileInput = ref(false)
  * @param {Event} event - The event triggered by the file input element.
  */
 const loadContentFromFile = (event: Event) => {
-  const target = event.target as HTMLInputElement
+  const target = event.target as HTMLInputElement;
 
   if (target.files && target.files.length > 0) {
-    const [file] = target.files
-    const reader = new FileReader()
+    const [file] = target.files;
+    const reader = new FileReader();
 
     reader.onload = (ev: ProgressEvent<FileReader>) => {
       if (ev.target?.result) {
-        const id = uuidv4()
-        store.addContractFile({ id, name: file.name, content: (ev.target?.result as string) || '' })
-        store.openFile(id)
+        const id = uuidv4();
+        store.addContractFile({
+          id,
+          name: file.name,
+          content: (ev.target?.result as string) || '',
+        });
+        store.openFile(id);
       }
-    }
+    };
 
-    reader.readAsText(file)
+    reader.readAsText(file);
   }
-}
+};
 
 const handleAddNewFile = () => {
   if (!showNewFileInput.value) {
-    showNewFileInput.value = true
+    showNewFileInput.value = true;
   }
-}
+};
 
 const handleSaveNewFile = (name: string) => {
   if (name && name.replace('.gpy', '') !== '') {
-    const id = uuidv4()
-    store.addContractFile({ id, name, content: '' })
-    store.openFile(id)
+    const id = uuidv4();
+    store.addContractFile({ id, name, content: '' });
+    store.openFile(id);
   }
 
-  showNewFileInput.value = false
-}
+  showNewFileInput.value = false;
+};
 </script>
 
 <template>

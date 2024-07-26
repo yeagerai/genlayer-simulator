@@ -1,12 +1,12 @@
 <script setup lang="ts">
 defineProps<{
-  name: string
-  rows?: number
-  cols?: number
-  invalid?: boolean
-}>()
+  name: string;
+  rows?: number;
+  cols?: number;
+  invalid?: boolean;
+}>();
 
-const model = defineModel<string | null>()
+const model = defineModel<string | null>();
 </script>
 
 <template>

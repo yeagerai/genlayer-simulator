@@ -1,84 +1,84 @@
 <script setup lang="ts">
-import { useContractsStore } from '@/stores'
-import { type ContractFile } from '@/types'
+import { useContractsStore } from '@/stores';
+import { type ContractFile } from '@/types';
 import {
   DocumentCheckIcon,
   DocumentPlusIcon,
   PencilSquareIcon,
   TrashIcon,
-} from '@heroicons/vue/16/solid'
-import { nextTick } from 'process'
-import { ref, onMounted } from 'vue'
+} from '@heroicons/vue/16/solid';
+import { nextTick } from 'process';
+import { ref, onMounted } from 'vue';
 
-const store = useContractsStore()
-const defaultContractName = 'New Contract.gpy'
+const store = useContractsStore();
+const defaultContractName = 'New Contract.gpy';
 
 const props = defineProps<{
-  contract?: ContractFile
-  isActive?: Boolean
-  isNewFile?: Boolean
-}>()
+  contract?: ContractFile;
+  isActive?: Boolean;
+  isNewFile?: Boolean;
+}>();
 
-const emit = defineEmits(['save'])
+const emit = defineEmits(['save']);
 
-const isEditing = ref(false)
-const editInput = ref<HTMLInputElement | null>(null)
-const editingFileName = ref('')
-const deleteModalOpen = ref(false)
+const isEditing = ref(false);
+const editInput = ref<HTMLInputElement | null>(null);
+const editingFileName = ref('');
+const deleteModalOpen = ref(false);
 
 const handleEditFile = () => {
-  isEditing.value = true
+  isEditing.value = true;
 
   if (props.isNewFile) {
-    editingFileName.value = defaultContractName
+    editingFileName.value = defaultContractName;
   } else if (props.contract) {
-    editingFileName.value = props.contract.name
+    editingFileName.value = props.contract.name;
   }
 
-  const dotPosition = editingFileName.value.indexOf('.')
+  const dotPosition = editingFileName.value.indexOf('.');
 
   nextTick(() => {
-    editInput.value?.focus()
-    editInput.value?.setSelectionRange(0, dotPosition)
-  })
-}
+    editInput.value?.focus();
+    editInput.value?.setSelectionRange(0, dotPosition);
+  });
+};
 
 onMounted(() => {
   if (props.isNewFile) {
-    handleEditFile()
+    handleEditFile();
   }
-})
+});
 
 const handleStopEditing = () => {
-  isEditing.value = false
-  editingFileName.value = ''
-  editInput.value?.blur()
-}
+  isEditing.value = false;
+  editingFileName.value = '';
+  editInput.value?.blur();
+};
 
 const handleSaveFile = (e: Event) => {
-  e.preventDefault()
+  e.preventDefault();
 
   if (isEditing.value === false) {
-    return // Avoid double events when press Enter + blur
+    return; // Avoid double events when press Enter + blur
   }
 
-  isEditing.value = false
+  isEditing.value = false;
 
   if (props.isNewFile) {
-    emit('save', editingFileName.value)
-    return
+    emit('save', editingFileName.value);
+    return;
   } else if (props.contract) {
-    store.updateContractFile(props.contract.id, { name: editingFileName.value })
+    store.updateContractFile(props.contract.id, { name: editingFileName.value });
   }
 
-  editingFileName.value = ''
-  editInput.value?.blur()
-}
+  editingFileName.value = '';
+  editInput.value?.blur();
+};
 
 const handleRemoveFile = (id: string) => {
-  store.removeContractFile(id)
-  deleteModalOpen.value = false
-}
+  store.removeContractFile(id);
+  deleteModalOpen.value = false;
+};
 </script>
 
 <template>
@@ -99,7 +99,7 @@ const handleRemoveFile = (id: string) => {
         <input
           type="text"
           ref="editInput"
-          class="-m-[1px] text-xs w-full !rounded-[1px] !ring-gray-400 !dark:ring-white !border-none !outline-none bg-slate-50 p-[1px] font-semibold !shadow-none !focus:outline focus:outline-gray-400 dark:bg-zinc-700 dark:text-gray-200"
+          class="!dark:ring-white !focus:outline -m-[1px] w-full !rounded-[1px] !border-none bg-slate-50 p-[1px] text-xs font-semibold !shadow-none !outline-none !ring-gray-400 focus:outline-gray-400 dark:bg-zinc-700 dark:text-gray-200"
           v-model="editingFileName"
           @blur="handleSaveFile"
           @keydown.enter="handleSaveFile"
