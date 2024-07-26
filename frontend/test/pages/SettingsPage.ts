@@ -11,7 +11,7 @@ export class SettingsPage extends BasePage {
     return this.driver.wait(until.elementLocated(locator), 5000).click()
   }
   async getValidatorsElements(): Promise<WebElement[]> {
-    return this.driver.findElements(By.xpath("//div[@data-testid = 'validator-item-container']"))
+    return this.driver.findElements(By.xpath("//div[@data-testid = 'validator-item']"))
   }
 
   async createValidator({

@@ -15,37 +15,39 @@ const props = defineProps<{
 
 <template>
   <div
-    data-testid="validator-item-container"
-    class="group flex cursor-pointer items-center justify-between p-1 px-2 hover:bg-slate-100 dark:hover:bg-zinc-700"
+    data-testid="validator-item"
+    class="group flex cursor-pointer flex-row items-center justify-between gap-2 rounded-md bg-slate-100 p-2 hover:bg-slate-200 dark:bg-zinc-700 dark:hover:bg-zinc-600"
     @click="isUpdateModalMopen = true"
   >
-    <div class="flex items-center" data-testid="validator-item">
-      <div class="flex text-primary dark:text-white">{{ validator.id }} -</div>
-      <div class="ml-2 flex flex-col items-start">
-        <div class="flex">
-          <span class="mr-1 font-semibold">Model: </span>
-          <span class="text-primary dark:text-white" data-testid="validator-item-model">{{
-            validator.model
-          }}</span>
-        </div>
-        <div class="flex">
-          <span class="mr-1 font-semibold">Provider: </span>
-          <span data-testid="validator-item-provider">{{ validator.provider }}</span>
-        </div>
-      </div>
+    <div
+      class="flex rounded-md bg-slate-400 px-1 py-0.5 text-xs font-semibold text-white dark:bg-gray-200 dark:text-slate-800"
+    >
+      #{{ validator.id }}
     </div>
 
-    <div class="hidden flex-row gap-1 group-hover:flex">
+    <div class="flex grow flex-col truncate">
+      <span
+        class="truncate text-xs font-semibold text-gray-500"
+        data-testid="validator-item-provider"
+      >
+        {{ validator.provider }}
+      </span>
+      <span class="truncate text-sm font-semibold" data-testid="validator-item-model">
+        {{ validator.model }}
+      </span>
+    </div>
+
+    <div class="invisible flex flex-row gap-1 group-hover:visible">
       <button @click.stop="isUpdateModalMopen = true">
         <PencilSquareIcon
-          class="h-[16px] w-[16px] p-[2px] text-gray-400 transition-all hover:text-gray-800 active:scale-90 dark:hover:text-white"
+          class="h-5 w-5 p-[2px] text-slate-400 transition-all hover:text-slate-800 active:scale-90 dark:hover:text-white"
         />
         <ToolTip text="Update Validator" :options="{ placement: 'bottom' }" />
       </button>
 
       <button @click.stop="isDeleteModalOpen = true">
         <TrashIcon
-          class="h-[16px] w-[16px] p-[2px] text-gray-400 transition-all hover:text-gray-800 active:scale-90 dark:hover:text-white"
+          class="h-5 w-5 p-[2px] text-slate-400 transition-all hover:text-slate-800 active:scale-90 dark:hover:text-white"
         />
         <ToolTip text="Delete validator" :options="{ placement: 'bottom' }" />
       </button>

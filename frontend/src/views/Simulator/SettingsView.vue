@@ -5,7 +5,10 @@ import { useNodeStore } from '@/stores'
 import ValidatorItem from '@/components/Simulator/ValidatorItem.vue'
 import ValidatorModal from '@/components/Simulator/ValidatorModal.vue'
 import { ref } from 'vue'
-
+import MainTitle from '@/components/Simulator/MainTitle.vue'
+import PageSection from '@/components/Simulator/PageSection.vue'
+import { ArchiveBoxXMarkIcon } from '@heroicons/vue/24/solid'
+import { PlusIcon } from '@heroicons/vue/16/solid'
 const nodeStore = useNodeStore()
 const isNewValidatorModalOpen = ref(false)
 
@@ -42,66 +45,57 @@ const handleResetStorage = async () => {
     nodeStore.closeResetStorageModal()
   }
 }
-
-
 </script>
 
 <template>
   <div class="flex max-h-[93vh] w-full flex-col overflow-y-auto">
-    <div class="flex w-full flex-col p-2">
-      <h3 class="text-xl">Settings</h3>
-    </div>
-    <div class="flex w-full items-center justify-between p-2">
-      <div class="flex items-center">Number of validators:</div>
-      <div class="flex items-center text-xl font-semibold text-primary dark:text-white">
-        {{ nodeStore.validators.length }}
-      </div>
-    </div>
+    <MainTitle>Settings</MainTitle>
 
-    <div class="flex w-full flex-col bg-slate-100 p-2 dark:dark:bg-zinc-700">
-      <h4 class="text-md" id="tutorial-validators">Validators Configuration</h4>
-    </div>
-    <div class="flex flex-col" id="tutorial-validators">
-      <div class="flex w-full flex-col text-xs">
+    <PageSection id="tutorial-validators">
+      <template #title>
+        Validators <span class="opacity-50">{{ nodeStore.validators.length }}</span>
+      </template>
+
+      <div class="flex flex-col gap-2">
         <ValidatorItem
           v-for="validator in nodeStore.validators"
           :key="validator.id"
           :validator="validator"
         />
       </div>
-    </div>
-    <div class="mt-4 flex w-full flex-col px-2">
+
       <Btn @click="isNewValidatorModalOpen = true" data-testid="create-new-validator-btn">
+        <PlusIcon class="h-5 w-5" />
         New Validator
       </Btn>
-    </div>
-    <div class="mt-10 flex w-full flex-col bg-slate-100 p-2 dark:dark:bg-zinc-700">
-      <h4 class="text-md" id="tutorial-validators">Simulator Storage</h4>
-    </div>
-    <div class="mt-4 flex w-full flex-col px-2">
+
+      <ValidatorModal :open="isNewValidatorModalOpen" @close="isNewValidatorModalOpen = false" />
+    </PageSection>
+
+    <PageSection>
+      <template #title>Simulator Storage</template>
+
       <Btn
         @click="nodeStore.openResetStorageModal"
         :disabled="nodeStore.contractsToDelete.length < 1"
+        secondary
       >
+        <ArchiveBoxXMarkIcon class="h-4 w-4" />
         Reset Storage
       </Btn>
+
       <ToolTip
         text="No Contracts file to delete"
         :options="{ placement: 'right' }"
         v-if="nodeStore.contractsToDelete.length < 1"
       />
-    </div>
-
-    <ValidatorModal
-      :open="isNewValidatorModalOpen"
-      @close="isNewValidatorModalOpen = false"
-    />
+    </PageSection>
 
     <ConfirmationModal
       :open="nodeStore.resetStorageModalOpen"
       @confirm="handleResetStorage"
       @close="nodeStore.closeResetStorageModal"
-      :buttonText="'Reset Storage'"
+      buttonText="Reset Storage"
       buttonTestId="btn-reset-storage"
       :dangerous="true"
       :confirming="nodeStore.resettingStorage"
@@ -113,11 +107,7 @@ const handleResetStorage = async () => {
       >
 
       <template #info>
-        <div
-          class="text-md font-semibold"
-          v-for="contract in nodeStore.contractsToDelete"
-          :key="contract.id"
-        >
+        <div class="text-xs" v-for="contract in nodeStore.contractsToDelete" :key="contract.id">
           {{ contract.name }}
         </div>
       </template>

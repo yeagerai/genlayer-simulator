@@ -16,12 +16,12 @@ const handleLogsResize = (event: any) => {
     showLogsTerminal.value = true
   }
 }
-
 </script>
 
 <template>
   <div class="flex w-full">
     <SimulatorMenu />
+    
     <div class="flex w-full relative">
       <Splitpanes class="default-theme relative w-full bg-white dark:bg-zinc-800 dark:text-white text-primary ">
         <Pane min-size="18" size="18" max-size="60" class="flex w-full">
@@ -33,6 +33,7 @@ const handleLogsResize = (event: any) => {
             </RouterView>
           </div>
         </Pane>
+        
         <Pane>
           <Splitpanes class="default-theme" horizontal @resize="handleLogsResize">
             <Pane class="flex flex-col w-full h-full" min-size="20" size="80" max-size="80">
@@ -47,6 +48,7 @@ const handleLogsResize = (event: any) => {
     </div>
   </div>
 </template>
+
 <style>
 .splitpanes__pane {
   display: flex;

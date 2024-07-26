@@ -7,7 +7,7 @@ import ExecuteTransactions from '@/components/Simulator/ExecuteTransactions.vue'
 import TransactionsList from '@/components/Simulator/TransactionsList.vue'
 import ConstructorParameters from '@/components/Simulator/ConstructorParameters.vue'
 import { debounce } from 'vue-debounce'
-
+import MainTitle from '@/components/Simulator/MainTitle.vue'
 
 const contractsStore = useContractsStore()
 const accountsStore = useAccountsStore()

@@ -4,6 +4,7 @@ import { ArrowUpTrayIcon, PlusIcon } from '@heroicons/vue/20/solid'
 import { ref } from 'vue'
 import { v4 as uuidv4 } from 'uuid'
 import ContractItem from '@/components/Simulator/ContractItem.vue'
+import MainTitle from '@/components/Simulator/MainTitle.vue'
 
 const store = useContractsStore()
 const showNewFileInput = ref(false)
@@ -48,10 +49,12 @@ const handleSaveNewFile = (name: string) => {
   showNewFileInput.value = false
 }
 </script>
+
 <template>
   <div class="flex w-full flex-col">
-    <div class="flex w-full flex-row items-start justify-between gap-2 p-2">
-      <h3 class="text-xl">Your Contracts</h3>
+    
+    <MainTitle>
+      Your Contracts
 
       <div class="flex flex-row items-center gap-2">
         <GhostBtn @click="handleAddNewFile">
@@ -67,7 +70,7 @@ const handleSaveNewFile = (name: string) => {
           </label>
         </GhostBtn>
       </div>
-    </div>
+    </MainTitle>
 
     <ContractItem
       @click="store.openFile(contract.id)"
