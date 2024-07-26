@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - staging
-      - codeql-scan
   pull_request:
     types:
       - opened
@@ -14,8 +13,6 @@ on:
     types:
       - submitted
       - edited
-  # schedule:
-  #   - cron: '16 0 * * *'
 
 jobs:
   analyze:
