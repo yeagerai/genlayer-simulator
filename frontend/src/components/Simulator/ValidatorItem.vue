@@ -16,7 +16,7 @@ defineProps<{
 <template>
   <div
     data-testid="validator-item"
-    class="group flex cursor-pointer flex-row items-center justify-between gap-2 rounded-md bg-slate-100 p-2 hover:bg-slate-200 dark:bg-zinc-700 dark:hover:bg-zinc-600"
+    class="group flex cursor-pointer flex-row items-center justify-between gap-2 bg-slate-100 p-2 hover:bg-slate-200 dark:bg-zinc-700 dark:hover:bg-zinc-600"
     @click="isUpdateModalMopen = true"
   >
     <div

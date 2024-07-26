@@ -58,12 +58,17 @@ const handleResetStorage = async () => {
         <span class="opacity-50">{{ nodeStore.validators.length }}</span>
       </template>
 
-      <div class="flex flex-col gap-2">
-        <ValidatorItem
-          v-for="validator in nodeStore.validators"
-          :key="validator.id"
-          :validator="validator"
-        />
+      <div
+        class="overflow-hidden rounded-md border border-gray-300 dark:border-gray-800"
+        v-if="nodeStore.validators.length > 0"
+      >
+        <div class="divide-y divide-gray-200 dark:divide-gray-800">
+          <ValidatorItem
+            v-for="validator in nodeStore.validators"
+            :key="validator.id"
+            :validator="validator"
+          />
+        </div>
       </div>
 
       <Btn
