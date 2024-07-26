@@ -19,16 +19,44 @@ permissions:
   contents: read
 
 jobs:
+  triggers:
+    name: Get workflow triggers
+    runs-on: ubuntu-latest
+    outputs:
+      run_tests: ${{ steps.get_triggers.outputs.run_tests }}
+      is_pull_request_opened: ${{ steps.get_triggers.outputs.is_pull_request_opened }}
+      is_pull_request_review_approved: ${{ steps.get_triggers.outputs.is_pull_request_review_approved }}
+      is_pull_request_labeled_with_run_tests: ${{ steps.get_triggers.outputs.is_pull_request_labeled_with_run_tests }}
+    steps:
+      - name: Get workflow triggers
+        id: get_triggers
+        run: |
+          is_pull_request_opened=${{ github.event_name == 'pull_request' && github.event.action == 'opened'}}
+          is_pull_request_review_approved=${{ github.event_name == 'pull_request_review' && github.event.review.state == 'APPROVED'}}
+          is_pull_request_labeled_with_run_tests=${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-tests')}}
+
+          echo "is_pull_request_opened=$is_pull_request_opened" >> $GITHUB_OUTPUT
+          echo "is_pull_request_review_approved=$is_pull_request_review_approved" >> $GITHUB_OUTPUT
+          echo "is_pull_request_labeled_with_run_tests=$is_pull_request_labeled_with_run_tests" >> $GITHUB_OUTPUT
+
+          if [ "$is_pull_request_opened" == "true" ] || [ "$is_pull_request_review_approved" == "true" ] || [ "$is_pull_request_labeled_with_run_tests" == "true" ]; then
+            run_tests=true
+          else
+            run_tests=false
+          fi
+          echo "run_tests=$run_tests" >> $GITHUB_OUTPUT
   test:
     name: Unit Tests
-    if: ${{ github.event.pull_request.state == 'opened' || github.event.review.state == 'APPROVED' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-tests')) }}
+    needs: triggers
+    if: ${{ needs.triggers.outputs.run_tests == 'true' }}
     uses: ./.github/workflows/frontend-unit-tests.yml
     secrets:
       codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   load-test:
     name: Load Tests
-    if: ${{ github.event.pull_request.state == 'opened' || github.event.review.state == 'APPROVED' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-tests')) }}
+    needs: triggers
+    if: ${{ needs.triggers.outputs.run_tests == 'true' }}
     uses: ./.github/workflows/load-test-oha.yml
     with:
       oha-version: "v1.4.5"
