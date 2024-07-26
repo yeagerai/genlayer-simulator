@@ -7,6 +7,7 @@ const uiStore = useUIStore()
 
 const props = defineProps({
   open: { type: Boolean, default: false },
+  wide: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['close', 'onOpen'])
@@ -50,7 +51,8 @@ watch(
             leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
           >
             <DialogPanel
-              class="relative transform overflow-hidden rounded-lg bg-gray-50 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm sm:p-6 dark:bg-zinc-700"
+              class="relative transform overflow-hidden rounded-lg bg-gray-50 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:p-6 dark:bg-zinc-700"
+              :class="[!wide && 'sm:max-w-sm', wide && 'sm:max-w-xl']"
             >
               <GhostBtn @click="emit('close')" class="absolute right-3 top-3">
                 <XMarkIcon class="h-5 w-5" />

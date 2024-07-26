@@ -57,7 +57,7 @@ const handleCloseModal = () => {
         :key="transaction.txId"
       >
         <div
-          class="flex cursor-pointer items-center justify-between text-primary hover:bg-slate-100 dark:text-white"
+          class="flex cursor-pointer items-center justify-between rounded-sm p-1 hover:bg-gray-100 dark:hover:bg-zinc-700"
           @click="handleSelectTransaction(transaction)"
         >
           #{{ transaction.txId }}
@@ -74,28 +74,23 @@ const handleCloseModal = () => {
     </div>
   </div>
 
-  <Modal :open="!!selectedTransaction" @close="handleCloseModal">
+  <Modal :open="!!selectedTransaction" @close="handleCloseModal" wide>
     <template #title>Transaction #{{ selectedTransaction?.txId }}</template>
 
     <div class="flex flex-col">
-      <div class="mt-2 flex flex-col p-2">
-        <p class="text-md font-semibold">Status:</p>
-
-        <div class="w-full overflow-y-auto bg-slate-100 p-2">
-          {{ selectedTransaction?.status }}
-        </div>
+      <div class="mt-2 flex flex-col">
+        <p class="text-md mb-1 font-semibold">Status: {{ selectedTransaction?.status }}</p>
       </div>
-      <div class="mt-2 flex flex-col p-2">
-        <p class="text-md font-semibold">Ouput:</p>
-        <div class="max-h-64 w-full overflow-y-auto bg-slate-100 p-2">
-          <JsonViewer
-            class="ml-2"
-            :value="selectedTransaction?.data || {}"
-            :theme="uiStore.mode === 'light' ? 'light' : 'dark'"
-            :expand="true"
-            sort
-          />
-        </div>
+
+      <div class="mt-2 flex flex-col">
+        <p class="text-md mb-1 font-semibold">Ouput:</p>
+        <JsonViewer
+          class="overflow-y-auto rounded-md p-2"
+          :value="selectedTransaction?.data || {}"
+          :theme="uiStore.mode === 'light' ? 'light' : 'dark'"
+          :expand="true"
+          sort
+        />
       </div>
     </div>
   </Modal>
