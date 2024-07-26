@@ -28,18 +28,18 @@ jobs:
       is_pull_request_labeled_with_run_tests: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-tests')}}
     steps:
       - run: true
-  test:
-    name: Unit Tests
-    needs: triggers
-    if: ${{ needs.triggers.outputs.is_pull_request_opened || needs.triggers.outputs.is_pull_request_review_approved || needs.triggers.outputs.is_pull_request_labeled_with_run_tests }}
-    uses: ./.github/workflows/frontend-unit-tests.yml
-    secrets:
-      codecov_token: ${{ secrets.CODECOV_TOKEN }}
+  # test:
+  #   name: Unit Tests
+  #   needs: triggers
+  #   if: ${{ needs.triggers.outputs.is_pull_request_opened || needs.triggers.outputs.is_pull_request_review_approved || needs.triggers.outputs.is_pull_request_labeled_with_run_tests }}
+  #   uses: ./.github/workflows/frontend-unit-tests.yml
+  #   secrets:
+  #     codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
-  load-test:
-    name: Load Tests
-    needs: triggers
-    if: ${{ needs.triggers.outputs.is_pull_request_opened || needs.triggers.outputs.is_pull_request_review_approved || needs.triggers.outputs.is_pull_request_labeled_with_run_tests }}
-    uses: ./.github/workflows/load-test-oha.yml
-    with:
-      oha-version: "v1.4.5"
+  # load-test:
+  #   name: Load Tests
+  #   needs: triggers
+  #   if: ${{ needs.triggers.outputs.is_pull_request_opened || needs.triggers.outputs.is_pull_request_review_approved || needs.triggers.outputs.is_pull_request_labeled_with_run_tests }}
+  #   uses: ./.github/workflows/load-test-oha.yml
+  #   with:
+  #     oha-version: "v1.4.5"

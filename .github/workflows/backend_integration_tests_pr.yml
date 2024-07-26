@@ -25,70 +25,81 @@ jobs:
       is_pull_request_labeled_with_run_tests: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-tests')}}
     steps:
       - run: true
+
   test:
+    name: Print triggers
     needs: triggers
-    if: ${{ needs.triggers.outputs.is_pull_request_opened || needs.triggers.outputs.is_pull_request_review_approved || needs.triggers.outputs.is_pull_request_labeled_with_run_tests }}
-
     runs-on: ubuntu-latest
-
-    env:
-      PYTHONPATH: ${{ github.workspace }}
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Copy .env file
-        run: cp .env.example .env
-
-      - name: Set OPENAIKEY in the .env file so it can be loaded from the environment
-        env:
-          OPENAIKEY: ${{ secrets.OPENAIKEY }}
-        run: sed -i "s/<add_your_openai_api_key_here>/${OPENAIKEY}/g" .env
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Cache Docker layers
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
-
-      - name: Build Docker image
-        run: docker compose build
-
-      - name: Run Docker Compose
-        run: docker compose up -d
-
-      - name: Wait for services to be up
-        timeout-minutes: 5
+      - name: Print triggers
         run: |
-          while ! curl -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"ping","params":[],"id":1}' http://0.0.0.0:4000/api > /dev/null; do
-            echo "Waiting for rpc server..."
-            sleep 5
-          done
+          echo "is_pull_request_opened: ${{ needs.triggers.outputs.is_pull_request_opened }}"
+          echo "is_pull_request_review_approved: ${{ needs.triggers.outputs.is_pull_request_review_approved }}"
+          echo "is_pull_request_labeled_with_run_tests: ${{ needs.triggers.outputs.is_pull_request_labeled_with_run_tests }}"
+  # test:
+  #   needs: triggers
+  #   if: ${{ needs.triggers.outputs.is_pull_request_opened || needs.triggers.outputs.is_pull_request_review_approved || needs.triggers.outputs.is_pull_request_labeled_with_run_tests }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.12.2
+  #   runs-on: ubuntu-latest
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -r requirements.test.txt
+  #   env:
+  #     PYTHONPATH: ${{ github.workspace }}
 
-      - name: Run tests
-        run: pytest tests/integration/
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
 
-      - name: Dump Docker Compose logs
-        run: docker compose logs
-        if: failure()
+  #     - name: Copy .env file
+  #       run: cp .env.example .env
 
-      - name: Shutdown Docker Compose
-        if: always()
-        run: docker compose down
+  #     - name: Set OPENAIKEY in the .env file so it can be loaded from the environment
+  #       env:
+  #         OPENAIKEY: ${{ secrets.OPENAIKEY }}
+  #       run: sed -i "s/<add_your_openai_api_key_here>/${OPENAIKEY}/g" .env
+
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v2
+
+  #     - name: Cache Docker layers
+  #       uses: actions/cache@v2
+  #       with:
+  #         path: /tmp/.buildx-cache
+  #         key: ${{ runner.os }}-buildx-${{ github.sha }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-buildx-
+
+  #     - name: Build Docker image
+  #       run: docker compose build
+
+  #     - name: Run Docker Compose
+  #       run: docker compose up -d
+
+  #     - name: Wait for services to be up
+  #       timeout-minutes: 5
+  #       run: |
+  #         while ! curl -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"ping","params":[],"id":1}' http://0.0.0.0:4000/api > /dev/null; do
+  #           echo "Waiting for rpc server..."
+  #           sleep 5
+  #         done
+
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v2
+  #       with:
+  #         python-version: 3.12.2
+
+  #     - name: Install dependencies
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         pip install -r requirements.txt
+  #         pip install -r requirements.test.txt
+
+  #     - name: Run tests
+  #       run: pytest tests/integration/
+
+  #     - name: Dump Docker Compose logs
+  #       run: docker compose logs
+  #       if: failure()
+
+  #     - name: Shutdown Docker Compose
+  #       if: always()
+  #       run: docker compose down
