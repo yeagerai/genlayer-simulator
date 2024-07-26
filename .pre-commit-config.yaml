@@ -1,0 +1,10 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0 # Use the ref you want to point at
+    hooks:
+      - id: trailing-whitespace
+      - id: check-added-large-files
+      - id: check-json
+      - id: check-yaml
+      - id: trailing-newline
+      - id: check-merge-conflict
