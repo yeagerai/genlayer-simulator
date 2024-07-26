@@ -13,7 +13,6 @@ export const useNodeStore = defineStore('nodeStore', () => {
   // state
   const $jsonRpc = inject<IJsonRpcService>('$jsonRpc')!;
   const validators = ref<ValidatorModel[]>([]);
-  const resetStorageModalOpen = ref<boolean>(false); // TODO: remove
   const resettingStorage = ref<boolean>(false);
 
   if (!webSocketClient.connected) webSocketClient.connect();
@@ -109,26 +108,6 @@ export const useNodeStore = defineStore('nodeStore', () => {
     }
   }
 
-  const openResetStorageModal = () => {
-    resetStorageModalOpen.value = true;
-  };
-
-  const closeResetStorageModal = () => {
-    resetStorageModalOpen.value = false;
-  };
-
-  const resetStorage = async () => {
-    resettingStorage.value = true;
-    try {
-      await contractsStore.resetStorage();
-      resettingStorage.value = false;
-    } catch (error) {
-      console.error(error);
-      resettingStorage.value = false;
-      throw error;
-    }
-  };
-
   const contractsToDelete = computed(() =>
     contractsStore.contracts.filter(
       (c) => (c.example && !c.updatedAt) || (!c.example && !c.updatedAt),
@@ -140,16 +119,11 @@ export const useNodeStore = defineStore('nodeStore', () => {
     listenWebsocket,
     validators,
     nodeProviders,
-    resetStorageModalOpen,
-    resettingStorage,
     contractsToDelete,
 
     getValidatorsData,
     createNewValidator,
     deleteValidator,
     updateValidator,
-    openResetStorageModal,
-    closeResetStorageModal,
-    resetStorage,
   };
 });

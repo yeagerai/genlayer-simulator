@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { notify } from '@kyvg/vue3-notification';
-import { useNodeStore } from '@/stores';
+import { useNodeStore, useContractsStore } from '@/stores';
 import ValidatorItem from '@/components/Simulator/ValidatorItem.vue';
 import ValidatorModal from '@/components/Simulator/ValidatorModal.vue';
 import { ref } from 'vue';
@@ -9,10 +9,11 @@ import MainTitle from '@/components/Simulator/MainTitle.vue';
 import PageSection from '@/components/Simulator/PageSection.vue';
 import { ArchiveBoxXMarkIcon } from '@heroicons/vue/24/solid';
 import { PlusIcon } from '@heroicons/vue/16/solid';
+
+const contractsStore = useContractsStore();
 const nodeStore = useNodeStore();
 const isNewValidatorModalOpen = ref(false);
 
-// Hooks
 onMounted(async () => {
   try {
     await nodeStore.getValidatorsData();
@@ -27,9 +28,14 @@ onMounted(async () => {
 });
 
 // TODO: refac
+const isResetStorageModalOpen = ref(false);
+const isResetting = ref(false);
+
 const handleResetStorage = async () => {
+  isResetting.value = true;
   try {
-    await nodeStore.resetStorage();
+    await contractsStore.resetStorage();
+
     notify({
       title: 'Success',
       text: 'Storage reset successfully',
@@ -43,7 +49,8 @@ const handleResetStorage = async () => {
       type: 'error',
     });
   } finally {
-    nodeStore.closeResetStorageModal();
+    isResetStorageModalOpen.value = false;
+    isResetting.value = false;
   }
 };
 </script>
@@ -89,7 +96,7 @@ const handleResetStorage = async () => {
       <template #title>Simulator Storage</template>
 
       <Btn
-        @click="nodeStore.openResetStorageModal"
+        @click="isResetStorageModalOpen = true"
         :disabled="nodeStore.contractsToDelete.length < 1"
         secondary
       >
@@ -105,13 +112,13 @@ const handleResetStorage = async () => {
     </PageSection>
 
     <ConfirmationModal
-      :open="nodeStore.resetStorageModalOpen"
+      :open="isResetStorageModalOpen"
       @confirm="handleResetStorage"
-      @close="nodeStore.closeResetStorageModal"
+      @close="isResetStorageModalOpen = false"
       buttonText="Reset Storage"
       buttonTestId="btn-reset-storage"
       :dangerous="true"
-      :confirming="nodeStore.resettingStorage"
+      :confirming="isResetting"
     >
       <template #title>Reset Simulator Storage</template>
       <template #description
