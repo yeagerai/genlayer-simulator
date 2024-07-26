@@ -6,5 +6,4 @@ repos:
       - id: check-added-large-files
       - id: check-json
       - id: check-yaml
-      - id: trailing-newline
       - id: check-merge-conflict

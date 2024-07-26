@@ -165,7 +165,7 @@ class VectorStore:
         norm_a = np.linalg.norm(a)
         norm_b = np.linalg.norm(b)
         return dot_product / (norm_a * norm_b)
-    
+
     def get_all_items(self) -> list[tuple[str, any]]:
         """
         Get all vectors and their metadata from the store.

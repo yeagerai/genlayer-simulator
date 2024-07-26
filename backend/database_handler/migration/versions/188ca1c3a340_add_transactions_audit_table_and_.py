@@ -1,7 +1,7 @@
 """add transactions audit table and transactions 'status' field
 
 Revision ID: 188ca1c3a340
-Revises: 
+Revises:
 Create Date: 2024-06-27 10:34:24.161235
 
 """
