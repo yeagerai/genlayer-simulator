@@ -27,7 +27,6 @@ onMounted(async () => {
   }
 });
 
-// TODO: refac
 const isResetStorageModalOpen = ref(false);
 const isResetting = ref(false);
 

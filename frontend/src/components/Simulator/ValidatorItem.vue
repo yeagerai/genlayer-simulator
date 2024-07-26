@@ -16,7 +16,7 @@ defineProps<{
 <template>
   <div
     data-testid="validator-item"
-    class="group flex cursor-pointer flex-row items-center justify-between gap-2 bg-slate-100 p-2 hover:bg-slate-200 dark:bg-zinc-700 dark:hover:bg-zinc-600"
+    class="group flex cursor-pointer flex-row items-center justify-between gap-2 bg-slate-100 p-2 hover:bg-slate-200 dark:bg-gray-700 dark:hover:bg-gray-600"
     @click="isUpdateModalMopen = true"
   >
     <div
@@ -43,7 +43,7 @@ defineProps<{
     <div class="invisible flex flex-row gap-1 group-hover:visible">
       <button @click.stop="isUpdateModalMopen = true">
         <PencilSquareIcon
-          class="h-5 w-5 p-[2px] text-slate-400 transition-all hover:text-slate-800 active:scale-90 dark:hover:text-white"
+          class="h-5 w-5 p-[2px] text-slate-400 transition-colors hover:text-slate-800 active:scale-90 dark:hover:text-white"
         />
         <ToolTip text="Update Validator" :options="{ placement: 'bottom' }" />
       </button>
@@ -53,7 +53,7 @@ defineProps<{
         @click.stop="isDeleteModalOpen = true"
       >
         <TrashIcon
-          class="h-5 w-5 p-[2px] text-slate-400 transition-all hover:text-slate-800 active:scale-90 dark:hover:text-white"
+          class="h-5 w-5 p-[2px] text-slate-400 transition-colors hover:text-slate-800 active:scale-90 dark:hover:text-white"
         />
         <ToolTip text="Delete validator" :options="{ placement: 'bottom' }" />
       </button>
