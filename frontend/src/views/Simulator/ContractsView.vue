@@ -67,7 +67,11 @@ const handleSaveNewFile = (name: string) => {
 
         <GhostBtn class="!p-0">
           <label class="input-label p-1">
-            <input type="file" @change="loadContentFromFile" accept=".gpy,.py" />
+            <input
+              type="file"
+              @change="loadContentFromFile"
+              accept=".gpy,.py"
+            />
             <ArrowUpTrayIcon class="h-5 w-5 fill-primary dark:fill-white" />
             <ToolTip text="Add From File" :options="{ placement: 'bottom' }" />
           </label>
@@ -83,7 +87,11 @@ const handleSaveNewFile = (name: string) => {
       :isActive="contract.id === store.currentContractId"
     />
 
-    <ContractItem v-if="showNewFileInput" :isNewFile="true" @save="handleSaveNewFile" />
+    <ContractItem
+      v-if="showNewFileInput"
+      :isNewFile="true"
+      @save="handleSaveNewFile"
+    />
   </div>
 </template>
 

@@ -43,7 +43,10 @@ const handleCloseModal = () => {
   >
     <h5 class="text-sm">Latest Transactions</h5>
     <button @click="openClearTransactionsModal" v-if="transactions.length > 0">
-      <ToolTip text="Clear Transactions List" :options="{ placement: 'bottom' }" />
+      <ToolTip
+        text="Clear Transactions List"
+        :options="{ placement: 'bottom' }"
+      />
       <TrashIcon class="mr-1 h-4 w-4" />
     </button>
   </div>
@@ -67,7 +70,9 @@ const handleCloseModal = () => {
               v-if="transaction.status !== 'FINALIZED'"
               :color="uiStore.mode === 'light' ? '#1a3851' : 'white'"
             />
-            <span class="ml-1 text-xs font-semibold">{{ transaction.status }}</span>
+            <span class="ml-1 text-xs font-semibold">{{
+              transaction.status
+            }}</span>
           </div>
         </div>
       </div>
@@ -79,7 +84,9 @@ const handleCloseModal = () => {
 
     <div class="flex flex-col">
       <div class="mt-2 flex flex-col">
-        <p class="text-md mb-1 font-semibold">Status: {{ selectedTransaction?.status }}</p>
+        <p class="text-md mb-1 font-semibold">
+          Status: {{ selectedTransaction?.status }}
+        </p>
       </div>
 
       <div class="mt-2 flex flex-col">
@@ -103,6 +110,8 @@ const handleCloseModal = () => {
     dangerous
   >
     <template #title>Clear Transaction List</template>
-    <template #description>Are you sure you want to clear all transactions?</template>
+    <template #description
+      >Are you sure you want to clear all transactions?</template
+    >
   </ConfirmationModal>
 </template>

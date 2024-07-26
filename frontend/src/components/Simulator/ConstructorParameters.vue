@@ -109,10 +109,14 @@ onMounted(() => {
     <div class="my-4 flex flex-col p-2">
       <div class="flex flex-col">
         <div class="flex flex-col justify-between align-middle">
-          <div class="flex h-full align-middle text-xs">Constructor Parameters</div>
-          <div class="dark:color-neutral-100 flex flex-col items-center p-5 text-xs text-red-500">
-            <ExclamationTriangleIcon class="h-6 w-6" /> Error Loading Constructor Parameters please
-            refresh the page and try again.
+          <div class="flex h-full align-middle text-xs">
+            Constructor Parameters
+          </div>
+          <div
+            class="dark:color-neutral-100 flex flex-col items-center p-5 text-xs text-red-500"
+          >
+            <ExclamationTriangleIcon class="h-6 w-6" /> Error Loading
+            Constructor Parameters please refresh the page and try again.
           </div>
         </div>
       </div>
@@ -122,7 +126,9 @@ onMounted(() => {
     <div class="my-4 flex flex-col p-2">
       <div class="flex flex-col">
         <div class="flex flex-col justify-between align-middle">
-          <div class="flex h-full align-middle text-xs">Constructor Parameters</div>
+          <div class="flex h-full align-middle text-xs">
+            Constructor Parameters
+          </div>
           <div class="flex flex-col items-center p-5">
             <VueSpinnerOval
               size="30"
@@ -139,7 +145,9 @@ onMounted(() => {
     <div class="my-4 flex flex-col p-2">
       <div class="flex flex-col">
         <div class="flex justify-between align-middle">
-          <div class="flex h-full align-middle text-xs">Constructor Parameters</div>
+          <div class="flex h-full align-middle text-xs">
+            Constructor Parameters
+          </div>
           <button
             class="texm-xs rounded bg-primary px-2 text-white hover:opacity-80"
             @click="toggleMode"

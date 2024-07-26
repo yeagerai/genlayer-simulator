@@ -22,7 +22,11 @@ const emit = defineEmits(['closeContract', 'selectContract']);
         'bg-white text-primary hover:bg-white dark:bg-zinc-600 dark:text-white hover:dark:bg-zinc-600',
     ]"
   >
-    <button v-if="isHomeTab" class="flex items-center p-2" @click="emit('selectContract')">
+    <button
+      v-if="isHomeTab"
+      class="flex items-center p-2"
+      @click="emit('selectContract')"
+    >
       <HomeIcon class="fill-primary' mx-2 h-4 w-4 dark:fill-white" />
     </button>
 
@@ -32,7 +36,10 @@ const emit = defineEmits(['closeContract', 'selectContract']);
         @click="emit('selectContract')"
         @click.middle="emit('closeContract')"
       >
-        <DocumentCheckIcon class="h-4 w-4" :class="{ 'fill-primary dark:fill-white': isActive }" />
+        <DocumentCheckIcon
+          class="h-4 w-4"
+          :class="{ 'fill-primary dark:fill-white': isActive }"
+        />
         {{ contract?.name }}
       </button>
 
@@ -49,6 +56,9 @@ const emit = defineEmits(['closeContract', 'selectContract']);
       </button>
     </template>
 
-    <div v-if="isActive" class="absolute bottom-0 h-[2px] w-full bg-primary dark:bg-accent" />
+    <div
+      v-if="isActive"
+      class="absolute bottom-0 h-[2px] w-full bg-primary dark:bg-accent"
+    />
   </div>
 </template>

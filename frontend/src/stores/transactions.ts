@@ -23,7 +23,11 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
     console.log(`Updating transaction ${tx.id} at index ${index}`);
     if (index !== -1) {
       const current = transactions.value[index];
-      transactions.value.splice(index, 1, { ...current, status: tx.status, data: tx });
+      transactions.value.splice(index, 1, {
+        ...current,
+        status: tx.status,
+        data: tx,
+      });
     }
   }
 

@@ -57,7 +57,9 @@ const setCurentUserAddress = (privateKey: `0x${string}`) => {
               <p class="text-md font-semibold">Your Accounts:</p>
             </div>
             <div class="flex flex-col">
-              <div class="flex max-h-56 w-full flex-col overflow-y-auto text-xs">
+              <div
+                class="flex max-h-56 w-full flex-col overflow-y-auto text-xs"
+              >
                 <div
                   class="flex items-center justify-between p-1 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700"
                   v-for="privateKey in store.privateKeys"
@@ -65,7 +67,10 @@ const setCurentUserAddress = (privateKey: `0x${string}`) => {
                 >
                   <template v-if="privateKey === store.currentPrivateKey">
                     <div class="flex items-center">
-                      <ToolTip text="Your Current Account" :options="{ placement: 'right' }" />
+                      <ToolTip
+                        text="Your Current Account"
+                        :options="{ placement: 'right' }"
+                      />
                       <div class="flex pl-4 pr-2 text-primary dark:text-white">
                         {{ store.accountFromPrivateKey(privateKey).address }}
                       </div>
@@ -81,13 +86,19 @@ const setCurentUserAddress = (privateKey: `0x${string}`) => {
                       @mouseover="handleShowSetDefaultAccount(privateKey)"
                       @mouseleave="handleHideSetDefaultAccount(privateKey)"
                     >
-                      <ToolTip text="Set as Current Account" :options="{ placement: 'right' }" />
+                      <ToolTip
+                        text="Set as Current Account"
+                        :options="{ placement: 'right' }"
+                      />
                       <div class="flex pl-4 pr-2 text-primary dark:text-white">
                         {{ store.accountFromPrivateKey(privateKey).address }}
                       </div>
                     </div>
                     <div class="flex h-6 w-6 text-primary dark:text-white">
-                      <CheckIcon v-show="showSetDefaultAccount[privateKey]" class="mr-1 h-4 w-4" />
+                      <CheckIcon
+                        v-show="showSetDefaultAccount[privateKey]"
+                        class="mr-1 h-4 w-4"
+                      />
                     </div>
                   </template>
                 </div>

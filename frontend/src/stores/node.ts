@@ -20,7 +20,10 @@ export const useNodeStore = defineStore('nodeStore', () => {
   webSocketClient.on('status_update', (event) => {
     if (listenWebsocket.value) {
       if (event.message?.function !== 'get_transaction_by_id') {
-        logs.value.push({ date: new Date().toISOString(), message: event.message });
+        logs.value.push({
+          date: new Date().toISOString(),
+          message: event.message,
+        });
       }
     }
   });
@@ -62,7 +65,9 @@ export const useNodeStore = defineStore('nodeStore', () => {
       config: validatorConfig,
     });
     if (result?.status === 'success') {
-      const index = validators.value.findIndex((v) => v.address === validator.address);
+      const index = validators.value.findIndex(
+        (v) => v.address === validator.address,
+      );
 
       if (index >= 0) {
         validators.value.splice(index, 1, result.data);
@@ -80,7 +85,9 @@ export const useNodeStore = defineStore('nodeStore', () => {
       address: validator.address || '',
     });
     if (result?.status === 'success') {
-      validators.value = validators.value.filter((v) => v.address !== validator.address);
+      validators.value = validators.value.filter(
+        (v) => v.address !== validator.address,
+      );
     } else {
       throw new Error('Error deleting the validator');
     }

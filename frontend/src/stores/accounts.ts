@@ -4,15 +4,21 @@ import { getAccountFromPrivatekey, getPrivateKey } from '@/utils';
 
 export const useAccountsStore = defineStore('accountsStore', () => {
   const key = localStorage.getItem('accountsStore.currentPrivateKey');
-  const currentPrivateKey = ref<`0x${string}` | null>(key ? (key as `0x${string}`) : null);
+  const currentPrivateKey = ref<`0x${string}` | null>(
+    key ? (key as `0x${string}`) : null,
+  );
 
   const currentUserAddress = computed(() => {
-    return currentPrivateKey.value ? getAccountFromPrivatekey(currentPrivateKey.value).address : '';
+    return currentPrivateKey.value
+      ? getAccountFromPrivatekey(currentPrivateKey.value).address
+      : '';
   });
 
   const privateKeys = ref<`0x${string}`[]>(
     localStorage.getItem('accountsStore.privateKeys')
-      ? ((localStorage.getItem('accountsStore.privateKeys') || '').split(',') as `0x${string}`[])
+      ? ((localStorage.getItem('accountsStore.privateKeys') || '').split(
+          ',',
+        ) as `0x${string}`[])
       : [],
   );
 

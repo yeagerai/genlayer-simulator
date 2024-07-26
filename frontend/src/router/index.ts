@@ -14,9 +14,24 @@ const router = createRouter({
       component: SimulatorView,
       children: [
         { path: '', redirect: { name: 'contracts' } },
-        { path: 'contracts', name: 'contracts', component: ContractsView, props: true },
-        { path: 'run-debug', name: 'run-debug', component: RunDebugView, props: true },
-        { path: 'settings', name: 'settings', component: SettingsView, props: true },
+        {
+          path: 'contracts',
+          name: 'contracts',
+          component: ContractsView,
+          props: true,
+        },
+        {
+          path: 'run-debug',
+          name: 'run-debug',
+          component: RunDebugView,
+          props: true,
+        },
+        {
+          path: 'settings',
+          name: 'settings',
+          component: SettingsView,
+          props: true,
+        },
       ],
     },
     { path: '/profile', name: 'profile', component: ProfileView },

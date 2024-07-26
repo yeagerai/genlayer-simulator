@@ -7,7 +7,10 @@ export interface IRpcClient {
 }
 
 export class RpcClient implements IRpcClient {
-  async call<T>({ method, params }: JsonRPCRequest): Promise<JsonRPCResponse<T>> {
+  async call<T>({
+    method,
+    params,
+  }: JsonRPCRequest): Promise<JsonRPCResponse<T>> {
     const requestId = uuidv4();
     const data = {
       jsonrpc: '2.0',

@@ -25,7 +25,10 @@ const showTutorial = () => {
       <Logo
         alt="GenLayer Logo"
         height="36"
-        :class="['block', uiStore.mode === 'light' ? 'text-primary' : 'text-white']"
+        :class="[
+          'block',
+          uiStore.mode === 'light' ? 'text-primary' : 'text-white',
+        ]"
       />
     </RouterLink>
 
@@ -35,7 +38,10 @@ const showTutorial = () => {
           {{ shortenAddress(accounts.currentUserAddress || '') }}
         </GhostBtn>
 
-        <ToolTip :text="accounts.currentUserAddress" :options="{ placement: 'bottom' }" />
+        <ToolTip
+          :text="accounts.currentUserAddress"
+          :options="{ placement: 'bottom' }"
+        />
       </RouterLink>
 
       <GhostBtn @click="toggleMode">

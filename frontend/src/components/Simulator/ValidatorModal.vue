@@ -86,14 +86,16 @@ const providerOptions = computed(() => {
 });
 
 const handleChangeProvider = () => {
-  newValidatorData.value.model = nodeStore.nodeProviders[newValidatorData.value.provider][0];
+  newValidatorData.value.model =
+    nodeStore.nodeProviders[newValidatorData.value.provider][0];
 };
 
 const tryInitValues = () => {
   if (!props.validator) {
     try {
       newValidatorData.value.provider = Object.keys(nodeStore.nodeProviders)[0];
-      newValidatorData.value.model = nodeStore.nodeProviders[newValidatorData.value.provider][0];
+      newValidatorData.value.model =
+        nodeStore.nodeProviders[newValidatorData.value.provider][0];
     } catch (err) {
       console.error('Could not initialize values', err);
     }

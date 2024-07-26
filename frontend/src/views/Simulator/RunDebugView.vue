@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { useAccountsStore, useContractsStore, useTransactionsStore } from '@/stores';
+import {
+  useAccountsStore,
+  useContractsStore,
+  useTransactionsStore,
+} from '@/stores';
 import { computed, onMounted, onUnmounted, watch } from 'vue';
 import { notify } from '@kyvg/vue3-notification';
 import ContractState from '@/components/Simulator/ContractState.vue';
@@ -24,7 +28,11 @@ const handleGetContractState = async (
   methodArguments: string[],
 ) => {
   try {
-    await contractsStore.getContractState(contractAddress, method, methodArguments);
+    await contractsStore.getContractState(
+      contractAddress,
+      method,
+      methodArguments,
+    );
   } catch (error) {
     notify({
       title: 'Error',
@@ -34,7 +42,13 @@ const handleGetContractState = async (
   }
 };
 
-const handleCallContractMethod = async ({ method, params }: { method: string; params: any[] }) => {
+const handleCallContractMethod = async ({
+  method,
+  params,
+}: {
+  method: string;
+  params: any[];
+}) => {
   const result = await contractsStore.callContractMethod({
     userAccount: accountsStore.currentUserAddress || '',
     localContractId: contractsStore.deployedContract?.contractId || '',
@@ -82,7 +96,10 @@ const handleClearTransactions = () => {
   );
 };
 
-const debouncedGetConstructorInputs = debounce(() => contractsStore.getConstructorInputs(), 3000);
+const debouncedGetConstructorInputs = debounce(
+  () => contractsStore.getConstructorInputs(),
+  3000,
+);
 
 watch(
   () => contractsStore.deployedContract?.contractId,
@@ -105,7 +122,11 @@ watch(
 watch(
   () => contractsStore.currentContract?.content,
   (newValue, oldValue) => {
-    if (newValue && newValue !== oldValue && !contractsStore.loadingConstructorInputs) {
+    if (
+      newValue &&
+      newValue !== oldValue &&
+      !contractsStore.loadingConstructorInputs
+    ) {
       debouncedGetConstructorInputs();
     }
   },
@@ -128,17 +149,19 @@ onMounted(async () => {
   if (contractsStore.deployedContract) {
     contractsStore.getCurrentContractAbi();
   }
-  deploymentSubscription = contractsStore.$onAction(({ name, store, args, after }) => {
-    if (name === 'addDeployedContract' && store.$id === contractsStore.$id) {
-      after(() => {
-        notify({
-          title: 'Contract deployed',
-          text: `to ${args[0]?.address}`,
-          type: 'success',
+  deploymentSubscription = contractsStore.$onAction(
+    ({ name, store, args, after }) => {
+      if (name === 'addDeployedContract' && store.$id === contractsStore.$id) {
+        after(() => {
+          notify({
+            title: 'Contract deployed',
+            text: `to ${args[0]?.address}`,
+            type: 'success',
+          });
         });
-      });
-    }
-  });
+      }
+    },
+  );
 });
 
 onUnmounted(() => {
@@ -153,9 +176,14 @@ onUnmounted(() => {
     <div class="flex w-full flex-col p-2">
       <h3 class="text-xl">Run and Debug</h3>
     </div>
-    <div class="flex flex-col overflow-y-auto" v-if="!!contractsStore.currentContractId">
+    <div
+      class="flex flex-col overflow-y-auto"
+      v-if="!!contractsStore.currentContractId"
+    >
       <div class="flex flex-col">
-        <div class="flex w-full flex-col bg-slate-100 px-2 py-2 dark:bg-zinc-700">
+        <div
+          class="flex w-full flex-col bg-slate-100 px-2 py-2 dark:bg-zinc-700"
+        >
           <div class="text-sm">Intelligent Contract:</div>
           <div class="text-xs text-neutral-800 dark:text-neutral-200">
             {{ contractsStore.currentContract?.name }}
@@ -195,10 +223,16 @@ onUnmounted(() => {
         </div>
       </div>
     </div>
-    <div class="flex w-full flex-col bg-slate-100 px-2 py-2 dark:dark:bg-zinc-700" v-else>
+    <div
+      class="flex w-full flex-col bg-slate-100 px-2 py-2 dark:dark:bg-zinc-700"
+      v-else
+    >
       <div class="text-sm">
         Please first select an intelligent contract in the
-        <RouterLink :to="{ name: 'contracts' }" class="text-primary underline dark:text-white">
+        <RouterLink
+          :to="{ name: 'contracts' }"
+          class="text-primary underline dark:text-white"
+        >
           Files list.
         </RouterLink>
       </div>

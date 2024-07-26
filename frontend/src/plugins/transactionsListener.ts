@@ -11,7 +11,9 @@ export const TransactionsListenerPlugin = {
       const pendingTxs = transactionsStore.transactions.filter(
         (tx: TransactionItem) =>
           tx.status !== 'FINALIZED' &&
-          transactionsStore.processingQueue.findIndex((q) => q.txId !== tx.txId) === -1,
+          transactionsStore.processingQueue.findIndex(
+            (q) => q.txId !== tx.txId,
+          ) === -1,
       ) as TransactionItem[];
 
       transactionsStore.processingQueue.push(...pendingTxs);
@@ -20,20 +22,25 @@ export const TransactionsListenerPlugin = {
           const tx = await transactionsStore.getTransaction(item.txId);
           if (!tx?.data) {
             // Remove the transaction from the processing queue and storage if not found
-            transactionsStore.processingQueue = transactionsStore.processingQueue.filter(
-              (t) => t.txId !== item.txId,
-            );
+            transactionsStore.processingQueue =
+              transactionsStore.processingQueue.filter(
+                (t) => t.txId !== item.txId,
+              );
             transactionsStore.removeTransaction(item);
           } else {
             const currentTx = transactionsStore.processingQueue.find(
               (t) => t.txId === tx?.data?.id,
             );
             transactionsStore.updateTransaction(tx?.data);
-            transactionsStore.processingQueue = transactionsStore.processingQueue.filter(
-              (t) => t.txId !== tx?.data?.id,
-            );
+            transactionsStore.processingQueue =
+              transactionsStore.processingQueue.filter(
+                (t) => t.txId !== tx?.data?.id,
+              );
             // if finalized and is contract add to the contract store dpeloyed
-            if (tx?.data?.status === 'FINALIZED' && currentTx?.type === 'deploy') {
+            if (
+              tx?.data?.status === 'FINALIZED' &&
+              currentTx?.type === 'deploy'
+            ) {
               contractsStore.addDeployedContract({
                 contractId: currentTx.localContractId,
                 address: currentTx.contractAddress,

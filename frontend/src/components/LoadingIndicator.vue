@@ -7,7 +7,13 @@ const props = defineProps<{ color?: string }>();
   <div class="flex flex-col items-center">
     <VueSpinnerOval
       size="25"
-      :color="props.color ? props.color : uiStore.mode === 'light' ? '#1a3851' : 'white'"
+      :color="
+        props.color
+          ? props.color
+          : uiStore.mode === 'light'
+            ? '#1a3851'
+            : 'white'
+      "
       width="50"
     />
     <slot />

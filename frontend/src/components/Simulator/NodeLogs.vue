@@ -44,15 +44,28 @@ watch(nodeStore.logs, () => {
             :class="colorMap[message?.response?.status] || 'text-black-500'"
           >
             <div class="flex text-xs font-light">
-              <span class="flex w-8 flex-col items-center">{{ index + 1 }}</span> {{ date }} ::
+              <span class="flex w-8 flex-col items-center">{{
+                index + 1
+              }}</span>
+              {{ date }} ::
             </div>
-            <div v-if="typeof message === 'string'" class="ml-1 flex flex-1 text-xs">
+            <div
+              v-if="typeof message === 'string'"
+              class="ml-1 flex flex-1 text-xs"
+            >
               "{{ message }}
             </div>
             <div v-else class="ml-1 flex flex-1 text-xs">
               {{ message.function }}
-              {{ message?.response?.message ? ` ===> ${message.response.message}` : '' }}
-              <div class="ml-2 flex text-xs" v-if="typeof message.response?.data === 'string'">
+              {{
+                message?.response?.message
+                  ? ` ===> ${message.response.message}`
+                  : ''
+              }}
+              <div
+                class="ml-2 flex text-xs"
+                v-if="typeof message.response?.data === 'string'"
+              >
                 {{ message.response?.data || '' }}
               </div>
               <JsonViewer
@@ -71,7 +84,9 @@ watch(nodeStore.logs, () => {
         class="flex h-full flex-col items-center justify-center"
       >
         <div class="flex text-xl">Logs</div>
-        <div class="flex">Here you will see every log produced by the simulator</div>
+        <div class="flex">
+          Here you will see every log produced by the simulator
+        </div>
       </div>
     </div>
   </div>

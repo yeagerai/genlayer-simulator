@@ -17,7 +17,9 @@ defineProps({
         !isActive && 'dark:hover:bg-zinc-700',
       ]"
     >
-      <div class="h-6 w-6 fill-primary transition-all group-active:scale-90 dark:fill-white">
+      <div
+        class="h-6 w-6 fill-primary transition-all group-active:scale-90 dark:fill-white"
+      >
         <slot />
       </div>
 

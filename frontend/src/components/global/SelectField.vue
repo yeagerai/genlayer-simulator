@@ -22,7 +22,12 @@ const model = defineModel();
         'ring-gray-400/60 hover:ring-gray-400 dark:ring-zinc-500/60 dark:hover:ring-zinc-500',
     ]"
   >
-    <option v-for="option in options" :key="option" :value="option" :selected="option === model">
+    <option
+      v-for="option in options"
+      :key="option"
+      :value="option"
+      :selected="option === model"
+    >
       {{ option }}
     </option>
   </select>

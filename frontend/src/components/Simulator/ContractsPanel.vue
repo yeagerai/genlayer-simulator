@@ -24,7 +24,9 @@ const handleCloseContract = (id?: string) => {
 };
 
 const contracts = computed(() => {
-  return store.contracts.filter((contract) => store.openedFiles.includes(contract.id || ''));
+  return store.contracts.filter((contract) =>
+    store.openedFiles.includes(contract.id || ''),
+  );
 });
 
 const showHome = computed(() => store.currentContractId === '');
@@ -39,7 +41,9 @@ const handleHorizontalScroll = (event: WheelEvent) => {
 
 <template>
   <div class="flex h-full w-full flex-col">
-    <nav class="flex items-stretch justify-between border-b text-sm dark:border-zinc-700">
+    <nav
+      class="flex items-stretch justify-between border-b text-sm dark:border-zinc-700"
+    >
       <div
         class="no-scrollbar flex items-stretch justify-start overflow-x-auto"
         @wheel.stop="handleHorizontalScroll"

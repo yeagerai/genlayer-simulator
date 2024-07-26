@@ -8,9 +8,18 @@
       </span>
     </div>
     <div class="jv-code" :class="{ open: expandCode, boxed }">
-      <json-box ref="jsonBox" :value="value" :sort="sort" :preview-mode="previewMode" />
+      <json-box
+        ref="jsonBox"
+        :value="value"
+        :sort="sort"
+        :preview-mode="previewMode"
+      />
     </div>
-    <div v-if="expandableCode && boxed" class="jv-more" @click="toggleExpandCode">
+    <div
+      v-if="expandableCode && boxed"
+      class="jv-more"
+      @click="toggleExpandCode"
+    >
       <span class="jv-toggle" :class="{ open: !!expandCode }" />
     </div>
   </div>
@@ -81,7 +90,9 @@ export default {
   emits: ['onKeyClick'],
   computed: {
     jvClass() {
-      return 'jv-container ' + 'jv-' + this.theme + (this.boxed ? ' boxed' : '');
+      return (
+        'jv-container ' + 'jv-' + this.theme + (this.boxed ? ' boxed' : '')
+      );
     },
     copyText() {
       const { copyText, copiedText, timeout, align } = this.copyable;
@@ -348,7 +359,11 @@ export default {
   bottom: 0;
   left: 0;
   z-index: 1;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 20%, rgba(230, 230, 230, 0.3) 100%);
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 20%,
+    rgba(230, 230, 230, 0.3) 100%
+  );
   transition: all 0.1s;
 }
 .jv-container .jv-more:hover .jv-toggle {
@@ -356,7 +371,11 @@ export default {
   color: #111;
 }
 .jv-container .jv-more:hover:after {
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 20%, rgba(230, 230, 230, 0.3) 100%);
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 20%,
+    rgba(230, 230, 230, 0.3) 100%
+  );
 }
 .jv-container .jv-button {
   position: relative;

@@ -40,7 +40,9 @@ export const useContractsStore = defineStore('contractsStore', () => {
 
   function removeContractFile(id: string): void {
     contracts.value = [...contracts.value.filter((c) => c.id !== id)];
-    deployedContracts.value = [...deployedContracts.value.filter((c) => c.contractId !== id)];
+    deployedContracts.value = [
+      ...deployedContracts.value.filter((c) => c.contractId !== id),
+    ];
 
     if (currentContractId.value === id) {
       setCurrentContractId('');
@@ -49,7 +51,11 @@ export const useContractsStore = defineStore('contractsStore', () => {
 
   function updateContractFile(
     id: string,
-    { name, content, updatedAt }: { name?: string; content?: string; updatedAt?: string },
+    {
+      name,
+      content,
+      updatedAt,
+    }: { name?: string; content?: string; updatedAt?: string },
   ) {
     contracts.value = [
       ...contracts.value.map((c) => {
@@ -82,11 +88,22 @@ export const useContractsStore = defineStore('contractsStore', () => {
     }
   }
 
-  function addDeployedContract({ contractId, address, defaultState }: DeployedContract): void {
-    const index = deployedContracts.value.findIndex((c) => c.contractId === contractId);
+  function addDeployedContract({
+    contractId,
+    address,
+    defaultState,
+  }: DeployedContract): void {
+    const index = deployedContracts.value.findIndex(
+      (c) => c.contractId === contractId,
+    );
     const newItem = { contractId, address, defaultState };
     if (index === -1) deployedContracts.value.push(newItem);
-    else deployedContracts.value = deployedContracts.value.splice(index, 1, newItem);
+    else
+      deployedContracts.value = deployedContracts.value.splice(
+        index,
+        1,
+        newItem,
+      );
   }
 
   function removeDeployedContract(contractId: string): void {
@@ -105,20 +122,38 @@ export const useContractsStore = defineStore('contractsStore', () => {
         .filter((c) => c.example || (!c.example && !c.updatedAt))
         .map((c) => c.id);
 
-      await db.deployedContracts.where('contractId').anyOf(idsToDelete).delete();
+      await db.deployedContracts
+        .where('contractId')
+        .anyOf(idsToDelete)
+        .delete();
       await db.contractFiles.where('id').anyOf(idsToDelete).delete();
 
       deployedContracts.value = [
-        ...deployedContracts.value.filter((c) => !idsToDelete.includes(c.contractId)),
+        ...deployedContracts.value.filter(
+          (c) => !idsToDelete.includes(c.contractId),
+        ),
       ];
-      contracts.value = [...contracts.value.filter((c) => !idsToDelete.includes(c.id))];
-      openedFiles.value = [...openedFiles.value.filter((c) => !idsToDelete.includes(c))];
-      if (currentContractId.value && idsToDelete.includes(currentContractId.value)) {
+      contracts.value = [
+        ...contracts.value.filter((c) => !idsToDelete.includes(c.id)),
+      ];
+      openedFiles.value = [
+        ...openedFiles.value.filter((c) => !idsToDelete.includes(c)),
+      ];
+      if (
+        currentContractId.value &&
+        idsToDelete.includes(currentContractId.value)
+      ) {
         currentContractId.value = '';
       }
 
-      localStorage.setItem('mainStore.currentContractId', currentContractId.value || '');
-      localStorage.setItem('mainStore.openedFiles', openedFiles.value.join(','));
+      localStorage.setItem(
+        'mainStore.currentContractId',
+        currentContractId.value || '',
+      );
+      localStorage.setItem(
+        'mainStore.openedFiles',
+        openedFiles.value.join(','),
+      );
 
       await setupStores();
     } catch (error) {
@@ -139,7 +174,9 @@ export const useContractsStore = defineStore('contractsStore', () => {
   }) {
     callingContractMethod.value = true;
     try {
-      const contract = deployedContracts.value.find((c) => c.contractId === localContractId);
+      const contract = deployedContracts.value.find(
+        (c) => c.contractId === localContractId,
+      );
       const result = await $jsonRpc?.callContractFunction({
         userAccount,
         contractAddress: contract?.address || '',
@@ -174,7 +211,11 @@ export const useContractsStore = defineStore('contractsStore', () => {
   ) {
     callingContractState.value = true;
     try {
-      const result = await $jsonRpc?.getContractState({ contractAddress, method, methodArguments });
+      const result = await $jsonRpc?.getContractState({
+        contractAddress,
+        method,
+        methodArguments,
+      });
 
       currentContractState.value = {
         ...currentContractState.value,
@@ -286,14 +327,16 @@ export const useContractsStore = defineStore('contractsStore', () => {
             code: currentContract.value.content,
           });
           if (!currentConstructorInputs.value) {
-            currentConstructorInputs.value = result?.data?.methods['__init__']?.inputs;
+            currentConstructorInputs.value =
+              result?.data?.methods['__init__']?.inputs;
           } else {
             //compare existing inputs with new ones
             if (
               JSON.stringify(currentConstructorInputs.value) !==
               JSON.stringify(result?.data?.methods['__init__']?.inputs)
             ) {
-              currentConstructorInputs.value = result?.data?.methods['__init__']?.inputs;
+              currentConstructorInputs.value =
+                result?.data?.methods['__init__']?.inputs;
             }
           }
           currentErrorConstructorInputs.value = undefined;
@@ -311,7 +354,9 @@ export const useContractsStore = defineStore('contractsStore', () => {
     return contracts.value.find((c) => c.id === currentContractId.value);
   });
   const deployedContract = computed(() => {
-    return deployedContracts.value.find((c) => c.contractId === currentContractId.value);
+    return deployedContracts.value.find(
+      (c) => c.contractId === currentContractId.value,
+    );
   });
   const contractsOrderedByName = computed(() => {
     return contracts.value.slice().sort((a, b) => a.name.localeCompare(b.name));

@@ -1,4 +1,8 @@
-import { useAccountsStore, useContractsStore, useTransactionsStore } from '@/stores';
+import {
+  useAccountsStore,
+  useContractsStore,
+  useTransactionsStore,
+} from '@/stores';
 import { db } from './db';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -47,8 +51,12 @@ export const setupStores = async () => {
   if (accountsStore.privateKeys.length < 1) {
     accountsStore.generateNewAccount();
   } else {
-    accountsStore.privateKeys = localStorage.getItem('accountsStore.privateKeys')
-      ? ((localStorage.getItem('accountsStore.privateKeys') || '').split(',') as `0x${string}`[])
+    accountsStore.privateKeys = localStorage.getItem(
+      'accountsStore.privateKeys',
+    )
+      ? ((localStorage.getItem('accountsStore.privateKeys') || '').split(
+          ',',
+        ) as `0x${string}`[])
       : [];
   }
 };

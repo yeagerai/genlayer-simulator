@@ -149,7 +149,9 @@ export const useTutorialStore = defineStore('tutorialStore', () => {
             response: {
               status: 'success',
               message: '',
-              data: { contract_id: '0x4Fb3673Ab7274ebBA6ff38EDB1ca5Bd0cd06C0FD' },
+              data: {
+                contract_id: '0x4Fb3673Ab7274ebBA6ff38EDB1ca5Bd0cd06C0FD',
+              },
             },
           },
         });

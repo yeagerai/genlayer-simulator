@@ -1,5 +1,11 @@
 <script setup>
-import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
+import {
+  Dialog,
+  DialogPanel,
+  DialogTitle,
+  TransitionChild,
+  TransitionRoot,
+} from '@headlessui/vue';
 import { XMarkIcon } from '@heroicons/vue/16/solid';
 import { useUIStore } from '@/stores/ui';
 import { watch } from 'vue';
@@ -24,7 +30,11 @@ watch(
 
 <template>
   <TransitionRoot as="template" :show="open">
-    <Dialog class="relative z-20" @close="emit('close')" :data-mode="uiStore.mode">
+    <Dialog
+      class="relative z-20"
+      @close="emit('close')"
+      :data-mode="uiStore.mode"
+    >
       <TransitionChild
         as="template"
         enter="ease-out duration-300"
@@ -34,7 +44,9 @@ watch(
         leave-from="opacity-100"
         leave-to="opacity-0"
       >
-        <div class="fixed inset-0 bg-zinc-900 bg-opacity-50 transition-opacity" />
+        <div
+          class="fixed inset-0 bg-zinc-900 bg-opacity-50 transition-opacity"
+        />
       </TransitionChild>
 
       <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
@@ -75,7 +87,9 @@ watch(
                 </DialogTitle>
 
                 <div v-if="$slots.description">
-                  <p class="text-center text-sm text-gray-600 dark:text-gray-300">
+                  <p
+                    class="text-center text-sm text-gray-600 dark:text-gray-300"
+                  >
                     <slot name="description" />
                   </p>
                 </div>

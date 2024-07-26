@@ -53,7 +53,9 @@ export class JsonRpcService implements IJsonRpcService {
     contractAddress,
     method,
     params,
-  }: CallContractFunctionRequest): Promise<JsonRpcResult<CallContractFunctionResult>> {
+  }: CallContractFunctionRequest): Promise<
+    JsonRpcResult<CallContractFunctionResult>
+  > {
     const { result } = await this.rpcClient.call<CallContractFunctionResult>({
       method: 'call_contract_function',
       params: [userAccount, contractAddress, method, params],
@@ -91,7 +93,9 @@ export class JsonRpcService implements IJsonRpcService {
    * @param {string} params.code - The code for which the contract schema is retrieved.
    * @return {Promise<JsonRpcResult<any>>} A promise that resolves to the contract schema.
    */
-  async getContractSchema({ code }: GetContractSchemaRequest): Promise<JsonRpcResult<any>> {
+  async getContractSchema({
+    code,
+  }: GetContractSchemaRequest): Promise<JsonRpcResult<any>> {
     const { result } = await this.rpcClient.call({
       method: 'get_contract_schema_for_code',
       params: [code],
@@ -193,7 +197,11 @@ export class JsonRpcService implements IJsonRpcService {
    * @param {string} params.address - The address of the validator to delete.
    * @return {Promise<JsonRpcResult<any>>} A promise that resolves to the result of the validator deletion.
    */
-  async deleteValidator({ address }: { address: string }): Promise<JsonRpcResult<any>> {
+  async deleteValidator({
+    address,
+  }: {
+    address: string;
+  }): Promise<JsonRpcResult<any>> {
     const { result } = await this.rpcClient.call({
       method: 'delete_validator',
       params: [address],
@@ -201,7 +209,9 @@ export class JsonRpcService implements IJsonRpcService {
     return result;
   }
 
-  async getTransactionById(txId: number): Promise<JsonRpcResult<TransactionItem>> {
+  async getTransactionById(
+    txId: number,
+  ): Promise<JsonRpcResult<TransactionItem>> {
     const { result } = await this.rpcClient.call<TransactionItem>({
       method: 'get_transaction_by_id',
       params: [`${txId}`],

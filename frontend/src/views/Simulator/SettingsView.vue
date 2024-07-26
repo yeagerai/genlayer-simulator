@@ -54,7 +54,8 @@ const handleResetStorage = async () => {
 
     <PageSection id="tutorial-validators">
       <template #title>
-        Validators <span class="opacity-50">{{ nodeStore.validators.length }}</span>
+        Validators
+        <span class="opacity-50">{{ nodeStore.validators.length }}</span>
       </template>
 
       <div class="flex flex-col gap-2">
@@ -65,12 +66,18 @@ const handleResetStorage = async () => {
         />
       </div>
 
-      <Btn @click="isNewValidatorModalOpen = true" data-testid="create-new-validator-btn">
+      <Btn
+        @click="isNewValidatorModalOpen = true"
+        data-testid="create-new-validator-btn"
+      >
         <PlusIcon class="h-5 w-5" />
         New Validator
       </Btn>
 
-      <ValidatorModal :open="isNewValidatorModalOpen" @close="isNewValidatorModalOpen = false" />
+      <ValidatorModal
+        :open="isNewValidatorModalOpen"
+        @close="isNewValidatorModalOpen = false"
+      />
     </PageSection>
 
     <PageSection>
@@ -103,19 +110,23 @@ const handleResetStorage = async () => {
     >
       <template #title>Reset Simulator Storage</template>
       <template #description
-        >Are you sure? All the examples will be restored, and the following intelligent contracts
-        will be removed.</template
+        >Are you sure? All the examples will be restored, and the following
+        intelligent contracts will be removed.</template
       >
 
       <template #info>
-        <div class="text-xs" v-for="contract in nodeStore.contractsToDelete" :key="contract.id">
+        <div
+          class="text-xs"
+          v-for="contract in nodeStore.contractsToDelete"
+          :key="contract.id"
+        >
           {{ contract.name }}
         </div>
       </template>
 
       <div class="mt-1 text-xs italic">
-        <span class="font-semibold">Note:</span> if you want to preserve any of these contracts,
-        make a copy of them in the files section.
+        <span class="font-semibold">Note:</span> if you want to preserve any of
+        these contracts, make a copy of them in the files section.
       </div>
     </ConfirmationModal>
   </div>

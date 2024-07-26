@@ -7,7 +7,10 @@
     :data-testid="'tutorial-step-' + step.target"
   >
     <slot name="header">
-      <div v-if="step.header" class="v-step__header bg-slate-300 dark:bg-zinc-700">
+      <div
+        v-if="step.header"
+        class="v-step__header bg-slate-300 dark:bg-zinc-700"
+      >
         <div v-if="step.header.title" v-html="step.header.title"></div>
       </div>
     </slot>
@@ -16,7 +19,8 @@
       <div class="v-step__content bg-slate-300 dark:bg-zinc-700">
         <div v-if="content" v-html="content"></div>
         <div v-else>
-          This is a demo step! The id of this step is {{ hash }} and it targets {{ step.target }}.
+          This is a demo step! The id of this step is {{ hash }} and it targets
+          {{ step.target }}.
         </div>
       </div>
     </slot>
@@ -173,7 +177,11 @@ export default {
           this.enableScrolling();
           this.createHighlight();
 
-          createPopper(this.targetElement, this.$refs['v-step-' + this.hash], this.params);
+          createPopper(
+            this.targetElement,
+            this.$refs['v-step-' + this.hash],
+            this.params,
+          );
         } else {
           if (this.debug) {
             console.error(
@@ -242,19 +250,26 @@ export default {
         const target = this.targetElement;
         if (target) {
           const currentTransition = this.targetElement.style.transition;
-          this.targetElement.classList.remove(HIGHLIGHT.classes.targetHighlighted);
+          this.targetElement.classList.remove(
+            HIGHLIGHT.classes.targetHighlighted,
+          );
           this.targetElement.classList.remove(HIGHLIGHT.classes.targetRelative);
           // Remove our transition when step is finished.
           if (currentTransition.includes(HIGHLIGHT.transition)) {
             setTimeout(() => {
-              target.style.transition = currentTransition.replace(`, ${HIGHLIGHT.transition}`, '');
+              target.style.transition = currentTransition.replace(
+                `, ${HIGHLIGHT.transition}`,
+                '',
+              );
             }, 0);
           }
         }
       }
     },
     isButtonEnabled(name) {
-      return this.params.enabledButtons[name] ? this.params.enabledButtons[name] : true;
+      return this.params.enabledButtons[name]
+        ? this.params.enabledButtons[name]
+        : true;
     },
   },
   mounted() {

@@ -61,13 +61,16 @@ const onMethodChange = (event: Event) => {
 
 const setCurentUserAddress = (event: Event) => {
   if ((event.target as HTMLSelectElement)?.value) {
-    store.currentPrivateKey = (event.target as HTMLSelectElement)?.value as `0x${string}`;
+    store.currentPrivateKey = (event.target as HTMLSelectElement)
+      ?.value as `0x${string}`;
   }
 };
 </script>
 
 <template>
-  <div class="mt-6 flex w-full flex-col bg-slate-100 px-2 py-2 dark:bg-zinc-700">
+  <div
+    class="mt-6 flex w-full flex-col bg-slate-100 px-2 py-2 dark:bg-zinc-700"
+  >
     <h5 class="text-sm">Execute Transactions</h5>
   </div>
   <div class="flex flex-col overflow-y-auto p-2">
@@ -82,7 +85,11 @@ const setCurentUserAddress = (event: Event) => {
         <option :value="store.currentUserAddress">
           {{ store.currentUserAddress }}
         </option>
-        <option v-for="privateKey in store.privateKeys" :key="privateKey" :value="privateKey">
+        <option
+          v-for="privateKey in store.privateKeys"
+          :key="privateKey"
+          :value="privateKey"
+        >
           {{ store.accountFromPrivateKey(privateKey).address }}
         </option>
       </select>
@@ -94,7 +101,11 @@ const setCurentUserAddress = (event: Event) => {
         class="w-full dark:bg-zinc-700"
       >
         <option value="">Select a method</option>
-        <option v-for="method in methodList" :key="method.name" :value="method.name">
+        <option
+          v-for="method in methodList"
+          :key="method.name"
+          :value="method.name"
+        >
           {{ method.name }}()
         </option>
       </select>
@@ -118,7 +129,10 @@ const setCurentUserAddress = (event: Event) => {
         </div>
       </div>
       <div class="mt-4 flex w-full flex-col">
-        <ToolTip :text="`Execute ${method.name}()`" :options="{ placement: 'top' }" />
+        <ToolTip
+          :text="`Execute ${method.name}()`"
+          :options="{ placement: 'top' }"
+        />
         <button
           @click="handleMethodCall"
           class="rounded bg-primary px-4 py-2 font-semibold text-white hover:opacity-80"

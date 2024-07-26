@@ -18,7 +18,8 @@ const steps = ref([
     header: {
       title: 'Welcome to GenLayer Simulator!',
     },
-    content: 'This tutorial will guide you through the basics. Click “Next” to begin!',
+    content:
+      'This tutorial will guide you through the basics. Click “Next” to begin!',
     onNextStep: async () => {
       contractsStore.openFile(contract.value?.id);
     },
@@ -70,7 +71,8 @@ const steps = ref([
     header: {
       title: 'Node Output',
     },
-    content: 'View real-time feedback as your transaction execution and debug any issues.',
+    content:
+      'View real-time feedback as your transaction execution and debug any issues.',
   },
 
   {
@@ -78,14 +80,16 @@ const steps = ref([
     header: {
       title: 'Contract State',
     },
-    content: "This panel shows the contract's data after executing transactions.",
+    content:
+      "This panel shows the contract's data after executing transactions.",
   },
   {
     target: '#tutorial-tx-response',
     header: {
       title: 'Transaction Response',
     },
-    content: 'See the results of your transaction interaction with the contract in this area.',
+    content:
+      'See the results of your transaction interaction with the contract in this area.',
     onNextStep: async () => {
       router.push({ name: 'contracts' });
     },
@@ -106,7 +110,8 @@ const steps = ref([
       title: 'Validators',
     },
     target: '#tutorial-validators',
-    content: 'Configure the number of validators and set up their parameters here.',
+    content:
+      'Configure the number of validators and set up their parameters here.',
   },
   {
     header: {
@@ -139,7 +144,10 @@ function finish() {
 }
 
 function isKeyEnabled(key: 'escape' | 'arrowRight' | 'arrowLeft'): boolean {
-  if (options.value.enabledNavigationKeys && options.value.enabledNavigationKeys[key]) {
+  if (
+    options.value.enabledNavigationKeys &&
+    options.value.enabledNavigationKeys[key]
+  ) {
     return options.value.enabledNavigationKeys[key];
   }
   return false;

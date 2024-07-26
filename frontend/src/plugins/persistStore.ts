@@ -8,13 +8,18 @@ import { type PiniaPluginContext } from 'pinia';
  * @param {DeployedContract} contract - The contract to upsert.
  * @return {Promise<void>} A Promise that resolves once the contract is upserted.
  */
-const upsertDeployedContract = async (contract: DeployedContract): Promise<void> => {
+const upsertDeployedContract = async (
+  contract: DeployedContract,
+): Promise<void> => {
   const existingContract = await db.deployedContracts
     .where('contractId')
     .equals(contract.contractId)
     .first();
   if (existingContract) {
-    await db.deployedContracts.where('contractId').equals(contract.contractId).modify(contract);
+    await db.deployedContracts
+      .where('contractId')
+      .equals(contract.contractId)
+      .modify(contract);
   } else {
     await db.deployedContracts.add(contract);
   }
@@ -28,7 +33,9 @@ const upsertDeployedContract = async (contract: DeployedContract): Promise<void>
  */
 export function persistStorePlugin(context: PiniaPluginContext): void {
   context.store.$onAction(({ store, name, args, after }) => {
-    console.log(`Called Action "${name}" with params [${JSON.stringify(args)}].`);
+    console.log(
+      `Called Action "${name}" with params [${JSON.stringify(args)}].`,
+    );
     after(async (result) => {
       if (store.$id === 'contractsStore') {
         switch (name) {
@@ -51,18 +58,33 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
               .delete();
             break;
           case 'openFile':
-            localStorage.setItem('contractsStore.currentContractId', args[0] as string);
-            localStorage.setItem('contractsStore.openedFiles', store.openedFiles.join(','));
+            localStorage.setItem(
+              'contractsStore.currentContractId',
+              args[0] as string,
+            );
+            localStorage.setItem(
+              'contractsStore.openedFiles',
+              store.openedFiles.join(','),
+            );
             break;
           case 'closeFile':
-            localStorage.setItem('contractsStore.currentContractId', store.currentContractId);
-            localStorage.setItem('contractsStore.openedFiles', store.openedFiles.join(','));
+            localStorage.setItem(
+              'contractsStore.currentContractId',
+              store.currentContractId,
+            );
+            localStorage.setItem(
+              'contractsStore.openedFiles',
+              store.openedFiles.join(','),
+            );
             break;
           case 'addDeployedContract':
             await upsertDeployedContract(args[0] as DeployedContract);
             break;
           case 'setCurrentContractId':
-            localStorage.setItem('contractsStore.currentContractId', args[0] as string);
+            localStorage.setItem(
+              'contractsStore.currentContractId',
+              args[0] as string,
+            );
             break;
 
           case 'removeDeployedContract':
@@ -77,8 +99,14 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
       } else if (store.$id === 'accountsStore') {
         switch (name) {
           case 'generateNewAccount':
-            localStorage.setItem('accountsStore.privateKeys', store.privateKeys.join(','));
-            localStorage.setItem('accountsStore.currentPrivateKey', store.currentPrivateKey);
+            localStorage.setItem(
+              'accountsStore.privateKeys',
+              store.privateKeys.join(','),
+            );
+            localStorage.setItem(
+              'accountsStore.currentPrivateKey',
+              store.currentPrivateKey,
+            );
             break;
           default:
             break;

@@ -68,7 +68,9 @@ const handleSaveFile = (e: Event) => {
     emit('save', editingFileName.value);
     return;
   } else if (props.contract) {
-    store.updateContractFile(props.contract.id, { name: editingFileName.value });
+    store.updateContractFile(props.contract.id, {
+      name: editingFileName.value,
+    });
   }
 
   editingFileName.value = '';
@@ -92,8 +94,14 @@ const handleRemoveFile = (id: string) => {
           'bg-white text-neutral-500 hover:bg-gray-100 dark:bg-zinc-800 hover:dark:bg-zinc-700',
       ]"
     >
-      <DocumentPlusIcon v-if="isNewFile" class="mr-1 h-4 w-4 fill-primary dark:fill-white" />
-      <DocumentCheckIcon v-else class="mr-1 h-4 w-4 fill-primary dark:fill-white" />
+      <DocumentPlusIcon
+        v-if="isNewFile"
+        class="mr-1 h-4 w-4 fill-primary dark:fill-white"
+      />
+      <DocumentCheckIcon
+        v-else
+        class="mr-1 h-4 w-4 fill-primary dark:fill-white"
+      />
 
       <div class="w-full" v-if="isEditing">
         <input
@@ -107,7 +115,10 @@ const handleRemoveFile = (id: string) => {
         />
       </div>
 
-      <div v-else-if="contract" class="flex w-full items-center justify-between truncate">
+      <div
+        v-else-if="contract"
+        class="flex w-full items-center justify-between truncate"
+      >
         <div class="... truncate font-semibold">
           {{ contract.name }}
         </div>
@@ -138,7 +149,9 @@ const handleRemoveFile = (id: string) => {
         dangerous
       >
         <template #title>Delete Contract</template>
-        <template #description>Are you sure you want to delete this contract?</template>
+        <template #description
+          >Are you sure you want to delete this contract?</template
+        >
         <template #info>{{ contract.name }}</template>
       </ConfirmationModal>
     </div>

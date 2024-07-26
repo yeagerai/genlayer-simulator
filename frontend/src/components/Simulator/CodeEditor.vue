@@ -15,7 +15,8 @@ const props = defineProps<{
 const editorElement = ref<HTMLDivElement | null>(null);
 const containerElement = ref<HTMLElement | null | undefined>(null);
 const { width: windowWidth, height: windowHeight } = useWindowResize();
-const { width: containerWidth, height: containerHeight } = useElementResize(containerElement);
+const { width: containerWidth, height: containerHeight } =
+  useElementResize(containerElement);
 const editorRef = shallowRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 const theme = computed(() => (uiStore.mode === 'light' ? 'vs' : 'vs-dark'));
 const editorWidth = ref(0);
@@ -23,9 +24,11 @@ const editorHeight = ref(0);
 
 const resizeEditor = () => {
   nextTick(() => {
-    const height = editorElement.value?.parentNode?.parentElement?.clientHeight || 600;
+    const height =
+      editorElement.value?.parentNode?.parentElement?.clientHeight || 600;
     editorHeight.value = height;
-    editorWidth.value = editorElement.value?.parentNode?.parentElement?.clientWidth || 950;
+    editorWidth.value =
+      editorElement.value?.parentNode?.parentElement?.clientWidth || 950;
   });
 };
 watch(
@@ -34,7 +37,10 @@ watch(
     if (!editorRef.value && newValue) {
       containerElement.value = editorElement.value?.parentNode?.parentElement;
       monaco.languages.register({ id: 'python' });
-      monaco.languages.setMonarchTokensProvider('python', pythonSyntaxDefinition);
+      monaco.languages.setMonarchTokensProvider(
+        'python',
+        pythonSyntaxDefinition,
+      );
       editorRef.value = monaco.editor.create(editorElement.value!, {
         value: props.contract.content || '',
         language: 'python',
@@ -58,7 +64,9 @@ watch(
   () => uiStore.mode,
   (newValue) => {
     if (editorRef.value)
-      editorRef.value.updateOptions({ theme: newValue === 'light' ? 'vs' : 'vs-dark' });
+      editorRef.value.updateOptions({
+        theme: newValue === 'light' ? 'vs' : 'vs-dark',
+      });
   },
 );
 //resize watchers

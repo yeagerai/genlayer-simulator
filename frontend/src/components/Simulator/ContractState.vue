@@ -16,7 +16,11 @@ const props = defineProps<{
   abi?: Abi;
   contractState: any;
   deployedContract?: DeployedContract;
-  getContractState: (contractAddress: string, method: string, methodArguments: string[]) => void;
+  getContractState: (
+    contractAddress: string,
+    method: string,
+    methodArguments: string[],
+  ) => void;
   callingState: boolean;
 }>();
 
@@ -44,7 +48,9 @@ const getInputPlaceholder = (methodInputs: { [k: string]: string }) => {
   </div>
   <div class="flex flex-col overflow-y-auto p-2">
     <div class="flex w-full justify-start px-1">
-      <span class="text-xs text-primary dark:text-white">{{ deployedContract?.address }}</span>
+      <span class="text-xs text-primary dark:text-white">{{
+        deployedContract?.address
+      }}</span>
     </div>
     <div v-if="deployedContract" class="mt-2 flex w-full flex-col px-1">
       <div v-for="method in methodList" :key="method.name" class="flex">
@@ -54,7 +60,9 @@ const getInputPlaceholder = (methodInputs: { [k: string]: string }) => {
               getContractState(
                 deployedContract.address,
                 method.name,
-                inputParams[method.name] ? inputParams[method.name].split(',') : [],
+                inputParams[method.name]
+                  ? inputParams[method.name].split(',')
+                  : [],
               )
             "
             class="w-[40%] overflow-hidden text-ellipsis whitespace-nowrap rounded bg-primary px-4 py-2 font-semibold text-white hover:opacity-80"
@@ -72,7 +80,10 @@ const getInputPlaceholder = (methodInputs: { [k: string]: string }) => {
             label="Input"
           />
         </div>
-        <div class="mb-6 mt-2 flex" :data-testid="`contract-state-item-${method.name}`">
+        <div
+          class="mb-6 mt-2 flex"
+          :data-testid="`contract-state-item-${method.name}`"
+        >
           {{ contractState[method.name] }}
         </div>
       </div>
