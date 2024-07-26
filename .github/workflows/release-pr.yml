@@ -46,8 +46,13 @@ jobs:
             https://api.github.com/repos/yeagerai/genlayer-simulator/releases/generate-notes \
             -d '{"tag_name":"${{ steps.extract_tag.outputs.tag }}","target_commitish":"${{ steps.extract_branch.outputs.branch }}","previous_tag_name":"${{ steps.get_latest_release.outputs.tag}}"}' )
           echo $response
-          notes=$(echo $response | jq -e .body)
-          echo "notes=$notes" >> "$GITHUB_OUTPUT"
+
+          # Multi line output https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#example-of-a-multiline-string
+          {
+            echo notes<<EOF
+            echo $response | jq -r -e .body
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
 
       - name: Create pull request
         id: create_pull_request
