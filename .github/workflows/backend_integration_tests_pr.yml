@@ -16,8 +16,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  triggers:
+    name: Get Triggers
+    runs-on: ubuntu-latest
+    outputs:
+      is_pull_request_opened: ${{ github.event_name == 'pull_request' && github.event.action == 'opened'}}
+      is_pull_request_review_approved: ${{ github.event_name == 'pull_request_review' && github.event.review.state == 'APPROVED'}}
+      is_pull_request_labeled_with_run_tests: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-tests')}}
+
   test:
-    if: ${{ github.event.pull_request.state == 'opened' || github.event.review.state == 'APPROVED' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-tests')) }}
+    needs: triggers
+    if: ${{ needs.triggers.outputs.is_pull_request_opened || needs.triggers.outputs.is_pull_request_review_approved || needs.triggers.outputs.is_pull_request_labeled_with_run_tests }}
+
     runs-on: ubuntu-latest
 
     env:
