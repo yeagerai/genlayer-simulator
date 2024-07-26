@@ -247,13 +247,13 @@ def delete_all_validators(
     return validators_registry.get_all_validators()
 
 
-def get_providers_and_models() -> dict:
-    config = get_default_config_for_providers_and_nodes()
+def get_providers_and_models(config: GlobalConfiguration) -> dict:
+    default_config = get_default_config_for_providers_and_nodes()
     providers = get_providers()
     providers_and_models = {}
     for provider in providers:
         providers_and_models[provider] = get_provider_models(
-            config["providers"], provider
+            default_config["providers"], provider, config.get_ollama_url
         )
     return providers_and_models
 
@@ -327,12 +327,12 @@ def register_all_rpc_endpoints(
     )
 
     register_rpc_endpoint(ping)
-    register_rpc_endpoint(get_providers_and_models)
     register_rpc_endpoint(get_contract_schema_for_code)
 
     register_rpc_endpoint_for_partial(
         clear_db_tables, genlayer_db_client, ["current_state", "transactions"]
     )
+    register_rpc_endpoint_for_partial(get_providers_and_models, config)
     register_rpc_endpoint_for_partial(create_validator, validators_registry)
     register_rpc_endpoint_for_partial(update_validator, validators_registry)
     register_rpc_endpoint_for_partial(delete_validator, validators_registry)
