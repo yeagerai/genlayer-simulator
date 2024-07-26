@@ -1,5 +1,5 @@
 <script>
-import { h } from "vue"
+import { h } from 'vue';
 export default {
   name: 'JsonDate',
   inject: ['timeformat'],
@@ -7,8 +7,8 @@ export default {
   props: {
     jsonValue: {
       type: Date,
-      required: true
-    }
+      required: true,
+    },
   },
   render() {
     const value = this.jsonValue;
@@ -19,8 +19,8 @@ export default {
         'jv-item': true,
         'jv-string': true,
       },
-      innerText: `"${timeformat(value)}"`
-    })
-  }
+      innerText: `"${timeformat(value)}"`,
+    });
+  },
 };
 </script>

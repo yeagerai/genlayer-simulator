@@ -8,21 +8,30 @@
       </span>
     </div>
     <div class="jv-code" :class="{ open: expandCode, boxed }">
-      <json-box ref="jsonBox" :value="value" :sort="sort" :preview-mode="previewMode" />
+      <json-box
+        ref="jsonBox"
+        :value="value"
+        :sort="sort"
+        :preview-mode="previewMode"
+      />
     </div>
-    <div v-if="expandableCode && boxed" class="jv-more" @click="toggleExpandCode">
+    <div
+      v-if="expandableCode && boxed"
+      class="jv-more"
+      @click="toggleExpandCode"
+    >
       <span class="jv-toggle" :class="{ open: !!expandCode }" />
     </div>
   </div>
 </template>
 
 <script>
-import JsonBox from "./json-box.vue";
-import Clipboard from "clipboard";
-import { debounce } from 'vue-debounce'
+import JsonBox from './json-box.vue';
+import Clipboard from 'clipboard';
+import { debounce } from 'vue-debounce';
 
 export default {
-  name: "JsonViewer",
+  name: 'JsonViewer',
   components: {
     JsonBox,
   },
@@ -53,7 +62,7 @@ export default {
     },
     theme: {
       type: String,
-      default: "light",
+      default: 'light',
     },
     timeformat: {
       type: Function,
@@ -78,17 +87,19 @@ export default {
       expandCode: false,
     };
   },
-  emits: ["onKeyClick"],
+  emits: ['onKeyClick'],
   computed: {
     jvClass() {
-      return "jv-container " + "jv-"+this.theme + (this.boxed ? " boxed" : "");
+      return (
+        'jv-container ' + 'jv-' + this.theme + (this.boxed ? ' boxed' : '')
+      );
     },
     copyText() {
       const { copyText, copiedText, timeout, align } = this.copyable;
 
       return {
-        copyText: copyText || "copy",
-        copiedText: copiedText || "copied!",
+        copyText: copyText || 'copy',
+        copiedText: copiedText || 'copied!',
         timeout: timeout || 2000,
         align,
       };
@@ -103,7 +114,7 @@ export default {
     this.debounceResized = debounce(this.debResized.bind(this), 200);
     if (this.boxed && this.$refs.jsonBox) {
       this.onResized();
-      this.$refs.jsonBox.$el.addEventListener("resized", this.onResized, true);
+      this.$refs.jsonBox.$el.addEventListener('resized', this.onResized, true);
     }
     if (this.copyable) {
       const clipBoard = new Clipboard(this.$refs.clip, {
@@ -111,7 +122,7 @@ export default {
           return JSON.stringify(this.value, null, 2);
         },
       });
-      clipBoard.on("success", (e) => {
+      clipBoard.on('success', (e) => {
         this.onCopied(e);
       });
     }
@@ -131,7 +142,7 @@ export default {
       });
     },
     keyClick(keyName) {
-      this.$emit("onKeyClick", keyName);
+      this.$emit('onKeyClick', keyName);
     },
     onCopied(copyEvent) {
       if (this.copied) {
@@ -141,7 +152,7 @@ export default {
       setTimeout(() => {
         this.copied = false;
       }, this.copyText.timeout);
-      this.$emit("copied", copyEvent);
+      this.$emit('copied', copyEvent);
     },
     toggleExpandCode() {
       this.expandCode = !this.expandCode;
@@ -341,7 +352,7 @@ export default {
   transform: rotate(-90deg);
 }
 .jv-container .jv-more:after {
-  content: "";
+  content: '';
   width: 100%;
   height: 100%;
   position: absolute;
