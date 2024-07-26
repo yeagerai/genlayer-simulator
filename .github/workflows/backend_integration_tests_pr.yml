@@ -30,6 +30,7 @@ jobs:
     name: Print triggers
     needs: triggers
     runs-on: ubuntu-latest
+    if: ${{ needs.triggers.outputs.is_pull_request_opened || needs.triggers.outputs.is_pull_request_review_approved || needs.triggers.outputs.is_pull_request_labeled_with_run_tests }}
     steps:
       - name: Print triggers
         run: |
