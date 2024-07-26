@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const emit = defineEmits(['confirm', 'close'])
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
     buttonText?: string
     buttonTestId?: string

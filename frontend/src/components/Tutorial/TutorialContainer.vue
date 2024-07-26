@@ -117,12 +117,8 @@ const steps = ref([
 const currentStep = ref(-1)
 const options = ref(DEFAULT_OPTIONS)
 const numberOfSteps = computed(() => steps.value.length)
-const isRunning = computed(() => {
-  return currentStep.value > -1 && currentStep.value < numberOfSteps.value
-})
 const isFirst = computed(() => currentStep.value === 0)
 const isLast = computed(() => currentStep.value === steps.value.length - 1)
-const step = computed(() => steps.value[currentStep.value])
 const showTutorial = computed(() => uiStore.showTutorial)
 
 function stop() {
@@ -175,7 +171,7 @@ async function start(startStep?: number) {
   let step = steps.value[startStep]
 
   let process = () =>
-    new Promise((resolve, _reject) => {
+    new Promise((resolve) => {
       setTimeout(() => {
         contractsStore.openFile(contracts.value[0].id)
         currentStep.value = startStep
@@ -199,7 +195,7 @@ async function previousStep() {
   let futureStep = currentStep.value - 1
 
   let process = () =>
-    new Promise((resolve, reject) => {
+    new Promise((resolve) => {
       const cb = steps.value[futureStep].onNextStep
       if (cb) {
         cb().then(() => {
@@ -233,7 +229,7 @@ async function nextStep() {
   let futureStep = currentStep.value + 1
 
   let process = () =>
-    new Promise((resolve, _reject) => {
+    new Promise((resolve) => {
       const cb = steps.value[currentStep.value].onNextStep
       if (cb) {
         cb().then(() => {

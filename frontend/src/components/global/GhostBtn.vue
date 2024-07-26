@@ -1,6 +1,6 @@
-<script setup>
+<script setup lang="ts">
 const emit = defineEmits(['click'])
-const props = defineProps({
+defineProps({
   id: { type: String, default: null },
   disabled: { type: Boolean, default: false }
 })

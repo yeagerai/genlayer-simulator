@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { useContractsStore } from './contracts'
 import { useNodeStore } from './node'
-import { v4 as uuidv4 } from 'uuid'
 import { useTransactionsStore } from './transactions'
 
 const deployedContract = {
@@ -9,7 +8,6 @@ const deployedContract = {
   contractId: '1a621cad-1cfd-4dbd-892a-f6bbde7a2fa1',
   defaultState: '{}'
 }
-
 
 const contractFunctionLogs = [
   {

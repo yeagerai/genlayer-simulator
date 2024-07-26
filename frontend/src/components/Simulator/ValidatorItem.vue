@@ -8,7 +8,7 @@ import { ref } from 'vue'
 const isUpdateModalMopen = ref(false)
 const isDeleteModalOpen = ref(false)
 
-const props = defineProps<{
+defineProps<{
   validator: ValidatorModel
 }>()
 </script>

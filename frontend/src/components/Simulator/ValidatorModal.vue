@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useNodeStore } from '@/stores'
-import { type ValidatorModel, type CreateValidatorModel, type UpdateValidatorModel } from '@/types'
+import { type ValidatorModel, type NewValidatorDataModel } from '@/types'
 import { notify } from '@kyvg/vue3-notification'
 import { computed, ref } from 'vue'
 
@@ -51,7 +51,7 @@ async function handleUpdateValidator(validator: ValidatorModel) {
   }
 }
 
-const newValidatorData = ref<CreateValidatorModel>({
+const newValidatorData = ref<NewValidatorDataModel>({
   model: '',
   provider: '',
   stake: 1,

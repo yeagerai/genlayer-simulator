@@ -1,5 +1,5 @@
 import type { IJsonRpcService } from '@/services'
-import type { CreateValidatorModel, NodeLog, UpdateValidatorModel, ValidatorModel } from '@/types'
+import type { NodeLog, NewValidatorDataModel, ValidatorModel } from '@/types'
 import { webSocketClient } from '@/utils'
 import { defineStore } from 'pinia'
 import { computed, inject, ref } from 'vue'
@@ -44,7 +44,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
     }
   }
 
-  async function updateValidator(validator: ValidatorModel, newValidatorData: UpdateValidatorModel) {
+  async function updateValidator(validator: ValidatorModel, newValidatorData: NewValidatorDataModel) {
     const { stake, provider, model, config } = newValidatorData
 
     if (stake <= 0 || !provider || !model || !config) {
@@ -85,9 +85,9 @@ export const useNodeStore = defineStore('nodeStore', () => {
     }
   }
 
-  async function createNewValidator(validatorToCreate: CreateValidatorModel) {
+  async function createNewValidator(newValidatorData: NewValidatorDataModel) {
 
-    const { stake, provider, model, config } = validatorToCreate
+    const { stake, provider, model, config } = newValidatorData
     const validatorConfig = JSON.parse(config || '{}')
     const result = await $jsonRpc.createValidator({ stake, provider, model, config: validatorConfig })
     if (result?.status === 'success') {

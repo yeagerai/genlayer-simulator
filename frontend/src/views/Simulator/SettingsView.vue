@@ -1,50 +1,51 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { notify } from '@kyvg/vue3-notification'
-import { useNodeStore } from '@/stores'
-import ValidatorItem from '@/components/Simulator/ValidatorItem.vue'
-import ValidatorModal from '@/components/Simulator/ValidatorModal.vue'
-import { ref } from 'vue'
-import MainTitle from '@/components/Simulator/MainTitle.vue'
-import PageSection from '@/components/Simulator/PageSection.vue'
-import { ArchiveBoxXMarkIcon } from '@heroicons/vue/24/solid'
-import { PlusIcon } from '@heroicons/vue/16/solid'
-const nodeStore = useNodeStore()
-const isNewValidatorModalOpen = ref(false)
+import { onMounted } from 'vue';
+import { notify } from '@kyvg/vue3-notification';
+import { useNodeStore } from '@/stores';
+import ValidatorItem from '@/components/Simulator/ValidatorItem.vue';
+import ValidatorModal from '@/components/Simulator/ValidatorModal.vue';
+import { ref } from 'vue';
+import MainTitle from '@/components/Simulator/MainTitle.vue';
+import PageSection from '@/components/Simulator/PageSection.vue';
+import { ArchiveBoxXMarkIcon } from '@heroicons/vue/24/solid';
+import { PlusIcon } from '@heroicons/vue/16/solid';
+const nodeStore = useNodeStore();
+const isNewValidatorModalOpen = ref(false);
 
 // Hooks
 onMounted(async () => {
   try {
-    await nodeStore.getValidatorsData()
+    await nodeStore.getValidatorsData();
   } catch (error) {
-    console.error(error)
+    console.error(error);
     notify({
       title: 'Error',
       text: (error as Error)?.message || 'Error loading validators',
       type: 'error',
-    })
+    });
   }
-})
+});
 
+// TODO: refac
 const handleResetStorage = async () => {
   try {
-    await nodeStore.resetStorage()
+    await nodeStore.resetStorage();
     notify({
       title: 'Success',
       text: 'Storage reset successfully',
       type: 'success',
-    })
+    });
   } catch (error) {
-    console.error(error)
+    console.error(error);
     notify({
       title: 'Error',
       text: (error as Error)?.message || 'Error resetting the storage',
       type: 'error',
-    })
+    });
   } finally {
-    nodeStore.closeResetStorageModal()
+    nodeStore.closeResetStorageModal();
   }
-}
+};
 </script>
 
 <template>

@@ -16,14 +16,7 @@ export interface ValidatorModel {
   updated_at: string
 }
 
-export interface CreateValidatorModel {
-  config: string
-  model: string
-  provider: string
-  stake: number
-}
-
-export interface UpdateValidatorModel {
+export interface NewValidatorDataModel {
   config: string
   model: string
   provider: string

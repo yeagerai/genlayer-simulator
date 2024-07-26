@@ -1,4 +1,4 @@
-import type { ContractFile, DeployedContract, TransactionItem } from '@/types'
+import type { ContractFile, DeployedContract } from '@/types'
 import { db, getContractFileName } from '@/utils'
 import { type PiniaPluginContext } from 'pinia'
 
