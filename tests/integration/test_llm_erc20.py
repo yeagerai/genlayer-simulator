@@ -24,7 +24,7 @@ TRANSFER_AMOUNT = 100
 def test_llm_erc20():
     # Validators Setup
     result = post_request_localhost(
-        payload("create_random_validators", 5, 8, 12, ["openai"], None, "gpt-3.5-turbo")
+        payload("create_random_validators", 5, 8, 12, ["openai"], None, "gpt-4o-mini")
     ).json()
     assert has_success_status(result)
 

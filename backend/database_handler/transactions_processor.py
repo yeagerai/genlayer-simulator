@@ -78,6 +78,7 @@ class TransactionsProcessor:
     ):
         update_condition = f"id = {transaction_id}"
         update_data = {"status": new_status}
+        print("Updating transaction status", transaction_id, new_status)
         self.db_client.update(self.db_transactions_table, update_data, update_condition)
 
     def set_transaction_result(self, transaction_id: int, consensus_data: dict):

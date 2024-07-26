@@ -8,10 +8,11 @@ on:
   pull_request_review:
     types:
       - submitted
+  workflow_dispatch:
 
 jobs:
   test:
-    if: ${{ github.event.review.state == 'APPROVED' || (github.event_name == 'pull_request' && github.base_ref == 'staging') }}
+    if: ${{ github.event.review.state == 'APPROVED' || (github.event_name == 'pull_request' && github.base_ref == 'staging') || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
 
     env:
@@ -40,10 +41,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
+      - name: Build Docker image
+        run: docker compose build
+
       - name: Run Docker Compose
         run: docker compose up -d
 
       - name: Wait for services to be up
+        timeout-minutes: 5
         run: |
           while ! curl -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"ping","params":[],"id":1}' http://0.0.0.0:4000/api > /dev/null; do
             echo "Waiting for rpc server..."
@@ -63,6 +68,10 @@ jobs:
 
       - name: Run tests
         run: pytest tests/integration/
+
+      - name: Dump Docker Compose logs
+        run: docker compose logs
+        if: failure()
 
       - name: Shutdown Docker Compose
         if: always()

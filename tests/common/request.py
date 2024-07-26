@@ -42,7 +42,7 @@ def get_transaction_by_id(transaction_id: str):
 
 
 def post_request_and_wait_for_finalization(
-    payload: dict, interval: int = 5, retries: int = 15
+    payload: dict, interval: int = 10, retries: int = 15
 ):
     raw_response = post_request_localhost(payload)
     call_method_response = raw_response.json()
