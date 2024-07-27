@@ -22,46 +22,26 @@ const handleLogsResize = (event: any) => {
   <div class="flex w-full">
     <SimulatorMenu />
 
-    <div class="relative flex w-full">
-      <Splitpanes
-        class="default-theme relative w-full bg-white text-primary dark:bg-zinc-800 dark:text-white"
-      >
-        <Pane min-size="18" size="18" max-size="60" class="flex w-full">
-          <div class="flex w-full overflow-y-auto">
-            <RouterView v-slot="{ Component }">
-              <KeepAlive>
-                <component :is="Component" />
-              </KeepAlive>
-            </RouterView>
-          </div>
-        </Pane>
+    <Splitpanes class="default-theme overflow-hidden">
+      <Pane min-size="20" size="20" max-size="50">
+        <RouterView v-slot="{ Component }">
+          <KeepAlive>
+            <component :is="Component" />
+          </KeepAlive>
+        </RouterView>
+      </Pane>
 
-        <Pane>
-          <Splitpanes
-            class="default-theme"
-            horizontal
-            @resize="handleLogsResize"
-          >
-            <Pane
-              class="flex h-full w-full flex-col"
-              min-size="20"
-              size="80"
-              max-size="80"
-            >
-              <ContractsPanel class="h-full w-full" />
-            </Pane>
-            <Pane
-              class="flex w-full flex-col"
-              min-size="20"
-              :size="20"
-              max-size="80"
-            >
-              <NodeLogs />
-            </Pane>
-          </Splitpanes>
-        </Pane>
-      </Splitpanes>
-    </div>
+      <Pane>
+        <Splitpanes class="default-theme" horizontal @resize="handleLogsResize">
+          <Pane min-size="20" size="80" max-size="80">
+            <ContractsPanel />
+          </Pane>
+          <Pane min-size="20" :size="20" max-size="80">
+            <NodeLogs />
+          </Pane>
+        </Splitpanes>
+      </Pane>
+    </Splitpanes>
   </div>
 </template>
 
