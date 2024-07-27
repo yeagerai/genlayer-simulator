@@ -104,41 +104,41 @@ const handleResetStorage = async () => {
       </Btn>
 
       <ToolTip
-        text="No Contracts file to delete"
-        :options="{ placement: 'right' }"
         v-if="nodeStore.contractsToDelete.length < 1"
+        text="No contracts files to delete"
+        :options="{ placement: 'right' }"
       />
-    </PageSection>
 
-    <ConfirmationModal
-      :open="isResetStorageModalOpen"
-      @confirm="handleResetStorage"
-      @close="isResetStorageModalOpen = false"
-      buttonText="Reset Storage"
-      buttonTestId="btn-reset-storage"
-      :dangerous="true"
-      :confirming="isResetting"
-    >
-      <template #title>Reset Simulator Storage</template>
-      <template #description
-        >Are you sure? All the examples will be restored, and the following
-        intelligent contracts will be removed.</template
+      <ConfirmationModal
+        :open="isResetStorageModalOpen"
+        @confirm="handleResetStorage"
+        @close="isResetStorageModalOpen = false"
+        buttonText="Reset Storage"
+        buttonTestId="btn-reset-storage"
+        :dangerous="true"
+        :confirming="isResetting"
       >
-
-      <template #info>
-        <div
-          class="text-xs"
-          v-for="contract in nodeStore.contractsToDelete"
-          :key="contract.id"
+        <template #title>Reset Simulator Storage</template>
+        <template #description
+          >Are you sure? All the examples will be restored, and the following
+          intelligent contracts will be removed.</template
         >
-          {{ contract.name }}
-        </div>
-      </template>
 
-      <div class="mt-1 text-xs italic">
-        <span class="font-semibold">Note:</span> if you want to preserve any of
-        these contracts, make a copy of them in the files section.
-      </div>
-    </ConfirmationModal>
+        <template #info>
+          <div
+            class="text-xs"
+            v-for="contract in nodeStore.contractsToDelete"
+            :key="contract.id"
+          >
+            {{ contract.name }}
+          </div>
+        </template>
+
+        <div class="mt-1 text-xs italic">
+          <span class="font-semibold">Note:</span> if you want to preserve any
+          of these contracts, make a copy of them in the files section.
+        </div>
+      </ConfirmationModal>
+    </PageSection>
   </div>
 </template>
