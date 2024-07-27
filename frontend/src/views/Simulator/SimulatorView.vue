@@ -22,7 +22,7 @@ const handleLogsResize = (event: any) => {
   <div class="flex w-full">
     <SimulatorMenu />
 
-    <Splitpanes class="default-theme overflow-hidden">
+    <Splitpanes class="overflow-hidden">
       <Pane min-size="20" size="20" max-size="50">
         <RouterView v-slot="{ Component }">
           <KeepAlive>
@@ -32,7 +32,7 @@ const handleLogsResize = (event: any) => {
       </Pane>
 
       <Pane>
-        <Splitpanes class="default-theme" horizontal @resize="handleLogsResize">
+        <Splitpanes horizontal @resize="handleLogsResize">
           <Pane min-size="20" size="80" max-size="80">
             <ContractsPanel />
           </Pane>
@@ -50,60 +50,44 @@ const handleLogsResize = (event: any) => {
   display: flex;
   position: relative;
 }
-
-.splitpanes.default-theme .splitpanes__pane {
+.splitpanes .splitpanes__pane {
   background-color: transparent;
 }
-
-.splitpanes.default-theme .splitpanes__splitter {
-  background-color: transparent;
-  border-color: #cbd5e1;
-  transition: background-color 0.1s;
+.splitpanes__splitter {
+  position: relative;
+}
+.splitpanes__splitter:before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  transition: opacity 0.15s;
+  opacity: 0;
+  z-index: 103;
+}
+.splitpanes__splitter:hover:before {
+  opacity: 1;
+}
+.splitpanes--vertical > .splitpanes__splitter:before {
+  left: -3px;
+  right: -3px;
+  height: 100%;
+}
+.splitpanes--horizontal > .splitpanes__splitter:before {
+  top: -3px;
+  bottom: -3px;
+  width: 100%;
 }
 
-[data-mode='dark'] .splitpanes.default-theme .splitpanes__splitter {
-  border-color: #3f3f46 !important;
-}
+/* Customize colors here */
 
-.splitpanes.default-theme .splitpanes__splitter:hover,
-.splitpanes.default-theme .splitpanes__splitter:active {
+.splitpanes__splitter,
+.splitpanes__splitter:before {
   background-color: #cbd5e1;
 }
 
-[data-mode='dark'] .splitpanes.default-theme .splitpanes__splitter:hover,
-[data-mode='dark'] .splitpanes.default-theme .splitpanes__splitter:active {
+[data-mode='dark'] .splitpanes__splitter,
+[data-mode='dark'] .splitpanes__splitter:before {
   background-color: #3f3f46;
-}
-
-.splitpanes--vertical .splitpanes__splitter {
-  min-width: 6px;
-  border-left: none !important;
-  border-right: 1px solid;
-}
-
-.splitpanes--horizontal .splitpanes__splitter {
-  z-index: 6 !important;
-  /* Avoid having the code editor minimap go over the splitter */
-}
-
-.default-theme.splitpanes--horizontal > .splitpanes__splitter:before {
-  margin-top: -1px;
-}
-
-.default-theme.splitpanes--horizontal > .splitpanes__splitter:after {
-  display: none;
-}
-
-.default-theme.splitpanes--vertical > .splitpanes__splitter:before {
-  display: none;
-}
-
-.default-theme.splitpanes--vertical > .splitpanes__splitter:after {
-  margin-left: 0;
-}
-
-[data-mode='dark'] .splitpanes.default-theme .splitpanes__splitter:before,
-[data-mode='dark'] .splitpanes.default-theme .splitpanes__splitter:after {
-  background: #313137;
 }
 </style>
