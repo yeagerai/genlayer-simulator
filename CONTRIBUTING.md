@@ -35,9 +35,18 @@ To contribute to feature development or bug fixes. Check our [issue tracker](htt
 
 We use pre-commit to run some checks before you commit your code. It should get installed by the next steps.
 
+###### Frontend
+
+We run ESLint and Prettier on the frontend code. To install the dependencies, run:
+
+```sh
+$ cd frontend
+$ npm install -D eslint prettier
+```
+
 ##### Window One
 
-```
+```sh
 $ cp .env.example .env
 $ docker compose up
 ```
@@ -46,7 +55,7 @@ $ docker compose up
 
 1. Installing the Ollama model
 
-   ```
+   ```sh
    $ docker exec ollama ollama pull llama3
    ```
 
@@ -54,7 +63,7 @@ $ docker compose up
 
    - Linux / MacOS
 
-     ```
+     ```sh
      $ virtualenv .venv
      $ source .venv/bin/activate
      (.venv) $ pip install -r requirements.txt
@@ -63,7 +72,7 @@ $ docker compose up
 
    - Windows (cmd)
 
-     ```
+     ```sh
      $ virtualenv .venv
      $  .\.venv\Scripts\activate
      (.venv) $ pip install -r requirements.txt
@@ -72,7 +81,7 @@ $ docker compose up
 
    - Windows (PowerShell)
 
-     ```
+     ```sh
      $ virtualenv .venv
      $  .\.venv\Scripts\activate
      (.venv) $ pip install -r requirements.txt
@@ -81,7 +90,7 @@ $ docker compose up
 
 3. Execute the Demo
 
-   ```
+   ```sh
    (.venv) $ python scripts/debug_simulator.py
    ```
 
