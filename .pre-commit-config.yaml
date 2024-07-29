@@ -9,10 +9,17 @@ repos:
       - id: check-merge-conflict
   - repo: local
     hooks:
-      - id: pytest
-        name: pytest
+      - id: backend-unit-pytest
+        name: backend unit tests with pytest
         entry: python3 -m pytest backend
         language: system
         types: [python]
         pass_filenames: false
-        always_run: true
+        files: backend
+        always_run: false
+  # Copied from https://black.readthedocs.io/en/stable/integrations/source_version_control.html
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 24.4.2
+    hooks:
+      - id: black
+        language_version: python3.11
