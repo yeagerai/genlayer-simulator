@@ -91,6 +91,7 @@ const handleSaveNewFile = (name: string) => {
       v-if="showNewFileInput"
       :isNewFile="true"
       @save="handleSaveNewFile"
+      @cancel="showNewFileInput = false"
     />
   </div>
 </template>

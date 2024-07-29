@@ -19,7 +19,7 @@ const props = defineProps<{
   isNewFile?: Boolean;
 }>();
 
-const emit = defineEmits(['save']);
+const emit = defineEmits(['save', 'cancel']);
 
 const isEditing = ref(false);
 const editInput = ref<HTMLInputElement | null>(null);
@@ -53,6 +53,7 @@ const handleStopEditing = () => {
   isEditing.value = false;
   editingFileName.value = '';
   editInput.value?.blur();
+  emit('cancel');
 };
 
 const handleSaveFile = (e: Event) => {
