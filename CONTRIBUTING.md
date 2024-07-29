@@ -31,6 +31,10 @@ To contribute to feature development or bug fixes. Check our [issue tracker](htt
 
 #### Setup Simulator manually
 
+##### Pre-commit
+
+We use pre-commit to run some checks before you commit your code. It should get installed by the next steps.
+
 ##### Window One
 
 ```
