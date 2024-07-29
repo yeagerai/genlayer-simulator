@@ -1,31 +1,32 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { RouterView } from 'vue-router'
-import SimulatorMenu from '@/components/SimulatorMenu.vue'
-import NodeLogs from '@/components/Simulator/NodeLogs.vue'
-import ContractsPanel from '@/components/Simulator/ContractsPanel.vue'
-import { Splitpanes, Pane } from 'splitpanes'
-import 'splitpanes/dist/splitpanes.css'
+import { ref } from 'vue';
+import { RouterView } from 'vue-router';
+import SimulatorMenu from '@/components/SimulatorMenu.vue';
+import NodeLogs from '@/components/Simulator/NodeLogs.vue';
+import ContractsPanel from '@/components/Simulator/ContractsPanel.vue';
+import { Splitpanes, Pane } from 'splitpanes';
+import 'splitpanes/dist/splitpanes.css';
 
-const showLogsTerminal = ref<boolean>(true)
+const showLogsTerminal = ref<boolean>(true);
 
 const handleLogsResize = (event: any) => {
   if (event[1]?.size <= 4) {
-    showLogsTerminal.value = false
+    showLogsTerminal.value = false;
   } else {
-    showLogsTerminal.value = true
+    showLogsTerminal.value = true;
   }
-}
-
+};
 </script>
 
 <template>
   <div class="flex w-full">
     <SimulatorMenu />
-    <div class="flex w-full relative">
-      <Splitpanes class="default-theme relative w-full bg-white dark:bg-zinc-800 dark:text-white text-primary ">
+    <div class="relative flex w-full">
+      <Splitpanes
+        class="default-theme relative w-full bg-white text-primary dark:bg-zinc-800 dark:text-white"
+      >
         <Pane min-size="18" size="18" max-size="60" class="flex w-full">
-          <div class="overflow-y-auto flex w-full">
+          <div class="flex w-full overflow-y-auto">
             <RouterView v-slot="{ Component }">
               <KeepAlive>
                 <component :is="Component" />
@@ -34,11 +35,25 @@ const handleLogsResize = (event: any) => {
           </div>
         </Pane>
         <Pane>
-          <Splitpanes class="default-theme" horizontal @resize="handleLogsResize">
-            <Pane class="flex flex-col w-full h-full" min-size="20" size="80" max-size="80">
-              <ContractsPanel class="w-full h-full" />
+          <Splitpanes
+            class="default-theme"
+            horizontal
+            @resize="handleLogsResize"
+          >
+            <Pane
+              class="flex h-full w-full flex-col"
+              min-size="20"
+              size="80"
+              max-size="80"
+            >
+              <ContractsPanel class="h-full w-full" />
             </Pane>
-            <Pane class="flex flex-col w-full" min-size="20" :size="20" max-size="80">
+            <Pane
+              class="flex w-full flex-col"
+              min-size="20"
+              :size="20"
+              max-size="80"
+            >
               <NodeLogs />
             </Pane>
           </Splitpanes>
@@ -63,7 +78,7 @@ const handleLogsResize = (event: any) => {
   transition: background-color 0.1s;
 }
 
-[data-mode="dark"] .splitpanes.default-theme .splitpanes__splitter {
+[data-mode='dark'] .splitpanes.default-theme .splitpanes__splitter {
   border-color: #3f3f46 !important;
 }
 
@@ -72,8 +87,8 @@ const handleLogsResize = (event: any) => {
   background-color: #cbd5e1;
 }
 
-[data-mode="dark"] .splitpanes.default-theme .splitpanes__splitter:hover,
-[data-mode="dark"] .splitpanes.default-theme .splitpanes__splitter:active {
+[data-mode='dark'] .splitpanes.default-theme .splitpanes__splitter:hover,
+[data-mode='dark'] .splitpanes.default-theme .splitpanes__splitter:active {
   background-color: #3f3f46;
 }
 
@@ -88,24 +103,24 @@ const handleLogsResize = (event: any) => {
   /* Avoid having the code editor minimap go over the splitter */
 }
 
-.default-theme.splitpanes--horizontal>.splitpanes__splitter:before {
+.default-theme.splitpanes--horizontal > .splitpanes__splitter:before {
   margin-top: -1px;
 }
 
-.default-theme.splitpanes--horizontal>.splitpanes__splitter:after {
+.default-theme.splitpanes--horizontal > .splitpanes__splitter:after {
   display: none;
 }
 
-.default-theme.splitpanes--vertical>.splitpanes__splitter:before {
+.default-theme.splitpanes--vertical > .splitpanes__splitter:before {
   display: none;
 }
 
-.default-theme.splitpanes--vertical>.splitpanes__splitter:after {
+.default-theme.splitpanes--vertical > .splitpanes__splitter:after {
   margin-left: 0;
 }
 
-[data-mode="dark"] .splitpanes.default-theme .splitpanes__splitter:before,
-[data-mode="dark"] .splitpanes.default-theme .splitpanes__splitter:after {
+[data-mode='dark'] .splitpanes.default-theme .splitpanes__splitter:before,
+[data-mode='dark'] .splitpanes.default-theme .splitpanes__splitter:after {
   background: #313137;
 }
 </style>

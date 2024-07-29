@@ -1,3 +1,3 @@
-export * from './tooltip'
-export * from './persistStore'
-export * from './transactionsListener'
+export * from './tooltip';
+export * from './persistStore';
+export * from './transactionsListener';

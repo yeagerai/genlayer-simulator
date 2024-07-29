@@ -90,7 +90,7 @@ class ValidatorsRegistry:
         model: str,
         config: json,
     ):
-        validator = self._get_validator_or_fail(validator_address)
+        self._get_validator_or_fail(validator_address)
 
         update_condition = f"address = '{validator_address}'"
         validator = {

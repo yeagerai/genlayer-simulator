@@ -7,6 +7,7 @@ from flask import Flask
 from flask_jsonrpc import JSONRPC
 from flask_socketio import SocketIO
 from flask_cors import CORS
+from backend.protocol_rpc.configuration import GlobalConfiguration
 from backend.protocol_rpc.message_handler.base import MessageHandler
 from backend.protocol_rpc.endpoints import register_all_rpc_endpoints
 from dotenv import load_dotenv
@@ -56,13 +57,13 @@ load_dotenv()
     consensus,
 ) = create_app()
 register_all_rpc_endpoints(
-    app,
     jsonrpc,
     msg_handler,
     genlayer_db_client,
     accounts_manager,
     transactions_processor,
     validators_registry,
+    config=GlobalConfiguration(),
 )
 
 
