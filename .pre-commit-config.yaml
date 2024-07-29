@@ -7,3 +7,12 @@ repos:
       - id: check-json
       - id: check-yaml
       - id: check-merge-conflict
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        entry: python3 -m pytest backend
+        language: system
+        types: [python]
+        pass_filenames: false
+        always_run: true
