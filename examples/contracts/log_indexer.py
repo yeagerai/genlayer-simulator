@@ -14,7 +14,13 @@ class LogIndexer(IContract):
         result = self.vector_store.get_closest_vector(text)
         if result is None:
             return None
-        return {"similarity": result[0], "id": result[1], "text": result[2], "metadata": result[3], "vector": result[4]}
+        return {
+            "similarity": result[0],
+            "id": result[1],
+            "text": result[2],
+            "metadata": result[3],
+            "vector": result[4],
+        }
 
     # write method
     def add_log(self, log: str, log_id: int) -> None:
@@ -27,5 +33,5 @@ class LogIndexer(IContract):
         self.vector_store.delete_vector(id)
 
     def get_vector_metadata(self, id: int) -> None:
-        _, metadata = self.vector_store.get_vector(id)
+        _, metadata, _ = self.vector_store.get_vector(id)
         return metadata
