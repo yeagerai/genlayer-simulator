@@ -119,7 +119,7 @@ const handleRemoveFile = (id: string) => {
         v-else-if="contract"
         class="flex w-full items-center justify-between truncate"
       >
-        <div class="... truncate font-semibold">
+        <div data-testid="contract-file" class="truncate font-semibold">
           {{ contract.name }}
         </div>
 

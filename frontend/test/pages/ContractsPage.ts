@@ -8,7 +8,7 @@ export class ContractsPage extends BasePage {
   )
 
   async openContract(name: string) {
-    const locator = By.xpath(`//div[contains(text(), '${name}')]`)
+    const locator = By.xpath(`//*[@data-testid='contract-file' and contains(text(), '${name}')]`)
     return this.driver.wait(until.elementLocated(locator), 2000).click()
   }
 }

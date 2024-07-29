@@ -61,7 +61,7 @@ describe('Contract Example Storage', () => {
   })
 
   it('should deploy the contract Storage', async () => {
-    await driver.wait(until.elementLocated(By.xpath("//button[text()='Deploy']"))).click()
+    await driver.wait(until.elementLocated(By.xpath("//button[@data-testid='btn-deploy-contract']")), 2000).click()
 
     // locate elements that should be visible
     const contractStateTitle = await driver.wait(

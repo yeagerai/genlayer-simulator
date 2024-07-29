@@ -192,7 +192,11 @@ onMounted(() => {
       </div>
     </div>
     <div class="flex w-full flex-col justify-center p-2">
-      <Btn @click="handleDeployContract" :loading="deploying">
+      <Btn
+        testId="btn-deploy-contract"
+        @click="handleDeployContract"
+        :loading="deploying"
+      >
         <ArrowUpTrayIcon class="h-4 w-4" />
         {{ deploying ? 'Deploying...' : 'Deploy' }}
       </Btn>
