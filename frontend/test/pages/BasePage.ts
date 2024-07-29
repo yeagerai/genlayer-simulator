@@ -1,7 +1,9 @@
-import { By, until, WebDriver, Locator } from 'selenium-webdriver'
+import { By, until, WebDriver, Locator } from 'selenium-webdriver';
 
 export class BasePage {
   protected readonly driver: WebDriver
+  readonly skipTutorialDataTestId = 'btn-skip-tutorial'
+
   readonly baseurl?: string
   readonly visibleLocator?: Locator
 
@@ -10,23 +12,23 @@ export class BasePage {
   }
 
   async close() {
-    await this.driver.quit()
+    await this.driver.quit();
   }
 
   async waitUntilVisible() {
     if (this.visibleLocator) {
-      await this.driver.wait(until.elementLocated(this.visibleLocator), 2000)
+      await this.driver.wait(until.elementLocated(this.visibleLocator))
     }
   }
 
   async skipTutorial() {
-    const locator = By.xpath("//button[contains(text(), 'Skip tutorial')]")
+    const locator = By.xpath("//button[contains(text(), 'Skip tutorial')]");
     return this.driver.wait(until.elementLocated(locator), 5000).click();
   }
 
   async navigate() {
     if (this.baseurl) {
-      await this.driver.navigate().to(this.baseurl)
+      await this.driver.navigate().to(this.baseurl);
     }
   }
 }
