@@ -1,0 +1,25 @@
+name: Changelog
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release-main:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Depends on the following format from the commit message:
+      # Release vX.Y.Z ...
+      #
+      # Release notes here
+      # ...
+      - name: Create release
+        run: |
+          commit_msg=$(git log -1 --pretty=%B)
+          semver=$(echo $commit_msg | head -n -1 | awk '{print $2}')
+          echo $commit_msg | tail -n +3 > body.txt
+          gh release create $semver --title $semver -F body.txt --prerelease
+        # TODO: remove prerelease flag after testing            ^^^^^^^^^^^^
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
