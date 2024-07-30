@@ -1,32 +1,39 @@
-import './assets/main.css'
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import Notifications from '@kyvg/vue3-notification'
-import App from './App.vue'
-import router from './router'
-import { persistStorePlugin, createToolTipPlugin, TransactionsListenerPlugin } from '@/plugins'
-import { RpcClient, setupStores } from '@/utils'
-import { JsonRpcService } from './services/JsonRpcService'
-import { VueSpinnersPlugin } from 'vue3-spinners'
+import './assets/main.css';
+import { createApp } from 'vue';
+import { createPinia } from 'pinia';
+import Notifications from '@kyvg/vue3-notification';
+import App from './App.vue';
+import router from './router';
+import {
+  persistStorePlugin,
+  createToolTipPlugin,
+  TransactionsListenerPlugin,
+} from '@/plugins';
+import { RpcClient, setupStores } from '@/utils';
+import { JsonRpcService } from './services/JsonRpcService';
+import { VueSpinnersPlugin } from 'vue3-spinners';
+import registerGlobalComponents from '@/components/global/registerGlobalComponents';
 
-const app = createApp(App)
-const pinia = createPinia()
+const app = createApp(App);
+const pinia = createPinia();
 
-pinia.use(persistStorePlugin)
-app.use(pinia)
+pinia.use(persistStorePlugin);
+app.use(pinia);
 
-app.use(router)
+app.use(router);
 app.use(
   createToolTipPlugin({
-    arrow: true
-  })
-)
-app.use(Notifications)
-app.provide('$jsonRpc', new JsonRpcService(new RpcClient()))
-app.use(VueSpinnersPlugin)
+    arrow: true,
+  }),
+);
+app.use(Notifications);
+app.provide('$jsonRpc', new JsonRpcService(new RpcClient()));
+app.use(VueSpinnersPlugin);
 app.use(TransactionsListenerPlugin, {
-  interval: 5000
-})
-app.mount('#app')
-setupStores()
+  interval: 5000,
+});
 
+registerGlobalComponents(app);
+
+app.mount('#app');
+setupStores();

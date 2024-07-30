@@ -16,4 +16,4 @@ openai==1.16.1
 SQLAlchemy==2.0.31
 alembic==1.13.2
 eth-account==0.13.0
-
+sentence-transformers==3.0.1

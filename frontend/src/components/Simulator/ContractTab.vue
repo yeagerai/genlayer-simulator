@@ -1,0 +1,64 @@
+<script setup lang="ts">
+import { XMarkIcon, DocumentCheckIcon } from '@heroicons/vue/16/solid';
+import { type ContractFile } from '@/types';
+import { HomeIcon } from '@heroicons/vue/24/solid';
+
+defineProps<{
+  contract?: ContractFile;
+  isHomeTab?: Boolean;
+  isActive: Boolean;
+}>();
+
+const emit = defineEmits(['closeContract', 'selectContract']);
+</script>
+
+<template>
+  <div
+    :class="[
+      'group relative flex items-center border-r border-r-gray-200 font-semibold dark:border-r-zinc-900',
+      !isActive &&
+        'bg-gray-100 text-neutral-500 hover:bg-gray-50 dark:bg-zinc-800 hover:dark:bg-zinc-700',
+      isActive &&
+        'bg-white text-primary hover:bg-white dark:bg-zinc-600 dark:text-white hover:dark:bg-zinc-600',
+    ]"
+  >
+    <button
+      v-if="isHomeTab"
+      class="flex items-center p-2"
+      @click="emit('selectContract')"
+    >
+      <HomeIcon class="fill-primary' mx-2 h-4 w-4 dark:fill-white" />
+    </button>
+
+    <template v-else>
+      <button
+        class="flex items-center gap-1 p-2 pr-7"
+        @click="emit('selectContract')"
+        @click.middle="emit('closeContract')"
+      >
+        <DocumentCheckIcon
+          class="h-4 w-4"
+          :class="{ 'fill-primary dark:fill-white': isActive }"
+        />
+        {{ contract?.name }}
+      </button>
+
+      <button
+        :class="[
+          'absolute right-0 p-2',
+          isActive && 'opacity-50 hover:opacity-100',
+          !isActive && 'opacity-0 hover:!opacity-100 group-hover:opacity-50',
+        ]"
+        @click="emit('closeContract')"
+        @click.middle="emit('closeContract')"
+      >
+        <XMarkIcon class="h-4 w-4" />
+      </button>
+    </template>
+
+    <div
+      v-if="isActive"
+      class="absolute bottom-0 h-[2px] w-full bg-primary dark:bg-accent"
+    />
+  </div>
+</template>

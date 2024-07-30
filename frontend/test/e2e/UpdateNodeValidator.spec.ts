@@ -35,8 +35,10 @@ describe('Settings - Update Node Validator', () => {
       existingValidators.length,
       'number of validators should be greather than 0'
     ).be.greaterThan(0)
-    
-    const validator = await existingValidators[0].findElement(By.xpath("//div[@data-testid = 'validator-item']"))
+
+    const validator = await existingValidators[0].findElement(
+      By.xpath("//div[@data-testid = 'validator-item']")
+    )
     await validator.click()
 
     // provider select
@@ -58,7 +60,6 @@ describe('Settings - Update Node Validator', () => {
     )
     await stakeInput.clear()
     await stakeInput.sendKeys(8)
- 
 
     const updateValidatorBtn = await driver.wait(
       until.elementLocated(By.xpath("//button[@data-testid='btn-update-validator']"))
@@ -68,13 +69,16 @@ describe('Settings - Update Node Validator', () => {
 
     driver.sleep(10000)
     const validators = await settingsPage.getValidatorsElements()
-    const provider = await validators[0].findElement(By.xpath("//span[@data-testid = 'validator-item-provider']"))
-    const model = await validators[0].findElement(By.xpath("//span[@data-testid = 'validator-item-model']"))
+    const provider = await validators[0].findElement(
+      By.xpath("//span[@data-testid = 'validator-item-provider']")
+    )
+    const model = await validators[0].findElement(
+      By.xpath("//span[@data-testid = 'validator-item-model']")
+    )
     const providerText = await provider.getText()
     const modelText = await model.getText()
     expect(providerText, 'provider should be ollama').be.equal('ollama')
     expect(modelText, 'model should be llama2').be.equal('llama2')
-
   })
 
   after(() => driver.quit())

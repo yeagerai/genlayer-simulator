@@ -1,0 +1,60 @@
+name: "Docker build and push to Docker Hub"
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: read
+
+jobs:
+  jsonrpc:
+    uses: ./.github/workflows/docker-build-and-push-image.yml
+    with:
+      docker_build_context: .
+      dockerfile: docker/Dockerfile.backend
+      dockerhub_repo: yeagerai/simulator-jsonrpc
+      dockerhub_username: ${{ vars.DOCKERHUB_USERNAME }}
+    secrets:
+      dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  frontend:
+    uses: ./.github/workflows/docker-build-and-push-image.yml
+    with:
+      docker_build_context: .
+      dockerfile: docker/Dockerfile.frontend
+      dockerhub_repo: yeagerai/simulator-frontend
+      dockerhub_username: ${{ vars.DOCKERHUB_USERNAME }}
+    secrets:
+      dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  webrequest:
+    uses: ./.github/workflows/docker-build-and-push-image.yml
+    with:
+      docker_build_context: .
+      dockerfile: docker/Dockerfile.webrequest
+      dockerhub_repo: yeagerai/simulator-webrequest
+      dockerhub_username: ${{ vars.DOCKERHUB_USERNAME }}
+    secrets:
+      dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  database:
+    uses: ./.github/workflows/docker-build-and-push-image.yml
+    with:
+      docker_build_context: .
+      dockerfile: docker/Dockerfile.database
+      dockerhub_repo: yeagerai/simulator-database
+      dockerhub_username: ${{ vars.DOCKERHUB_USERNAME }}
+    secrets:
+      dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  database-migration:
+    uses: ./.github/workflows/docker-build-and-push-image.yml
+    with:
+      docker_build_context: backend/database_handler
+      dockerfile: docker/Dockerfile.database-migration
+      dockerhub_repo: yeagerai/simulator-database-migration
+      dockerhub_username: ${{ vars.DOCKERHUB_USERNAME }}
+    secrets:
+      dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}

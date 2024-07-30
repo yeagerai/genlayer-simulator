@@ -6,7 +6,7 @@ export class ContractsPage extends BasePage {
   override visibleLocator: Locator = By.xpath("//h3[contains(text(), 'Your Contracts')]")
 
   async openContract(name: string) {
-    const locator = By.xpath(`//div[contains(@class, 'truncate ... cursor-pointer') and contains(text(), '${name}')]`)
+    const locator = By.xpath(`//div[@data-testid='contract-file' and text()='${name}']`)
     return this.driver.wait(until.elementLocated(locator), 5000).click();
   }
 }

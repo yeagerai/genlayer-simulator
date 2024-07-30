@@ -21,7 +21,7 @@ from tests.common.response import (
 def test_football_prediction_market():
     # Validators Setup
     result = post_request_localhost(
-        payload("create_random_validators", 5, 8, 12, ["openai"], None, "gpt-3.5-turbo")
+        payload("create_random_validators", 5, 8, 12, ["openai"], None, "gpt-4o-mini")
     ).json()
     assert has_success_status(result)
 
@@ -65,7 +65,8 @@ def test_football_prediction_market():
             contract_address,
             "resolve",
             [],
-        )
+        ),
+        retries=30,
     )
     assert has_success_status(transaction_response_call_1)
 

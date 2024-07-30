@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import tippy from "tippy.js";
-import "tippy.js/dist/tippy.css";
-import { onMounted, ref, onUpdated, onUnmounted, inject } from "vue";
-import { tooltipOptionsInject } from "./";
+import tippy from 'tippy.js';
+import 'tippy.js/dist/tippy.css';
+import { onMounted, ref, onUpdated, onUnmounted, inject } from 'vue';
+import { tooltipOptionsInject } from './';
 const props = defineProps({
   text: { type: String, required: true },
   options: {

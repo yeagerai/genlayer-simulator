@@ -24,9 +24,7 @@ UPDATED_STATE = "b"
 def test_storage():
     # Validators Setup
     result = post_request_localhost(
-        payload(
-            "create_random_validators", 10, 8, 12, ["openai"], None, "gpt-3.5-turbo"
-        )
+        payload("create_random_validators", 10, 8, 12, ["openai"], None, "gpt-4o-mini")
     ).json()
     assert has_success_status(result)
 
