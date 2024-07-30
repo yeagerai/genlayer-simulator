@@ -6,7 +6,7 @@ import {
 } from '../../../src/utils'
 import { describe, expect, it, vi, afterEach, beforeEach } from 'vitest'
 
-describe('JsonRprService', () => {
+describe('SignTransaction', () => {
   beforeEach(() => {
     //
   })

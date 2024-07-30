@@ -360,10 +360,6 @@ def send_raw_transaction(
     )
 
     print("decoded_transaction", decoded_transaction, transaction_data)
-
-    transaction_id = transactions_processor.insert_transaction(
-        from_address, decoded_transaction["to"], [], 0, 2
-    )
     result["transaction_id"] = transaction_id
 
     return result

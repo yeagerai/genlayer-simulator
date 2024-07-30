@@ -92,7 +92,7 @@ class ItemNotFoundError(Exception):
 
 
 class InvalidTransactionError(Exception):
-    """Exception raised when the given transaction is not valid or can be validated ."""
+    """Exception raised when the given transaction is not valid or can't be validated ."""
 
     def __init__(
         self,
