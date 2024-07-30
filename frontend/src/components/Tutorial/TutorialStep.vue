@@ -283,7 +283,7 @@ export default {
 
 <style scoped>
 .v-step {
-  color: #1a3851;
+  /* color: #1a3851; */
   /* #ffc107, #35495e */
   max-width: 320px;
   border-radius: 3px;
