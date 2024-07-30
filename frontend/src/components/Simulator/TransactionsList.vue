@@ -23,15 +23,14 @@ const handleClearTransactions = () => {
   <PageSection>
     <template #title>Latest Transactions</template>
     <template #actions
-      ><button
+      ><GhostBtn
         v-if="transactions.length > 0"
         @click="isClearTransactionsModalOpen = true"
       >
-        <TrashIcon class="mr-1 h-4 w-4" />
+        <TrashIcon class="h-4 w-4" />
         <ToolTip
           text="Clear Transactions List"
-          :options="{ placement: 'bottom' }"
-        /></button
+          :options="{ placement: 'bottom' }" /></GhostBtn
     ></template>
 
     <TransactionItem
