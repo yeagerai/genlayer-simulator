@@ -215,14 +215,13 @@ onUnmounted(() => {
             :calling-method="contractsStore.callingContractMethod"
           />
         </div>
-        <div class="flex flex-col">
-          <TransactionsList
-            :transactions="contractTransactions"
-            @clear-transactions="handleClearTransactions"
-          />
-        </div>
+        <TransactionsList
+          :transactions="contractTransactions"
+          @clear-transactions="handleClearTransactions"
+        />
       </div>
     </div>
+
     <div
       class="flex w-full flex-col bg-slate-100 px-2 py-2 dark:dark:bg-zinc-700"
       v-else
