@@ -41,9 +41,7 @@ describe('Contract Example WizardOfCoin', () => {
 
     const nameOfContract = await driver.wait(
       until.elementLocated(
-        By.xpath(
-          "//div[contains(text(), 'wizard_of_coin.gpy')]",
-        ),
+        By.xpath("//div[contains(text(), 'wizard_of_coin.gpy')]"),
       ),
       2000,
     );
@@ -64,7 +62,12 @@ describe('Contract Example WizardOfCoin', () => {
 
   it('should deploy the contract WizardOfCoin', async () => {
     await driver
-      .wait(until.elementLocated(By.xpath("//button[@data-testid='btn-deploy-contract']")), 2000)
+      .wait(
+        until.elementLocated(
+          By.xpath("//button[@data-testid='btn-deploy-contract']"),
+        ),
+        2000,
+      )
       .click();
 
     // locate elements that should be visible
@@ -92,18 +95,12 @@ describe('Contract Example WizardOfCoin', () => {
       'Execute transactions title section should be visible',
     ).not.null;
 
-    const latestTransactions = await driver.wait(
-      until.elementLocated(
-        By.xpath(
-          "//h5[contains(@class, 'text-sm') and contains(text(), 'Latest Transactions')]",
-        ),
-      ),
-      2000,
+    const latestTransactions = await driver.findElement(
+      By.xpath("//*[@data-testid='latest-transactions']"),
     );
-    expect(
-      latestTransactions,
-      'Latest transactions title section should be visible',
-    ).not.null;
+
+    expect(latestTransactions, 'Latest transactions section should be visible')
+      .not.null;
   });
 
   it('should call get_have_coin state', async () => {

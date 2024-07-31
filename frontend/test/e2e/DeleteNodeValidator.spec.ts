@@ -53,7 +53,7 @@ describe('Settings - Delete Node Validator', () => {
 
     await driver.navigate().refresh()
     const validators = await driver.findElements(
-      By.xpath("//button[@data-testid = 'validator-item-delete']")
+      By.xpath("//button[@data-testid = 'validator-item']")
     )
 
     expect(

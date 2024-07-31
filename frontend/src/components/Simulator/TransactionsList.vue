@@ -20,7 +20,7 @@ const handleClearTransactions = () => {
 </script>
 
 <template>
-  <PageSection>
+  <PageSection data-testid="latest-transactions">
     <template #title>Latest Transactions</template>
     <template #actions
       ><GhostBtn
