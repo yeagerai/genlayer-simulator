@@ -2,9 +2,25 @@
 
 import json
 from psycopg2.extras import Json
+from backend.database_handler import models
 from backend.database_handler.db_client import DBClient
 
 from backend.errors.errors import ValidatorNotFound
+
+from sqlalchemy.orm import Session
+
+
+# the to_dict function lives in this module and not in models.py because it's on this layer of abstraction where we convert database objects to our custom data structures
+def to_dict(validator: models.Validators) -> dict:
+    return {
+        "id": validator.id,
+        "address": validator.address,
+        "stake": validator.stake,
+        "provider": validator.provider,
+        "model": validator.model,
+        "config": validator.config,
+        "created_at": validator.created_at.isoformat(),
+    }
 
 
 class ValidatorsRegistry:
@@ -25,14 +41,17 @@ class ValidatorsRegistry:
 
     def _get_validator_or_fail(self, validator_address: str):
         """Private method to check if an account exists, and raise an error if not."""
-        condition = f"address = '{validator_address}'"
-        result = self.db_client.get(self.db_validators_table, condition)
 
-        validator_data = result[0] if result else None
+        with Session(self.db_client.engine) as session:
+            validator_data = (
+                session.query(models.Validators)
+                .filter_by(address=validator_address)
+                .first()
+            )
 
         if not validator_data:
             raise ValidatorNotFound(validator_address)
-        return self._parse_validator_data(validator_data)
+        return to_dict(validator_data)
 
     def count_validators(self):
         return self.db_client.count(self.db_validators_table)

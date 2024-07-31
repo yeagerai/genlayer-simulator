@@ -35,7 +35,6 @@ describe('Settings - Update Node Validator', () => {
       existingValidators.length,
       'number of validators should be greather than 0'
     ).be.greaterThan(0)
-    
 
     const validator = await existingValidators[0].findElement(
       By.xpath("//div[@data-testid = 'validator-item']"),
@@ -86,7 +85,6 @@ describe('Settings - Update Node Validator', () => {
     const modelText = await model.getText()
     expect(providerText, 'provider should be ollama').be.equal('ollama')
     expect(modelText, 'model should be llama2').be.equal('llama2')
-
   })
 
   after(() => driver.quit())
