@@ -1,7 +1,6 @@
 # rpc/transaction_utils.py
 
 from typing import Any
-from enum import Enum
 from eth_account._utils.typed_transactions import TypedTransaction
 from eth_account._utils.legacy_transactions import Transaction, vrs_from
 from eth_account._utils.signing import hash_of_signed_transaction

@@ -281,7 +281,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
 
               const resp = await $jsonRpc?.call({
                 method: 'send_raw_transaction',
-                params: [accountsStore.currentUserAddress, signed]
+                params: [signed]
               })
 
               deployingContract.value = false
