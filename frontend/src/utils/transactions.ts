@@ -2,9 +2,7 @@ import { getAccountFromPrivatekey } from './accounts'
 import {
   createWalletClient,
   http,
-  recoverTransactionAddress,
-  serializeTransaction as _serializeTransaction,
-  type TransactionSerializedLegacy
+  serializeTransaction as _serializeTransaction
 } from 'viem'
 import { mainnet } from 'viem/chains'
 
@@ -17,19 +15,6 @@ export async function signTransaction(privateKey: `0x${string}`, data: any) {
   const account = getAccountFromPrivatekey(privateKey)
   return account.signTransaction({ ...data, type: 'legacy' })
 }
-
-export async function getSignedTransactionAddress(
-  signedTransaction:
-    | `0x02${string}`
-    | `0x01${string}`
-    | `0x03${string}`
-    | TransactionSerializedLegacy
-) {
-  return await recoverTransactionAddress({
-    serializedTransaction: signedTransaction
-  })
-}
-
 
 export async function serializeTransaction (data: any) {
   return _serializeTransaction({

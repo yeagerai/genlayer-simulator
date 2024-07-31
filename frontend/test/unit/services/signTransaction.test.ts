@@ -1,8 +1,8 @@
+import { recoverTransactionAddress } from 'viem'
 import {
   signTransaction,
   getPrivateKey,
   getAccountFromPrivatekey,
-  getSignedTransactionAddress
 } from '../../../src/utils'
 import { describe, expect, it, vi, afterEach, beforeEach } from 'vitest'
 
@@ -26,7 +26,9 @@ describe('SignTransaction', () => {
     it('it should sign a transaction and verify', async () => {
       const signedTransaction = await signTransaction(privateKey, data)
       const account = getAccountFromPrivatekey(privateKey)
-      const txAddress = await getSignedTransactionAddress(signedTransaction)
+      const txAddress = await recoverTransactionAddress({
+        serializedTransaction: signedTransaction
+      })
       expect(txAddress).to.deep.equal(account.address)
     })
   })
