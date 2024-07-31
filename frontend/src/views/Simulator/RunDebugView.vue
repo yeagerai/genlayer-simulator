@@ -73,12 +73,16 @@ const handleDeployContract = async ({
 };
 
 // const handleClearTransactions = () => {
-//   transactionsStore.processingQueue = transactionsStore.processingQueue.filter(
-//     (t) => t.localContractId !== contractsStore.currentContractId,
-//   );
-//   transactionsStore.transactions = transactionsStore.transactions.filter(
-//     (t) => t.localContractId !== contractsStore.currentContractId,
-//   );
+//   transactionsStore.processingQueue.forEach((t) => {
+//     if (t.localContractId === contractsStore.currentContractId) {
+//       transactionsStore.removeTransaction(t);
+//     }
+//   });
+//   transactionsStore.transactions.forEach((t) => {
+//     if (t.localContractId === contractsStore.currentContractId) {
+//       transactionsStore.removeTransaction(t);
+//     }
+//   });
 // };
 
 // const debouncedGetConstructorInputs = debounce(

@@ -23,15 +23,17 @@ const transactions = computed(() => {
 
 const isClearTransactionsModalOpen = ref(false);
 
-// FIXME: cherry pick persistency fix
 const handleClearTransactions = () => {
-  transactionsStore.processingQueue = transactionsStore.processingQueue.filter(
-    (t) => t.localContractId !== contractsStore.currentContractId,
-  );
-  transactionsStore.transactions = transactionsStore.transactions.filter(
-    (t) => t.localContractId !== contractsStore.currentContractId,
-  );
-  isClearTransactionsModalOpen.value = false;
+  transactionsStore.processingQueue.forEach((t) => {
+    if (t.localContractId === contractsStore.currentContractId) {
+      transactionsStore.removeTransaction(t);
+    }
+  });
+  transactionsStore.transactions.forEach((t) => {
+    if (t.localContractId === contractsStore.currentContractId) {
+      transactionsStore.removeTransaction(t);
+    }
+  });
 };
 </script>
 

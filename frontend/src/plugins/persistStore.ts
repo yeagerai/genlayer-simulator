@@ -119,7 +119,7 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
           case 'removeTransaction':
             await db.transactions
               .where('txId')
-              .equals((args[0] as any).id)
+              .equals((args[0] as any).txId)
               .delete();
             break;
           case 'updateTransaction':
