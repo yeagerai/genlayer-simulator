@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
-import { ref, shallowRef, watch, computed, nextTick } from 'vue';
+import { ref, shallowRef, watch, computed } from 'vue';
 import { pythonSyntaxDefinition } from '@/utils';
 import { useContractsStore, useUIStore } from '@/stores';
 import { type ContractFile } from '@/types';
