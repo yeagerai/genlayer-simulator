@@ -4,6 +4,7 @@ import type { TransactionItem as TransactionItemType } from '@/types';
 import { TrashIcon } from '@heroicons/vue/24/solid';
 import TransactionItem from './TransactionItem.vue';
 import PageSection from './PageSection.vue';
+import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
 
 const props = defineProps<{
   transactions: TransactionItemType[];
@@ -21,7 +22,7 @@ const handleClearTransactions = () => {
 
 <template>
   <PageSection data-testid="latest-transactions">
-    <template #title>Latest Transactions</template>
+    <template #title>Transactions</template>
     <template #actions
       ><GhostBtn
         v-if="transactions.length > 0"
@@ -38,6 +39,10 @@ const handleClearTransactions = () => {
       :key="transaction.txId"
       :transaction="transaction"
     />
+
+    <EmptyListPlaceholder v-if="transactions.length === 0">
+      No transactions yet.
+    </EmptyListPlaceholder>
   </PageSection>
 
   <ConfirmationModal
