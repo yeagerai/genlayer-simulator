@@ -40,7 +40,7 @@ defineProps<{
       </span>
     </div>
 
-    <div class="invisible flex flex-row gap-1 group-hover:visible">
+    <div class="hidden flex-row gap-1 group-hover:flex">
       <button @click.stop="isUpdateModalMopen = true">
         <PencilSquareIcon
           class="h-5 w-5 p-[2px] text-slate-400 transition-colors hover:text-slate-800 active:scale-90 dark:hover:text-white"
