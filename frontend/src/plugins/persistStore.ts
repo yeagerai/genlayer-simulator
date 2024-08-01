@@ -33,9 +33,9 @@ const upsertDeployedContract = async (
  */
 export function persistStorePlugin(context: PiniaPluginContext): void {
   context.store.$onAction(({ store, name, args, after }) => {
-    console.log(
-      `Called Action "${name}" with params [${JSON.stringify(args)}].`,
-    );
+    // console.log(
+    //   `Called Action "${name}" with params [${JSON.stringify(args)}].`,
+    // );
     after(async (result) => {
       if (store.$id === 'contractsStore') {
         switch (name) {
@@ -132,7 +132,7 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
             break;
         }
       }
-      console.log('PersistStorePlugin:::', { name, args, result });
+      // console.log('PersistStorePlugin:::', { name, args, result });
     });
   });
 }
