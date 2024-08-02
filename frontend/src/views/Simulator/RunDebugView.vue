@@ -10,11 +10,18 @@ import ContractState from '@/components/Simulator/ContractState.vue';
 import ExecuteTransactions from '@/components/Simulator/ExecuteTransactions.vue';
 import TransactionsList from '@/components/Simulator/TransactionsList.vue';
 import ConstructorParameters from '@/components/Simulator/ConstructorParameters.vue';
+import ContractMethodItem from '@/components/Simulator/ContractMethodItem.vue';
 import { debounce } from 'vue-debounce';
+import PageSection from '@/components/Simulator/PageSection.vue';
+import type { ContractMethod } from '@/types';
+import { InputTypesMap } from '@/utils';
+import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
+import NewContractState from '@/components/Simulator/NewContractState.vue';
 
 const contractsStore = useContractsStore();
 const accountsStore = useAccountsStore();
 const transactionsStore = useTransactionsStore();
+
 let deploymentSubscription: () => void;
 const contractTransactions = computed(() =>
   transactionsStore.transactions.filter(
@@ -37,28 +44,6 @@ const handleGetContractState = async (
     notify({
       title: 'Error',
       text: (error as Error)?.message || 'Error getting contract state',
-      type: 'error',
-    });
-  }
-};
-
-const handleCallContractMethod = async ({
-  method,
-  params,
-}: {
-  method: string;
-  params: any[];
-}) => {
-  const result = await contractsStore.callContractMethod({
-    userAccount: accountsStore.currentUserAddress || '',
-    localContractId: contractsStore.deployedContract?.contractId || '',
-    method: `${method}`,
-    params,
-  });
-  if (!result) {
-    notify({
-      title: 'Error',
-      text: 'Error calling contract method',
       type: 'error',
     });
   }
@@ -87,14 +72,14 @@ const handleDeployContract = async ({
   }
 };
 
-const handleClearTransactions = () => {
-  transactionsStore.processingQueue = transactionsStore.processingQueue.filter(
-    (t) => t.localContractId !== contractsStore.currentContractId,
-  );
-  transactionsStore.transactions = transactionsStore.transactions.filter(
-    (t) => t.localContractId !== contractsStore.currentContractId,
-  );
-};
+// const handleClearTransactions = () => {
+//   transactionsStore.processingQueue = transactionsStore.processingQueue.filter(
+//     (t) => t.localContractId !== contractsStore.currentContractId,
+//   );
+//   transactionsStore.transactions = transactionsStore.transactions.filter(
+//     (t) => t.localContractId !== contractsStore.currentContractId,
+//   );
+// };
 
 const debouncedGetConstructorInputs = debounce(
   () => contractsStore.getConstructorInputs(),
@@ -169,6 +154,28 @@ onUnmounted(() => {
     deploymentSubscription();
   }
 });
+
+const readMethods = computed(() => {
+  return Object.entries(
+    contractsStore.currentDeployedContractAbi?.methods || {},
+  )
+    .filter((m) => m[0].startsWith('get_'))
+    .map(([methodName, method]) => ({
+      methodName,
+      method,
+    }));
+});
+
+const writeMethods = computed(() => {
+  return Object.entries(
+    contractsStore.currentDeployedContractAbi?.methods || {},
+  )
+    .filter((m) => !m[0].startsWith('_') && !m[0].startsWith('get_'))
+    .map(([methodName, method]) => ({
+      methodName,
+      method,
+    }));
+});
 </script>
 
 <template>
@@ -176,19 +183,26 @@ onUnmounted(() => {
     <div class="flex w-full flex-col p-2">
       <h3 class="text-xl">Run and Debug</h3>
     </div>
+
+    <NewContractState v-if="contractsStore.currentContract && contractsStore.currentContractId" />
+
     <div
       class="flex flex-col overflow-y-auto"
       v-if="!!contractsStore.currentContractId"
     >
-      <div class="flex flex-col">
+      <!-- <div class="flex flex-col">
         <div
           class="flex w-full flex-col bg-slate-100 px-2 py-2 dark:bg-zinc-700"
         >
           <div class="text-sm">Intelligent Contract:</div>
-          <div data-testid="current-contract-name" class="text-xs text-neutral-800 dark:text-neutral-200">
+          <div
+            data-testid="current-contract-name"
+            class="text-xs text-neutral-800 dark:text-neutral-200"
+          >
             {{ contractsStore.currentContract?.name }}
           </div>
         </div>
+
         <ConstructorParameters
           :inputs="contractsStore.currentConstructorInputs"
           :loading="contractsStore.loadingConstructorInputs"
@@ -196,9 +210,10 @@ onUnmounted(() => {
           @deploy-contract="handleDeployContract"
           :deploying="contractsStore.deployingContract"
         />
-      </div>
+      </div> -->
+
       <div class="flex flex-col">
-        <div class="flex flex-col" v-show="contractsStore.deployedContract">
+        <!-- <div class="flex flex-col" v-show="contractsStore.deployedContract">
           <ContractState
             :abi="contractsStore.currentDeployedContractAbi"
             :contract-state="contractsStore.currentContractState"
@@ -206,19 +221,61 @@ onUnmounted(() => {
             :get-contract-state="handleGetContractState"
             :calling-state="contractsStore.callingContractState"
           />
-        </div>
+        </div> -->
+
+        <!-- <PageSection
+          v-if="
+            contractsStore.deployedContract &&
+            contractsStore.currentDeployedContractAbi?.methods
+          "
+        >
+          <template #title>Read Methods</template>
+          <ContractMethodItem
+            v-for="method in readMethods"
+            :key="method.methodName"
+            :methodName="method.methodName"
+            :method="method.method"
+            methodType="read"
+          />
+
+          <EmptyListPlaceholder v-if="readMethods.length === 0">
+            No read methods.
+          </EmptyListPlaceholder>
+        </PageSection> -->
+
+        <!-- <PageSection
+          v-if="
+            contractsStore.deployedContract &&
+            contractsStore.currentDeployedContractAbi?.methods
+          "
+        >
+          <template #title>Write Methods</template>
+
+          <ContractMethodItem
+            v-for="method in writeMethods"
+            :key="method.methodName"
+            :methodName="method.methodName"
+            :method="method.method"
+            methodType="write"
+          />
+
+          <EmptyListPlaceholder v-if="writeMethods.length === 0">
+            No write methods.
+          </EmptyListPlaceholder>
+        </PageSection> -->
 
         <div class="flex flex-col" v-show="contractsStore.deployedContract">
-          <ExecuteTransactions
+          <!-- <ExecuteTransactions
             :abi="contractsStore.currentDeployedContractAbi"
             @call-method="handleCallContractMethod"
             :calling-method="contractsStore.callingContractMethod"
-          />
+          /> -->
         </div>
-        <TransactionsList
+
+        <!-- <TransactionsList
           :transactions="contractTransactions"
           @clear-transactions="handleClearTransactions"
-        />
+        /> -->
       </div>
     </div>
 

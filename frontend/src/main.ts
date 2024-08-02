@@ -13,13 +13,14 @@ import { RpcClient, setupStores } from '@/utils';
 import { JsonRpcService } from './services/JsonRpcService';
 import { VueSpinnersPlugin } from 'vue3-spinners';
 import registerGlobalComponents from '@/components/global/registerGlobalComponents';
+import { VueQueryPlugin } from '@tanstack/vue-query'
 
 const app = createApp(App);
 const pinia = createPinia();
 
 pinia.use(persistStorePlugin);
 app.use(pinia);
-
+app.use(VueQueryPlugin)
 app.use(router);
 app.use(
   createToolTipPlugin({

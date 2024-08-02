@@ -161,7 +161,6 @@ export const useTutorialStore = defineStore('tutorialStore', () => {
     }, 2000);
   }
   async function callContractMethod() {
-    contractsStore.callingContractMethod = true;
     for (const log of contractFunctionLogs) {
       await addLog(log);
     }

@@ -22,9 +22,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
     localStorage.getItem('contractsStore.currentContractId') || '',
   );
   const deployedContracts = ref<DeployedContract[]>([]);
-  const callingContractMethod = ref<boolean>(false);
-  const callingContractState = ref<boolean>(false);
-  const currentContractState = ref<Record<string, any>>({});
+  // const currentContractState = ref<Record<string, any>>({});
 
   const currentConstructorInputs = ref<{ [k: string]: string }>({});
   const currentErrorConstructorInputs = ref<Error>();
@@ -116,6 +114,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
     currentContractId.value = id || '';
   }
 
+  // TODO:
   async function resetStorage(): Promise<void> {
     try {
       const idsToDelete = contracts.value
@@ -172,7 +171,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
     method: string;
     params: any[];
   }) {
-    callingContractMethod.value = true;
     try {
       const contract = deployedContracts.value.find(
         (c) => c.contractId === localContractId,
@@ -184,7 +182,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
         params,
       });
 
-      callingContractMethod.value = false;
       if (result?.status === 'success') {
         transactionsStore.addTransaction({
           contractAddress: contract?.address || '',
@@ -199,32 +196,36 @@ export const useContractsStore = defineStore('contractsStore', () => {
       }
     } catch (error) {
       console.error(error);
-      callingContractMethod.value = false;
     }
     return false;
   }
 
+  // TODO: should this even be in the store?
   async function getContractState(
     contractAddress: string,
     method: string,
     methodArguments: string[],
   ) {
-    callingContractState.value = true;
     try {
+      console.log('getContractState', contractAddress, method, methodArguments);
       const result = await $jsonRpc?.getContractState({
         contractAddress,
         method,
         methodArguments,
       });
 
-      currentContractState.value = {
-        ...currentContractState.value,
-        [method]: result?.data,
-      };
-      callingContractState.value = false;
+      if (result?.status === 'error') {
+        throw new Error(result.message);
+      }
+      console.log('result', result);
+      // currentContractState.value = {
+      //   ...currentContractState.value,
+      //   [method]: result?.data,
+      // };
+
+      return result?.data;
     } catch (error) {
       console.error(error);
-      callingContractState.value = false;
       throw new Error('Error getting the contract state');
     }
   }
@@ -257,7 +258,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
           loadingConstructorInputs.value = false;
           currentErrorConstructorInputs.value = error as Error;
 
-          throw new Error('Error getting the contract schema');
+          throw new Error('XX Error getting the contract schema');
         }
 
         if (contractSchema) {
@@ -368,9 +369,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
     openedFiles,
     currentContractId,
     deployedContracts,
-    currentContractState,
-    callingContractState,
-    callingContractMethod,
+    // currentContractState,
     currentConstructorInputs,
     currentErrorConstructorInputs,
     currentDeployedContractAbi,

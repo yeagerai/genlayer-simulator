@@ -1,21 +1,30 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import type { TransactionItem as TransactionItemType } from '@/types';
+import { ref, computed } from 'vue';
+import { useContractsStore, useTransactionsStore } from '@/stores';
 import { TrashIcon } from '@heroicons/vue/24/solid';
 import TransactionItem from './TransactionItem.vue';
 import PageSection from './PageSection.vue';
 import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
 
-const props = defineProps<{
-  transactions: TransactionItemType[];
-}>();
+const contractsStore = useContractsStore();
+const transactionsStore = useTransactionsStore();
 
-const emit = defineEmits(['clear-transactions']);
+const transactions = computed(() =>
+  transactionsStore.transactions.filter(
+    (t) => t.localContractId === contractsStore.currentContractId,
+  ),
+);
 
 const isClearTransactionsModalOpen = ref(false);
 
+// FIXME: cherry pick persistency fix
 const handleClearTransactions = () => {
-  emit('clear-transactions');
+  transactionsStore.processingQueue = transactionsStore.processingQueue.filter(
+    (t) => t.localContractId !== contractsStore.currentContractId,
+  );
+  transactionsStore.transactions = transactionsStore.transactions.filter(
+    (t) => t.localContractId !== contractsStore.currentContractId,
+  );
   isClearTransactionsModalOpen.value = false;
 };
 </script>
@@ -35,7 +44,7 @@ const handleClearTransactions = () => {
     ></template>
 
     <TransactionItem
-      v-for="transaction in props.transactions"
+      v-for="transaction in transactions"
       :key="transaction.txId"
       :transaction="transaction"
     />

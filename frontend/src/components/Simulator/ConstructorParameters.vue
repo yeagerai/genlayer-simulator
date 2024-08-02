@@ -149,6 +149,7 @@ onMounted(() => {
           <div class="flex h-full align-middle text-xs">
             Constructor Parameters
           </div>
+          <!-- TODO: re-implement json mode -->
           <button
             class="texm-xs rounded bg-primary px-2 text-white hover:opacity-80"
             @click="toggleMode"
