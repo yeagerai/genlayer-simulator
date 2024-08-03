@@ -9,11 +9,17 @@ import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vu
 const contractsStore = useContractsStore();
 const transactionsStore = useTransactionsStore();
 
-const transactions = computed(() =>
-  transactionsStore.transactions.filter(
+const transactions = computed(() => {
+  const contractTransactions = transactionsStore.transactions.filter(
     (t) => t.localContractId === contractsStore.currentContractId,
-  ),
-);
+  );
+
+  const transactionsById = contractTransactions
+    .slice()
+    .sort((a, b) => b.txId - a.txId);
+
+  return transactionsById;
+});
 
 const isClearTransactionsModalOpen = ref(false);
 
