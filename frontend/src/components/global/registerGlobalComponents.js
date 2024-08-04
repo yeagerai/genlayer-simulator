@@ -7,6 +7,8 @@ import NumberField from '@/components/global/NumberField.vue';
 import FieldLabel from '@/components/global/FieldLabel.vue';
 import TextAreaField from '@/components/global/TextAreaField.vue';
 import FieldError from '@/components/global/FieldError.vue';
+import Alert from '@/components/global/Alert.vue';
+import Loader from '@/components/global/Loader.vue';
 
 export default function registerGlobalComponents(app) {
   app.component('Modal', Modal);
@@ -18,4 +20,6 @@ export default function registerGlobalComponents(app) {
   app.component('FieldLabel', FieldLabel);
   app.component('TextAreaField', TextAreaField);
   app.component('FieldError', FieldError);
+  app.component('Alert', Alert);
+  app.component('Loader', Loader);
 }

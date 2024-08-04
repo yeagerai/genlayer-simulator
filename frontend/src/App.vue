@@ -5,6 +5,7 @@ import Notification from '@/components/Notification.vue';
 import TutorialContainer from '@/components/Tutorial/TutorialContainer.vue';
 import { useUIStore } from '@/stores/ui';
 import { onBeforeMount } from 'vue';
+import { VueQueryDevtools } from '@tanstack/vue-query-devtools'
 
 const uiStore = useUIStore();
 onBeforeMount(() => {
@@ -20,5 +21,6 @@ onBeforeMount(() => {
       <RouterView />
     </div>
   </main>
+  <!-- <VueQueryDevtools /> -->
   <Notification />
 </template>

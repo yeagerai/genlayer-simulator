@@ -11,6 +11,7 @@ import {
 import { useDebounceFn } from '@vueuse/core';
 
 export function useContractQueries() {
+  console.log('useContractQueries');
   const $jsonRpc = inject<IJsonRpcService>('$jsonRpc'); // This could be done without inject/provide
   const accountsStore = useAccountsStore();
   const transactionsStore = useTransactionsStore();
@@ -31,25 +32,35 @@ export function useContractQueries() {
   const schema = ref<any>();
   const address = ref<string>(''); // Provide a default value for address
 
-
   // const constructorInputs = ref<{ [k: string]: string }>({});
 
-  const constructorInputs = computed<{ [k: string]: string }>(() =>
-    schema.value?.methods['__init__']?.inputs,
-  );
+  // const constructorInputs = computed<{ [k: string]: string }>(
+  //   () => schema.value?.methods['__init__']?.inputs,
+  // );
 
   // TODO: invalidate when code changes
   // TODO: debounce
 
   const fetchContractSchemaDebounced = useDebounceFn(() => {
+    console.log('fetchContractSchemaDebounced');
     return fetchContractSchema();
-  }, 1000);
+  }, 300);
+
+  watch(
+    () => contract.value?.content,
+    () => {
+      console.log('changed');
+      queryClient.invalidateQueries({
+        queryKey: ['schema', contract.value?.id],
+      });
+    },
+  );
 
   const contractSchemaQuery = useQuery({
     queryKey: [
       'schema',
       () => contract.value?.id,
-      () => contract.value?.content,
+      // () => contract.value?.content,
     ], // Better use key or manual invalidation on content change?
     queryFn: fetchContractSchemaDebounced,
     refetchOnWindowFocus: false,
@@ -57,23 +68,21 @@ export function useContractQueries() {
     // enabled: () => !!contract.value
   });
 
-  // queryClient.invalidateQueries({ queryKey: ['todos'] })
-
   async function fetchContractSchema() {
     console.log('fetchContractSchema', contract.value);
     const result = await $jsonRpc?.getContractSchema({
       code: contract.value?.content ?? '',
     });
-
+    console.log('fetchContractSchema result', result);
     if (result?.status === 'error') {
       throw new Error('Error fetching contract schema');
     }
 
     schema.value = result?.data;
 
+    console.log('schema', schema.value);
+
     return schema.value;
-    constructorInputs.value = result?.data?.methods['__init__']?.inputs;
-    // className.value = result?.data.class;
   }
 
   // const deployContractQuery = useQuery({
@@ -89,12 +98,13 @@ export function useContractQueries() {
     constructorParams: { [k: string]: string };
   }) {
     isDeploying.value = true;
-    if (
-      Object.keys({ ...constructorInputs.value }).length !==
-      Object.keys(constructorParams).length
-    ) {
-      throw new Error('You should provide a valid default state');
-    }
+
+    // if (
+    //   Object.keys({ ...constructorInputs.value }).length !==
+    //   Object.keys(constructorParams).length
+    // ) {
+    //   throw new Error('You should provide a valid default state');
+    // }
 
     try {
       const constructorParamsAsString = JSON.stringify(constructorParams);
@@ -147,7 +157,6 @@ export function useContractQueries() {
     enabled: isDeployed,
     refetchOnWindowFocus: false,
     retry: 2,
-    // select: (data) => data.toString(), // this is cool
   });
 
   async function fetchContractAbi() {
@@ -155,16 +164,18 @@ export function useContractQueries() {
     const result = await $jsonRpc?.getDeployedContractSchema({
       address: deployedContract.value?.address ?? '',
     });
+    // Handle errors here?
     return result?.data;
   }
 
   return {
-    schema,
     contractSchemaQuery,
-    deployContract,
-    isDeploying,
     contractAbiQuery,
-    constructorInputs,
+
+    schema,
+    deployContract,
+    // constructorInputs,
+    isDeploying,
     isDeployed,
     address,
   };

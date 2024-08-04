@@ -7,69 +7,84 @@ import { InputTypesMap } from '@/utils';
 import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
 import LoadingIndicator from '@/components/LoadingIndicator.vue';
 
-// FIXME: stopped while playing around with background fetching state when changing contract code
-// FIXME: breaks some stuff around constructorInputs ( any way to not do ' v-if="constructorInputs && Object.keys(constructorInputs).length === 0" ' ? )
-
 const {
   schema,
   contractSchemaQuery,
   deployContract,
   contractAbiQuery,
-  constructorInputs,
+  // constructorInputs,
   isDeployed,
   isDeploying,
   address,
 } = useContractQueries();
 
-const { data, isLoading, isFetching, error } = contractSchemaQuery;
+const { data, error, isPending, isRefetching, isError } = contractSchemaQuery;
 const inputParams = ref<{ [k: string]: any }>({});
+
+const constructorInputs = computed<{ [k: string]: string }>(
+  () => data.value?.methods['__init__']?.inputs,
+);
+
+const isValidDefaultState = computed(() => {
+  const l1 = Object.keys(constructorInputs.value).length;
+  const l2 = Object.keys(inputParams.value).length;
+  console.log(l1, l2);
+  return l1 === l2;
+});
 </script>
 
 <template>
   <PageSection>
     <template #title>Deploy</template>
-    <!-- <div v-if="isLoading">Loading...</div>
-    <div v-else-if="error">
-      {{ error }}
-    </div>
-    <div v-else> -->
-    <div class="flex flex-row items-center gap-1">
-      Constructor inputs
-      <LoadingIndicator :size="12" v-if="isFetching" />
-    </div>
 
-    <EmptyListPlaceholder
-      v-if="constructorInputs && Object.keys(constructorInputs).length === 0"
-    >
-      No constructor inputs.
-    </EmptyListPlaceholder>
+    <template #actions>
+      <Loader v-if="isRefetching" />
+    </template>
 
-    <!-- <pre class="text-xs">{{ constructorInputs }}</pre> -->
-    <div
-      v-else
-      class="flex items-center justify-between py-2"
-      v-for="(inputType, input) in constructorInputs"
-      :key="input"
-    >
-      <label :for="`${input}`" class="mr-2 text-xs">{{ input }}</label>
-      <input
-        v-model="inputParams[input]"
-        :name="`${input}`"
-        :type="InputTypesMap[inputType]"
-        :placeholder="`${input}`"
-        class="bg-slate-100 p-2 dark:dark:bg-zinc-700"
-        label="Input"
-      />
-    </div>
-    <!-- </div> -->
+    <span v-if="isPending">Loading...</span>
 
-    <Btn
-      testId="btn-deploy-contract"
-      @click="deployContract({ constructorParams: inputParams })"
-      :loading="isDeploying"
-    >
-      <ArrowUpTrayIcon class="h-4 w-4" />
-      {{ isDeploying ? 'Deploying...' : isDeployed ? 'Re-deploy' : 'Deploy' }}
-    </Btn>
+    <Alert v-else-if="isError" error>
+      {{ error?.message }}
+    </Alert>
+
+    <template v-else-if="data">
+      {{ constructorInputs }}
+      <!-- {{ inputParams }} -->
+
+      <div class="flex flex-row items-center gap-1">Constructor inputs</div>
+
+      <EmptyListPlaceholder
+        v-if="constructorInputs && Object.keys(constructorInputs).length === 0"
+      >
+        No constructor inputs.
+      </EmptyListPlaceholder>
+
+      <div
+        v-else
+        class="flex items-center justify-between py-2"
+        v-for="(inputType, input) in constructorInputs"
+        :key="input"
+      >
+        <label :for="`${input}`" class="mr-2 text-xs">{{ input }}</label>
+        <input
+          v-model="inputParams[input]"
+          :name="`${input}`"
+          :type="InputTypesMap[inputType]"
+          :placeholder="`${input}`"
+          class="bg-slate-100 p-2 dark:dark:bg-zinc-700"
+          label="Input"
+        />
+      </div>
+
+      <Btn
+        testId="btn-deploy-contract"
+        @click="deployContract({ constructorParams: inputParams })"
+        :loading="isDeploying"
+      >
+        <ArrowUpTrayIcon class="h-4 w-4" />
+        {{ isDeploying ? 'Deploying...' : isDeployed ? 'Re-deploy' : 'Deploy' }}
+      </Btn>
+      <ToolTip v-if="!isValidDefaultState" text="Provide default state" />
+    </template>
   </PageSection>
 </template>

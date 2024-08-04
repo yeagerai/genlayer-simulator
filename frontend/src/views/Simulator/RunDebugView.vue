@@ -81,59 +81,60 @@ const handleDeployContract = async ({
 //   );
 // };
 
-const debouncedGetConstructorInputs = debounce(
-  () => contractsStore.getConstructorInputs(),
-  3000,
-);
+// const debouncedGetConstructorInputs = debounce(
+//   () => contractsStore.getConstructorInputs(),
+//   3000,
+// );
 
-watch(
-  () => contractsStore.deployedContract?.contractId,
-  (newValue) => {
-    if (newValue) {
-      contractsStore.getCurrentContractAbi();
-    }
-  },
-);
+// watch(
+//   () => contractsStore.deployedContract?.contractId,
+//   (newValue) => {
+//     if (newValue) {
+//       contractsStore.getCurrentContractAbi();
+//     }
+//   },
+// );
 
-watch(
-  () => contractsStore.currentContract?.id,
-  (newValue, oldValue) => {
-    if (newValue && newValue !== oldValue) {
-      contractsStore.getConstructorInputs();
-    }
-  },
-);
+// watch(
+//   () => contractsStore.currentContract?.id,
+//   (newValue, oldValue) => {
+//     if (newValue && newValue !== oldValue) {
+//       contractsStore.getConstructorInputs();
+//     }
+//   },
+// );
 
-watch(
-  () => contractsStore.currentContract?.content,
-  (newValue, oldValue) => {
-    if (
-      newValue &&
-      newValue !== oldValue &&
-      !contractsStore.loadingConstructorInputs
-    ) {
-      debouncedGetConstructorInputs();
-    }
-  },
-);
-watch(
-  () => contractsStore.currentErrorConstructorInputs,
-  (newValue, oldValue) => {
-    if (newValue && newValue !== oldValue) {
-      notify({
-        title: 'Error',
-        text: 'Error getting the contract schema',
-        type: 'error',
-      });
-    }
-  },
-);
+// watch(
+//   () => contractsStore.currentContract?.content,
+//   (newValue, oldValue) => {
+//     if (
+//       newValue &&
+//       newValue !== oldValue &&
+//       !contractsStore.loadingConstructorInputs
+//     ) {
+//       debouncedGetConstructorInputs();
+//     }
+//   },
+// );
+// watch(
+//   () => contractsStore.currentErrorConstructorInputs,
+//   (newValue, oldValue) => {
+//     if (newValue && newValue !== oldValue) {
+//       notify({
+//         title: 'Error',
+//         text: 'Error getting the contract schema',
+//         type: 'error',
+//       });
+//     }
+//   },
+// );
 
 onMounted(async () => {
-  await contractsStore.getConstructorInputs();
-  if (contractsStore.deployedContract) {
-    contractsStore.getCurrentContractAbi();
-  }
+  // await contractsStore.getConstructorInputs();
+  // if (contractsStore.deployedContract) {
+  //   contractsStore.getCurrentContractAbi();
+  // }
+  // TODO: re-implement this smh
   deploymentSubscription = contractsStore.$onAction(
     ({ name, store, args, after }) => {
       if (name === 'addDeployedContract' && store.$id === contractsStore.$id) {

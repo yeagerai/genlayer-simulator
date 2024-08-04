@@ -3,10 +3,12 @@ import { useUIStore } from '@/stores';
 const uiStore = useUIStore();
 const props = defineProps<{ color?: string }>();
 </script>
+
+// TODO: replace this with new comp in all instances
 <template>
   <div class="flex flex-col items-center">
-    <VueSpinnerOval
-      size="25"
+    <VueSpinner
+      size="16"
       :color="
         props.color
           ? props.color
@@ -14,7 +16,6 @@ const props = defineProps<{ color?: string }>();
             ? '#1a3851'
             : 'white'
       "
-      width="50"
     />
     <slot />
   </div>
