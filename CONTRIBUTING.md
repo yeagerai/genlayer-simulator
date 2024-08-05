@@ -41,7 +41,7 @@ We run ESLint and Prettier on the frontend code. To install the dependencies, ru
 
 ```sh
 $ cd frontend
-$ npm install -D eslint prettier
+$ npm install
 ```
 
 ##### Window One
