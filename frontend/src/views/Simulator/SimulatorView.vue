@@ -23,7 +23,7 @@ const handleLogsResize = (event: any) => {
     <SimulatorMenu />
 
     <Splitpanes class="overflow-hidden">
-      <Pane min-size="50" size="50" max-size="50">
+      <Pane min-size="20" size="20" max-size="50">
         <RouterView v-slot="{ Component }">
           <KeepAlive>
             <component :is="Component" />
