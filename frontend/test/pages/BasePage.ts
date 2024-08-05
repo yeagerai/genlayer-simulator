@@ -2,7 +2,6 @@ import { By, until, WebDriver, Locator } from 'selenium-webdriver';
 
 export class BasePage {
   protected readonly driver: WebDriver
-  readonly skipTutorialDataTestId = 'btn-skip-tutorial'
 
   readonly baseurl?: string
   readonly visibleLocator?: Locator
