@@ -43,6 +43,10 @@ export const useContractsStore = defineStore('contractsStore', () => {
     deployedContracts.value = [
       ...deployedContracts.value.filter((c) => c.contractId !== id),
     ];
+
+    if (currentContractId.value === id) {
+      setCurrentContractId('');
+    }
   }
 
   function updateContractFile(
@@ -354,6 +358,9 @@ export const useContractsStore = defineStore('contractsStore', () => {
       (c) => c.contractId === currentContractId.value,
     );
   });
+  const contractsOrderedByName = computed(() => {
+    return contracts.value.slice().sort((a, b) => a.name.localeCompare(b.name));
+  });
 
   return {
     // state
@@ -373,6 +380,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
     //getters
     deployedContract,
     currentContract,
+    contractsOrderedByName,
 
     //actions
     addContractFile,

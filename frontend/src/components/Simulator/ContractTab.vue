@@ -32,7 +32,7 @@ const emit = defineEmits(['closeContract', 'selectContract']);
 
     <template v-else>
       <button
-        class="flex items-center gap-1 p-2 pr-7"
+        class="flex flex-nowrap items-center gap-1 whitespace-nowrap p-2 pr-7"
         @click="emit('selectContract')"
         @click.middle="emit('closeContract')"
       >

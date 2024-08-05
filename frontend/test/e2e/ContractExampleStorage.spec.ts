@@ -40,16 +40,18 @@ describe('Contract Example Storage', () => {
     const nameOfContract = await driver.wait(
       until.elementLocated(
         By.xpath(
-          "//div[contains(@class, 'text-xs text-neutral-800 dark:text-neutral-200') and text()='storage.gpy']"
+          "//*[@data-testid='current-contract-name' and text()='storage.gpy']"
         )
-      )
+      ),
+      2000
     )
     expect(nameOfContract, 'Storage file name contract should be visible').not.null
 
     const initialStorageInput = await driver.wait(
       until.elementLocated(
         By.xpath("//input[contains(@name, 'initial_storage') and contains(@type, 'text')]")
-      )
+      ),
+      2000
     )
     expect(initialStorageInput, 'Initial Storage input should be visible').not.null
     await initialStorageInput.clear()
@@ -61,7 +63,7 @@ describe('Contract Example Storage', () => {
   })
 
   it('should deploy the contract Storage', async () => {
-    await driver.wait(until.elementLocated(By.xpath("//button[text()='Deploy']"))).click()
+    await driver.wait(until.elementLocated(By.xpath("//button[@data-testid='btn-deploy-contract']")), 2000).click()
 
     // locate elements that should be visible
     const contractStateTitle = await driver.wait(
@@ -77,17 +79,14 @@ describe('Contract Example Storage', () => {
     const executeTransactionsTitle = await driver.wait(
       until.elementLocated(
         By.xpath("//h5[contains(@class, 'text-sm') and contains(text(), 'Execute Transactions')]")
-      )
+      ),
+      2000
     )
     expect(executeTransactionsTitle, 'Execute transactions title section should be visible').not
       .null
 
-    const latestTransactions = await driver.wait(
-      until.elementLocated(
-        By.xpath("//h5[contains(@class, 'text-sm') and contains(text(), 'Latest Transactions')]")
-      )
-    )
-    expect(latestTransactions, 'Latest transactions title section should be visible').not.null
+    const latestTransactions = await driver.findElement(By.xpath("//*[@data-testid='latest-transactions']"));
+    expect(latestTransactions, 'Latest transactions section should be visible').not.null
   })
 
   it('should call get_storage state', async () => {

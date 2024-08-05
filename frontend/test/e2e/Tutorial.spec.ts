@@ -1,4 +1,4 @@
-import { WebDriver, By, until } from 'selenium-webdriver'
+import { WebDriver } from 'selenium-webdriver'
 
 import { TutorialPage } from '../pages/TutorialPage.js'
 import { before, describe, after, it } from 'node:test'

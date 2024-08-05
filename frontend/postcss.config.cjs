@@ -1,3 +1,4 @@
+/* global module */
 module.exports = {
     plugins: {
       'postcss-import': {},
@@ -5,3 +6,4 @@ module.exports = {
       autoprefixer: {},
     }
   }
+

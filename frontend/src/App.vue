@@ -14,10 +14,7 @@ onBeforeMount(() => {
 
 <template>
   <TutorialContainer />
-  <main
-    :data-mode="uiStore.mode"
-    class="flex h-screen w-full flex-col bg-white text-primary dark:bg-zinc-800 dark:text-white"
-  >
+  <main class="flex h-screen w-full flex-col">
     <Header />
     <div class="flex h-full">
       <RouterView />

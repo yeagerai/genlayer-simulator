@@ -1,9 +1,7 @@
-import { By, until, WebDriver, Locator, Key, Builder, Browser } from 'selenium-webdriver'
+import { By, until, WebDriver, Locator } from 'selenium-webdriver'
 
 export class BasePage {
   protected readonly driver: WebDriver
-  readonly skipTutorialDataTestId = 'btn-skip-tutorial'
-
   readonly baseurl?: string
   readonly visibleLocator?: Locator
 
@@ -17,7 +15,7 @@ export class BasePage {
 
   async waitUntilVisible() {
     if (this.visibleLocator) {
-      await this.driver.wait(until.elementLocated(this.visibleLocator))
+      await this.driver.wait(until.elementLocated(this.visibleLocator), 2000)
     }
   }
 

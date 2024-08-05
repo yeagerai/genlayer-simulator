@@ -1,4 +1,4 @@
-import { By, Locator, until } from 'selenium-webdriver'
+import { By, Locator } from 'selenium-webdriver'
 import { BasePage } from './BasePage'
 
 export class RunDebugPage extends BasePage {
