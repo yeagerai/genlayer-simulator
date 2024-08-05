@@ -21,7 +21,7 @@ const isDetailsModalOpen = ref(false);
     <div class="font-medium text-sm">#{{ transaction.txId }}</div>
 
     <div class="flex items-center justify-between gap-2 p-1">
-      <Loader size="15" v-if="transaction.status !== 'FINALIZED'" />
+      <Loader :size="15" v-if="transaction.status !== 'FINALIZED'" />
 
       <div
         class="rounded-md bg-slate-400 px-1 py-0.5 text-xs font-semibold text-white dark:bg-gray-200 dark:text-slate-800"
