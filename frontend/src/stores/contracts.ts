@@ -97,7 +97,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
     const newItem = { contractId, address, defaultState };
     if (index === -1) deployedContracts.value.push(newItem);
     else
-      deployedContracts.value = deployedContracts.value.splice(
+      deployedContracts.value.splice(
         index,
         1,
         newItem,
