@@ -34,6 +34,7 @@ const handleClearTransactions = () => {
       transactionsStore.removeTransaction(t);
     }
   });
+  isClearTransactionsModalOpen.value = false;
 };
 </script>
 
