@@ -18,14 +18,16 @@ const isDetailsModalOpen = ref(false);
     class="flex cursor-pointer items-center justify-between rounded-sm p-1 hover:bg-gray-100 dark:hover:bg-zinc-700"
     @click="isDetailsModalOpen = true"
   >
-    #{{ transaction.txId }}
-    <div class="flex items-center justify-between p-1">
-      <VueSpinnerOval
-        size="15"
-        v-if="transaction.status !== 'FINALIZED'"
-        :color="uiStore.mode === 'light' ? '#1a3851' : 'white'"
-      />
-      <span class="ml-1 text-xs font-semibold">{{ transaction.status }}</span>
+    <div class="font-medium text-sm">#{{ transaction.txId }}</div>
+
+    <div class="flex items-center justify-between gap-2 p-1">
+      <Loader size="15" v-if="transaction.status !== 'FINALIZED'" />
+
+      <div
+        class="rounded-md bg-slate-400 px-1 py-0.5 text-xs font-semibold text-white dark:bg-gray-200 dark:text-slate-800"
+      >
+        {{ transaction.status }}
+      </div>
     </div>
 
     <Modal :open="isDetailsModalOpen" @close="isDetailsModalOpen = false" wide>
