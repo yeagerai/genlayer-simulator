@@ -40,8 +40,14 @@ const isValidDefaultState = computed(() => {
     <template #actions>
       <Loader v-if="isRefetching" />
     </template>
-
-    <span v-if="isPending">Loading...</span>
+    
+    <div
+      v-if="isPending"
+      class="flex flex-row items-center justify-center gap-2 p-1"
+    >
+      <Loader />
+      Loading...
+    </div>
 
     <Alert v-else-if="isError" error>
       {{ error?.message }}
