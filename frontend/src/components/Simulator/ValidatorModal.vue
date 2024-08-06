@@ -8,6 +8,7 @@ import NumberInput from '@/components/global/inputs/NumberInput.vue';
 import TextAreaInput from '@/components/global/inputs/TextAreaInput.vue';
 import FieldError from '@/components/global/fields/FieldError.vue';
 import FieldLabel from '@/components/global/fields/FieldLabel.vue';
+
 const nodeStore = useNodeStore();
 const emit = defineEmits(['close']);
 
@@ -152,7 +153,6 @@ const tryInitValues = () => {
     </div>
 
     <div>
-      TODO: 
       <FieldLabel for="stake">Stake:</FieldLabel>
       <NumberInput
         id="stake"

@@ -12,6 +12,6 @@ const props = defineProps<{
     v-bind="props"
     :data-testid="testId"
     type="checkbox"
-    class="text-primary-600 h-4 w-4 rounded border-gray-300 focus:ring-accent dark:text-accent"
+    class="text-primary-600 h-4 w-4 rounded border-gray-300 text-primary outline-0 focus:ring-accent dark:border-gray-500 dark:bg-transparent dark:text-accent"
   />
 </template>
