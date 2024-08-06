@@ -15,7 +15,7 @@ const isDetailsModalOpen = ref(false);
 
 <template>
   <div
-    class="flex cursor-pointer items-center justify-between rounded-sm p-1 hover:bg-gray-100 dark:hover:bg-zinc-700"
+    class="flex cursor-pointer items-center justify-between rounded p-0.5 pl-1 hover:bg-gray-100 dark:hover:bg-zinc-700"
     @click="isDetailsModalOpen = true"
   >
     <div class="font-medium text-sm">#{{ transaction.txId }}</div>
