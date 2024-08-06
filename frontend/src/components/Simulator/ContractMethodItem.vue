@@ -116,22 +116,16 @@ const clearInputs = () => {
     </button>
 
     <Collapse :when="isExpanded">
-      <div class="flex flex-col items-start gap-2 p-2">
-        <div
-          class="flex grow flex-col"
+      <div class="flex flex-col items-start p-2">
+        <component
           v-for="(inputType, inputKey) in method.inputs"
           :key="inputKey"
-        >
-          <label :for="`${inputKey}`" class="">{{ inputKey }}</label>
-          <input
-            v-model="inputs[inputKey]"
-            :name="String(inputKey)"
-            :type="InputTypesMap[inputType]"
-            :placeholder="String(inputKey)"
-            class="flex w-full grow bg-slate-100 p-2 dark:dark:bg-zinc-700"
-            label="Input"
-          />
-        </div>
+          :is="InputTypesMap[inputType]"
+          v-model="inputs[inputKey]"
+          :name="String(inputKey)"
+          :label="String(inputKey)"
+          :placeholder="String(inputKey)"
+        />
 
         <Btn v-if="methodType === 'read'" @click="getContractState" tiny
           >Read</Btn

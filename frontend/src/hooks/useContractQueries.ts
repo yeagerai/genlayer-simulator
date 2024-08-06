@@ -9,6 +9,9 @@ import {
   useAccountsStore,
 } from '@/stores';
 import { useDebounceFn } from '@vueuse/core';
+import { notify } from '@kyvg/vue3-notification';
+
+const schema = ref<any>();
 
 export function useContractQueries() {
   console.log('useContractQueries');
@@ -16,6 +19,7 @@ export function useContractQueries() {
   const accountsStore = useAccountsStore();
   const transactionsStore = useTransactionsStore();
   const queryClient = useQueryClient();
+  let deploymentSubscription: () => void;
 
   const contractsStore = useContractsStore();
   const contract = computed(() => contractsStore.currentContract);
@@ -29,9 +33,8 @@ export function useContractQueries() {
   const isDeployed = computed(() => !!deployedContract.value);
   // const className = ref<string>();
 
-  const schema = ref<any>();
-  const address = ref<string>(''); // Provide a default value for address
-
+  // const address = ref<string>(''); // Provide a default value for address
+  const address = computed(() => deployedContract.value?.address);
   // const constructorInputs = ref<{ [k: string]: string }>({});
 
   // const constructorInputs = computed<{ [k: string]: string }>(
@@ -85,11 +88,6 @@ export function useContractQueries() {
     return schema.value;
   }
 
-  // const deployContractQuery = useQuery({
-  //   queryKey: ['schema', contract.value.id],
-  //   queryFn: fetchContractSchema,
-  // });
-
   const isDeploying = ref(false);
 
   async function deployContract({
@@ -109,6 +107,7 @@ export function useContractQueries() {
     try {
       const constructorParamsAsString = JSON.stringify(constructorParams);
 
+      console.log(schema.value.class);
       const result = await $jsonRpc?.deployContract({
         userAccount: accountsStore.currentUserAddress || '',
         className: schema.value.class,
@@ -117,7 +116,7 @@ export function useContractQueries() {
       });
 
       console.log('deploy result', result?.data);
-      address.value = result?.data.contract_address;
+      // address.value = result?.data.contract_address;
 
       if (result?.status === 'success') {
         const tx: TransactionItem = {
@@ -140,10 +139,9 @@ export function useContractQueries() {
         );
       }
     } catch (error) {
+      isDeploying.value = false;
       console.error(error);
       throw new Error('Error Deploying the contract');
-    } finally {
-      isDeploying.value = false;
     }
   }
 
@@ -171,6 +169,7 @@ export function useContractQueries() {
   return {
     contractSchemaQuery,
     contractAbiQuery,
+    contract,
 
     schema,
     deployContract,

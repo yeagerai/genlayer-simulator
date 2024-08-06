@@ -1,5 +1,6 @@
 <script setup lang="ts">
 defineProps<{
+  id: string;
   name: string;
   rows?: number;
   cols?: number;
@@ -11,6 +12,7 @@ const model = defineModel<string | null>();
 
 <template>
   <textarea
+    :id="id"
     :name="name"
     :rows="rows"
     :cols="cols"

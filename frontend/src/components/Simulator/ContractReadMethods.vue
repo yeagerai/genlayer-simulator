@@ -13,7 +13,7 @@ const {
   contractSchemaQuery,
   deployContract,
   contractAbiQuery,
-  constructorInputs,
+  // constructorInputs,
   isDeployed,
   isDeploying,
   address,

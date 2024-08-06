@@ -5,6 +5,8 @@ import { defineStore } from 'pinia';
 import { ref, inject, computed } from 'vue';
 import { useAccountsStore } from './accounts';
 import { useTransactionsStore } from './transactions';
+import { notify } from '@kyvg/vue3-notification';
+
 const getInitialOPenedFiles = (): string[] => {
   const storage = localStorage.getItem('contractsStore.openedFiles');
   if (storage) return storage.split(',');
@@ -102,6 +104,12 @@ export const useContractsStore = defineStore('contractsStore', () => {
         1,
         newItem,
       );
+
+    notify({
+      title: 'Contract deployed',
+      text: `to ${address}`,
+      type: 'success',
+    });
   }
 
   function removeDeployedContract(contractId: string): void {
@@ -114,7 +122,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
     currentContractId.value = id || '';
   }
 
-  // TODO:
+  // TODO: update some stuff here?
   async function resetStorage(): Promise<void> {
     try {
       const idsToDelete = contracts.value
