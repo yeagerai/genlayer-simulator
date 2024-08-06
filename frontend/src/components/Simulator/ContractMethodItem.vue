@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import type { ContractMethod } from '@/types';
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { Collapse } from 'vue-collapsed';
 import { InputTypesMap } from '@/utils';
 import { useContractsStore, useAccountsStore } from '@/stores';
+import { useContractQueries } from '@/hooks/useContractQueries';
 import { notify } from '@kyvg/vue3-notification';
 import { ChevronDownIcon } from '@heroicons/vue/16/solid';
+
+const { callWriteMethod, callReadMethod } = useContractQueries();
 const accountsStore = useAccountsStore();
 const contractsStore = useContractsStore();
 
@@ -16,16 +19,6 @@ const props = defineProps<{
 }>();
 
 const isExpanded = ref(false);
-
-// TODO: fix e2e tests
-
-// const inputs = computed<{ [k: string]: any }>(() => {
-//     return props.methods.reduce((prev: any, curr) => {
-//         prev[curr.name] = {}
-//         return prev
-//     }, {})
-// })
-
 const inputs = ref<{ [k: string]: any }>({});
 
 // const handleCallContractMethod = async ({
@@ -52,46 +45,36 @@ const inputs = ref<{ [k: string]: any }>({});
 
 const responseMessage = ref('');
 
-const getContractState = async () =>
-  // contractAddress: string,
-  // method: string,
-  // methodArguments: any[],
-  {
-    responseMessage.value = '';
+const handleCallReadMethod = async () => {
+  responseMessage.value = '';
 
-    try {
-      const result = await contractsStore.getContractState(
-        contractsStore.deployedContract?.address || '',
-        props.methodName,
-        Object.values(inputs.value),
-      );
+  try {
+    const result = await callReadMethod(
+      props.methodName,
+      Object.values(inputs.value),
+    );
 
-      responseMessage.value = JSON.stringify(result);
-      console.log(result);
-    } catch (error) {
-      notify({
-        title: 'Error',
-        text: (error as Error)?.message || 'Error getting contract state',
-        type: 'error',
-      });
-    }
-  };
+    console.log(result);
 
-const callMethod = async () => {
-  const result = await contractsStore.callContractMethod({
+    responseMessage.value = JSON.stringify(result);
+  } catch (error) {
+    notify({
+      title: 'Error',
+      text: (error as Error)?.message || 'Error getting contract state',
+      type: 'error',
+    });
+  }
+};
+
+const handleCallWriteMethod = async () => {
+  const result = await callWriteMethod({
     userAccount: accountsStore.currentUserAddress || '',
-    localContractId: contractsStore.deployedContract?.contractId || '',
-    method: `${props.methodName}`,
+    method: props.methodName,
     params: Object.values(inputs.value),
   });
 
-  // console.log({ result });
-
+  console.log(result);
   clearInputs();
-
-  // const params = Object.values(inputs.value[selectedMethod.value.name] || {});
-  // emit('callMethod', { method: selectedMethod.value.name, params });
-  // inputs.value[selectedMethod.value.name] = {};
 };
 
 const clearInputs = () => {
@@ -128,11 +111,11 @@ const clearInputs = () => {
         />
 
         <div>
-          <Btn v-if="methodType === 'read'" @click="getContractState" tiny
+          <Btn v-if="methodType === 'read'" @click="handleCallReadMethod" tiny
             >Read</Btn
           >
 
-          <Btn v-if="methodType === 'write'" @click="callMethod" tiny
+          <Btn v-if="methodType === 'write'" @click="handleCallWriteMethod" tiny
             >Write</Btn
           >
         </div>

@@ -139,6 +139,71 @@ export function useContractQueries() {
     return result?.data;
   }
 
+  // TODO: review error handling
+  // TODO: add error in method UI
+  async function callReadMethod(method: string, methodArguments: string[]) {
+    try {
+      const result = await $jsonRpc?.getContractState({
+        contractAddress: address.value || '',
+        method,
+        methodArguments,
+      });
+
+      if (result?.status === 'error') {
+        throw new Error(result.message);
+      }
+
+      console.log('result', result);
+
+      // TODO: re-use this?
+      // currentContractState.value = {
+      //   ...currentContractState.value,
+      //   [method]: result?.data,
+      // };
+
+      return result?.data;
+    } catch (error) {
+      console.error(error);
+      throw new Error('Error getting the contract state');
+    }
+  }
+
+  async function callWriteMethod({
+    userAccount,
+    method,
+    params,
+  }: {
+    userAccount: string;
+    method: string;
+    params: any[];
+  }) {
+    try {
+      const result = await $jsonRpc?.callContractFunction({
+        userAccount,
+        contractAddress: address.value || '',
+        method,
+        params,
+      });
+
+      // TODO: Check potential race condition issue on contract id
+      if (result?.status === 'success') {
+        transactionsStore.addTransaction({
+          contractAddress: address.value || '',
+          localContractId: contract.value?.id || '',
+          txId: (result?.data as any).transaction_id,
+          type: 'method',
+          status: 'PENDING',
+          data: {},
+        });
+
+        return true;
+      }
+    } catch (error) {
+      console.error(error);
+    }
+    return false;
+  }
+
   return {
     contractSchemaQuery,
     contractAbiQuery,
@@ -147,5 +212,8 @@ export function useContractQueries() {
     isDeploying,
     isDeployed,
     address,
+
+    callReadMethod,
+    callWriteMethod,
   };
 }
