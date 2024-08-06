@@ -155,7 +155,7 @@ const tryInitValues = () => {
         :step="1"
         :invalid="newValidatorData.stake < 1"
         v-model="newValidatorData.stake"
-        :forceInteger="false"
+        :forceInteger="true"
         required
         testId="input-stake"
       />
