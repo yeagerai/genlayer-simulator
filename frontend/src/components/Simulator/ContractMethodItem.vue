@@ -3,14 +3,13 @@ import type { ContractMethod } from '@/types';
 import { ref } from 'vue';
 import { Collapse } from 'vue-collapsed';
 import { InputTypesMap } from '@/utils';
-import { useContractsStore, useAccountsStore } from '@/stores';
+import { useAccountsStore } from '@/stores';
 import { useContractQueries } from '@/hooks/useContractQueries';
 import { notify } from '@kyvg/vue3-notification';
 import { ChevronDownIcon } from '@heroicons/vue/16/solid';
 
 const { callWriteMethod, callReadMethod } = useContractQueries();
 const accountsStore = useAccountsStore();
-const contractsStore = useContractsStore();
 
 const props = defineProps<{
   methodName: string;
@@ -20,29 +19,6 @@ const props = defineProps<{
 
 const isExpanded = ref(false);
 const inputs = ref<{ [k: string]: any }>({});
-
-// const handleCallContractMethod = async ({
-//   method,
-//   params,
-// }: {
-//   method: string;
-//   params: any[];
-// }) => {
-//   const result = await contractsStore.callContractMethod({
-//     userAccount: accountsStore.currentUserAddress || '',
-//     localContractId: contractsStore.deployedContract?.contractId || '',
-//     method: `${method}`,
-//     params,
-//   });
-//   if (!result) {
-//     notify({
-//       title: 'Error',
-//       text: 'Error calling contract method',
-//       type: 'error',
-//     });
-//   }
-// };
-
 const responseMessage = ref('');
 
 const handleCallReadMethod = async () => {

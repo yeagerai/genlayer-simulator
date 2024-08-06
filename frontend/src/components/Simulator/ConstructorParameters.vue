@@ -184,19 +184,17 @@ const hasConstructorInputs = computed(
         class="flex flex-col justify-start gap-1"
         :class="isDeploying && 'pointer-events-none opacity-60'"
       >
-        <div
-          v-if="mode === 'form'"
-          v-for="(inputType, input) in constructorInputs"
-          :key="input"
-        >
-          <component
-            :is="InputTypesMap[inputType]"
-            v-model="inputParams[input]"
-            :name="input"
-            :placeholder="input"
-            :label="input"
-          />
-        </div>
+        <template v-if="mode === 'form'">
+          <div v-for="(inputType, input) in constructorInputs" :key="input">
+            <component
+              :is="InputTypesMap[inputType]"
+              v-model="inputParams[input]"
+              :name="input"
+              :placeholder="input"
+              :label="input"
+            />
+          </div>
+        </template>
 
         <TextAreaInput
           v-if="mode === 'json'"

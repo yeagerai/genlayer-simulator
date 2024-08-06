@@ -2,6 +2,8 @@ import type { ContractFile, DeployedContract } from '@/types';
 import { db, getContractFileName } from '@/utils';
 import { type PiniaPluginContext } from 'pinia';
 
+const ENABLE_LOGS = false;
+
 /**
  * Upserts a deployed contract into the database.
  *
@@ -33,9 +35,12 @@ const upsertDeployedContract = async (
  */
 export function persistStorePlugin(context: PiniaPluginContext): void {
   context.store.$onAction(({ store, name, args, after }) => {
-    // console.log(
-    //   `Called Action "${name}" with params [${JSON.stringify(args)}].`,
-    // );
+    if (ENABLE_LOGS) {
+      console.log(
+        `Called Action "${name}" with params [${JSON.stringify(args)}].`,
+      );
+    }
+
     after(async (result) => {
       if (store.$id === 'contractsStore') {
         switch (name) {
@@ -132,7 +137,10 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
             break;
         }
       }
-      // console.log('PersistStorePlugin:::', { name, args, result });
+
+      if (ENABLE_LOGS) {
+        console.log('PersistStorePlugin:::', { name, args, result });
+      }
     });
   });
 }

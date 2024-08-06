@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { useContractQueries } from '@/hooks/useContractQueries';
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import PageSection from '@/components/Simulator/PageSection.vue';
-import { ArrowUpTrayIcon } from '@heroicons/vue/16/solid';
-import { InputTypesMap } from '@/utils';
 import { type ContractMethod } from '@/types';
 import ContractMethodItem from '@/components/Simulator/ContractMethodItem.vue';
 import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';

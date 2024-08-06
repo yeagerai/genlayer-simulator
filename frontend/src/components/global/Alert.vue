@@ -6,7 +6,7 @@ import {
   ExclamationTriangleIcon,
 } from '@heroicons/vue/20/solid';
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
     info?: boolean;
     success?: boolean;

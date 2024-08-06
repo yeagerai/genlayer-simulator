@@ -4,13 +4,8 @@ import ContractReadMethods from '@/components/Simulator/ContractReadMethods.vue'
 import ContractWriteMethods from '@/components/Simulator/ContractWriteMethods.vue';
 import TransactionsList from '@/components/Simulator/TransactionsList.vue';
 import { useContractQueries } from '@/hooks/useContractQueries';
-import PageSection from '@/components/Simulator/PageSection.vue';
-import { CheckCircleIcon } from '@heroicons/vue/24/outline';
-import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
 import MainTitle from '@/components/Simulator/MainTitle.vue';
 import { ref, watch } from 'vue';
-import { PlusIcon } from '@heroicons/vue/16/solid';
-import { shortenAddress } from '@/utils';
 import { useContractsStore } from '@/stores';
 import ContractInfo from '@/components/Simulator/ContractInfo.vue';
 

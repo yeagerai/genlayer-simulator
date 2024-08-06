@@ -1,8 +1,7 @@
-import { watch, ref, onUnmounted, type Ref, inject, computed } from 'vue';
+import { watch, ref, inject, computed } from 'vue';
 import type { IJsonRpcService } from '@/services';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
-import { deployContract } from 'viem/actions';
-import type { ContractFile, DeployedContract, TransactionItem } from '@/types';
+import type { TransactionItem } from '@/types';
 import {
   useContractsStore,
   useTransactionsStore,
