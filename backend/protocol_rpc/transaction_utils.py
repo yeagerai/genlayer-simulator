@@ -24,12 +24,6 @@ def decode_signed_transaction_and_verify(raw_tx):
         return None
 
 
-def verify_transaction_signature(raw_tx):
-    decoded_tx = decode_signed_transaction_and_verify(raw_tx)
-
-    return True if decoded_tx is None else False
-
-
 def parse_transaction(raw_tx):
     txn_bytes = HexBytes(raw_tx)
     if len(txn_bytes) > 0 and txn_bytes[0] <= 0x7F:
@@ -78,11 +72,12 @@ def decode_data_field(input: HexBytes) -> str:
 def decode_method_call_data(data: str) -> str:
     data_bytes = HexBytes(data)
     data_decoded = rlp.decode(data_bytes, MethodCallTransactionPayload)
-    
+
     return {
         "function_name": decode_data_field(data_decoded["function_name"]),
         "function_args": decode_data_field(data_decoded["function_args"]),
     }
+
 
 def decode_deployment_data(data: str) -> str:
     data_bytes = HexBytes(data)
