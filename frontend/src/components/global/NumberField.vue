@@ -1,22 +1,25 @@
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   name: string;
   min?: number;
   step?: number;
   testId?: string;
   invalid?: boolean;
-  isInteger?: boolean;
+  forceInteger?: boolean;
 }>();
 
 const model = defineModel();
 
 const handleChange = (e: Event) => {
-  const target = e.target as HTMLInputElement;
-  model.value = parseInt(target.value, 10);
+  if (props.forceInteger) {
+    const target = e.target as HTMLInputElement;
+    model.value = parseInt(target.value, 10);
+  }
 };
 
-const forceNumericInput = (event: KeyboardEvent) => {
+const handleKeydown = (event: KeyboardEvent) => {
   if (
+    props.forceInteger &&
     !(event.ctrlKey || event.metaKey) &&
     event.key.length === 1 &&
     isNaN(Number(event.key))
@@ -41,6 +44,6 @@ const forceNumericInput = (event: KeyboardEvent) => {
         'ring-gray-400/60 hover:ring-gray-400 dark:ring-zinc-500/60 dark:hover:ring-zinc-500',
     ]"
     @input="handleChange"
-    @keydown="forceNumericInput"
+    @keydown="handleKeydown"
   />
 </template>
