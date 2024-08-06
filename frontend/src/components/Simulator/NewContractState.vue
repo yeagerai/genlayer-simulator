@@ -10,6 +10,7 @@ import { CheckCircleIcon } from '@heroicons/vue/24/outline';
 import EmptyListPlaceholder from './EmptyListPlaceholder.vue';
 import { ref, watch } from 'vue';
 import { PlusIcon } from '@heroicons/vue/16/solid';
+import { shortenAddress } from '@/utils';
 // TODO: add account select
 // TODO: constructor form
 // TODO: methods form
@@ -49,19 +50,19 @@ watch(
       <div class="opacity-50">{{ contract?.name }}</div></template
     >
 
-    <div
-      v-if="isDeployed"
-      class="flex flex-row items-center gap-1 truncate text-xs"
-    >
-      <CheckCircleIcon class="h-4 w-4 shrink-0 text-green-400" />
+    <div v-if="isDeployed" class="flex flex-row items-center gap-1 text-xs">
+      <CheckCircleIcon class="h-4 w-4 shrink-0 text-emerald-400" />
+
       Deployed at
-      <div class="truncate">
-        {{ address }}
-        <ToolTip :text="address" />
+
+      <div class="font-semibold">
+        {{ shortenAddress(address) }}
       </div>
+
+      <CopyTextButton :text="address" />
     </div>
 
-    <EmptyListPlaceholder v-else> Not deployed yet. </EmptyListPlaceholder>
+    <EmptyListPlaceholder v-else>Not deployed yet.</EmptyListPlaceholder>
 
     <Btn
       secondary

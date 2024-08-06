@@ -33,6 +33,7 @@
     "dexie": "^4.0.4",
     "hash-sum": "^2.0.0",
     "jump.js": "^1.0.2",
+    "lucide-vue-next": "^0.424.0",
     "monaco-editor": "^0.47.0",
     "path": "^0.12.7",
     "pinia": "^2.1.7",
