@@ -31,7 +31,6 @@ const constructorInputs = computed<{ [k: string]: string }>(
 watch(
   () => constructorInputs.value,
   (newVal) => {
-    console.log(watch);
     inputParams.value = {
       ...inputParams.value,
       ...constructorInputs.value,
@@ -155,10 +154,19 @@ const hasConstructorInputs = computed(
 
 <template>
   <PageSection>
-    <template #title>Deploy</template>
+    <template #title
+      >Constructor Inputs
+      <Loader v-if="isRefetching" :size="14"/>
+    </template>
 
     <template #actions>
-      <Loader v-if="isRefetching" />
+      <GhostBtn
+        v-if="hasConstructorInputs"
+        @click="toggleMode"
+        class="p-1 text-xs"
+      >
+        {{ mode === 'json' ? 'Inputs' : 'JSON' }}
+      </GhostBtn>
     </template>
 
     <div
@@ -174,26 +182,6 @@ const hasConstructorInputs = computed(
     </Alert>
 
     <template v-else-if="data">
-      <!-- <pre>
-        {{ constructorInputs }}
-      </pre>
-      <pre>
-        {{ inputParams }}
-      </pre> -->
-      <!-- {{ isValidDefaultState }} -->
-      <!-- {{ inputParams }} -->
-      <div class="flex flex-row items-center justify-between gap-1">
-        Constructor inputs
-
-        <GhostBtn
-          v-if="hasConstructorInputs"
-          @click="toggleMode"
-          class="p-1 text-xs"
-        >
-          {{ mode === 'json' ? 'Inputs' : 'JSON' }}
-        </GhostBtn>
-      </div>
-
       <EmptyListPlaceholder v-if="!hasConstructorInputs">
         No constructor inputs.
       </EmptyListPlaceholder>
@@ -238,10 +226,6 @@ const hasConstructorInputs = computed(
         :disabled="!isValidDefaultState"
       >
         <template v-if="isDeploying"> Deploying... </template>
-        <template v-else-if="isDeployed">
-          <ArrowUpTrayIcon class="h-4 w-4" />
-          Re-deploy
-        </template>
         <template v-else>
           <ArrowUpTrayIcon class="h-4 w-4" />
           Deploy
