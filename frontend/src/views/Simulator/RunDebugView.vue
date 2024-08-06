@@ -17,6 +17,7 @@ import type { ContractMethod } from '@/types';
 import { InputTypesMap } from '@/utils';
 import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
 import NewContractState from '@/components/Simulator/NewContractState.vue';
+import MainTitle from '@/components/Simulator/MainTitle.vue';
 
 const contractsStore = useContractsStore();
 const accountsStore = useAccountsStore();
@@ -133,63 +134,63 @@ const handleDeployContract = async ({
 //   },
 // );
 
-onMounted(async () => {
-  // await contractsStore.getConstructorInputs();
-  // if (contractsStore.deployedContract) {
-  //   contractsStore.getCurrentContractAbi();
-  // }
-  // TODO: re-implement this smh
-  deploymentSubscription = contractsStore.$onAction(
-    ({ name, store, args, after }) => {
-      if (name === 'addDeployedContract' && store.$id === contractsStore.$id) {
-        after(() => {
-          notify({
-            title: 'Contract deployed',
-            text: `to ${args[0]?.address}`,
-            type: 'success',
-          });
-        });
-      }
-    },
-  );
-});
+// onMounted(async () => {
+//   // await contractsStore.getConstructorInputs();
+//   // if (contractsStore.deployedContract) {
+//   //   contractsStore.getCurrentContractAbi();
+//   // }
+//   // TODO: re-implement this smh
+//   deploymentSubscription = contractsStore.$onAction(
+//     ({ name, store, args, after }) => {
+//       if (name === 'addDeployedContract' && store.$id === contractsStore.$id) {
+//         after(() => {
+//           notify({
+//             title: 'Contract deployed',
+//             text: `to ${args[0]?.address}`,
+//             type: 'success',
+//           });
+//         });
+//       }
+//     },
+//   );
+// });
 
-onUnmounted(() => {
-  if (deploymentSubscription) {
-    deploymentSubscription();
-  }
-});
+// onUnmounted(() => {
+//   if (deploymentSubscription) {
+//     deploymentSubscription();
+//   }
+// });
 
-const readMethods = computed(() => {
-  return Object.entries(
-    contractsStore.currentDeployedContractAbi?.methods || {},
-  )
-    .filter((m) => m[0].startsWith('get_'))
-    .map(([methodName, method]) => ({
-      methodName,
-      method,
-    }));
-});
+// const readMethods = computed(() => {
+//   return Object.entries(
+//     contractsStore.currentDeployedContractAbi?.methods || {},
+//   )
+//     .filter((m) => m[0].startsWith('get_'))
+//     .map(([methodName, method]) => ({
+//       methodName,
+//       method,
+//     }));
+// });
 
-const writeMethods = computed(() => {
-  return Object.entries(
-    contractsStore.currentDeployedContractAbi?.methods || {},
-  )
-    .filter((m) => !m[0].startsWith('_') && !m[0].startsWith('get_'))
-    .map(([methodName, method]) => ({
-      methodName,
-      method,
-    }));
-});
+// const writeMethods = computed(() => {
+//   return Object.entries(
+//     contractsStore.currentDeployedContractAbi?.methods || {},
+//   )
+//     .filter((m) => !m[0].startsWith('_') && !m[0].startsWith('get_'))
+//     .map(([methodName, method]) => ({
+//       methodName,
+//       method,
+//     }));
+// });
 </script>
 
 <template>
   <div class="flex max-h-[93vh] w-full flex-col overflow-y-auto">
-    <div class="flex w-full flex-col p-2">
-      <h3 class="text-xl">Run and Debug</h3>
-    </div>
+    <MainTitle>Run and Debug</MainTitle>
 
-    <NewContractState v-if="contractsStore.currentContract && contractsStore.currentContractId" />
+    <NewContractState
+      v-if="contractsStore.currentContract && contractsStore.currentContractId"
+    />
 
     <div
       class="flex flex-col overflow-y-auto"
