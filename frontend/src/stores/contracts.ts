@@ -162,6 +162,9 @@ export const useContractsStore = defineStore('contractsStore', () => {
   const contractsOrderedByName = computed(() => {
     return contracts.value.slice().sort((a, b) => a.name.localeCompare(b.name));
   });
+  const contractsOrderedByName = computed(() => {
+    return contracts.value.slice().sort((a, b) => a.name.localeCompare(b.name));
+  });
 
   return {
     // state
