@@ -5,7 +5,6 @@ import PageSection from '@/components/Simulator/PageSection.vue';
 import { ArrowUpTrayIcon } from '@heroicons/vue/16/solid';
 import { InputTypesMap } from '@/utils';
 import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
-import { Collapse } from 'vue-collapsed';
 import GhostBtn from '../global/GhostBtn.vue';
 import { notify } from '@kyvg/vue3-notification';
 import TextAreaInput from '@/components/global/inputs/TextAreaInput.vue';

@@ -110,7 +110,7 @@ const clearInputs = () => {
       {{ methodName }}
 
       <ChevronDownIcon
-        class="h-4 w-4 opacity-70 transition-all"
+        class="h-4 w-4 opacity-70 transition-all duration-300"
         :class="isExpanded && 'rotate-180'"
       />
     </button>

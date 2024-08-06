@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { withDefaults, computed } from 'vue';
-
 withDefaults(
   defineProps<{
     size?: number;
