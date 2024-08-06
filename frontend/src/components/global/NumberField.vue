@@ -14,6 +14,16 @@ const handleChange = (e: Event) => {
   const target = e.target as HTMLInputElement;
   model.value = parseInt(target.value, 10);
 };
+
+const forceNumericInput = (event: KeyboardEvent) => {
+  if (
+    !(event.ctrlKey || event.metaKey) &&
+    event.key.length === 1 &&
+    isNaN(Number(event.key))
+  ) {
+    event.preventDefault();
+  }
+};
 </script>
 
 <template>
@@ -31,5 +41,6 @@ const handleChange = (e: Event) => {
         'ring-gray-400/60 hover:ring-gray-400 dark:ring-zinc-500/60 dark:hover:ring-zinc-500',
     ]"
     @input="handleChange"
+    @keydown="forceNumericInput"
   />
 </template>
