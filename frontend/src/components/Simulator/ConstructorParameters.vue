@@ -1,35 +1,78 @@
 <script setup lang="ts">
-// TODO: remove file
-
-import { ref, watch, onMounted } from 'vue';
-import { InputTypesMap } from '@/utils';
-import { notify } from '@kyvg/vue3-notification';
-import { useUIStore } from '@/stores';
+import { useContractQueries } from '@/hooks/useContractQueries';
+import { ref, computed, watch, onMounted } from 'vue';
+import PageSection from '@/components/Simulator/PageSection.vue';
 import { ArrowUpTrayIcon } from '@heroicons/vue/16/solid';
-import { ExclamationTriangleIcon } from '@heroicons/vue/24/solid';
+import { InputTypesMap } from '@/utils';
+import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
+import GhostBtn from '../global/GhostBtn.vue';
+import { notify } from '@kyvg/vue3-notification';
+import TextAreaInput from '@/components/global/inputs/TextAreaInput.vue';
+import FieldError from '@/components/global/fields/FieldError.vue';
 
-interface Props {
-  inputs: { [k: string]: string };
-  loading: boolean;
-  error?: Error;
-  deploying: boolean;
-}
+const { contractSchemaQuery, deployContract, isDeploying } =
+  useContractQueries();
 
-// TODO: check if we need to update again also we have an issue with conversion
-// between `bool` in Python with value `True` vs JSON boolean with value `true`
+const { data, error, isPending, isRefetching, isError } = contractSchemaQuery;
+const inputParams = ref<{ [k: string]: any }>({});
 
-const mapInputs = (inputs: { [k: string]: string }) =>
-  Object.keys(inputs || {})
-    .map((key) => ({ name: key, type: InputTypesMap[key], value: inputs[key] }))
-    .reduce((prev, curr) => {
-      if (typeof curr.value === 'boolean') {
-        prev = { ...prev, [curr.name]: curr.value ? 'True' : 'False' };
-      } else {
-        prev = { ...prev, [curr.name]: curr.value };
-      }
+const constructorInputs = computed<{ [k: string]: string }>(
+  () => data.value?.methods['__init__']?.inputs,
+);
 
-      return prev;
-    }, {});
+watch(
+  () => constructorInputs.value,
+  () => {
+    inputParams.value = {
+      ...inputParams.value,
+      ...constructorInputs.value,
+    };
+  },
+);
+
+const isValidDefaultState = computed(() => {
+  if (mode.value === 'json') {
+    // Try to parse JSON
+    try {
+      JSON.parse(jsonParams.value || '{}');
+      return true;
+    } catch (error) {
+      return false;
+    }
+  } else {
+    // TODO: review this and test
+    const l1 = Object.keys(constructorInputs.value).length;
+    const l2 = Object.keys(inputParams.value).length;
+    console.log(l1, l2);
+    return l1 === l2;
+  }
+});
+
+const jsonParams = ref('{}');
+const mode = ref<'json' | 'form'>('form');
+
+// TODO: review this
+const handleDeployContract = () => {
+  let constructorParams = {};
+
+  if (mode.value === 'json') {
+    try {
+      const json = JSON.parse(jsonParams.value || '{}');
+      constructorParams = mapInputs(json);
+    } catch (error) {
+      console.error(error);
+      notify({
+        title: 'Error',
+        text: 'Please provide valid JSON',
+        type: 'error',
+      });
+    }
+  } else {
+    constructorParams = mapInputs(inputParams.value);
+  }
+
+  deployContract({ constructorParams });
+};
 
 const setInputParams = (inputs: { [k: string]: string }) => {
   inputParams.value = Object.keys(inputs)
@@ -60,31 +103,6 @@ const setInputParams = (inputs: { [k: string]: string }) => {
   jsonParams.value = JSON.stringify(inputParams.value || {}, null, 2);
 };
 
-const jsonParams = ref('{}');
-const inputParams = ref<{ [k: string]: any }>({});
-const props = defineProps<Props>();
-const emit = defineEmits(['deployContract']);
-const mode = ref<'json' | 'form'>('form');
-const uiStore = useUIStore();
-const handleDeployContract = () => {
-  if (mode.value === 'json') {
-    try {
-      const json = JSON.parse(jsonParams.value || '{}');
-      const params = mapInputs(json);
-      emit('deployContract', { params });
-    } catch (error) {
-      console.error(error);
-      notify({
-        title: 'Error',
-        text: 'You should provide a valid json',
-        type: 'error',
-      });
-    }
-  } else {
-    const params = mapInputs(inputParams.value || {});
-    emit('deployContract', { params });
-  }
-};
 const toggleMode = () => {
   mode.value = mode.value === 'json' ? 'form' : 'json';
   if (mode.value === 'json') {
@@ -94,123 +112,119 @@ const toggleMode = () => {
   }
 };
 
+const mapInputs = (inputs: { [k: string]: string }) =>
+  Object.keys(inputs || {})
+    .map((key) => ({ name: key, type: InputTypesMap[key], value: inputs[key] }))
+    .reduce((prev, curr) => {
+      if (typeof curr.value === 'boolean') {
+        prev = { ...prev, [curr.name]: curr.value ? 'True' : 'False' };
+      } else {
+        prev = { ...prev, [curr.name]: curr.value };
+      }
+
+      return prev;
+    }, {});
+
 watch(
-  () => props.inputs,
+  () => constructorInputs.value,
   (newValue) => {
     setInputParams(newValue || {});
   },
 );
 
 onMounted(() => {
-  if (props.inputs) {
-    setInputParams(props.inputs);
+  if (constructorInputs.value) {
+    setInputParams(constructorInputs.value);
   }
 });
+
+const hasConstructorInputs = computed(
+  () =>
+    constructorInputs.value && Object.keys(constructorInputs.value).length > 0,
+);
 </script>
 
 <template>
-  <div v-if="props.error">
-    <div class="my-4 flex flex-col p-2">
-      <div class="flex flex-col">
-        <div class="flex flex-col justify-between align-middle">
-          <div class="flex h-full align-middle text-xs">
-            Constructor Parameters
-          </div>
-          <div
-            class="dark:color-neutral-100 flex flex-col items-center p-5 text-xs text-red-500"
-          >
-            <ExclamationTriangleIcon class="h-6 w-6" /> Error Loading
-            Constructor Parameters please refresh the page and try again.
-          </div>
-        </div>
-      </div>
+  <PageSection>
+    <template #title
+      >Constructor Inputs
+      <Loader v-if="isRefetching" :size="14" />
+    </template>
+
+    <template #actions>
+      <GhostBtn
+        v-if="hasConstructorInputs"
+        @click="toggleMode"
+        class="p-1 text-xs"
+      >
+        {{ mode === 'json' ? 'Inputs' : 'JSON' }}
+      </GhostBtn>
+    </template>
+
+    <div
+      v-if="isPending"
+      class="flex flex-row items-center justify-center gap-2 p-1"
+    >
+      <Loader />
+      Loading...
     </div>
-  </div>
-  <div v-else-if="props.loading">
-    <div class="my-4 flex flex-col p-2">
-      <div class="flex flex-col">
-        <div class="flex flex-col justify-between align-middle">
-          <div class="flex h-full align-middle text-xs">
-            Constructor Parameters
-          </div>
-          <div class="flex flex-col items-center p-5">
-            <VueSpinnerOval
-              size="30"
-              :color="uiStore.mode === 'light' ? '#1a3851' : 'white'"
-              width="50"
-            />
-            Loading...
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div v-else>
-    <div class="my-4 flex flex-col p-2">
-      <div class="flex flex-col">
-        <div class="flex justify-between align-middle">
-          <div class="flex h-full align-middle text-xs">
-            Constructor Parameters
-          </div>
-          <!-- TODO: re-implement json mode -->
-          <button
-            class="texm-xs rounded bg-primary px-2 text-white hover:opacity-80"
-            @click="toggleMode"
-          >
-            {{ mode === 'json' ? 'Inputs' : 'JSON' }}
-            <ToolTip
-              :text="mode === 'json' ? 'See the inputs' : 'Write raw JSON'"
-              :options="{ placement: 'top' }"
-            />
-          </button>
-        </div>
-        <p v-if="mode === 'json'" class="text-xs">
-          Please provide a JSON object with the constructor parameters.
-        </p>
-      </div>
-      <div class="mt-2 flex" v-if="mode === 'json'">
-        <textarea
-          rows="5"
-          class="w-full bg-slate-100 p-2 dark:dark:bg-zinc-700"
-          v-model="jsonParams"
-          clear-icon="ri-close-circle"
-          label="State"
-        />
-      </div>
-      <div class="mt-2 flex flex-col" v-else>
+
+    <Alert v-else-if="isError" error>
+      {{ error?.message }}
+    </Alert>
+
+    <template v-else-if="data">
+      <EmptyListPlaceholder v-if="!hasConstructorInputs">
+        No constructor inputs.
+      </EmptyListPlaceholder>
+
+      <!-- TODO: actual disabled states for fields -->
+      <div
+        v-else
+        class="flex flex-col justify-start gap-1"
+        :class="isDeploying && 'pointer-events-none opacity-60'"
+      >
         <div
-          class="flex items-center justify-between py-2"
-          v-for="(inputType, input) in props.inputs"
+          v-if="mode === 'form'"
+          v-for="(inputType, input) in constructorInputs"
           :key="input"
         >
-          <label :for="`${input}`" class="mr-2 text-xs">{{ input }}</label>
-          <input
+          <component
+            :is="InputTypesMap[inputType]"
             v-model="inputParams[input]"
-            :name="`${input}`"
-            :type="InputTypesMap[inputType]"
-            :placeholder="`${input}`"
-            class="bg-slate-100 p-2 dark:dark:bg-zinc-700"
-            label="Input"
+            :name="input"
+            :placeholder="input"
+            :label="input"
           />
         </div>
+
+        <TextAreaInput
+          v-if="mode === 'json'"
+          id="state"
+          name="state"
+          :rows="5"
+          :invalid="!isValidDefaultState"
+          class="w-full bg-slate-100 p-2 dark:dark:bg-zinc-700"
+          v-model="jsonParams"
+        />
+        <FieldError v-if="!isValidDefaultState"
+          >Please enter valid JSON.</FieldError
+        >
       </div>
-    </div>
-    <div class="flex w-full flex-col justify-center p-2">
+
       <Btn
         testId="btn-deploy-contract"
         @click="handleDeployContract"
-        :loading="deploying"
+        :loading="isDeploying"
+        :disabled="!isValidDefaultState"
       >
-        <ArrowUpTrayIcon class="h-4 w-4" />
-        {{ deploying ? 'Deploying...' : 'Deploy' }}
+        <template v-if="isDeploying"> Deploying... </template>
+        <template v-else>
+          <ArrowUpTrayIcon class="h-4 w-4" />
+          Deploy
+        </template>
       </Btn>
-    </div>
-  </div>
+      <ToolTip v-if="!isValidDefaultState" text="Provide default state" />
+    </template>
+  </PageSection>
 </template>
-
-<style>
-.editor {
-  width: 100% !important;
-  min-height: 20rem !important;
-}
-</style>

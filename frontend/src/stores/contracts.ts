@@ -1,10 +1,7 @@
-import type { IJsonRpcService } from '@/services';
-import type { ContractFile, DeployedContract, TransactionItem } from '@/types';
+import type { ContractFile, DeployedContract } from '@/types';
 import { db, getContractFileName, setupStores } from '@/utils';
 import { defineStore } from 'pinia';
-import { ref, inject, computed } from 'vue';
-import { useAccountsStore } from './accounts';
-import { useTransactionsStore } from './transactions';
+import { ref, computed } from 'vue';
 import { notify } from '@kyvg/vue3-notification';
 
 const getInitialOPenedFiles = (): string[] => {
@@ -14,9 +11,6 @@ const getInitialOPenedFiles = (): string[] => {
 };
 
 export const useContractsStore = defineStore('contractsStore', () => {
-  const $jsonRpc = inject<IJsonRpcService>('$jsonRpc'); // TODO: will be used in actions
-  const accountsStore = useAccountsStore();
-  const transactionsStore = useTransactionsStore();
   const contracts = ref<ContractFile[]>([]);
   const openedFiles = ref<string[]>(getInitialOPenedFiles());
 
@@ -24,7 +18,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
     localStorage.getItem('contractsStore.currentContractId') || '',
   );
   const deployedContracts = ref<DeployedContract[]>([]);
-  // const currentContractState = ref<Record<string, any>>({});
 
   const currentConstructorInputs = ref<{ [k: string]: string }>({});
   const currentErrorConstructorInputs = ref<Error>();
@@ -98,12 +91,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
     );
     const newItem = { contractId, address, defaultState };
     if (index === -1) deployedContracts.value.push(newItem);
-    else
-      deployedContracts.value.splice(
-        index,
-        1,
-        newItem,
-      );
+    else deployedContracts.value.splice(index, 1, newItem);
 
     notify({
       title: 'Contract deployed',
@@ -122,7 +110,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
     currentContractId.value = id || '';
   }
 
-  // TODO: update some stuff here?
   async function resetStorage(): Promise<void> {
     try {
       const idsToDelete = contracts.value
@@ -168,205 +155,10 @@ export const useContractsStore = defineStore('contractsStore', () => {
     }
   }
 
-  async function callContractMethod({
-    userAccount,
-    localContractId,
-    method,
-    params,
-  }: {
-    userAccount: string;
-    localContractId: string;
-    method: string;
-    params: any[];
-  }) {
-    try {
-      const contract = deployedContracts.value.find(
-        (c) => c.contractId === localContractId,
-      );
-      const result = await $jsonRpc?.callContractFunction({
-        userAccount,
-        contractAddress: contract?.address || '',
-        method,
-        params,
-      });
-
-      if (result?.status === 'success') {
-        transactionsStore.addTransaction({
-          contractAddress: contract?.address || '',
-          localContractId: contract?.contractId || '',
-          txId: (result?.data as any).transaction_id,
-          type: 'method',
-          status: 'PENDING',
-          data: {},
-        });
-
-        return true;
-      }
-    } catch (error) {
-      console.error(error);
-    }
-    return false;
-  }
-
-  // TODO: should this even be in the store?
-  async function getContractState(
-    contractAddress: string,
-    method: string,
-    methodArguments: string[],
-  ) {
-    try {
-      console.log('getContractState', contractAddress, method, methodArguments);
-      const result = await $jsonRpc?.getContractState({
-        contractAddress,
-        method,
-        methodArguments,
-      });
-
-      if (result?.status === 'error') {
-        throw new Error(result.message);
-      }
-      console.log('result', result);
-      // currentContractState.value = {
-      //   ...currentContractState.value,
-      //   [method]: result?.data,
-      // };
-
-      return result?.data;
-    } catch (error) {
-      console.error(error);
-      throw new Error('Error getting the contract state');
-    }
-  }
-
-  async function deployContract({
-    constructorParams,
-  }: {
-    constructorParams: { [k: string]: string };
-  }) {
-    if (currentContract.value) {
-      if (
-        Object.keys({ ...currentConstructorInputs.value }).length !==
-        Object.keys(constructorParams).length
-      ) {
-        throw new Error('You should provide a valid default state');
-      } else {
-        // Getting the ABI to check the class name
-        let contractSchema = null;
-        loadingConstructorInputs.value = true;
-        try {
-          const result = await $jsonRpc?.getContractSchema({
-            code: currentContract.value.content,
-          });
-
-          contractSchema = result?.data;
-          loadingConstructorInputs.value = false;
-          currentErrorConstructorInputs.value = undefined;
-        } catch (error) {
-          console.error(error);
-          loadingConstructorInputs.value = false;
-          currentErrorConstructorInputs.value = error as Error;
-
-          throw new Error('XX Error getting the contract schema');
-        }
-
-        if (contractSchema) {
-          // Deploy the contract
-          deployingContract.value = true;
-          try {
-            const constructorParamsAsString = JSON.stringify(constructorParams);
-            const result = await $jsonRpc?.deployContract({
-              userAccount: accountsStore.currentUserAddress || '',
-              className: contractSchema.class,
-              code: currentContract.value.content,
-              constructorParams: constructorParamsAsString,
-            });
-            deployingContract.value = false;
-            if (result?.status === 'success') {
-              deployedContracts.value = deployedContracts.value.filter(
-                (c) => c.contractId !== currentContract.value?.id,
-              );
-              const tx: TransactionItem = {
-                contractAddress: result?.data.contract_address,
-                localContractId: currentContract.value.id,
-                txId: result?.data.transaction_id,
-                type: 'deploy',
-                status: 'PENDING',
-                data: {},
-              };
-
-              transactionsStore.addTransaction(tx);
-
-              return tx;
-            } else {
-              throw new Error(
-                typeof result?.message === 'string'
-                  ? result.message
-                  : 'Error Deploying the contract',
-              );
-            }
-          } catch (error) {
-            console.error(error);
-            throw new Error('Error Deploying the contract');
-          }
-        }
-      }
-    }
-  }
-
-  async function getCurrentContractAbi() {
-    try {
-      const result = await $jsonRpc?.getDeployedContractSchema({
-        address: deployedContract.value?.address || '',
-      });
-      currentDeployedContractAbi.value = result?.data;
-    } catch (error) {
-      console.error(error);
-      if (deployedContract.value) {
-        removeDeployedContract(deployedContract.value?.contractId || '');
-      }
-    }
-  }
-
-  async function getConstructorInputs() {
-    {
-      if (currentContract.value) {
-        loadingConstructorInputs.value = true;
-        try {
-          const result = await $jsonRpc?.getContractSchema({
-            code: currentContract.value.content,
-          });
-          if (!currentConstructorInputs.value) {
-            currentConstructorInputs.value =
-              result?.data?.methods['__init__']?.inputs;
-          } else {
-            //compare existing inputs with new ones
-            if (
-              JSON.stringify(currentConstructorInputs.value) !==
-              JSON.stringify(result?.data?.methods['__init__']?.inputs)
-            ) {
-              currentConstructorInputs.value =
-                result?.data?.methods['__init__']?.inputs;
-            }
-          }
-          currentErrorConstructorInputs.value = undefined;
-        } catch (error) {
-          console.error(error);
-          currentErrorConstructorInputs.value = error as Error;
-        } finally {
-          loadingConstructorInputs.value = false;
-        }
-      }
-    }
-  }
-
   const currentContract = computed(() => {
     return contracts.value.find((c) => c.id === currentContractId.value);
   });
-  const deployedContract = computed(() => {
-    return deployedContracts.value.find(
-      (c) => c.contractId === currentContractId.value,
-    );
-  });
+
   const contractsOrderedByName = computed(() => {
     return contracts.value.slice().sort((a, b) => a.name.localeCompare(b.name));
   });
@@ -377,7 +169,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
     openedFiles,
     currentContractId,
     deployedContracts,
-    // currentContractState,
     currentConstructorInputs,
     currentErrorConstructorInputs,
     currentDeployedContractAbi,
@@ -385,7 +176,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
     deployingContract,
 
     //getters
-    deployedContract,
     currentContract,
     contractsOrderedByName,
 
@@ -399,10 +189,5 @@ export const useContractsStore = defineStore('contractsStore', () => {
     removeDeployedContract,
     setCurrentContractId,
     resetStorage,
-    getCurrentContractAbi,
-    callContractMethod,
-    getContractState,
-    deployContract,
-    getConstructorInputs,
   };
 });

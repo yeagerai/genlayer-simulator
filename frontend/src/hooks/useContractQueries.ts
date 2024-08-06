@@ -11,6 +11,7 @@ import {
 import { useDebounceFn } from '@vueuse/core';
 import { notify } from '@kyvg/vue3-notification';
 
+// TODO: review why we need this scoped here again
 const schema = ref<any>();
 
 export function useContractQueries() {
@@ -39,7 +40,6 @@ export function useContractQueries() {
   watch(
     () => contract.value?.content,
     () => {
-      console.log('changed');
       queryClient.invalidateQueries({
         queryKey: ['schema', contract.value?.id],
       });
@@ -62,7 +62,6 @@ export function useContractQueries() {
       throw new Error('Error fetching contract schema');
     }
 
-    // TODO: review why we need this again
     schema.value = result?.data;
 
     return schema.value;

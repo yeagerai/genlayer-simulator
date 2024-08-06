@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import ContractDeployment from '@/components/Simulator/ContractDeployment.vue';
+import ConstructorParameters from '@/components/Simulator/ConstructorParameters.vue';
 import ContractReadMethods from '@/components/Simulator/ContractReadMethods.vue';
 import ContractWriteMethods from '@/components/Simulator/ContractWriteMethods.vue';
 import TransactionsList from '@/components/Simulator/TransactionsList.vue';
-// import AccountSelect from '@/components/Simulator/AccountSelect.vue'; //
 import { useContractQueries } from '@/hooks/useContractQueries';
 import PageSection from './PageSection.vue';
 import { CheckCircleIcon } from '@heroicons/vue/24/outline';
@@ -11,23 +10,12 @@ import EmptyListPlaceholder from './EmptyListPlaceholder.vue';
 import { ref, watch } from 'vue';
 import { PlusIcon } from '@heroicons/vue/16/solid';
 import { shortenAddress } from '@/utils';
-// TODO: add account select
-// TODO: constructor form
-// TODO: methods form
 
+// TODO: add account select
 // FIXME: deployment should replace contract, not clear the store
 // FIXME: add notification for deployment start...
-const {
-  schema,
-  contractSchemaQuery,
-  deployContract,
-  contractAbiQuery,
-  // constructorInputs,
-  isDeployed,
-  isDeploying,
-  address,
-  contract,
-} = useContractQueries();
+
+const { isDeployed, address, contract } = useContractQueries();
 
 const showDeployment = ref(!isDeployed.value);
 
@@ -43,7 +31,6 @@ watch(
 </script>
 
 <template>
-  <!-- <AccountSelect /> -->
   <PageSection>
     <template #title
       >Contract
@@ -76,7 +63,7 @@ watch(
     </Btn>
   </PageSection>
 
-  <ContractDeployment v-if="showDeployment" />
+  <ConstructorParameters v-if="showDeployment" />
   <ContractReadMethods />
   <ContractWriteMethods />
   <TransactionsList />

@@ -8,18 +8,9 @@ import { type ContractMethod } from '@/types';
 import ContractMethodItem from '@/components/Simulator/ContractMethodItem.vue';
 import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
 
-const {
-  schema,
-  contractSchemaQuery,
-  deployContract,
-  contractAbiQuery,
-  // constructorInputs,
-  isDeployed,
-  isDeploying,
-  address,
-} = useContractQueries();
+const { contractAbiQuery } = useContractQueries();
 
-const { data, error, isLoading, isLoadingError } = contractAbiQuery;
+const { data, isLoading } = contractAbiQuery;
 
 const readMethods = computed(() => {
   return Object.entries(data.value.methods)
