@@ -5,9 +5,15 @@ defineProps<{
   step?: number;
   testId?: string;
   invalid?: boolean;
+  isInteger?: boolean;
 }>();
 
 const model = defineModel();
+
+const handleChange = (e: Event) => {
+  const target = e.target as HTMLInputElement;
+  model.value = parseInt(target.value, 10);
+};
 </script>
 
 <template>
@@ -24,5 +30,6 @@ const model = defineModel();
       !invalid &&
         'ring-gray-400/60 hover:ring-gray-400 dark:ring-zinc-500/60 dark:hover:ring-zinc-500',
     ]"
+    @input="handleChange"
   />
 </template>

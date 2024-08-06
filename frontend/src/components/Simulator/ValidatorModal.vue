@@ -159,7 +159,7 @@ const tryInitValues = () => {
         testId="input-stake"
       />
       <FieldError v-if="newValidatorData.stake < 1"
-        >Please enter a number greater than 0.</FieldError
+        >Please enter an integer greater than 0.</FieldError
       >
     </div>
 
