@@ -22,4 +22,36 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - run: semgrep scan --config auto
+      - id: semgrep_scan
+        run: semgrep scan --config auto --json > semgrep_results.json
+
+      - name: Upload Semgrep results
+        uses: actions/upload-artifact@v3
+        with:
+          name: semgrep-results
+          path: semgrep_results.json
+
+      - name: Create GitHub comment with Semgrep results
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const semgrepResults = fs.readFileSync('semgrep_results.json', 'utf8');
+            const results = JSON.parse(semgrepResults);
+            let commentBody = '';
+            results.results.forEach(result => {
+              commentBody += `### ${result.check_id}\n\n`;
+              commentBody += `**File:** \`${result.path}\`\n`;
+              commentBody += `**Line:** \`${result.start.line}\`\n`;
+              commentBody += `**Message:** ${result.extra.message}\n\n`;
+              commentBody += '---\n\n';
+            });
+            if (commentBody === '') {
+              commentBody = 'No issues found by Semgrep.';
+            }
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: commentBody
+            });
