@@ -31,10 +31,6 @@ To contribute to feature development or bug fixes. Check our [issue tracker](htt
 
 #### Setup Simulator manually
 
-##### Pre-commit
-
-We use pre-commit to run some checks before you commit your code. It should get installed by the next steps.
-
 ###### Frontend
 
 We run ESLint and Prettier on the frontend code. To install the dependencies, run:
@@ -88,7 +84,13 @@ $ docker compose up
      (.venv) $ $env:PYTHONPATH = (Get-Location).Path
      ```
 
-3. Execute the Demo
+3. Install [pre-commit](https://pre-commit.com) hooks (used for linting, testing, conventions)
+
+   ```sh
+   (.venv) $ pre-commit install
+   ```
+
+4. Execute the Demo
 
    ```sh
    (.venv) $ python scripts/debug_simulator.py
