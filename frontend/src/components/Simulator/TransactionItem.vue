@@ -18,7 +18,7 @@ const isDetailsModalOpen = ref(false);
     class="flex cursor-pointer items-center justify-between rounded p-0.5 pl-1 hover:bg-gray-100 dark:hover:bg-zinc-700"
     @click="isDetailsModalOpen = true"
   >
-    <div class="font-medium text-sm">#{{ transaction.txId }}</div>
+    <div class="font-medium text-xs">#{{ transaction.txId }}</div>
 
     <div class="flex items-center justify-between gap-2 p-1">
       <Loader :size="15" v-if="transaction.status !== 'FINALIZED'" />
