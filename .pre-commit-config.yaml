@@ -7,6 +7,8 @@ repos:
       - id: check-json
       - id: check-yaml
       - id: check-merge-conflict
+      - id: no-commit-to-branch
+        args: ["--branch", "main", "--branch", "staging"]
   - repo: local
     hooks:
       - id: backend-unit-pytest
@@ -37,3 +39,9 @@ repos:
         entry: sh -c "cd frontend && npm run format"
         language: system
         files: frontend
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.4.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: []
