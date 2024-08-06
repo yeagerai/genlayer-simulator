@@ -13,17 +13,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        fetch-depth: 0
 
-      - name: Sonarless Scan
-        uses: gitricko/sonarless@v1.2
-        # with:
-        #   sonar-source-path: 'src'
-        #   sonar-metrics-path: './sonar-mymetrics.json'
-
-      # Adjust Sonar metrics to minimum acceptable vulnerability count:
-      # - name: Check Sonar Metrics - No Vulnerabilities
-      #   run: |
-      #     echo "Checking for any vulnerabilities in Sonar Metrics JSON"
-      #     VULN=$(cat ./sonar-mymetrics.json | jq -r '.component.measures[] | select(.metric == "vulnerabilities").value')
-      #     echo "# of vulnerabilities = ${VULN}"
-      #     [ ${VULN} -eq "0" ]
+    - name: SonarCloud Scan
+      uses: sonarsource/sonarcloud-github-action@v2.3.0 # Ex: v2.1.0, See the latest version at https://github.com/marketplace/actions/sonarcloud-scan
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
