@@ -156,7 +156,7 @@ const hasConstructorInputs = computed(
   <PageSection>
     <template #title
       >Constructor Inputs
-      <Loader v-if="isRefetching" :size="14"/>
+      <Loader v-if="isRefetching" :size="14" />
     </template>
 
     <template #actions>
@@ -186,16 +186,17 @@ const hasConstructorInputs = computed(
         No constructor inputs.
       </EmptyListPlaceholder>
 
-      <div v-else class="flex flex-col justify-start gap-1">
+      <!-- TODO: actual disabled states for fields -->
+      <div
+        v-else
+        class="flex flex-col justify-start gap-1"
+        :class="isDeploying && 'pointer-events-none opacity-60'"
+      >
         <div
           v-if="mode === 'form'"
           v-for="(inputType, input) in constructorInputs"
           :key="input"
         >
-          <!-- <FieldLabel :for="`${input}`">{{ input }}</FieldLabel> -->
-
-          <!-- <label :for="`${input}`" class="mr-2 text-xs">{{ input }}</label> -->
-          <!-- TODO: dedicated field components -->
           <component
             :is="InputTypesMap[inputType]"
             v-model="inputParams[input]"
