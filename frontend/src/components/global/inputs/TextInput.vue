@@ -6,11 +6,14 @@ const props = defineProps<{
   invalid?: boolean;
   placeholder?: string;
 }>();
+
+const model = defineModel();
 </script>
 
 <template>
   <input
     type="text"
+    v-model="model"
     v-bind="props"
     :data-testid="testId"
     class="input-style"

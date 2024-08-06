@@ -8,12 +8,15 @@ const props = defineProps<{
   invalid?: boolean;
   placeholder?: string;
 }>();
+
+const model = defineModel();
 </script>
 
 <template>
   <input
     type="number"
     v-bind="props"
+    v-model="model"
     :data-testid="testId"
     class="input-style"
     :class="[

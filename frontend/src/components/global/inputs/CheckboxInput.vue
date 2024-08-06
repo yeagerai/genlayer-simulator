@@ -5,10 +5,13 @@ const props = defineProps<{
   testId?: string;
   label?: string;
 }>();
+
+const model = defineModel();
 </script>
 
 <template>
   <input
+    v-model="model"
     v-bind="props"
     :data-testid="testId"
     type="checkbox"
