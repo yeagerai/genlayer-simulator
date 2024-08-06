@@ -5,9 +5,8 @@
 
 ### Window Two
 1. Set your virtual environment
-2. Go to migration folder: `cd backend/database_handler/migration`
-3. Execute `pip install -r requirements.txt`
-4. Change the `model`
+2. pip install `pip install -r backend/database_handler/requirements.txt`
+4. Update the "models" at `models.py` with your preferences
 5. Set your current working directory to `backend/database_handler`
 6. Run `alembic revision --autogenerate -m "migration name here"` to generate the migration file
 7. Modify the migration file if needed
