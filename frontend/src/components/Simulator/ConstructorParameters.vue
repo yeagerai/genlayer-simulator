@@ -1,4 +1,6 @@
 <script setup lang="ts">
+// TODO: remove file
+
 import { ref, watch, onMounted } from 'vue';
 import { InputTypesMap } from '@/utils';
 import { notify } from '@kyvg/vue3-notification';
@@ -57,6 +59,7 @@ const setInputParams = (inputs: { [k: string]: string }) => {
 
   jsonParams.value = JSON.stringify(inputParams.value || {}, null, 2);
 };
+
 const jsonParams = ref('{}');
 const inputParams = ref<{ [k: string]: any }>({});
 const props = defineProps<Props>();

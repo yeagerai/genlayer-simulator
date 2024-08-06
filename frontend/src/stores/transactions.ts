@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { computed, inject, ref } from 'vue';
 import type { IJsonRpcService } from '@/services';
 import type { TransactionItem } from '@/types';
+
 export const useTransactionsStore = defineStore('transactionsStore', () => {
   const $jsonRpc = inject<IJsonRpcService>('$jsonRpc');
   const pendingTransactions = computed<TransactionItem[]>(() =>
@@ -20,7 +21,7 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
 
   function updateTransaction(tx: any) {
     const index = transactions.value.findIndex((t) => t.txId === tx.id);
-    console.log(`Updating transaction ${tx.id} at index ${index}`);
+
     if (index !== -1) {
       const current = transactions.value[index];
       transactions.value.splice(index, 1, {

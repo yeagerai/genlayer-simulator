@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// TODO: remove file
 import { computed, ref, watch } from 'vue';
 import { InputTypesMap } from '@/utils';
 import { useAccountsStore } from '@/stores';
