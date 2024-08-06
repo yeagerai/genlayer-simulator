@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import JsonViewer from '@/components/JsonViewer/json-viewer.vue';
 import { useUIStore } from '@/stores';
 import type { TransactionItem } from '@/types';
+import TransactionStatusBadge from '@/components/Simulator/TransactionStatusBadge.vue';
 
 const uiStore = useUIStore();
 
@@ -18,16 +19,13 @@ const isDetailsModalOpen = ref(false);
     class="flex cursor-pointer items-center justify-between rounded p-0.5 pl-1 hover:bg-gray-100 dark:hover:bg-zinc-700"
     @click="isDetailsModalOpen = true"
   >
-    <div class="font-medium text-xs">#{{ transaction.txId }}</div>
+    <div class="text-xs font-medium">#{{ transaction.txId }}</div>
 
     <div class="flex items-center justify-between gap-2 p-1">
       <Loader :size="15" v-if="transaction.status !== 'FINALIZED'" />
-
-      <div
-        class="rounded-md bg-slate-400 px-1 py-0.5 text-xs font-semibold text-white dark:bg-gray-200 dark:text-slate-800"
-      >
+      <TransactionStatusBadge>
         {{ transaction.status }}
-      </div>
+      </TransactionStatusBadge>
     </div>
 
     <Modal :open="isDetailsModalOpen" @close="isDetailsModalOpen = false" wide>
@@ -36,7 +34,10 @@ const isDetailsModalOpen = ref(false);
       <div class="flex flex-col">
         <div class="mt-2 flex flex-col">
           <p class="text-md mb-1 font-semibold">
-            Status: {{ transaction.status }}
+            Status:
+            <TransactionStatusBadge>
+              {{ transaction.status }}
+            </TransactionStatusBadge>
           </p>
         </div>
 
