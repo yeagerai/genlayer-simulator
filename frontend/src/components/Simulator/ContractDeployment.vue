@@ -220,7 +220,8 @@ const hasConstructorInputs = computed(
 
         <TextAreaInput
           v-if="mode === 'json'"
-          name="State"
+          id="state"
+          name="state"
           :rows="5"
           :invalid="!isValidDefaultState"
           class="w-full bg-slate-100 p-2 dark:dark:bg-zinc-700"
