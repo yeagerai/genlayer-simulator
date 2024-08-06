@@ -42,7 +42,7 @@ watch(
       v-if="contractsStore.currentContract && contractsStore.currentContractId"
     >
       <ContractInfo
-        :showNewDeploymentButton="isDeploymentOpen"
+        :showNewDeploymentButton="!isDeploymentOpen"
         @openDeployment="isDeploymentOpen = true"
       />
 
