@@ -16,6 +16,8 @@ const model = defineModel();
 </script>
 
 <template>
-  <FieldLabel :for="fieldId">{{ name }}</FieldLabel>
-  <TextInput v-model="model" v-bind="props" :id="fieldId" />
+  <div class="flex flex-col w-full">
+    <FieldLabel :for="fieldId" tiny>{{ name }}</FieldLabel>
+    <TextInput v-model="model" v-bind="props" :id="fieldId" tiny />
+  </div>
 </template>

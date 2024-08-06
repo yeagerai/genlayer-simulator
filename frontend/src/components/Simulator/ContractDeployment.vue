@@ -198,7 +198,7 @@ const hasConstructorInputs = computed(
         No constructor inputs.
       </EmptyListPlaceholder>
 
-      <div v-else class="flex flex-col justify-start">
+      <div v-else class="flex flex-col justify-start gap-1">
         <div
           v-if="mode === 'form'"
           v-for="(inputType, input) in constructorInputs"

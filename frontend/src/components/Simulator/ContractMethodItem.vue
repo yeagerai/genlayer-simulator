@@ -104,7 +104,7 @@ const clearInputs = () => {
     class="dark:bg-g flex flex-col overflow-hidden rounded-md bg-slate-100 dark:bg-gray-700"
   >
     <button
-      class="flex grow flex-row items-center justify-between p-2 text-xs hover:bg-slate-200 dark:hover:bg-gray-600"
+      class="flex grow flex-row items-center justify-between bg-slate-200 p-2 text-xs hover:bg-slate-300 dark:bg-slate-600 dark:hover:bg-slate-500"
       @click="isExpanded = !isExpanded"
     >
       {{ methodName }}
@@ -116,7 +116,7 @@ const clearInputs = () => {
     </button>
 
     <Collapse :when="isExpanded">
-      <div class="flex flex-col items-start p-2">
+      <div class="flex flex-col items-start gap-2 p-2">
         <component
           v-for="(inputType, inputKey) in method.inputs"
           :key="inputKey"
@@ -127,15 +127,21 @@ const clearInputs = () => {
           :placeholder="String(inputKey)"
         />
 
-        <Btn v-if="methodType === 'read'" @click="getContractState" tiny
-          >Read</Btn
-        >
+        <div>
+          <Btn v-if="methodType === 'read'" @click="getContractState" tiny
+            >Read</Btn
+          >
 
-        <Btn v-if="methodType === 'write'" @click="callMethod" tiny>Write</Btn>
+          <Btn v-if="methodType === 'write'" @click="callMethod" tiny
+            >Write</Btn
+          >
+        </div>
 
-        <div v-if="responseMessage" class="break-all text-sm">
-          Response:
-          <div class="rounded bg-white p-1 dark:bg-slate-600">
+        <div v-if="responseMessage" class="w-full break-all text-sm">
+          <div class="mb-1 text-xs font-medium">Response:</div>
+          <div
+            class="w-full rounded bg-white p-1 font-mono text-xs dark:bg-slate-600"
+          >
             {{ responseMessage }}
           </div>
         </div>

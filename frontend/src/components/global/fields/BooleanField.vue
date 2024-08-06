@@ -16,6 +16,6 @@ const model = defineModel();
 <template>
   <div class="flex flex-row items-center gap-2">
     <CheckboxInput v-model="model" v-bind="props" :id="fieldId" />
-    <label :for="fieldId">{{ label }}</label>
+    <label :for="fieldId" class="text-xs">{{ label }}</label>
   </div>
 </template>
