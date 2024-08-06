@@ -51,6 +51,7 @@ export function useContractQueries() {
     queryFn: fetchContractSchemaDebounced,
     refetchOnWindowFocus: false,
     retry: 0,
+    enabled: !!contract.value?.id,
   });
 
   async function fetchContractSchema() {
