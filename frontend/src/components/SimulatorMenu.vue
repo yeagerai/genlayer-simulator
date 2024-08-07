@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {
   DocumentIcon,
-  AdjustmentsHorizontalIcon,
+  Cog6ToothIcon,
   UserCircleIcon,
   CommandLineIcon,
   HandThumbUpIcon,
@@ -35,7 +35,7 @@ import SimulatorMenuLink from './SimulatorMenuLink.vue';
       </SimulatorMenuItem>
 
       <SimulatorMenuItem :to="{ name: 'settings' }" tooltip="Settings">
-        <AdjustmentsHorizontalIcon />
+        <Cog6ToothIcon />
       </SimulatorMenuItem>
     </div>
 
