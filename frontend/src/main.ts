@@ -20,7 +20,16 @@ pinia.use(persistStorePlugin);
 app.use(pinia);
 app.use(VueQueryPlugin);
 app.use(router);
-app.use(FloatingVue);
+app.use(FloatingVue, {
+  themes: {
+    tooltip: {
+      delay: {
+        show: 0,
+        hide: 0,
+      },
+    },
+  },
+});
 app.use(Notifications);
 app.provide('$jsonRpc', new JsonRpcService(new RpcClient()));
 app.use(VueSpinnersPlugin);

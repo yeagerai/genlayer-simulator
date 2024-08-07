@@ -21,7 +21,7 @@ import SimulatorMenuLink from './SimulatorMenuLink.vue';
       <SimulatorMenuItem
         id="tutorial-how-to-change-example"
         :to="{ name: 'contracts' }"
-        tooltip="Contracts"
+        v-tooltip="{ content: 'Contracts', placement: 'right' }"
       >
         <DocumentIcon />
       </SimulatorMenuItem>
@@ -29,30 +29,45 @@ import SimulatorMenuLink from './SimulatorMenuLink.vue';
       <SimulatorMenuItem
         id="tutorial-how-to-deploy"
         :to="{ name: 'run-debug' }"
-        v-tooltip="'Run and Debug'"
+        v-tooltip="{ content: 'Run and Debug', placement: 'right' }"
       >
         <CommandLineIcon />
       </SimulatorMenuItem>
 
-      <SimulatorMenuItem :to="{ name: 'settings' }" tooltip="Settings">
+      <SimulatorMenuItem
+        :to="{ name: 'settings' }"
+        v-tooltip="{ content: 'Settings', placement: 'right' }"
+      >
         <Cog6ToothIcon />
       </SimulatorMenuItem>
     </div>
 
     <div class="flex flex-col items-center">
-      <SimulatorMenuLink :href="LINKS.docs" v-tooltip="'GenLayer Docs'">
+      <SimulatorMenuLink
+        :href="LINKS.docs"
+        v-tooltip="{ content: 'GenLayer Docs', placement: 'right' }"
+      >
         <DocumentTextIcon />
       </SimulatorMenuLink>
 
-      <SimulatorMenuLink :href="LINKS.discord" v-tooltip="'Discord'">
+      <SimulatorMenuLink
+        :href="LINKS.discord"
+        v-tooltip="{ content: 'Feedback Form', placement: 'right' }"
+      >
         <DiscordIcon />
       </SimulatorMenuLink>
 
-      <SimulatorMenuLink :href="LINKS.feedbackForm" v-tooltip="'Feedback form'">
+      <SimulatorMenuLink
+        :href="LINKS.feedbackForm"
+        v-tooltip="{ content: 'Discord', placement: 'right' }"
+      >
         <HandThumbUpIcon />
       </SimulatorMenuLink>
 
-      <SimulatorMenuItem :to="{ name: 'profile' }" v-tooltip="'Profile'">
+      <SimulatorMenuItem
+        :to="{ name: 'profile' }"
+        v-tooltip="{ content: 'Profile', placement: 'right' }"
+      >
         <UserCircleIcon />
       </SimulatorMenuItem>
     </div>
