@@ -66,7 +66,9 @@ const clearInputs = () => {
       class="flex grow flex-row items-center justify-between bg-slate-200 p-2 text-xs hover:bg-slate-300 dark:bg-slate-600 dark:hover:bg-slate-500"
       @click="isExpanded = !isExpanded"
     >
-      {{ methodName }}
+      <div class="truncate">
+        {{ methodName }}
+      </div>
 
       <ChevronDownIcon
         class="h-4 w-4 opacity-70 transition-all duration-300"
