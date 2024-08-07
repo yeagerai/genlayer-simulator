@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import LoadingIndicator from '@/components/LoadingIndicator.vue';
 
 const emit = defineEmits(['click']);
 
@@ -43,7 +42,7 @@ const primary = computed(() => !props.secondary && !props.dangerous);
     @click="emit('click')"
     :data-testid="testId"
   >
-    <LoadingIndicator v-if="loading" color="white" />
+    <Loader v-if="loading" forceLightColor />
     <slot />
   </button>
 </template>
