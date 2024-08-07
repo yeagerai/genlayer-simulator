@@ -9,7 +9,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Set up Python
       - uses: actions/setup-python@v5
         with:
           python-version: 3.11
+          cache: pip
+      - run: pip install -r requirements.txt
+      # Set up Node.js
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 21
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      # Run pre-commit
       - uses: pre-commit/action@v3.0.1
