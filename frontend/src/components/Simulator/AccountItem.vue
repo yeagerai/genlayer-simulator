@@ -1,16 +1,15 @@
 <script setup lang="ts">
 import { useAccountsStore } from '@/stores';
 import { notify } from '@kyvg/vue3-notification';
-import { CheckCircleIcon, PowerIcon, TrashIcon } from '@heroicons/vue/24/solid';
-import { PlugZap, PowerCircle } from 'lucide-vue-next';
-import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue';
+import { TrashIcon } from '@heroicons/vue/24/solid';
+import { PowerCircle } from 'lucide-vue-next';
 import { ref } from 'vue';
 const store = useAccountsStore();
 
 const setCurentAddress = () => {
   store.setCurrentAccount(props.privateKey);
   notify({
-    title: 'Default account updated',
+    title: 'Active account changed',
     type: 'success',
   });
 };
