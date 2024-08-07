@@ -70,7 +70,7 @@ const handleResetStorage = async () => {
       >
         <div class="divide-y divide-gray-200 dark:divide-gray-800">
           <ValidatorItem
-            v-for="validator in nodeStore.validators"
+            v-for="validator in nodeStore.validatorsOrderedById"
             :key="validator.id"
             :validator="validator"
           />

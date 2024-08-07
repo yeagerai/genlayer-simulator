@@ -31,7 +31,7 @@ watch(
 
 <template>
   <div class="flex max-h-[93vh] w-full flex-col overflow-y-auto">
-    <MainTitle>Run and Debug</MainTitle>
+    <MainTitle data-testid="run-debug-page-title">Run and Debug</MainTitle>
 
     <template
       v-if="contractsStore.currentContract && contractsStore.currentContractId"

@@ -18,10 +18,16 @@ const { isDeployed, address, contract } = useContractQueries();
   <PageSection>
     <template #title
       >Contract
-      <div class="opacity-50">{{ contract?.name }}</div></template
+      <div data-testid="current-contract-name" class="opacity-50">
+        {{ contract?.name }}
+      </div></template
     >
 
-    <div v-if="isDeployed" class="flex flex-row items-center gap-1 text-xs">
+    <div
+      v-if="isDeployed"
+      data-testid="deployed-contract-info"
+      class="flex flex-row items-center gap-1 text-xs"
+    >
       <CheckCircleIcon class="h-4 w-4 shrink-0 text-emerald-400" />
 
       Deployed at

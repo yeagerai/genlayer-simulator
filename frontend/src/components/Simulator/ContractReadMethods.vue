@@ -21,7 +21,7 @@ const readMethods = computed(() => {
 </script>
 
 <template>
-  <PageSection v-if="data">
+  <PageSection v-if="data" data-testid="contract-read-methods">
     <template #title>Read Methods</template>
 
     <div v-if="isLoading">Loading...</div>

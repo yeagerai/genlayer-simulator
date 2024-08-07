@@ -65,7 +65,8 @@ const clearInputs = () => {
     <button
       class="flex grow flex-row items-center justify-between bg-slate-200 p-2 text-xs hover:bg-slate-300 dark:bg-slate-600 dark:hover:bg-slate-500"
       @click="isExpanded = !isExpanded"
-    >
+      :data-testid="`expand-method-btn-${methodName}`"
+      >
       <div class="truncate">
         {{ methodName }}
       </div>
@@ -89,11 +90,19 @@ const clearInputs = () => {
         />
 
         <div>
-          <Btn v-if="methodType === 'read'" @click="handleCallReadMethod" tiny
+          <Btn
+            v-if="methodType === 'read'"
+            @click="handleCallReadMethod"
+            tiny
+            :data-testid="`read-method-btn-${methodName}`"
             >Read</Btn
           >
 
-          <Btn v-if="methodType === 'write'" @click="handleCallWriteMethod" tiny
+          <Btn
+            v-if="methodType === 'write'"
+            @click="handleCallWriteMethod"
+            tiny
+            :data-testid="`write-method-btn-${methodName}`"
             >Write</Btn
           >
         </div>
@@ -101,6 +110,7 @@ const clearInputs = () => {
         <div v-if="responseMessage" class="w-full break-all text-sm">
           <div class="mb-1 text-xs font-medium">Response:</div>
           <div
+            :data-testid="`method-response-${methodName}`"
             class="w-full rounded bg-white p-1 font-mono text-xs dark:bg-slate-600"
           >
             {{ responseMessage }}

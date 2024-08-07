@@ -18,7 +18,7 @@ withDefaults(
 </script>
 
 <template>
-  <Modal @close="emit('close')">
+  <Modal @close="emit('close')" @keydown.enter="emit('confirm')">
     <template #title v-if="!$slots.title">Are you sure?</template>
     <template #title v-else><slot name="title" /></template>
     <template #description v-if="$slots.description"
