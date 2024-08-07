@@ -41,7 +41,10 @@ watch(
         @openDeployment="isDeploymentOpen = true"
       />
 
-      <ConstructorParameters v-if="isDeploymentOpen" />
+      <ConstructorParameters
+        v-if="isDeploymentOpen"
+        @deployedContract="isDeploymentOpen = false"
+      />
 
       <ContractReadMethods />
 

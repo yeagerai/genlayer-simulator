@@ -14,7 +14,6 @@ import { notify } from '@kyvg/vue3-notification';
 const schema = ref<any>();
 
 export function useContractQueries() {
-  console.log('useContractQueries');
   const $jsonRpc = inject<IJsonRpcService>('$jsonRpc'); // This could be done without inject/provide
   const accountsStore = useAccountsStore();
   const transactionsStore = useTransactionsStore();
@@ -95,6 +94,11 @@ export function useContractQueries() {
           status: 'PENDING',
           data: {},
         };
+
+        notify({
+          title: 'Started deploying contract',
+          type: 'success',
+        });
 
         transactionsStore.addTransaction(tx);
 
@@ -207,11 +211,11 @@ export function useContractQueries() {
     contractSchemaQuery,
     contractAbiQuery,
     contract,
-    deployContract,
     isDeploying,
     isDeployed,
     address,
 
+    deployContract,
     callReadMethod,
     callWriteMethod,
   };

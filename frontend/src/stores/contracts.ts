@@ -95,7 +95,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
 
     notify({
       title: 'Contract deployed',
-      text: `to ${address}`,
       type: 'success',
     });
   }

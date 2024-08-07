@@ -20,6 +20,8 @@ const constructorInputs = computed<{ [k: string]: string }>(
   () => data.value?.methods['__init__']?.inputs,
 );
 
+const emit = defineEmits(['deployed-contract']);
+
 watch(
   () => constructorInputs.value,
   () => {
@@ -52,7 +54,7 @@ const jsonParams = ref('{}');
 const mode = ref<'json' | 'form'>('form');
 
 // TODO: review this
-const handleDeployContract = () => {
+const handleDeployContract = async () => {
   let constructorParams = {};
 
   if (mode.value === 'json') {
@@ -71,7 +73,9 @@ const handleDeployContract = () => {
     constructorParams = mapInputs(inputParams.value);
   }
 
-  deployContract({ constructorParams });
+  await deployContract({ constructorParams });
+
+  emit('deployed-contract');
 };
 
 const setInputParams = (inputs: { [k: string]: string }) => {
