@@ -6,7 +6,8 @@ RUN mkdir $path
 WORKDIR $path
 
 ADD backend/protocol_rpc/requirements.txt backend/protocol_rpc/requirements.txt
-RUN pip install --no-cache-dir -r backend/protocol_rpc/requirements.txt
+RUN --mount=type=cache,target=/root/.cache \
+    pip install -r backend/protocol_rpc/requirements.txt
 
 ENV PYTHONPATH "${PYTHONPATH}:/${path}"
 ENV FLASK_APP=backend/protocol_rpc/server.py

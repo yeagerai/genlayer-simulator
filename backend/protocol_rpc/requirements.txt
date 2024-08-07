@@ -16,3 +16,4 @@ openai==1.16.1
 SQLAlchemy==2.0.31
 alembic==1.13.2
 sentence-transformers==3.0.1
+Flask-SQLAlchemy==3.1.1
