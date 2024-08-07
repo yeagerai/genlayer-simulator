@@ -14,7 +14,7 @@ jobs:
         with:
           python-version: 3.11
           cache: pip
-      - run: pip install -r requirements.txt
+      - run: pip install -r backend/protocol_rpc/requirements.txt
       # Set up Node.js
       - uses: actions/setup-node@v3
         with:
