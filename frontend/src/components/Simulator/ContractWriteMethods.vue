@@ -8,7 +8,7 @@ import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vu
 
 const { contractAbiQuery } = useContractQueries();
 
-const { data, isLoading  } = contractAbiQuery;
+const { data, isLoading } = contractAbiQuery;
 
 const writeMethods = computed(() => {
   return Object.entries(data.value.methods)
