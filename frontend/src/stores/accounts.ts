@@ -25,12 +25,24 @@ export const useAccountsStore = defineStore('accountsStore', () => {
   function generateNewAccount(): `0x${string}` {
     const privateKey = getPrivateKey();
     privateKeys.value = [...privateKeys.value, privateKey];
-    currentPrivateKey.value = privateKey;
+    setCurrentAccount(privateKey);
     return privateKey;
   }
 
   function accountFromPrivateKey(privateKey: `0x${string}`) {
     return getAccountFromPrivatekey(privateKey);
+  }
+
+  function removeAccount(privateKey: `0x${string}`) {
+    privateKeys.value = privateKeys.value.filter((k) => k !== privateKey);
+
+    if (currentPrivateKey.value === privateKey) {
+      setCurrentAccount(privateKeys.value[0] || null);
+    }
+  }
+
+  function setCurrentAccount(privateKey: `0x${string}`) {
+    currentPrivateKey.value = privateKey;
   }
 
   return {
@@ -39,5 +51,7 @@ export const useAccountsStore = defineStore('accountsStore', () => {
     privateKeys,
     generateNewAccount,
     accountFromPrivateKey,
+    removeAccount,
+    setCurrentAccount,
   };
 });

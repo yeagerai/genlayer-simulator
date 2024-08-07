@@ -104,6 +104,8 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
       } else if (store.$id === 'accountsStore') {
         switch (name) {
           case 'generateNewAccount':
+          case 'removeAccount':
+          case 'setCurrentAccount':
             localStorage.setItem(
               'accountsStore.privateKeys',
               store.privateKeys.join(','),
