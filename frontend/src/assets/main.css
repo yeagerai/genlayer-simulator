@@ -59,6 +59,7 @@ input[type='number'] {
 .v-popper--theme-tooltip .v-popper__inner {
   font-size: 0.8rem !important;
   padding: 2px 8px !important;
+  background: rgba(25, 26, 27, 0.95) !important;
 }
 
 .v-popper__arrow-outer {
