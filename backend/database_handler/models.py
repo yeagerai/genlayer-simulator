@@ -12,12 +12,13 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, MappedAsDataclass
 import datetime
 import decimal
 
 
-class Base(DeclarativeBase):
+# We map them to `DataClass`es in order to have better type hints https://docs.sqlalchemy.org/en/20/orm/dataclasses.html#declarative-dataclass-mapping
+class Base(MappedAsDataclass, DeclarativeBase):
     pass
 
 
@@ -39,7 +40,7 @@ class Transactions(Base):
         PrimaryKeyConstraint("id", name="transactions_pkey"),
     )
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, init=False)
     status: Mapped[Optional[str]] = mapped_column(
         Enum(
             "PENDING",
@@ -64,7 +65,7 @@ class Transactions(Base):
     type: Mapped[Optional[int]] = mapped_column(Integer)
     gaslimit: Mapped[Optional[int]] = mapped_column(BigInteger)
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(
-        DateTime(True), server_default=text("CURRENT_TIMESTAMP")
+        DateTime(True), server_default=text("CURRENT_TIMESTAMP"), init=False
     )
     r: Mapped[Optional[int]] = mapped_column(Integer)
     s: Mapped[Optional[int]] = mapped_column(Integer)
@@ -75,11 +76,11 @@ class TransactionsAudit(Base):
     __tablename__ = "transactions_audit"
     __table_args__ = (PrimaryKeyConstraint("id", name="transactions_audit_pkey"),)
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, init=False)
     transaction_id: Mapped[Optional[int]] = mapped_column(Integer)
     data: Mapped[Optional[dict]] = mapped_column(JSONB)
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(
-        DateTime(True), server_default=text("CURRENT_TIMESTAMP")
+        DateTime(True), server_default=text("CURRENT_TIMESTAMP"), init=False
     )
 
 
@@ -90,12 +91,12 @@ class Validators(Base):
         CheckConstraint("stake >= 0", name="stake_unsigned_int"),
     )
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, init=False)
     stake: Mapped[int] = mapped_column(Integer)
     config: Mapped[dict] = mapped_column(JSONB)
     address: Mapped[Optional[str]] = mapped_column(String(255))
     provider: Mapped[Optional[str]] = mapped_column(String(255))
     model: Mapped[Optional[str]] = mapped_column(String(255))
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(
-        DateTime(True), server_default=text("CURRENT_TIMESTAMP")
+        DateTime(True), server_default=text("CURRENT_TIMESTAMP"), init=False
     )

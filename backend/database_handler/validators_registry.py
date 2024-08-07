@@ -1,13 +1,11 @@
 # consensus/domain/state.py
 
-import json
-from psycopg2.extras import Json
 from backend.database_handler import models
-from backend.database_handler.db_client import DBClient
 
 from backend.errors.errors import ValidatorNotFound
 
 from sqlalchemy.orm import Session
+from sqlalchemy import Engine
 
 
 # the to_dict function lives in this module and not in models.py because it's on this layer of abstraction where we convert database objects to our custom data structures
@@ -24,38 +22,32 @@ def to_dict(validator: models.Validators) -> dict:
 
 
 class ValidatorsRegistry:
-    def __init__(self, db_client: DBClient):
-        self.db_client = db_client
+    def __init__(self, engine: Engine):
+        self.engine = engine
         self.db_validators_table = "validators"
-
-    def _parse_validator_data(self, validator_data: dict) -> dict:
-        return {
-            "id": validator_data["id"],
-            "address": validator_data["address"],
-            "stake": float(validator_data["stake"]),
-            "provider": validator_data["provider"],
-            "model": validator_data["model"],
-            "config": validator_data["config"],
-            "created_at": validator_data["created_at"].isoformat(),
-        }
 
     def _get_validator_or_fail(self, validator_address: str):
         """Private method to check if an account exists, and raise an error if not."""
 
-        with Session(self.db_client.engine) as session:
+        with Session(self.engine) as session:
             validator_data = (
                 session.query(models.Validators)
-                .filter_by(address=validator_address)
-                .first()
+                .filter(models.Validators.address == validator_address)
+                .one_or_none()
             )
 
-        if not validator_data:
+        if validator_data is None:
             raise ValidatorNotFound(validator_address)
         return to_dict(validator_data)
 
+    def count_validators(self):
+        with Session(self.engine) as session:
+            return session.query(models.Validators).count()
+
     def get_all_validators(self) -> list:
-        validators_data = self.db_client.get(self.db_validators_table)
-        return [self._parse_validator_data(validator) for validator in validators_data]
+        with Session(self.engine) as session:
+            validators_data = session.query(models.Validators).all()
+            return [to_dict(validator) for validator in validators_data]
 
     def get_validator(self, validator_address: str) -> dict:
         return self._get_validator_or_fail(validator_address)
@@ -66,17 +58,20 @@ class ValidatorsRegistry:
         stake: int,
         provider: str,
         model: str,
-        config: json,
+        config: dict,
     ):
-        new_validator = {
-            "address": validator_address,
-            "stake": stake,
-            "provider": provider,
-            "model": model,
-            "config": Json(config),
-            "created_at": "CURRENT_TIMESTAMP",
-        }
-        self.db_client.insert(self.db_validators_table, new_validator)
+        new_validator = models.Validators(
+            address=validator_address,
+            stake=stake,
+            provider=provider,
+            model=model,
+            config=config,
+        )
+
+        with Session(self.engine) as session:
+            session.add(new_validator)
+            session.commit()
+
         return self._get_validator_or_fail(validator_address)
 
     def update_validator(
@@ -85,25 +80,36 @@ class ValidatorsRegistry:
         stake: int,
         provider: str,
         model: str,
-        config: json,
+        config: dict,
     ):
         self._get_validator_or_fail(validator_address)
 
-        update_condition = f"address = '{validator_address}'"
-        validator = {
-            "stake": stake,
-            "provider": provider,
-            "model": model,
-            "config": Json(config),
-        }
+        with Session(self.engine) as session:
+            validator = (
+                session.query(models.Validators)
+                .filter(models.Validators.address == validator_address)
+                .one()
+            )
 
-        self.db_client.update(self.db_validators_table, validator, update_condition)
-        return self._get_validator_or_fail(validator_address)
+            validator.stake = stake
+            validator.provider = provider
+            validator.model = model
+            validator.config = config
+
+            session.commit()
+
+            return to_dict(validator)
 
     def delete_validator(self, validator_address):
         self._get_validator_or_fail(validator_address)
-        delete_condition = f"address = '{validator_address}'"
-        self.db_client.remove(self.db_validators_table, delete_condition)
+
+        with Session(self.engine) as session:
+            session.query(models.Validators).filter(
+                models.Validators.address == validator_address
+            ).delete()
+            session.commit()
 
     def delete_all_validators(self):
-        self.db_client.remove_all(self.db_validators_table)
+        with Session(self.engine) as session:
+            session.query(models.Validators).delete()
+            session.commit()

@@ -28,7 +28,7 @@ def create_app():
     genlayer_db_client = DBClient("genlayer")
     transactions_processor = TransactionsProcessor(genlayer_db_client)
     accounts_manager = AccountsManager(genlayer_db_client, transactions_processor)
-    validators_registry = ValidatorsRegistry(genlayer_db_client)
+    validators_registry = ValidatorsRegistry(genlayer_db_client.engine)
 
     consensus = ConsensusAlgorithm(
         genlayer_db_client, transactions_processor, msg_handler
