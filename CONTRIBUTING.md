@@ -90,6 +90,16 @@ $ docker compose up
    (.venv) $ pre-commit install
    ```
 
+   To see the configuration, check the `.pre-commit-config.yaml` file.
+
+   Some of our configurations are:
+
+   - Python Black formatter
+   - Python pytest for unit tests
+   - ESLint for frontend code
+   - Prettier for frontend code
+   - [Conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) for commit messages
+
 4. Execute the Demo
 
    ```sh
