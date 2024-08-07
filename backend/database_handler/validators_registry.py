@@ -22,19 +22,18 @@ def to_dict(validator: models.Validators) -> dict:
 
 
 class ValidatorsRegistry:
-    def __init__(self, engine: Engine):
-        self.engine = engine
+    def __init__(self, session: Session):
+        self.session = session
         self.db_validators_table = "validators"
 
     def _get_validator_or_fail(self, validator_address: str):
         """Private method to check if an account exists, and raise an error if not."""
 
-        with Session(self.engine) as session:
-            validator_data = (
-                session.query(models.Validators)
-                .filter(models.Validators.address == validator_address)
-                .one_or_none()
-            )
+        validator_data = (
+            self.session.query(models.Validators)
+            .filter(models.Validators.address == validator_address)
+            .one_or_none()
+        )
 
         if validator_data is None:
             raise ValidatorNotFound(validator_address)
@@ -45,9 +44,8 @@ class ValidatorsRegistry:
             return session.query(models.Validators).count()
 
     def get_all_validators(self) -> list:
-        with Session(self.engine) as session:
-            validators_data = session.query(models.Validators).all()
-            return [to_dict(validator) for validator in validators_data]
+        validators_data = self.session.query(models.Validators).all()
+        return [to_dict(validator) for validator in validators_data]
 
     def get_validator(self, validator_address: str) -> dict:
         return self._get_validator_or_fail(validator_address)
@@ -68,9 +66,7 @@ class ValidatorsRegistry:
             config=config,
         )
 
-        with Session(self.engine) as session:
-            session.add(new_validator)
-            session.commit()
+        self.session.add(new_validator)
 
         return self._get_validator_or_fail(validator_address)
 
@@ -84,32 +80,29 @@ class ValidatorsRegistry:
     ):
         self._get_validator_or_fail(validator_address)
 
-        with Session(self.engine) as session:
-            validator = (
-                session.query(models.Validators)
-                .filter(models.Validators.address == validator_address)
-                .one()
-            )
+        validator = (
+            self.session.query(models.Validators)
+            .filter(models.Validators.address == validator_address)
+            .one()
+        )
 
-            validator.stake = stake
-            validator.provider = provider
-            validator.model = model
-            validator.config = config
+        validator.stake = stake
+        validator.provider = provider
+        validator.model = model
+        validator.config = config
 
-            session.commit()
+        self.session.commit()
 
-            return to_dict(validator)
+        return to_dict(validator)
 
     def delete_validator(self, validator_address):
         self._get_validator_or_fail(validator_address)
 
-        with Session(self.engine) as session:
-            session.query(models.Validators).filter(
-                models.Validators.address == validator_address
-            ).delete()
-            session.commit()
+        self.session.query(models.Validators).filter(
+            models.Validators.address == validator_address
+        ).delete()
+        self.session.commit()
 
     def delete_all_validators(self):
-        with Session(self.engine) as session:
-            session.query(models.Validators).delete()
-            session.commit()
+        self.session.query(models.Validators).delete()
+        self.session.commit()

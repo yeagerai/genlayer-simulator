@@ -18,3 +18,4 @@ alembic==1.13.2
 eth-account==0.13.1
 eth-utils==4.1.1
 sentence-transformers==3.0.1
+Flask-SQLAlchemy==3.1.1

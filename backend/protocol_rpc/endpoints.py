@@ -4,6 +4,7 @@ import json
 from functools import partial
 from flask_jsonrpc import JSONRPC
 
+from flask_sqlalchemy import SQLAlchemy
 from backend.database_handler.db_client import DBClient
 from backend.protocol_rpc.configuration import GlobalConfiguration
 from backend.protocol_rpc.message_handler.base import MessageHandler

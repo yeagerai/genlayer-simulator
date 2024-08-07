@@ -8,7 +8,9 @@ from backend.database_handler.validators_registry import ValidatorsRegistry
 class ChainSnapshot:
     def __init__(self, dbclient: DBClient):
         self.dbclient = dbclient
-        self.validators_registry = ValidatorsRegistry(dbclient.engine)
+        self.validators_registry = ValidatorsRegistry(
+            dbclient.engine
+        )  # TODO: fix here needing the session
         self.db_transactions_table = "transactions"
         self.pending_transactions = self._load_pending_transactions()
         self.all_validators = self._load_all_validators()
