@@ -45,11 +45,9 @@ const handleClearTransactions = () => {
       ><GhostBtn
         v-if="transactions.length > 0"
         @click="isClearTransactionsModalOpen = true"
+        v-tooltip="'Clear Transactions List'"
       >
-        <TrashIcon class="h-4 w-4" />
-        <ToolTip
-          text="Clear Transactions List"
-          :options="{ placement: 'bottom' }" /></GhostBtn
+        <TrashIcon class="h-4 w-4" /></GhostBtn
     ></template>
 
     <TransactionItem

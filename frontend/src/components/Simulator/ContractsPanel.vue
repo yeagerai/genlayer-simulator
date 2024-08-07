@@ -73,10 +73,10 @@ const handleHorizontalScroll = (event: WheelEvent) => {
           v-if="route.name !== 'run-debug'"
           class="m-1 flex items-center !p-1"
           @click="handleRunDebug"
+          v-tooltip="'Run and Debug'"
         >
           <PlayIcon class="h-5 w-5" />
         </Btn>
-        <ToolTip text="Run and Debug" :options="{ placement: 'bottom' }" />
       </div>
     </nav>
 

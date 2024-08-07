@@ -215,6 +215,7 @@ const hasConstructorInputs = computed(
         @click="handleDeployContract"
         :loading="isDeploying"
         :disabled="!isValidDefaultState"
+        v-tooltip="!isValidDefaultState && 'Provide default state'"
       >
         <template v-if="isDeploying"> Deploying... </template>
         <template v-else>
@@ -222,7 +223,6 @@ const hasConstructorInputs = computed(
           Deploy
         </template>
       </Btn>
-      <ToolTip v-if="!isValidDefaultState" text="Provide default state" />
     </template>
   </PageSection>
 </template>

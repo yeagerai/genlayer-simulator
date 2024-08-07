@@ -29,7 +29,7 @@ import SimulatorMenuLink from './SimulatorMenuLink.vue';
       <SimulatorMenuItem
         id="tutorial-how-to-deploy"
         :to="{ name: 'run-debug' }"
-        tooltip="Run and Debug"
+        v-tooltip="'Run and Debug'"
       >
         <CommandLineIcon />
       </SimulatorMenuItem>
@@ -40,19 +40,19 @@ import SimulatorMenuLink from './SimulatorMenuLink.vue';
     </div>
 
     <div class="flex flex-col items-center">
-      <SimulatorMenuLink :href="LINKS.docs" tooltip="GenLayer Docs">
+      <SimulatorMenuLink :href="LINKS.docs" v-tooltip="'GenLayer Docs'">
         <DocumentTextIcon />
       </SimulatorMenuLink>
 
-      <SimulatorMenuLink :href="LINKS.discord" tooltip="Discord">
+      <SimulatorMenuLink :href="LINKS.discord" v-tooltip="'Discord'">
         <DiscordIcon />
       </SimulatorMenuLink>
 
-      <SimulatorMenuLink :href="LINKS.feedbackForm" tooltip="Feedback form">
+      <SimulatorMenuLink :href="LINKS.feedbackForm" v-tooltip="'Feedback form'">
         <HandThumbUpIcon />
       </SimulatorMenuLink>
 
-      <SimulatorMenuItem :to="{ name: 'profile' }" tooltip="Profile">
+      <SimulatorMenuItem :to="{ name: 'profile' }" v-tooltip="'Profile'">
         <UserCircleIcon />
       </SimulatorMenuItem>
     </div>

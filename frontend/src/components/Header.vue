@@ -34,18 +34,16 @@ const showTutorial = () => {
     <div class="flex items-center gap-2 pr-2" id="tutorial-end">
       <AccountSelect />
 
-      <GhostBtn @click="toggleMode">
+      <GhostBtn @click="toggleMode" v-tooltip="'Switch theme'">
         <SunIcon v-if="uiStore.mode === 'light'" class="h-5 w-5" />
         <MoonIcon v-else class="h-5 w-5 fill-gray-200" />
-        <ToolTip text="Switch Theme" :options="{ placement: 'bottom' }" />
       </GhostBtn>
 
-      <GhostBtn @click="showTutorial">
+      <GhostBtn @click="showTutorial" v-tooltip="'Show Tutorial'">
         <PresentationChartLineIcon
           class="h-5 w-5"
           :class="uiStore.mode === 'light' ? 'fill-gray-700' : 'fill-gray-200'"
         />
-        <ToolTip text="Show Tutorial" :options="{ placement: 'bottom' }" />
       </GhostBtn>
     </div>
   </header>

@@ -60,12 +60,11 @@ const handleSaveNewFile = (name: string) => {
       Your Contracts
 
       <template #actions>
-        <GhostBtn @click="handleAddNewFile">
+        <GhostBtn @click="handleAddNewFile" v-tooltip="'New Contract'">
           <PlusIcon class="h-5 w-5" />
-          <ToolTip text="New Contract" :options="{ placement: 'bottom' }" />
         </GhostBtn>
 
-        <GhostBtn class="!p-0">
+        <GhostBtn class="!p-0" v-tooltip="'Add From File'">
           <label class="input-label p-1">
             <input
               type="file"
@@ -73,7 +72,6 @@ const handleSaveNewFile = (name: string) => {
               accept=".gpy,.py"
             />
             <ArrowUpTrayIcon class="h-5 w-5 fill-primary dark:fill-white" />
-            <ToolTip text="Add From File" :options="{ placement: 'bottom' }" />
           </label>
         </GhostBtn>
       </template>

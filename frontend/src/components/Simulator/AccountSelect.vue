@@ -4,14 +4,13 @@ import AccountItem from '@/components/Simulator/AccountItem.vue';
 import { Dropdown } from 'floating-vue';
 import { shortenAddress } from '@/utils';
 import { Wallet } from 'lucide-vue-next';
-import ToolTip from '@/plugins/tooltip/ToolTip.vue';
 
 const store = useAccountsStore();
 </script>
 
 <template>
   <Dropdown placement="bottom-end">
-    <GhostBtn>
+    <GhostBtn v-tooltip="'Switch account'">
       <Wallet class="h-5 w-5" />
       {{
         shortenAddress(
@@ -19,8 +18,6 @@ const store = useAccountsStore();
         )
       }}
     </GhostBtn>
-
-    <ToolTip text="Switch account" />
 
     <template #popper>
       <div class="divide-y divide-gray-200 dark:divide-gray-800">
@@ -51,14 +48,5 @@ const store = useAccountsStore();
   padding: 0px;
   border: 1px solid #4b5563;
   background: none;
-}
-
-.v-popper__arrow-outer {
-  visibility: hidden !important;
-}
-
-.v-popper__arrow-inner {
-  visibility: hidden !important;
-  display: none !important;
 }
 </style>

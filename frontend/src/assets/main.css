@@ -52,6 +52,20 @@ input::-webkit-inner-spin-button {
 }
 
 /* Firefox */
-input[type=number] {
+input[type='number'] {
   -moz-appearance: textfield;
+}
+
+.v-popper--theme-tooltip .v-popper__inner {
+  font-size: 0.8rem !important;
+  padding: 2px 8px !important;
+}
+
+.v-popper__arrow-outer {
+  visibility: hidden !important;
+}
+
+.v-popper__arrow-inner {
+  visibility: hidden !important;
+  display: none !important;
 }

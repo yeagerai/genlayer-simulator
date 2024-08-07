@@ -125,18 +125,19 @@ const handleRemoveFile = (id: string) => {
         </div>
 
         <div class="hidden flex-row gap-1 group-hover:flex">
-          <button @click.stop="handleEditFile">
+          <button @click.stop="handleEditFile" v-tooltip="'Edit Name'">
             <PencilSquareIcon
               class="h-[16px] w-[16px] p-[2px] text-gray-400 transition-all hover:text-gray-800 active:scale-90 dark:hover:text-white"
             />
-            <ToolTip text="Edit Name" :options="{ placement: 'bottom' }" />
           </button>
 
-          <button @click.stop="deleteModalOpen = true">
+          <button
+            @click.stop="deleteModalOpen = true"
+            v-tooltip="'Delete file'"
+          >
             <TrashIcon
               class="h-[16px] w-[16px] p-[2px] text-gray-400 transition-all hover:text-gray-800 active:scale-90 dark:hover:text-white"
             />
-            <ToolTip text="Delete file" :options="{ placement: 'bottom' }" />
           </button>
         </div>
       </div>

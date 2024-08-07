@@ -98,16 +98,14 @@ const handleResetStorage = async () => {
         @click="isResetStorageModalOpen = true"
         :disabled="nodeStore.contractsToDelete.length < 1"
         secondary
+        v-tooltip="
+          nodeStore.contractsToDelete.length < 1 &&
+          'No contracts files to delete'
+        "
       >
         <ArchiveBoxXMarkIcon class="h-4 w-4" />
         Reset Storage
       </Btn>
-
-      <ToolTip
-        v-if="nodeStore.contractsToDelete.length < 1"
-        text="No contracts files to delete"
-        :options="{ placement: 'right' }"
-      />
 
       <ConfirmationModal
         :open="isResetStorageModalOpen"
