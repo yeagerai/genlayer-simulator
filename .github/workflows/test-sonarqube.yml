@@ -1,14 +1,13 @@
-name: Run Sonarless Scan
+name: Run SonarCloud Scan
 
 on:
   push:
     branches:
       - staging
-      - sonar-scan
   workflow_dispatch:
 
 jobs:
-  Sonarless-Scan:
+  SonarCloud-Scan:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
