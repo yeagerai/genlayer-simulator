@@ -51,7 +51,7 @@ services:
       - "${WEBREQUESTPORT}"
 
   ollama:
-    image: ollama/ollama:latest
+    image: ollama/ollama:0.2.1
     ports:
       - 11434:11434
     volumes:

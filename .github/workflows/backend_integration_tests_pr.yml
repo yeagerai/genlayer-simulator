@@ -2,17 +2,34 @@ name: CI
 
 on:
   pull_request:
-    branches:
-      - staging
     types:
       - opened
+      - labeled
+      - synchronize
   pull_request_review:
     types:
       - submitted
+      - edited
+
+concurrency:
+  group: backend-e2e-${{ github.event.number }}
+  cancel-in-progress: true
 
 jobs:
+  triggers:
+    name: Get Triggers
+    runs-on: ubuntu-latest
+    outputs:
+      is_pull_request_opened: ${{ github.event_name == 'pull_request' && github.event.action == 'opened'}}
+      is_pull_request_review_approved: ${{ github.event_name == 'pull_request_review' && github.event.review.state == 'APPROVED'}}
+      is_pull_request_labeled_with_run_tests: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-tests')}}
+    steps:
+      - run: true
+
   test:
-    if: ${{ github.event.review.state == 'APPROVED' || github.event_name == 'pull_request' }}
+    needs: triggers
+    if: ${{ needs.triggers.outputs.is_pull_request_opened == 'true' || needs.triggers.outputs.is_pull_request_review_approved == 'true' || needs.triggers.outputs.is_pull_request_labeled_with_run_tests == 'true' }}
+
     runs-on: ubuntu-latest
 
     env:
@@ -25,16 +42,10 @@ jobs:
       - name: Copy .env file
         run: cp .env.example .env
 
-      - name: Changing URL for rpc server to localhost
-        run: sed -i "s/'jsonrpc'/'localhost'/g" .env
-      
-      - name: Remove OPENAIKEY from the .env file so it can be loaded from the environment
-        run: sed -i "/^OPENAIKEY *= *'<add_your_api_key_here>'$/d" .env
-
-      - name: Adding OPENAIKEY to the .env file
+      - name: Set OPENAIKEY in the .env file so it can be loaded from the environment
         env:
           OPENAIKEY: ${{ secrets.OPENAIKEY }}
-        run: printf "\nOPENAIKEY='$OPENAIKEY'\n" >> .env
+        run: sed -i "s/<add_your_openai_api_key_here>/${OPENAIKEY}/g" .env
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -47,10 +58,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
+      - name: Build Docker image
+        run: docker compose build
+
       - name: Run Docker Compose
         run: docker compose up -d
 
       - name: Wait for services to be up
+        timeout-minutes: 5
         run: |
           timeout=60
           counter=0
@@ -83,6 +98,10 @@ jobs:
 
       - name: Run tests
         run: pytest tests/integration/
+
+      - name: Dump Docker Compose logs
+        run: docker compose logs
+        if: failure()
 
       - name: Shutdown Docker Compose
         if: always()

@@ -1,7 +1,6 @@
-import { WebDriver, By, until } from 'selenium-webdriver'
+import { WebDriver } from 'selenium-webdriver'
 
 import { TutorialPage } from '../pages/TutorialPage.js'
-import { ContractsPage } from '../pages/ContractsPage.js'
 import { before, describe, after, it } from 'node:test'
 import { expect } from 'chai'
 import { getDriver } from '../utils/driver.js'
@@ -58,7 +57,6 @@ async function validateTutorialStep({
 describe('Tutorial - Run all tutorial steps', () => {
   before(async () => {
     driver = await getDriver()
-    await driver.manage().setTimeouts({ implicit: 10000 })
     tutorialPage = new TutorialPage(driver)
   })
 

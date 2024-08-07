@@ -1,16 +1,19 @@
 import { By, Locator, WebElement, until, Select } from 'selenium-webdriver'
 import { BasePage } from './BasePage'
+import { expect } from 'chai'
 
 export class SettingsPage extends BasePage {
   override baseurl = 'http://localhost:8080/simulator/settings'
-  override visibleLocator: Locator = By.xpath("//h3[contains(text(), 'Settings')]")
+  override visibleLocator: Locator = By.xpath(
+    "//*[@data-testid='settings-page-title']",
+  )
 
   async openNewValidatorModal() {
-    const locator = By.xpath(`//button[contains(text(), 'New Validator')]`)
+    const locator = By.xpath("//button[@data-testid='create-new-validator-btn']")
     return this.driver.wait(until.elementLocated(locator), 5000).click()
   }
   async getValidatorsElements(): Promise<WebElement[]> {
-    return this.driver.findElements(By.xpath("//div[@data-testid = 'validator-item-container']"))
+    return this.driver.findElements(By.xpath("//div[@data-testid = 'validator-item']"))
   }
 
   async createValidator({
@@ -27,20 +30,20 @@ export class SettingsPage extends BasePage {
     await this.openNewValidatorModal()
     // provider select
     const selectProviderElement = await this.driver.wait(
-      until.elementLocated(By.xpath("//select[contains(@data-testid, 'dropdown-provider-create')]"))
+      until.elementLocated(By.xpath("//select[contains(@data-testid, 'dropdown-provider')]"))
     )
     const selectProvider = new Select(selectProviderElement)
     await selectProvider.selectByValue(provider)
 
     // model select
     const selectModelElement = await this.driver.wait(
-      until.elementLocated(By.xpath("//select[contains(@data-testid, 'dropdown-model-create')]"))
+      until.elementLocated(By.xpath("//select[contains(@data-testid, 'dropdown-model')]"))
     )
     const selectModel = new Select(selectModelElement)
     await selectModel.selectByValue(model)
 
     const stakeInput = await this.driver.wait(
-      until.elementLocated(By.xpath("//input[@data-testid='input-stake-create']"))
+      until.elementLocated(By.xpath("//input[@data-testid='input-stake']"))
     )
     await stakeInput.clear()
     await stakeInput.sendKeys(stake)
@@ -51,5 +54,21 @@ export class SettingsPage extends BasePage {
     // call create validator button
     await createValidatorBtn.click()
     await this.driver.navigate().refresh()
+  }
+
+  async createValidatorIfRequired() {
+    const initialValidators = await this.getValidatorsElements()
+    if (initialValidators.length < 1) {
+      await this.createValidator({
+        provider: 'heuristai',
+        model: 'mistralai/mixtral-8x7b-instruct',
+        stake: 7
+      })
+      const existingValidators = await this.getValidatorsElements()
+      expect(
+        existingValidators.length,
+        'number of validators should be greather than old validators list'
+      ).be.greaterThan(initialValidators.length)
+    }
   }
 }

@@ -4,8 +4,8 @@ on:
   pull_request:
     types:
       - opened
-      - ready_for_review
-      - reopened
+      - labeled
+      - synchronize
   pull_request_review:
     types:
       - submitted
@@ -19,7 +19,27 @@ permissions:
   contents: read
 
 jobs:
+  triggers:
+    name: Get Triggers
+    runs-on: ubuntu-latest
+    outputs:
+      is_pull_request_opened: ${{ github.event_name == 'pull_request' && github.event.action == 'opened'}}
+      is_pull_request_review_approved: ${{ github.event_name == 'pull_request_review' && github.event.review.state == 'APPROVED'}}
+      is_pull_request_labeled_with_run_tests: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-tests')}}
+    steps:
+      - run: true
   test:
     name: Unit Tests
-    if: ${{ github.event.review.state == 'APPROVED' || github.event_name == 'pull_request' }}
+    needs: triggers
+    if: ${{ needs.triggers.outputs.is_pull_request_opened == 'true' || needs.triggers.outputs.is_pull_request_review_approved == 'true' || needs.triggers.outputs.is_pull_request_labeled_with_run_tests == 'true' }}
     uses: ./.github/workflows/frontend-unit-tests.yml
+    secrets:
+      codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+  load-test:
+    name: Load Tests
+    needs: triggers
+    if: ${{ needs.triggers.outputs.is_pull_request_opened == 'true' || needs.triggers.outputs.is_pull_request_review_approved == 'true' || needs.triggers.outputs.is_pull_request_labeled_with_run_tests == 'true' }}
+    uses: ./.github/workflows/load-test-oha.yml
+    with:
+      oha-version: "v1.4.5"

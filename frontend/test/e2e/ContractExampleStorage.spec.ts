@@ -1,6 +1,7 @@
 import { WebDriver, By, until } from 'selenium-webdriver'
 import { ContractsPage } from '../pages/ContractsPage.js'
 import { RunDebugPage } from '../pages/RunDebugPage.js'
+import { SettingsPage } from '../pages/SettingsPage.js'
 import { before, describe, after, it } from 'node:test'
 import { expect } from 'chai'
 import { getDriver } from '../utils/driver.js'
@@ -8,19 +9,25 @@ import { getDriver } from '../utils/driver.js'
 let driver: WebDriver
 let contractsPage: ContractsPage
 let runDebugPage: RunDebugPage
+let settingsPage: SettingsPage
 
 describe('Contract Example Storage', () => {
   before(async () => {
     driver = await getDriver()
-    await driver.manage().setTimeouts({ implicit: 10000 })
     contractsPage = new ContractsPage(driver)
     runDebugPage = new RunDebugPage(driver)
+    settingsPage = new SettingsPage(driver)
+
+    await contractsPage.navigate()
+    await contractsPage.waitUntilVisible()
+    await contractsPage.skipTutorial()
+    await settingsPage.navigate()
+    await settingsPage.createValidatorIfRequired()
   })
 
   it('should open Storage example contract', async () => {
     await contractsPage.navigate()
     await contractsPage.waitUntilVisible()
-    await contractsPage.skipTutorial()
     await contractsPage.openContract('storage.gpy')
     const tabs = await driver.findElements(By.xpath("//div[contains(@class, 'contract-item')]"))
     expect(tabs.length, 'Number of tabs should be 2').equal(2)
@@ -33,16 +40,18 @@ describe('Contract Example Storage', () => {
     const nameOfContract = await driver.wait(
       until.elementLocated(
         By.xpath(
-          "//div[contains(@class, 'text-xs text-neutral-800 dark:text-neutral-200') and contains(text(), 'storage.gpy')]"
+          "//*[@data-testid='current-contract-name' and text()='storage.gpy']"
         )
-      )
+      ),
+      2000
     )
     expect(nameOfContract, 'Storage file name contract should be visible').not.null
 
     const initialStorageInput = await driver.wait(
       until.elementLocated(
         By.xpath("//input[contains(@name, 'initial_storage') and contains(@type, 'text')]")
-      )
+      ),
+      2000
     )
     expect(initialStorageInput, 'Initial Storage input should be visible').not.null
     await initialStorageInput.clear()
@@ -54,7 +63,7 @@ describe('Contract Example Storage', () => {
   })
 
   it('should deploy the contract Storage', async () => {
-    await driver.wait(until.elementLocated(By.xpath("//button[text()='Deploy']"))).click()
+    await driver.wait(until.elementLocated(By.xpath("//button[@data-testid='btn-deploy-contract']")), 2000).click()
 
     // locate elements that should be visible
     const contractStateTitle = await driver.wait(
@@ -70,21 +79,17 @@ describe('Contract Example Storage', () => {
     const executeTransactionsTitle = await driver.wait(
       until.elementLocated(
         By.xpath("//h5[contains(@class, 'text-sm') and contains(text(), 'Execute Transactions')]")
-      )
+      ),
+      2000
     )
     expect(executeTransactionsTitle, 'Execute transactions title section should be visible').not
       .null
 
-    const latestTransactions = await driver.wait(
-      until.elementLocated(
-        By.xpath("//h5[contains(@class, 'text-sm') and contains(text(), 'Latest Transactions')]")
-      )
-    )
-    expect(latestTransactions, 'Latest transactions title section should be visible').not.null
+    const latestTransactions = await driver.findElement(By.xpath("//*[@data-testid='latest-transactions']"));
+    expect(latestTransactions, 'Latest transactions section should be visible').not.null
   })
 
   it('should call get_storage state', async () => {
-  
     const stateBtn = await driver.wait(
       until.elementLocated(By.xpath("//button[text()='get_storage']")),
       25000

@@ -2,6 +2,7 @@
 import psycopg2
 from psycopg2 import pool, extras
 from os import environ
+import sqlalchemy as db
 
 from dotenv import load_dotenv
 
@@ -14,17 +15,23 @@ def get_database_credentials(database: str) -> str:
     if database not in ["genlayer", "postgres"]:
         raise ValueError("Invalid database specified")
 
-    db_name = "genlayer_state" if database == "genlayer" else database
+    db_name = get_db_name(database)
     return f"dbname={db_name} user={environ.get('DBUSER')} password={environ.get('DBPASSWORD')} host={environ.get('DBHOST')}"
+
+
+def get_db_name(database: str) -> str:
+    return "genlayer_state" if database == "genlayer" else database
 
 
 class DBClient:
     def __init__(self, database: str) -> None:
+        self.engine = db.create_engine(
+            f"postgresql+psycopg2://{environ.get('DBUSER')}:{environ.get('DBPASSWORD')}@{environ.get('DBHOST')}/{get_db_name(database)}"
+        )
+
         """Initialize the DBClient with connection parameters."""
         database_credentials = get_database_credentials(database)
-        self.connection_pool = psycopg2.pool.SimpleConnectionPool(
-            1, 10, database_credentials
-        )
+        self.connection_pool = pool.SimpleConnectionPool(1, 10, database_credentials)
 
     def get_connection(self):
         """Retrieve a connection from the connection pool."""
@@ -48,8 +55,6 @@ class DBClient:
         conn = self.get_connection()
         try:
             with conn.cursor(cursor_factory=extras.DictCursor) as cursor:
-                print("DBClient ~ ~ query:", query)
-                print("DBClient ~ ~ params:", params)
                 cursor.execute(query, params)
                 conn.commit()
                 if cursor.description:

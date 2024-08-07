@@ -58,6 +58,9 @@ class PredictionMarket(IContract):
                 "score": str, // The score with numbers only, e.g, "1:2", or "-" if the game is not resolved yet
                 "winner": int, // The number of the winning team, 0 for draw, or -1 if the game is not yet finished
             }}
+            It is mandatory that you respond only using the JSON format above,
+            nothing else. Don't include any other words or characters,
+            your output must be only be JSON.
             """
             result = await eq.call_llm(task)
             print(result)

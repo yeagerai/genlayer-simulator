@@ -13,7 +13,6 @@ let contractsPage: ContractsPage
 describe('Settings - Delete Node Validator', () => {
   before(async () => {
     driver = await getDriver()
-    await driver.manage().setTimeouts({ implicit: 10000 })
     settingsPage = new SettingsPage(driver)
     contractsPage = new ContractsPage(driver)
   })
@@ -41,6 +40,9 @@ describe('Settings - Delete Node Validator', () => {
     const deleteBtn = await existingValidators[0].findElement(
       By.xpath("//button[@data-testid = 'validator-item-delete']")
     )
+
+    await driver.actions().move({ origin: deleteBtn }).perform();
+
     await deleteBtn.click()
 
     const deleteValidatorBtn = await driver.wait(
@@ -51,7 +53,7 @@ describe('Settings - Delete Node Validator', () => {
 
     await driver.navigate().refresh()
     const validators = await driver.findElements(
-      By.xpath("//button[@data-testid = 'validator-item-delete']")
+      By.xpath("//button[@data-testid = 'validator-item']")
     )
 
     expect(

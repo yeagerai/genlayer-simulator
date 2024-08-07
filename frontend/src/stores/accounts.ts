@@ -1,33 +1,43 @@
-import { defineStore } from 'pinia'
-import { inject, ref } from 'vue'
-import type { IJsonRpcService } from '@/services'
+import { defineStore } from 'pinia';
+import { computed, ref } from 'vue';
+import { getAccountFromPrivatekey, getPrivateKey } from '@/utils';
 
 export const useAccountsStore = defineStore('accountsStore', () => {
-  const $jsonRpc = inject<IJsonRpcService>('$jsonRpc')
-  const currentUserAddress = ref<string>(
-    localStorage.getItem('accountsStore.currentUserAddress') || ''
-  )
+  const key = localStorage.getItem('accountsStore.currentPrivateKey');
+  const currentPrivateKey = ref<`0x${string}` | null>(
+    key ? (key as `0x${string}`) : null,
+  );
 
-  const accounts = ref<string[]>(
-    localStorage.getItem('accountsStore.accounts')
-      ? (localStorage.getItem('accountsStore.accounts') || '').split(',')
-      : []
-  )
+  const currentUserAddress = computed(() => {
+    return currentPrivateKey.value
+      ? getAccountFromPrivatekey(currentPrivateKey.value).address
+      : '';
+  });
 
-  async function generateNewAccount(): Promise<string | null> {
-    try {
-      const result = await $jsonRpc?.createAccount()
-      if (result && result.status === 'success') {
-        const address = result.data.account_address
-        accounts.value = [...accounts.value, address]
-        currentUserAddress.value = address
-        return address
-      }
-      return null
-    } catch (error) {
-      console.error
-      return null
-    }
+  const privateKeys = ref<`0x${string}`[]>(
+    localStorage.getItem('accountsStore.privateKeys')
+      ? ((localStorage.getItem('accountsStore.privateKeys') || '').split(
+          ',',
+        ) as `0x${string}`[])
+      : [],
+  );
+
+  function generateNewAccount(): `0x${string}` {
+    const privateKey = getPrivateKey();
+    privateKeys.value = [...privateKeys.value, privateKey];
+    currentPrivateKey.value = privateKey;
+    return privateKey;
   }
-  return { currentUserAddress, accounts, generateNewAccount }
-})
+
+  function accountFromPrivateKey(privateKey: `0x${string}`) {
+    return getAccountFromPrivatekey(privateKey);
+  }
+
+  return {
+    currentUserAddress,
+    currentPrivateKey,
+    privateKeys,
+    generateNewAccount,
+    accountFromPrivateKey,
+  };
+});
