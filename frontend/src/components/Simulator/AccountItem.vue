@@ -4,6 +4,7 @@ import { notify } from '@kyvg/vue3-notification';
 import { TrashIcon } from '@heroicons/vue/24/solid';
 import { PowerCircle } from 'lucide-vue-next';
 import { ref } from 'vue';
+
 const store = useAccountsStore();
 
 const setCurentAddress = () => {
