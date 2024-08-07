@@ -9,10 +9,6 @@ import { ref, watch } from 'vue';
 import { useContractsStore } from '@/stores';
 import ContractInfo from '@/components/Simulator/ContractInfo.vue';
 
-// TODO: add account select
-// FIXME: deployment should replace contract, not clear the store
-// FIXME: add notification for deployment start...
-
 const contractsStore = useContractsStore();
 const { isDeployed, address, contract } = useContractQueries();
 
