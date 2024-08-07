@@ -31,6 +31,7 @@
     "cross-env": "^7.0.3",
     "defu": "^6.1.4",
     "dexie": "^4.0.4",
+    "floating-vue": "^5.2.2",
     "hash-sum": "^2.0.0",
     "jump.js": "^1.0.2",
     "lucide-vue-next": "^0.424.0",

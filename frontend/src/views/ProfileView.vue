@@ -44,6 +44,7 @@ const handleCreateNewAccount = async () => {
                 :key="privateKey"
                 :privateKey="privateKey"
                 :active="privateKey === store.currentPrivateKey"
+                :canDelete="true"
               />
             </div>
           </div>
