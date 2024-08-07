@@ -50,6 +50,7 @@ const store = useAccountsStore();
   color: inherit;
   padding: 0px;
   border: 1px solid #4b5563;
+  background: none;
 }
 
 .v-popper__arrow-outer {
