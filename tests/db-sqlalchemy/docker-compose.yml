@@ -1,0 +1,27 @@
+services:
+  postgres-test:
+    image: postgres:12.19-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    # Uncomment for debugging
+    # ports:
+    #   - 5432:5432
+    healthcheck:
+      test: pg_isready -U postgres -d postgres
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    container_name: genlayer_simulator_postgres_db_tests
+
+  tests:
+    build:
+      context: ./
+      dockerfile: ./tests/db-sqlalchemy/Dockerfile
+    environment:
+      POSTGRES_URL: postgresql+psycopg2://postgres:postgres@postgres:5432/postgres
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+    container_name: genlayer_simulator_db_tests

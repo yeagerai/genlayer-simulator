@@ -67,7 +67,7 @@ class MessageHandler:
         function_name: str,
         status: str,
         message: str = "",
-        data={},
+        data: str = "",
         exception=None,
     ):
         if exception:

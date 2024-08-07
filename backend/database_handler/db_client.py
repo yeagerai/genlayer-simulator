@@ -26,7 +26,8 @@ def get_db_name(database: str) -> str:
 class DBClient:
     def __init__(self, database: str) -> None:
         self.engine = db.create_engine(
-            f"postgresql+psycopg2://{environ.get('DBUSER')}:{environ.get('DBPASSWORD')}@{environ.get('DBHOST')}/{get_db_name(database)}"
+            f"postgresql+psycopg2://{environ.get('DBUSER')}:{environ.get('DBPASSWORD')}@{environ.get('DBHOST')}/{get_db_name(database)}",
+            echo=True,
         )
 
         """Initialize the DBClient with connection parameters."""
