@@ -41,12 +41,3 @@ const store = useAccountsStore();
     </template>
   </Dropdown>
 </template>
-
-<style>
-[data-mode='dark'] .v-popper--theme-dropdown .v-popper__inner {
-  color: inherit;
-  padding: 0px;
-  border: 1px solid #4b5563;
-  background: none;
-}
-</style>

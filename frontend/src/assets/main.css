@@ -56,10 +56,19 @@ input[type='number'] {
   -moz-appearance: textfield;
 }
 
+/* floating-vue customization */
+
 .v-popper--theme-tooltip .v-popper__inner {
   font-size: 0.8rem !important;
   padding: 2px 8px !important;
   background: rgba(25, 26, 27, 0.95) !important;
+}
+
+[data-mode='dark'] .v-popper--theme-dropdown .v-popper__inner {
+  color: inherit;
+  padding: 0px;
+  border: 1px solid #4b5563;
+  background: none;
 }
 
 .v-popper__arrow-outer {
