@@ -155,11 +155,12 @@ const tryInitValues = () => {
         :step="1"
         :invalid="newValidatorData.stake < 1"
         v-model="newValidatorData.stake"
+        :forceInteger="true"
         required
         testId="input-stake"
       />
       <FieldError v-if="newValidatorData.stake < 1"
-        >Please enter a number greater than 0.</FieldError
+        >Please enter an integer greater than 0.</FieldError
       >
     </div>
 

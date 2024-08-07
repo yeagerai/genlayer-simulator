@@ -85,10 +85,13 @@ class TransactionsAudit(Base):
 
 class Validators(Base):
     __tablename__ = "validators"
-    __table_args__ = (PrimaryKeyConstraint("id", name="validators_pkey"),)
+    __table_args__ = (
+        PrimaryKeyConstraint("id", name="validators_pkey"),
+        CheckConstraint("stake >= 0", name="stake_unsigned_int"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    stake: Mapped[decimal.Decimal] = mapped_column(Numeric)
+    stake: Mapped[int] = mapped_column(Integer)
     config: Mapped[dict] = mapped_column(JSONB)
     address: Mapped[Optional[str]] = mapped_column(String(255))
     provider: Mapped[Optional[str]] = mapped_column(String(255))
