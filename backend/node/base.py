@@ -34,7 +34,6 @@ class Node:
         if transaction["type"] == 1:
             receipt = self.deploy_contract(
                 transaction["from_address"],
-                transaction_data["class_name"],
                 transaction_data["contract_code"],
                 transaction_data["constructor_args"],
             )
@@ -51,7 +50,6 @@ class Node:
     def deploy_contract(
         self,
         from_address: str,
-        class_name: str,
         code_to_deploy: str,
         constructor_args: dict,
     ):
@@ -59,7 +57,7 @@ class Node:
         try:
             parsed_construction_args = json.loads(constructor_args)
             receipt = self.genvm.deploy_contract(
-                class_name, from_address, code_to_deploy, parsed_construction_args
+                from_address, code_to_deploy, parsed_construction_args
             )
 
         except Exception as e:

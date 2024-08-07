@@ -89,7 +89,6 @@ def deploy_intelligent_contract(
 
     transaction_data = {
         "contract_address": contract_address,
-        "class_name": class_name,
         "contract_code": contract_code,
         "constructor_args": constructor_args,
     }
