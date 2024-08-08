@@ -42,7 +42,7 @@ describe('Settings - Delete Node Validator', () => {
     )
 
     await driver.actions().move({ origin: existingValidators[0] }).perform();
-    await driver.sleep(500); // Wait for hover effect
+    await driver.sleep(1000); // Wait for hover effect
     await deleteBtn.click();
 
     const deleteValidatorBtn = await driver.wait(

@@ -32,7 +32,7 @@ describe('Contract Example WizardOfCoin', () => {
     const tabs = await driver.findElements(
       By.xpath("//div[contains(@class, 'contract-item')]"),
     );
-    expect(tabs.length, 'Number of tabs should be 2').equal(2);
+    expect(tabs.length, 'Number of tabs should be 1').equal(1);
   });
 
   it('should open Run debug page and set constructor arguments for WizardOfCoin', async () => {

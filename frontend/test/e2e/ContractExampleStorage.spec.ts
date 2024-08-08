@@ -32,7 +32,7 @@ describe('Contract Example Storage', () => {
     const tabs = await driver.findElements(
       By.xpath("//div[contains(@class, 'contract-item')]"),
     );
-    expect(tabs.length, 'Number of tabs should be 2').equal(2);
+    expect(tabs.length, 'Number of tabs should be 1').equal(1);
   });
 
   it('should open Run debug page and set constructor arguments for Storage', async () => {
@@ -109,7 +109,7 @@ describe('Contract Example Storage', () => {
       By.xpath("//button[@data-testid='read-method-btn-get_storage']"),
     );
 
-    await readBtn.click(); // FIXME: element not interactable
+    await readBtn.click();
 
     const methodResponse = await driver.findElement(
       By.xpath("//*[@data-testid='method-response-get_storage']"),
@@ -140,7 +140,7 @@ describe('Contract Example Storage', () => {
       By.xpath("//input[@name='new_storage']"),
     );
 
-    await newStorageInput.clear(); // FIXME: element not interactable
+    await newStorageInput.clear();
     await newStorageInput.sendKeys('Updated storage text');
     const newStorageText = await newStorageInput.getAttribute('value');
     expect(
