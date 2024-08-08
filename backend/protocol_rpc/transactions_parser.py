@@ -1,15 +1,14 @@
 # rpc/transaction_utils.py
 
 from typing import Any
-from eth_account._utils.legacy_transactions import Transaction, vrs_from
-from eth_account._utils.signing import hash_of_signed_transaction
 import rlp
 import codecs
+from eth_account._utils.legacy_transactions import Transaction, vrs_from
+from eth_account._utils.signing import hash_of_signed_transaction
 from eth_account import Account
+from eth_utils import to_checksum_address
 from hexbytes import HexBytes
 from rlp.sedes import binary
-
-from backend.errors.errors import InvalidTransactionError
 
 
 def decode_signed_transaction(raw_tx):
@@ -27,7 +26,7 @@ def decode_signed_transaction(raw_tx):
         # adding sender to result and cleaning
 
         res["from"] = sender
-        res["to"] = res["to"].hex()
+        res["to"] =  to_checksum_address(f"0x{res['to'].hex()}") if res["to"] else None
         res["data"] = res["data"].hex()
         res["type"] = res.get("type", tx_type)
 
