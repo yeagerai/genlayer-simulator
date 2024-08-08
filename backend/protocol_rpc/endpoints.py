@@ -318,10 +318,10 @@ def send_raw_transaction(
     transactions_processor: TransactionsProcessor,
     signed_transaction: str,
 ) -> dict:
-    print("signed_transaction", signed_transaction)
-
+    # Decode transaction
     decoded_transaction = decode_signed_transaction(signed_transaction)
 
+    # Validate transaction
     if decoded_transaction is None:
         raise InvalidTransactionError("Invalid transaction data")
 
@@ -335,8 +335,6 @@ def send_raw_transaction(
     if not transaction_signature_valid:
         raise InvalidTransactionError("Transaction signature verification failed")
 
-
-    print("decoded_transaction", decoded_transaction)    
     to_address = decoded_transaction["to"]
 
     transaction_data = {}
@@ -366,6 +364,7 @@ def send_raw_transaction(
         to_address = None
         transaction_type = 1
 
+    # Insert transaction into the database
     transaction_id = transactions_processor.insert_transaction(
         from_address, to_address, transaction_data, 0, transaction_type
     )
