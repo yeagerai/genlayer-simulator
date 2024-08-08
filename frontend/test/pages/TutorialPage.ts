@@ -6,9 +6,9 @@ export class TutorialPage extends BasePage {
   override visibleLocator: Locator = By.xpath("//*[@data-testid='contracts-page-title']")
   
   async getStepElement(target: string): Promise<WebElement> {
-    const stepElement = await this.driver.wait(
-      until.elementLocated(By.xpath(`//div[@data-testid='tutorial-step-${target}']`))
-    )
+    const stepElement = await this.driver.findElement(
+      By.xpath(`//div[@data-testid='tutorial-step-${target}']`));
+    
     return stepElement
   }
 
