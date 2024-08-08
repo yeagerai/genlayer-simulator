@@ -2,12 +2,12 @@
 
 from sqlalchemy.orm import Session
 
-from backend.database_handler import models
+from .models import Validators
 from backend.errors.errors import ValidatorNotFound
 
 
 # the to_dict function lives in this module and not in models.py because it's on this layer of abstraction where we convert database objects to our custom data structures
-def to_dict(validator: models.Validators) -> dict:
+def to_dict(validator: Validators) -> dict:
     return {
         "id": validator.id,
         "address": validator.address,
@@ -28,8 +28,8 @@ class ValidatorsRegistry:
         """Private method to check if an account exists, and raise an error if not."""
 
         validator_data = (
-            self.session.query(models.Validators)
-            .filter(models.Validators.address == validator_address)
+            self.session.query(Validators)
+            .filter(Validators.address == validator_address)
             .one_or_none()
         )
 
@@ -38,10 +38,10 @@ class ValidatorsRegistry:
         return to_dict(validator_data)
 
     def count_validators(self):
-        return self.session.query(models.Validators).count()
+        return self.session.query(Validators).count()
 
     def get_all_validators(self) -> list:
-        validators_data = self.session.query(models.Validators).all()
+        validators_data = self.session.query(Validators).all()
         return [to_dict(validator) for validator in validators_data]
 
     def get_validator(self, validator_address: str) -> dict:
@@ -55,7 +55,7 @@ class ValidatorsRegistry:
         model: str,
         config: dict,
     ):
-        new_validator = models.Validators(
+        new_validator = Validators(
             address=validator_address,
             stake=stake,
             provider=provider,
@@ -78,8 +78,8 @@ class ValidatorsRegistry:
         self._get_validator_or_fail(validator_address)
 
         validator = (
-            self.session.query(models.Validators)
-            .filter(models.Validators.address == validator_address)
+            self.session.query(Validators)
+            .filter(Validators.address == validator_address)
             .one()
         )
 
@@ -95,11 +95,11 @@ class ValidatorsRegistry:
     def delete_validator(self, validator_address):
         self._get_validator_or_fail(validator_address)
 
-        self.session.query(models.Validators).filter(
-            models.Validators.address == validator_address
+        self.session.query(Validators).filter(
+            Validators.address == validator_address
         ).delete()
         self.session.commit()
 
     def delete_all_validators(self):
-        self.session.query(models.Validators).delete()
+        self.session.query(Validators).delete()
         self.session.commit()

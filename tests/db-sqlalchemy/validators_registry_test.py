@@ -4,7 +4,6 @@ from typing import Iterable
 import pytest
 from sqlalchemy.orm import Session
 
-from backend.database_handler.models import Base
 from backend.database_handler.validators_registry import ValidatorsRegistry
 
 

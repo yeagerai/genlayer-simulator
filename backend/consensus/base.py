@@ -82,7 +82,7 @@ class ConsensusAlgorithm:
         print(" ~ ~ ~ ~ ~ EXECUTING TRANSACTION: ", transaction)
         # Update transaction status
         self.transactions_processor.update_transaction_status(
-            transaction["id"], TransactionStatus.PROPOSING.value
+            transaction["id"], TransactionStatus.PROPOSING
         )
         # Select Leader and validators
         all_validators = snapshot.get_all_validators()
@@ -110,7 +110,7 @@ class ConsensusAlgorithm:
         votes = {leader["address"]: leader_receipt["vote"]}
         # Update transaction status
         self.transactions_processor.update_transaction_status(
-            transaction["id"], TransactionStatus.COMMITTING.value
+            transaction["id"], TransactionStatus.COMMITTING
         )
 
         # Create Validators
@@ -141,7 +141,7 @@ class ConsensusAlgorithm:
         for i in range(len(validation_results)):
             votes[f"{validator_nodes[i].address}"] = validation_results[i]["vote"]
         self.transactions_processor.update_transaction_status(
-            transaction["id"], TransactionStatus.REVEALING.value
+            transaction["id"], TransactionStatus.REVEALING
         )
 
         if (
@@ -151,7 +151,7 @@ class ConsensusAlgorithm:
             raise Exception("Consensus not reached")
 
         self.transactions_processor.update_transaction_status(
-            transaction["id"], TransactionStatus.ACCEPTED.value
+            transaction["id"], TransactionStatus.ACCEPTED
         )
 
         final = False
