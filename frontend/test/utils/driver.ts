@@ -10,7 +10,7 @@ export async function getDriver(): Promise<WebDriver> {
     .setChromeOptions(options)
     .build();
 
-  await driver.manage().setTimeouts({ implicit: 2000 });
+  await driver.manage().setTimeouts({ implicit: 5000 });
 
   return driver;
 }
