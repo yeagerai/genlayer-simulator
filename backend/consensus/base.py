@@ -4,18 +4,21 @@ DEPLOY_CONTRACTS_QUEUE_KEY = "deploy_contracts"
 DEFAULT_VALIDATORS_COUNT = 5
 DEFAULT_CONSENSUS_SLEEP_TIME = 5
 
-import traceback
 import asyncio
-from backend.node.base import Node
-from backend.database_handler.db_client import DBClient
-from backend.database_handler.types import ConsensusData
+import traceback
+
+from sqlalchemy.orm import Session
+
 from backend.consensus.vrf import get_validators_for_transaction
 from backend.database_handler.chain_snapshot import ChainSnapshot
 from backend.database_handler.contract_snapshot import ContractSnapshot
+from backend.database_handler.db_client import DBClient
 from backend.database_handler.transactions_processor import (
     TransactionsProcessor,
     TransactionStatus,
 )
+from backend.database_handler.types import ConsensusData
+from backend.node.base import Node
 from backend.node.genvm.types import ExecutionMode, Vote
 from backend.protocol_rpc.message_handler.base import MessageHandler
 
@@ -97,9 +100,10 @@ class ConsensusAlgorithm:
 
         print(" ~ ~ ~ ~ ~ EXECUTING TRANSACTION: ", transaction)
         # Update transaction status
-        self.transactions_processor.update_transaction_status(
-            transaction["id"], TransactionStatus.PROPOSING
-        )
+        with Session(self.dbclient.engine) as session:
+            self.transactions_processor.update_transaction_status(
+                transaction["id"], TransactionStatus.PROPOSING, session
+            )
         # Select Leader and validators
         all_validators = snapshot.get_all_validators()
         leader, remaining_validators = get_validators_for_transaction(
@@ -126,9 +130,10 @@ class ConsensusAlgorithm:
         leader_receipt = await leader_node.exec_transaction(transaction)
         votes = {leader["address"]: leader_receipt.vote.value}
         # Update transaction status
-        self.transactions_processor.update_transaction_status(
-            transaction["id"], TransactionStatus.COMMITTING
-        )
+        with Session(self.dbclient.engine) as session:
+            self.transactions_processor.update_transaction_status(
+                transaction["id"], TransactionStatus.COMMITTING, session
+            )
 
         # Create Validators
         validator_nodes = [
@@ -158,9 +163,10 @@ class ConsensusAlgorithm:
 
         for i in range(len(validation_results)):
             votes[f"{validator_nodes[i].address}"] = validation_results[i].vote.value
-        self.transactions_processor.update_transaction_status(
-            transaction["id"], TransactionStatus.REVEALING
-        )
+        with Session(self.dbclient.engine) as session:
+            self.transactions_processor.update_transaction_status(
+                transaction["id"], TransactionStatus.REVEALING, session
+            )
 
         if (
             len([vote for vote in votes.values() if vote == Vote.AGREE.value])
@@ -168,9 +174,10 @@ class ConsensusAlgorithm:
         ):
             raise Exception("Consensus not reached")
 
-        self.transactions_processor.update_transaction_status(
-            transaction["id"], TransactionStatus.ACCEPTED
-        )
+        with Session(self.dbclient.engine) as session:
+            self.transactions_processor.update_transaction_status(
+                transaction["id"], TransactionStatus.ACCEPTED, session
+            )
 
         final = False
         consensus_data = ConsensusData(
@@ -196,6 +203,7 @@ class ConsensusAlgorithm:
             contract_snapshot.update_contract_state(leader_receipt.contract_state)
 
         # Finalize transaction
-        self.transactions_processor.set_transaction_result(
-            transaction["id"], consensus_data
-        )
+        with Session(self.dbclient.engine) as session:
+            self.transactions_processor.set_transaction_result(
+                transaction["id"], consensus_data, session
+            )
