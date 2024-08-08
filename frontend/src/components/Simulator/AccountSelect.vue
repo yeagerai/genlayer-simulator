@@ -2,7 +2,6 @@
 import { useAccountsStore } from '@/stores';
 import AccountItem from '@/components/Simulator/AccountItem.vue';
 import { Dropdown } from 'floating-vue';
-import { shortenAddress } from '@/utils';
 import { Wallet } from 'lucide-vue-next';
 
 const store = useAccountsStore();
@@ -12,11 +11,7 @@ const store = useAccountsStore();
   <Dropdown placement="bottom-end">
     <GhostBtn v-tooltip="'Switch account'">
       <Wallet class="h-5 w-5" />
-      {{
-        shortenAddress(
-          store.accountFromPrivateKey(store.currentPrivateKey).address,
-        )
-      }}
+      {{ store.displayAddress }}
     </GhostBtn>
 
     <template #popper>
