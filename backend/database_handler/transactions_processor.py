@@ -88,21 +88,23 @@ class TransactionsProcessor:
         )
 
     def update_transaction_status(
-        self, transaction_id: int, new_status: TransactionStatus
+        self, transaction_id: int, new_status: TransactionStatus, session=None
     ):
-        transaction = (
-            self.session.query(Transactions).filter_by(id=transaction_id).one()
-        )
+        session = session or self.session
+
+        transaction = session.query(Transactions).filter_by(id=transaction_id).one()
 
         transaction.status = new_status.value
-        self.session.commit()
+        session.commit()
 
-    def set_transaction_result(self, transaction_id: int, consensus_data: dict):
-        transaction = (
-            self.session.query(Transactions).filter_by(id=transaction_id).one()
-        )
+    def set_transaction_result(
+        self, transaction_id: int, consensus_data: dict, session=None
+    ):
+        session = session or self.session
+
+        transaction = session.query(Transactions).filter_by(id=transaction_id).one()
 
         transaction.status = TransactionStatus.FINALIZED.value
         transaction.consensus_data = consensus_data
 
-        self.session.commit()
+        session.commit()

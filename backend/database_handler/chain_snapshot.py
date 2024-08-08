@@ -1,5 +1,7 @@
 # database_handler/chain_snapshot.py
 
+from sqlalchemy.orm import Session
+
 from backend.database_handler.db_client import DBClient
 from backend.database_handler.transactions_processor import TransactionStatus
 from backend.database_handler.validators_registry import ValidatorsRegistry
@@ -8,12 +10,12 @@ from backend.database_handler.validators_registry import ValidatorsRegistry
 class ChainSnapshot:
     def __init__(self, dbclient: DBClient):
         self.dbclient = dbclient
-        self.validators_registry = ValidatorsRegistry(
-            dbclient.engine
-        )  # TODO: fix here needing the session
+        self.validators_registry = ValidatorsRegistry(Session(dbclient.engine.connect))
         self.db_transactions_table = "transactions"
+
+        with Session(dbclient.engine, expire_on_commit=False) as session:
+            self.all_validators = ValidatorsRegistry(session).get_all_validators()
         self.pending_transactions = self._load_pending_transactions()
-        self.all_validators = self._load_all_validators()
         self.num_validators = len(self.all_validators)
 
     def _parse_transaction_data(self, transaction_data: dict) -> dict:
@@ -42,10 +44,6 @@ class ChainSnapshot:
             self._parse_transaction_data(transaction)
             for transaction in pending_transactions
         ]
-
-    def _load_all_validators(self):
-        """Load and return the list of all validators from the database."""
-        return self.validators_registry.get_all_validators()
 
     def get_pending_transactions(self):
         """Return the list of pending transactions."""
