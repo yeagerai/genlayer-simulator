@@ -45,7 +45,7 @@ def create_account(accounts_manager: AccountsManager) -> dict:
 def fund_account(
     accounts_manager: AccountsManager, account_address: str, amount: int
 ) -> dict:
-    if not accounts_manager.is_valid_address_format(account_address):
+    if not accounts_manager.is_valid_address(account_address):
         raise InvalidAddressError(account_address)
 
     accounts_manager.fund_account(account_address, amount)
@@ -59,10 +59,10 @@ def send_transaction(
     to_account: str,
     amount: int,
 ) -> dict:
-    if not accounts_manager.is_valid_address_format(from_account):
+    if not accounts_manager.is_valid_address(from_account):
         raise InvalidAddressError(from_account)
 
-    if not accounts_manager.is_valid_address_format(to_account):
+    if not accounts_manager.is_valid_address(to_account):
         raise InvalidAddressError(to_account)
 
     transaction_id = transactions_processor.insert_transaction(
@@ -81,7 +81,7 @@ def get_transaction_by_id(
 def get_contract_schema(
     accounts_manager: AccountsManager, contract_address: str
 ) -> dict:
-    if not accounts_manager.is_valid_address_format(contract_address):
+    if not accounts_manager.is_valid_address(contract_address):
         raise InvalidAddressError(
             contract_address,
             "Incorrect address format. Please provide a valid address.",
@@ -121,7 +121,7 @@ def get_contract_state(
     method_name: str,
     method_args: list,
 ) -> dict:
-    if not accounts_manager.is_valid_address_format(contract_address):
+    if not accounts_manager.is_valid_address(contract_address):
         raise InvalidAddressError(contract_address)
 
     contract_account = accounts_manager.get_account(contract_address)
@@ -176,7 +176,7 @@ def update_validator(
     model: str,
     config: json,
 ) -> dict:
-    if not accounts_manager.is_valid_address_format(validator_address):
+    if not accounts_manager.is_valid_address(validator_address):
         raise InvalidAddressError(validator_address)
     return validators_registry.update_validator(
         validator_address, stake, provider, model, config
@@ -188,7 +188,7 @@ def delete_validator(
     accounts_manager: AccountsManager,
     validator_address: str,
 ) -> dict:
-    if not accounts_manager.is_valid_address_format(validator_address):
+    if not accounts_manager.is_valid_address(validator_address):
         raise InvalidAddressError(validator_address)
 
     validators_registry.delete_validator(validator_address)
@@ -284,7 +284,7 @@ def send_raw_transaction(
         raise InvalidTransactionError("Invalid transaction data")
 
     from_address = decoded_transaction["from"]
-    if not accounts_manager.is_valid_address_format(from_address):
+    if not accounts_manager.is_valid_address(from_address):
         raise InvalidAddressError(
             from_address, f"Invalid address from_address: {from_address}"
         )
@@ -302,7 +302,7 @@ def send_raw_transaction(
     transaction_type = -1
     if to_address and to_address != "0x":
         # Contract Call
-        if not accounts_manager.is_valid_address_format(to_address):
+        if not accounts_manager.is_valid_address(to_address):
             raise InvalidAddressError(
                 to_address, f"Invalid address to_address: {to_address}"
             )

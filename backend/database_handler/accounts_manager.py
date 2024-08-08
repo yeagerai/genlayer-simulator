@@ -30,7 +30,7 @@ class AccountsManager:
         self.register_new_account(account.address, balance)
         return account
 
-    def is_valid_address_format(address: str) -> bool:
+    def is_valid_address(address: str) -> bool:
         return is_valid_address(address)
 
     def get_account(self, account_address: str):
