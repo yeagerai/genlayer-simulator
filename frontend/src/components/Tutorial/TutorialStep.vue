@@ -32,6 +32,7 @@
           secondary
           v-if="!isLast && isButtonEnabled('buttonSkip')"
           class="v-step__button v-step__button-skip"
+          testId="tutorial-skip-btn"
         >
           {{ labels.buttonSkip }}
         </Btn>
