@@ -26,9 +26,11 @@ from backend.protocol_rpc.address_utils import (
     create_new_address,
 )
 from backend.protocol_rpc.transaction_utils import (
-    decode_signed_transaction_and_verify,
+    decode_signed_transaction,
+    transaction_has_valid_signature,
     decode_method_call_data,
     decode_deployment_data,
+    decode_data_field,
 )
 from backend.errors.errors import InvalidAddressError, InvalidTransactionError
 
@@ -315,21 +317,29 @@ def clear_db_tables(db_client: DBClient, tables: list) -> dict:
 
 def send_raw_transaction(
     transactions_processor: TransactionsProcessor,
-    from_address: str,
     signed_transaction: str,
 ) -> dict:
+    print("signed_transaction", signed_transaction)
 
-    decoded_transaction = decode_signed_transaction_and_verify(signed_transaction)
+    decoded_transaction = decode_signed_transaction(signed_transaction)
 
     if decoded_transaction is None:
-        raise InvalidTransactionError(signed_transaction)
+        raise InvalidTransactionError("Invalid transaction data")
 
     from_address = decoded_transaction["from"]
     if not address_is_in_correct_format(from_address):
         raise InvalidAddressError(from_address)
-
-    to_address = decoded_transaction["to"]
     
+    transaction_signature_valid = transaction_has_valid_signature(
+        signed_transaction, decoded_transaction
+    )
+    if not transaction_signature_valid:
+        raise InvalidTransactionError("Transaction signature verification failed")
+
+
+    print("decoded_transaction", decoded_transaction)    
+    to_address = decoded_transaction["to"]
+
     transaction_data = {}
     result = {}
     if to_address and to_address != "0x":
@@ -344,15 +354,14 @@ def send_raw_transaction(
     else:
         # Contract deployment
         decoded_data = decode_deployment_data(decoded_transaction["data"])
-        to_address = create_new_address()
+        new_contract_address = create_new_address()
 
         transaction_data = {
-            "contract_address": to_address,
-            "class_name": decoded_data["class_name"],
             "contract_code": decoded_data["contract_code"],
             "constructor_args": decoded_data["constructor_args"],
         }
-        result["contract_address"] = to_address
+        result["contract_address"] = new_contract_address
+        to_address = new_contract_address
 
     transaction_id = transactions_processor.insert_transaction(
         from_address, to_address, transaction_data, 0, 2

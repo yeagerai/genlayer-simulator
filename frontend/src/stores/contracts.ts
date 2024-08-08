@@ -262,19 +262,16 @@ export const useContractsStore = defineStore('contractsStore', () => {
           // Deploy the contract
           deployingContract.value = true;
           try {
-            const constructorParamsAsString = JSON.stringify(constructorParams);
             if (accountsStore.currentPrivateKey) {
-              const args = [
-                currentContract.value.content,
-                constructorParamsAsString,
-              ];
+              const constructorParamsAsString = JSON.stringify(constructorParams)
+              const data = toRlp([
+                toHex(currentContract.value.content),
+                toHex(constructorParamsAsString)
+              ])
 
               const signed = await signTransaction(
                 accountsStore.currentPrivateKey,
-                {
-                  from: accountsStore.currentUserAddress,
-                  args,
-                },
+                data,
               );
 
               const resp = await $jsonRpc?.call({

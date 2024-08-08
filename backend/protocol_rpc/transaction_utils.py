@@ -1,7 +1,6 @@
 # rpc/transaction_utils.py
 
 from typing import Any
-from eth_account.typed_transactions import TypedTransaction
 from eth_account._utils.legacy_transactions import Transaction, vrs_from
 from eth_account._utils.signing import hash_of_signed_transaction
 import rlp
@@ -10,58 +9,39 @@ from eth_account import Account
 from hexbytes import HexBytes
 from rlp.sedes import binary
 
-
-def decode_signed_transaction_and_verify(raw_tx):
-    decoded_tx = decode_signed_transaction(raw_tx)
-
-    # Recover the address from the raw tx
-    recovered_address = Account.recover_transaction(raw_tx)
-
-    # Compare the recovered address with the 'from' address in the transaction
-    if recovered_address == decoded_tx["from"]:
-        return decoded_tx
-    else:
-        return None
+from backend.errors.errors import InvalidTransactionError
 
 
-def parse_transaction(raw_tx):
-    txn_bytes = HexBytes(raw_tx)
-    if len(txn_bytes) > 0 and txn_bytes[0] <= 0x7F:
-        # We are dealing with a typed transaction.
-        tx_type = 2
-        tx = TypedTransaction.from_bytes(txn_bytes)
-        msg_hash = tx.hash()
-        vrs = tx.vrs()
-    else:
-        # We are dealing with a legacy transaction.
+def decode_signed_transaction(raw_tx):
+    try:
+        txn_bytes = HexBytes(raw_tx)
         tx_type = 0
 
         tx = Transaction.from_bytes(txn_bytes)
         msg_hash = hash_of_signed_transaction(tx)
         vrs = vrs_from(tx)
 
-    return {"tx_type": tx_type, "tx": tx, "msg_hash": msg_hash, "vrs": vrs}
+        # extracting sender address
+        sender = Account._recover_hash(msg_hash, vrs=vrs)
+        res = tx.as_dict()
+        # adding sender to result and cleaning
 
+        res["from"] = sender
+        res["to"] = res["to"].hex()
+        res["data"] = res["data"].hex()
+        res["type"] = res.get("type", tx_type)
 
-def decode_signed_transaction(raw_tx):
-    parsed = parse_transaction(raw_tx)
-
-    tx_type = parsed["tx_type"]
-    tx = parsed["tx"]
-    msg_hash = parsed["msg_hash"]
-    vrs = parsed["vrs"]
-
-    # extracting sender address
-    sender = Account._recover_hash(msg_hash, vrs=vrs)
-    res = tx.as_dict()
-    # adding sender to result and cleaning
-
-    res["from"] = sender
-    res["to"] = res["to"].hex()
-    res["data"] = res["data"].hex()
-    res["type"] = res.get("type", tx_type)
+    except Exception as e:
+        print("Error decoding transaction", e)
+        return None
 
     return res
+
+
+def transaction_has_valid_signature(raw_tx: str, decoded_tx: dict) -> bool:
+    recovered_address = Account.recover_transaction(raw_tx)
+    # Compare the recovered address with the 'from' address in the transaction
+    return recovered_address == decoded_tx["from"]
 
 
 def decode_data_field(input: HexBytes) -> str:
@@ -82,9 +62,7 @@ def decode_method_call_data(data: str) -> str:
 def decode_deployment_data(data: str) -> str:
     data_bytes = HexBytes(data)
     data_decoded = rlp.decode(data_bytes, DeploymentContractTransactionPayload)
-
     return {
-        "class_name": decode_data_field(data_decoded["class_name"]),
         "contract_code": decode_data_field(data_decoded["contract_code"]),
         "constructor_args": decode_data_field(data_decoded["constructor_args"]),
     }
@@ -92,7 +70,6 @@ def decode_deployment_data(data: str) -> str:
 
 class DeploymentContractTransactionPayload(rlp.Serializable):
     fields = [
-        ("class_name", binary),
         ("contract_code", binary),
         ("constructor_args", binary),
     ]
