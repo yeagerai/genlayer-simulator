@@ -21,10 +21,6 @@ from backend.protocol_rpc.endpoint_generator import (
     generate_rpc_endpoint,
     generate_rpc_endpoint_for_partial,
 )
-from backend.protocol_rpc.address_manager import (
-    address_is_in_correct_format,
-    create_new_address,
-)
 from backend.protocol_rpc.transactions_parser import (
     decode_signed_transaction,
     transaction_has_valid_signature,
@@ -42,15 +38,14 @@ def ping() -> dict:
 
 
 def create_account(accounts_manager: AccountsManager) -> dict:
-    account_address = create_new_address()
-    accounts_manager.create_new_account(account_address, 0)
-    return {"account_address": account_address}
+    new_account = accounts_manager.create_new_account(0)
+    return {"account_address": new_account.address}
 
 
 def fund_account(
     accounts_manager: AccountsManager, account_address: str, amount: int
 ) -> dict:
-    if not address_is_in_correct_format(account_address):
+    if not accounts_manager.is_valid_address_format(account_address):
         raise InvalidAddressError(account_address)
 
     accounts_manager.fund_account(account_address, amount)
@@ -59,65 +54,19 @@ def fund_account(
 
 def send_transaction(
     transactions_processor: TransactionsProcessor,
+    accounts_manager: AccountsManager,
     from_account: str,
     to_account: str,
     amount: int,
 ) -> dict:
-    if not address_is_in_correct_format(from_account):
+    if not accounts_manager.is_valid_address_format(from_account):
         raise InvalidAddressError(from_account)
 
-    if not address_is_in_correct_format(to_account):
+    if not accounts_manager.is_valid_address_format(to_account):
         raise InvalidAddressError(to_account)
 
     transaction_id = transactions_processor.insert_transaction(
         from_account, to_account, None, amount, 0
-    )
-
-    return {"transaction_id": transaction_id}
-
-
-def deploy_intelligent_contract(
-    transactions_processor: TransactionsProcessor,
-    from_account: str,
-    class_name: str,
-    contract_code: str,
-    constructor_args: str,
-) -> dict:
-    if not address_is_in_correct_format(from_account):
-        raise InvalidAddressError(from_account)
-
-    contract_address = create_new_address()
-
-    transaction_data = {
-        "contract_address": contract_address,
-        "contract_code": contract_code,
-        "constructor_args": constructor_args,
-    }
-
-    transaction_id = transactions_processor.insert_transaction(
-        from_account, None, transaction_data, 0, 1
-    )
-    return {"transaction_id": transaction_id, "contract_address": contract_address}
-
-
-def call_contract_function(
-    transactions_processor: TransactionsProcessor,
-    from_address: str,
-    contract_address: str,
-    function_name: str,
-    function_args: list,
-) -> dict:
-    if not address_is_in_correct_format(from_address):
-        raise InvalidAddressError(from_address)
-    if not address_is_in_correct_format(contract_address):
-        raise InvalidAddressError(contract_address)
-
-    transaction_data = {
-        "function_name": function_name,
-        "function_args": function_args,
-    }
-    transaction_id = transactions_processor.insert_transaction(
-        from_address, contract_address, transaction_data, 0, 2
     )
 
     return {"transaction_id": transaction_id}
@@ -132,7 +81,7 @@ def get_transaction_by_id(
 def get_contract_schema(
     accounts_manager: AccountsManager, contract_address: str
 ) -> dict:
-    if not address_is_in_correct_format(contract_address):
+    if not accounts_manager.is_valid_address_format(contract_address):
         raise InvalidAddressError(
             contract_address,
             "Incorrect address format. Please provide a valid address.",
@@ -172,7 +121,7 @@ def get_contract_state(
     method_name: str,
     method_args: list,
 ) -> dict:
-    if not address_is_in_correct_format(contract_address):
+    if not accounts_manager.is_valid_address_format(contract_address):
         raise InvalidAddressError(contract_address)
 
     contract_account = accounts_manager.get_account(contract_address)
@@ -206,12 +155,13 @@ def get_validator(
 
 def create_validator(
     validators_registry: ValidatorsRegistry,
+    accounts_manager: AccountsManager,
     stake: int,
     provider: str,
     model: str,
     config: json,
 ) -> dict:
-    new_address = create_new_address()
+    new_address = accounts_manager.create_new_account()["address"]
     return validators_registry.create_validator(
         new_address, stake, provider, model, config
     )
@@ -219,13 +169,14 @@ def create_validator(
 
 def update_validator(
     validators_registry: ValidatorsRegistry,
+    accounts_manager: AccountsManager,
     validator_address: str,
     stake: int,
     provider: str,
     model: str,
     config: json,
 ) -> dict:
-    if not address_is_in_correct_format(validator_address):
+    if not accounts_manager.is_valid_address_format(validator_address):
         raise InvalidAddressError(validator_address)
     return validators_registry.update_validator(
         validator_address, stake, provider, model, config
@@ -233,9 +184,11 @@ def update_validator(
 
 
 def delete_validator(
-    validators_registry: ValidatorsRegistry, validator_address: str
+    validators_registry: ValidatorsRegistry,
+    accounts_manager: AccountsManager,
+    validator_address: str,
 ) -> dict:
-    if not address_is_in_correct_format(validator_address):
+    if not accounts_manager.is_valid_address_format(validator_address):
         raise InvalidAddressError(validator_address)
 
     validators_registry.delete_validator(validator_address)
@@ -264,6 +217,7 @@ def get_providers_and_models(config: GlobalConfiguration) -> dict:
 # and reuse the generate single random validator function
 def create_random_validators(
     validators_registry: ValidatorsRegistry,
+    accounts_manager: AccountsManager,
     config: GlobalConfiguration,
     count: int,
     min_stake: int,
@@ -276,7 +230,7 @@ def create_random_validators(
 
     for _ in range(count):
         stake = random.uniform(min_stake, max_stake)
-        validator_address = create_new_address()
+        validator_address = accounts_manager.create_new_account()["address"]
         details = random_validator_config(config.get_ollama_url, providers=providers)
         new_validator = validators_registry.create_validator(
             validator_address,
@@ -292,9 +246,12 @@ def create_random_validators(
 
 
 def create_random_validator(
-    validators_registry: ValidatorsRegistry, config: GlobalConfiguration, stake: int
+    validators_registry: ValidatorsRegistry,
+    accounts_manager: AccountsManager,
+    config: GlobalConfiguration,
+    stake: int,
 ) -> dict:
-    validator_address = create_new_address()
+    validator_address = accounts_manager.create_new_account()["address"]
     details = random_validator_config(config.get_ollama_url)
     response = validators_registry.create_validator(
         validator_address,
@@ -316,6 +273,7 @@ def clear_db_tables(db_client: DBClient, tables: list) -> dict:
 
 def send_raw_transaction(
     transactions_processor: TransactionsProcessor,
+    accounts_manager: AccountsManager,
     signed_transaction: str,
 ) -> dict:
     # Decode transaction
@@ -326,9 +284,11 @@ def send_raw_transaction(
         raise InvalidTransactionError("Invalid transaction data")
 
     from_address = decoded_transaction["from"]
-    if not address_is_in_correct_format(from_address):
-        raise InvalidAddressError(from_address, f"Invalid address from_address: {from_address}")
-    
+    if not accounts_manager.is_valid_address_format(from_address):
+        raise InvalidAddressError(
+            from_address, f"Invalid address from_address: {from_address}"
+        )
+
     transaction_signature_valid = transaction_has_valid_signature(
         signed_transaction, decoded_transaction
     )
@@ -342,8 +302,10 @@ def send_raw_transaction(
     transaction_type = -1
     if to_address and to_address != "0x":
         # Contract Call
-        if not address_is_in_correct_format(to_address):
-            raise InvalidAddressError(to_address, f"Invalid address to_address: {to_address}")
+        if not accounts_manager.is_valid_address_format(to_address):
+            raise InvalidAddressError(
+                to_address, f"Invalid address to_address: {to_address}"
+            )
         decoded_data = decode_method_call_data(decoded_transaction["data"])
         transaction_data = {
             "function_name": decoded_data["function_name"],
@@ -353,7 +315,7 @@ def send_raw_transaction(
     else:
         # Contract deployment
         decoded_data = decode_deployment_data(decoded_transaction["data"])
-        new_contract_address = create_new_address()
+        new_contract_address = accounts_manager.create_new_account()["address"]
 
         transaction_data = {
             "contract_address": new_contract_address,
@@ -394,26 +356,30 @@ def register_all_rpc_endpoints(
         clear_db_tables, genlayer_db_client, ["current_state", "transactions"]
     )
     register_rpc_endpoint_for_partial(get_providers_and_models, config)
-    register_rpc_endpoint_for_partial(create_validator, validators_registry)
-    register_rpc_endpoint_for_partial(update_validator, validators_registry)
+    register_rpc_endpoint_for_partial(
+        create_validator, validators_registry, accounts_manager
+    )
+    register_rpc_endpoint_for_partial(
+        update_validator, validators_registry, accounts_manager
+    )
     register_rpc_endpoint_for_partial(delete_validator, validators_registry)
     register_rpc_endpoint_for_partial(get_validator, validators_registry)
     register_rpc_endpoint_for_partial(delete_all_validators, validators_registry)
     register_rpc_endpoint_for_partial(get_all_validators, validators_registry)
     register_rpc_endpoint_for_partial(
-        create_random_validator, validators_registry, config
+        create_random_validator, validators_registry, accounts_manager, config
     )
     register_rpc_endpoint_for_partial(
-        create_random_validators, validators_registry, config
+        create_random_validators, validators_registry, accounts_manager, config
     )
-    register_rpc_endpoint_for_partial(send_transaction, transactions_processor)
     register_rpc_endpoint_for_partial(
-        deploy_intelligent_contract, transactions_processor
+        send_transaction, transactions_processor, accounts_manager
     )
-    register_rpc_endpoint_for_partial(call_contract_function, transactions_processor)
     register_rpc_endpoint_for_partial(create_account, accounts_manager)
     register_rpc_endpoint_for_partial(fund_account, accounts_manager)
     register_rpc_endpoint_for_partial(get_contract_schema, accounts_manager)
     register_rpc_endpoint_for_partial(get_contract_state, accounts_manager)
     register_rpc_endpoint_for_partial(get_transaction_by_id, transactions_processor)
-    register_rpc_endpoint_for_partial(send_raw_transaction, transactions_processor)
+    register_rpc_endpoint_for_partial(
+        send_raw_transaction, transactions_processor, accounts_manager
+    )
