@@ -3,6 +3,9 @@
 import json
 from enum import Enum
 
+from models import Transactions, TransactionsAudit
+from sqlalchemy.orm import Session
+
 from backend.database_handler.db_client import DBClient
 
 
@@ -18,10 +21,8 @@ class TransactionStatus(Enum):
 
 
 class TransactionsProcessor:
-    def __init__(self, db_client: DBClient):
-        self.db_client = db_client
-        self.db_transactions_table = "transactions"
-        self.db_audits_table = "transactions_audit"
+    def __init__(self, session: Session):
+        self.session = session
 
     def _parse_transaction_data(self, transaction_data: dict) -> dict:
         return {
@@ -45,26 +46,29 @@ class TransactionsProcessor:
         self, from_address: str, to_address: str, data: dict, value: float, type: int
     ) -> int:
         # Insert transaction into the transactions table
-        new_transaction = {
-            "from_address": from_address,
-            "to_address": to_address,
-            "data": json.dumps(data),
-            "value": value,
-            "type": type,
-            "status": TransactionStatus.PENDING.value,
-        }
-        transaction_id = self.db_client.insert(
-            self.db_transactions_table, new_transaction, return_column="id"
+        new_transaction = Transactions(
+            from_address=from_address,
+            to_address=to_address,
+            data=json.dumps(data),
+            value=value,
+            type=type,
+            status=TransactionStatus.PENDING.value,
         )
 
-        # Insert transaction audit record into the transactions_audit table
-        transaction_audit_record = {
-            "transaction_id": transaction_id,
-            "data": json.dumps(new_transaction),
-        }
-        self.db_client.insert(self.db_audits_table, transaction_audit_record)
+        self.session.add(
+            new_transaction
+        )  # SQLAlchemy populates all the fields that are set by the database, like the id and created_at fields
 
-        return transaction_id
+        # Insert transaction audit record into the transactions_audit table
+        transaction_audit_record = TransactionsAudit(
+            transaction_id=new_transaction, data=json.dumps(new_transaction)
+        )
+
+        self.session.add(transaction_audit_record)
+
+        self.session.commit()
+
+        return new_transaction.id
 
     def get_transaction_by_id(self, transaction_id: int) -> dict:
         condition = f"id = {transaction_id}"
