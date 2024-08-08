@@ -215,6 +215,22 @@ class GenVM:
         return contract_schema
 
     @staticmethod
+    def get_abi_param_type(param_type: str) -> str:
+        if param_type == "int":
+            return "uint256"
+        if param_type == "str":
+            return "string"
+        if param_type == "bool":
+            return "bool"
+        if param_type == "dict":
+            return "bytes"
+        if param_type == "list":
+            return "bytes"
+        if param_type == "None":
+            return "None"
+        return param_type
+
+    @staticmethod
     def generate_abi_from_schema_methods(contract_schema_methods: dict) -> list:
         abi = []
 
@@ -227,10 +243,17 @@ class GenVM:
             }
 
             for input_name, input_type in method_info["inputs"].items():
-                abi_entry["inputs"].append({"name": input_name, "type": input_type})
+                abi_entry["inputs"].append(
+                    {"name": input_name, "type": GenVM.get_abi_param_type(input_type)}
+                )
 
             if method_info["output"]:
-                abi_entry["outputs"].append({"name": "", "type": method_info["output"]})
+                abi_entry["outputs"].append(
+                    {
+                        "name": "",
+                        "type": GenVM.get_abi_param_type(method_info["output"]),
+                    }
+                )
 
             if method_name == "__init__":
                 abi_entry["type"] = "constructor"
