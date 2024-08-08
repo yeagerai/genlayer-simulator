@@ -50,7 +50,6 @@ const handleCallContractMethod = async ({
   params: any[];
 }) => {
   const result = await contractsStore.callContractMethod({
-    userAccount: accountsStore.currentUserAddress || '',
     localContractId: contractsStore.deployedContract?.contractId || '',
     method: `${method}`,
     params,
