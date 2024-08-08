@@ -1,9 +1,12 @@
 import { getAccountFromPrivatekey } from './accounts';
 
+import type {Address} from '@/types';
+
 export async function signTransaction(
-  privateKey: `0x${string}`,
-  data: `0x${string}`,
+  privateKey: Address,
+  data: Address,
+  to: Address | undefined,
 ): Promise<string> {
   const account = getAccountFromPrivatekey(privateKey);
-  return account.signTransaction({ data, type: 'legacy' });
+  return account.signTransaction({ data, to, type: 'legacy' });
 }
