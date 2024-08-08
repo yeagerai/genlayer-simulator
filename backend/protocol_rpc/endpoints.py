@@ -342,6 +342,7 @@ def send_raw_transaction(
 
     transaction_data = {}
     result = {}
+    transaction_type = -1
     if to_address and to_address != "0x":
         # Contract Call
         if not address_is_in_correct_format(to_address):
@@ -351,20 +352,23 @@ def send_raw_transaction(
             "function_name": decoded_data["function_name"],
             "function_args": decoded_data["function_args"],
         }
+        transaction_type = 2
     else:
         # Contract deployment
         decoded_data = decode_deployment_data(decoded_transaction["data"])
         new_contract_address = create_new_address()
 
         transaction_data = {
+            "contract_address": new_contract_address,
             "contract_code": decoded_data["contract_code"],
             "constructor_args": decoded_data["constructor_args"],
         }
         result["contract_address"] = new_contract_address
-        to_address = new_contract_address
+        to_address = None
+        transaction_type = 1
 
     transaction_id = transactions_processor.insert_transaction(
-        from_address, to_address, transaction_data, 0, 2
+        from_address, to_address, transaction_data, 0, transaction_type
     )
 
     print("decoded_transaction", decoded_transaction, transaction_data)
