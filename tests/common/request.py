@@ -3,10 +3,15 @@ import os
 import json
 import requests
 import time
-
 from dotenv import load_dotenv
 
+from eth_account import Account
+
 load_dotenv()
+
+account = Account.from_key(
+    "0x8b077ea579fbe175d1f3ce2f04b32cbbed0b7b47cb1d572c3c7581249c4512bd"
+)
 
 
 def payload(function_name: str, *args) -> dict:

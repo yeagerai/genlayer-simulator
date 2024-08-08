@@ -26,7 +26,7 @@ def decode_signed_transaction(raw_tx):
         # adding sender to result and cleaning
 
         res["from"] = sender
-        res["to"] =  to_checksum_address(f"0x{res['to'].hex()}") if res["to"] else None
+        res["to"] = to_checksum_address(f"0x{res['to'].hex()}") if res["to"] else None
         res["data"] = res["data"].hex()
         res["type"] = res.get("type", tx_type)
 
