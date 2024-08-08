@@ -161,7 +161,7 @@ def create_validator(
     model: str,
     config: json,
 ) -> dict:
-    new_address = accounts_manager.create_new_account()["address"]
+    new_address = accounts_manager.create_new_account().address
     return validators_registry.create_validator(
         new_address, stake, provider, model, config
     )
@@ -230,7 +230,7 @@ def create_random_validators(
 
     for _ in range(count):
         stake = random.uniform(min_stake, max_stake)
-        validator_address = accounts_manager.create_new_account()["address"]
+        validator_address = accounts_manager.create_new_account().address
         details = random_validator_config(config.get_ollama_url, providers=providers)
         new_validator = validators_registry.create_validator(
             validator_address,
@@ -251,7 +251,7 @@ def create_random_validator(
     config: GlobalConfiguration,
     stake: int,
 ) -> dict:
-    validator_address = accounts_manager.create_new_account()["address"]
+    validator_address = accounts_manager.create_new_account().address
     details = random_validator_config(config.get_ollama_url)
     response = validators_registry.create_validator(
         validator_address,
@@ -315,7 +315,8 @@ def send_raw_transaction(
     else:
         # Contract deployment
         decoded_data = decode_deployment_data(decoded_transaction["data"])
-        new_contract_address = accounts_manager.create_new_account()["address"]
+        new_contract_address = accounts_manager.create_new_account().address
+        print("New contract address", new_contract_address)
 
         transaction_data = {
             "contract_address": new_contract_address,

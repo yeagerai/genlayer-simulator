@@ -25,12 +25,12 @@ class AccountsManager:
             "updated_at": account_data["updated_at"].isoformat(),
         }
 
-    def create_new_account(self, balance: int) -> Account:
+    def create_new_account(self, balance: int = 0) -> Account:
         account = Account.create()
         self.register_new_account(account.address, balance)
         return account
 
-    def is_valid_address(address: str) -> bool:
+    def is_valid_address(self, address: str) -> bool:
         return is_valid_address(address)
 
     def get_account(self, account_address: str):
