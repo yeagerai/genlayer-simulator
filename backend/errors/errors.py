@@ -96,12 +96,7 @@ class InvalidTransactionError(Exception):
 
     def __init__(
         self,
-        input_name: str,
-        input_value: str,
         message: str = "Invalid transaction",
     ):
-        self.input_name = input_name
-        self.input_value = input_value
         self.message = message
         super().__init__(self.message)
-
