@@ -34,7 +34,7 @@ const handleCreateNewAccount = async () => {
       <PageSection>
         <template #title>Accounts</template>
 
-        <div class="flex max-w-sm flex-col gap-2">
+        <div class="div mr-auto">
           <div
             class="overflow-hidden rounded-md border border-gray-300 dark:border-gray-800"
           >
@@ -49,7 +49,7 @@ const handleCreateNewAccount = async () => {
             </div>
           </div>
 
-          <Btn @click="handleCreateNewAccount">
+          <Btn @click="handleCreateNewAccount" class="mt-2 w-full">
             <PlusIcon class="h-5 w-5" />
             Generate New Address</Btn
           >

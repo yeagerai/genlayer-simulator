@@ -4,6 +4,7 @@ import { notify } from '@kyvg/vue3-notification';
 import { TrashIcon } from '@heroicons/vue/24/solid';
 import { PowerCircle } from 'lucide-vue-next';
 import { ref } from 'vue';
+import CopyTextButton from '../global/CopyTextButton.vue';
 
 const store = useAccountsStore();
 
@@ -54,9 +55,14 @@ const deleteModalOpen = ref(false);
         {{ store.accountFromPrivateKey(privateKey).address }}
       </span>
 
+      <CopyTextButton
+        :text="store.accountFromPrivateKey(privateKey).address"
+        class="opacity-0 group-hover:opacity-100"
+      />
+
       <TrashIcon
         v-if="canDelete"
-        class="h-4 w-4 text-gray-400 opacity-0 transition-all hover:text-red-500 group-hover:opacity-100"
+        class="h-4 w-4 shrink-0 text-gray-400 opacity-0 transition-all hover:text-red-500 group-hover:opacity-100"
         @click.stop="deleteModalOpen = true"
       />
     </button>
