@@ -1,5 +1,5 @@
 services:
-  postgres-test:
+  postgrestest:
     image: postgres:12.19-alpine
     environment:
       POSTGRES_USER: postgres
@@ -20,8 +20,8 @@ services:
       context: ./
       dockerfile: ./tests/db-sqlalchemy/Dockerfile
     environment:
-      POSTGRES_URL: postgresql+psycopg2://postgres:postgres@postgres:5432/postgres
+      POSTGRES_URL: postgresql+psycopg2://postgres:postgres@postgrestest:5432/postgres
     depends_on:
-      postgres-test:
+      postgrestest:
         condition: service_healthy
     container_name: genlayer_simulator_db_tests
