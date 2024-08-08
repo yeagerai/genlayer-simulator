@@ -4,6 +4,7 @@ from backend.database_handler.validators_registry import ValidatorsRegistry
 import pytest
 import os
 from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 
 @pytest.fixture
@@ -12,13 +13,23 @@ def engine():
     engine = create_engine(postgres_url)
     Base.metadata.create_all(engine)
     yield engine
-
     Base.metadata.drop_all(engine)
 
 
-def test_validators_registry(engine):
-    validators_registry = ValidatorsRegistry(engine)
+@pytest.fixture
+def session(engine):
+    session_maker = sessionmaker(bind=engine)
+    session = session_maker()
+    yield session
+    session.close()
 
+
+@pytest.fixture
+def validators_registry(session):
+    yield ValidatorsRegistry(session)
+
+
+def test_validators_registry(validators_registry: ValidatorsRegistry):
     validator_address = "0xabcdef"
 
     stake = 1

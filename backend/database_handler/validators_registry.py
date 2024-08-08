@@ -40,8 +40,7 @@ class ValidatorsRegistry:
         return to_dict(validator_data)
 
     def count_validators(self):
-        with Session(self.engine) as session:
-            return session.query(models.Validators).count()
+        return self.session.query(models.Validators).count()
 
     def get_all_validators(self) -> list:
         validators_data = self.session.query(models.Validators).all()
