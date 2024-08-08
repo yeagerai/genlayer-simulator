@@ -27,11 +27,11 @@ watch(nodeStore.logs, () => {
   <div class="absolute bottom-0 left-0 z-20 flex h-full w-full flex-col">
     <div
       id="tutorial-node-output"
-      class="flex h-full w-full cursor-text flex-col overflow-y-auto bg-white p-1 dark:bg-zinc-800 dark:text-white"
+      class="flex h-full w-full cursor-text flex-col overflow-y-auto bg-white dark:bg-zinc-800 dark:text-white"
     >
       <div
         v-show="nodeStore.logs.length > 0"
-        class="flex flex-col overflow-y-auto scroll-smooth p-0"
+        class="flex flex-col overflow-y-auto scroll-smooth p-1"
         ref="scrollContainer"
       >
         <div

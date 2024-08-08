@@ -7,16 +7,13 @@
     :data-testid="'tutorial-step-' + step.target"
   >
     <slot name="header">
-      <div
-        v-if="step.header"
-        class="v-step__header bg-slate-300 dark:bg-zinc-700"
-      >
+      <div v-if="step.header" class="v-step__header text-sm font-semibold">
         <div v-if="step.header.title" v-html="step.header.title"></div>
       </div>
     </slot>
 
     <slot name="content">
-      <div class="v-step__content bg-slate-300 dark:bg-zinc-700">
+      <div class="v-step__content text-sm">
         <div v-if="content" v-html="content"></div>
         <div v-else>
           This is a demo step! The id of this step is {{ hash }} and it targets
@@ -26,35 +23,43 @@
     </slot>
 
     <slot name="actions">
-      <div class="v-step__buttons bg-slate-300 dark:bg-zinc-700">
-        <button
-          @click.prevent="skip"
+      <div
+        class="v-step__buttons flex flex-row items-center justify-center gap-2"
+      >
+        <Btn
+          @click="skip"
+          tiny
+          secondary
           v-if="!isLast && isButtonEnabled('buttonSkip')"
           class="v-step__button v-step__button-skip"
         >
           {{ labels.buttonSkip }}
-        </button>
-        <button
-          @click.prevent="previousStep"
+        </Btn>
+        <!-- <Btn
+          @click="previousStep"
+          tiny
+          secondary
           v-if="!isFirst && isButtonEnabled('buttonPrevious')"
           class="v-step__button v-step__button-previous"
         >
           {{ labels.buttonPrevious }}
-        </button>
-        <button
-          @click.prevent="nextStep"
+        </Btn> -->
+        <Btn
+          @click="nextStep"
+          tiny
           v-if="!isLast && isButtonEnabled('buttonNext')"
           class="v-step__button v-step__button-next"
         >
           {{ labels.buttonNext }}
-        </button>
-        <button
-          @click.prevent="finish"
+        </Btn>
+        <Btn
+          @click="finish"
+          tiny
           v-if="isLast && isButtonEnabled('buttonStop')"
           class="v-step__button v-step__button-stop"
         >
           {{ labels.buttonStop }}
-        </button>
+        </Btn>
       </div>
     </slot>
 
@@ -134,6 +139,7 @@ export default {
         ...{ highlight: this.highlight }, // Use global tour highlight setting first
         ...{ enabledButtons: Object.assign({}, this.enabledButtons) },
         ...this.step.params, // Then use local step parameters if defined
+        placement: this.step.placement || 'bottom',
       };
     },
     /**
@@ -351,30 +357,5 @@ export default {
 
 .v-step__content {
   margin: 0 0 1rem 0;
-}
-
-.v-step__button {
-  background: transparent;
-  border: 0.05rem solid;
-  border-radius: 0.1rem;
-
-  cursor: pointer;
-  display: inline-block;
-  font-size: 0.8rem;
-  height: 1.8rem;
-  line-height: 1rem;
-  outline: none;
-  margin: 0 0.2rem;
-  padding: 0.35rem 0.4rem;
-  text-align: center;
-  text-decoration: none;
-  transition: all 0.2s ease;
-  vertical-align: middle;
-  white-space: nowrap;
-}
-
-.v-step__button:hover {
-  background-color: rgba(white, 0.95);
-  color: #1a3851;
 }
 </style>

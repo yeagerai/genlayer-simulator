@@ -9,6 +9,7 @@ import {
 } from '@/stores';
 import { useDebounceFn } from '@vueuse/core';
 import { notify } from '@kyvg/vue3-notification';
+import { useMockContractData } from './useMockContractData';
 
 // TODO: review why we need this scoped here again
 const schema = ref<any>();
@@ -20,6 +21,11 @@ export function useContractQueries() {
   const contractsStore = useContractsStore();
   const queryClient = useQueryClient();
   const contract = computed(() => contractsStore.currentContract);
+
+  const { mockContractId, mockContractSchema } = useMockContractData();
+
+  const isMock = computed(() => contract.value?.id === mockContractId);
+
 
   const deployedContract = computed(() =>
     contractsStore.deployedContracts.find(
@@ -53,6 +59,10 @@ export function useContractQueries() {
   });
 
   async function fetchContractSchema() {
+    if (isMock.value) {
+      return mockContractSchema;
+    }
+
     const result = await $jsonRpc?.getContractSchema({
       code: contract.value?.content ?? '',
     });
@@ -135,6 +145,10 @@ export function useContractQueries() {
 
   async function fetchContractAbi() {
     console.log('fetchContractAbi', address.value);
+    if (isMock.value) {
+      return mockContractSchema;
+    }
+
     const result = await $jsonRpc?.getDeployedContractSchema({
       address: deployedContract.value?.address ?? '',
     });
@@ -218,5 +232,8 @@ export function useContractQueries() {
     deployContract,
     callReadMethod,
     callWriteMethod,
+
+    mockContractSchema,
+    isMock,
   };
 }

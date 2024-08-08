@@ -77,13 +77,15 @@ const handleSaveNewFile = (name: string) => {
       </template>
     </MainTitle>
 
-    <ContractItem
-      @click="store.openFile(contract.id)"
-      v-for="contract in store.contractsOrderedByName"
-      :key="contract.id"
-      :contract="contract"
-      :isActive="contract.id === store.currentContractId"
-    />
+    <div id="tutorial-how-to-change-example">
+      <ContractItem
+        @click="store.openFile(contract.id)"
+        v-for="contract in store.contractsOrderedByName"
+        :key="contract.id"
+        :contract="contract"
+        :isActive="contract.id === store.currentContractId"
+      />
+    </div>
 
     <ContractItem
       v-if="showNewFileInput"

@@ -59,18 +59,18 @@ const handleClearTransactions = () => {
     <EmptyListPlaceholder v-if="transactions.length === 0">
       No transactions yet.
     </EmptyListPlaceholder>
-  </PageSection>
 
-  <ConfirmationModal
-    :open="isClearTransactionsModalOpen"
-    @close="isClearTransactionsModalOpen = false"
-    @confirm="handleClearTransactions"
-    buttonText="Clear Transactions"
-    dangerous
-  >
-    <template #title>Clear Transaction List</template>
-    <template #description
-      >Are you sure you want to clear all transactions?</template
+    <ConfirmationModal
+      :open="isClearTransactionsModalOpen"
+      @close="isClearTransactionsModalOpen = false"
+      @confirm="handleClearTransactions"
+      buttonText="Clear Transactions"
+      dangerous
     >
-  </ConfirmationModal>
+      <template #title>Clear Transaction List</template>
+      <template #description
+        >Are you sure you want to clear all transactions?</template
+      >
+    </ConfirmationModal>
+  </PageSection>
 </template>

@@ -19,7 +19,6 @@ import SimulatorMenuLink from './SimulatorMenuLink.vue';
   >
     <div class="flex flex-col items-center">
       <SimulatorMenuItem
-        id="tutorial-how-to-change-example"
         :to="{ name: 'contracts' }"
         v-tooltip="{ content: 'Contracts', placement: 'right' }"
       >
@@ -27,7 +26,6 @@ import SimulatorMenuLink from './SimulatorMenuLink.vue';
       </SimulatorMenuItem>
 
       <SimulatorMenuItem
-        id="tutorial-how-to-deploy"
         :to="{ name: 'run-debug' }"
         v-tooltip="{ content: 'Run and Debug', placement: 'right' }"
       >

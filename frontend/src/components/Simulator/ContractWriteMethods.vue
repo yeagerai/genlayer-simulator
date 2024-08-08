@@ -8,7 +8,7 @@ import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vu
 
 const { contractAbiQuery } = useContractQueries();
 
-const { data, isLoading } = contractAbiQuery;
+const { data, isPending, isError, error, isRefetching } = contractAbiQuery;
 
 const writeMethods = computed(() => {
   return Object.entries(data.value.methods)
@@ -21,21 +21,37 @@ const writeMethods = computed(() => {
 </script>
 
 <template>
-  <PageSection v-if="data">
-    <template #title>Write Methods</template>
+  <PageSection>
+    <template #title
+      >Write Methods
 
-    <div v-if="isLoading">Loading...</div>
+      <Loader v-if="isRefetching" :size="14" />
+    </template>
 
-    <ContractMethodItem
-      v-for="method in writeMethods"
-      :key="method.methodName"
-      :methodName="method.methodName"
-      :method="method.method"
-      methodType="write"
-    />
+    <div
+      v-if="isPending"
+      class="flex flex-row items-center justify-center gap-2 p-1"
+    >
+      <Loader />
+      Loading...
+    </div>
 
-    <EmptyListPlaceholder v-if="writeMethods.length === 0">
-      No read methods.
-    </EmptyListPlaceholder>
+    <Alert v-else-if="isError" error>
+      {{ error?.message }}
+    </Alert>
+
+    <template v-else-if="data">
+      <ContractMethodItem
+        v-for="method in writeMethods"
+        :key="method.methodName"
+        :methodName="method.methodName"
+        :method="method.method"
+        methodType="write"
+      />
+
+      <EmptyListPlaceholder v-if="writeMethods.length === 0">
+        No read methods.
+      </EmptyListPlaceholder>
+    </template>
   </PageSection>
 </template>

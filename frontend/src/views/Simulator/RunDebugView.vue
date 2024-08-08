@@ -38,15 +38,16 @@ watch(
       />
 
       <ConstructorParameters
+        id="tutorial-how-to-deploy"
         v-if="isDeploymentOpen"
         @deployedContract="isDeploymentOpen = false"
       />
 
-      <ContractReadMethods />
+      <ContractReadMethods v-if="isDeployed" id="tutorial-read-methods" />
 
-      <ContractWriteMethods />
+      <ContractWriteMethods v-if="isDeployed" id="tutorial-write-methods" />
 
-      <TransactionsList />
+      <TransactionsList id="tutorial-tx-response" />
     </template>
 
     <div

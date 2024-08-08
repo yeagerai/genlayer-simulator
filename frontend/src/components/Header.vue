@@ -8,9 +8,11 @@ import GhostBtn from './global/GhostBtn.vue';
 import AccountSelect from '@/components/Simulator/AccountSelect.vue';
 
 const uiStore = useUIStore();
+
 const toggleMode = () => {
   uiStore.toggleMode();
 };
+
 const showTutorial = () => {
   uiStore.runTutorial();
 };
@@ -31,7 +33,7 @@ const showTutorial = () => {
       />
     </RouterLink>
 
-    <div class="flex items-center gap-2 pr-2" id="tutorial-end">
+    <div class="flex items-center gap-2 pr-2">
       <AccountSelect />
 
       <GhostBtn @click="toggleMode" v-tooltip="'Switch theme'">
@@ -39,7 +41,11 @@ const showTutorial = () => {
         <MoonIcon v-else class="h-5 w-5 fill-gray-200" />
       </GhostBtn>
 
-      <GhostBtn @click="showTutorial" v-tooltip="'Show Tutorial'">
+      <GhostBtn
+        @click="showTutorial"
+        v-tooltip="'Show Tutorial'"
+        id="tutorial-end"
+      >
         <PresentationChartLineIcon
           class="h-5 w-5"
           :class="uiStore.mode === 'light' ? 'fill-gray-700' : 'fill-gray-200'"
