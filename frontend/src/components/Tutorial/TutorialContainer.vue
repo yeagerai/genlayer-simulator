@@ -268,7 +268,9 @@ async function nextStep() {
 
 onMounted(() => {
   if (!localStorage.getItem('genlayer.tutorial')) {
-    start();
+    setTimeout(() => {
+      start();
+    }, 1000);
   }
 });
 
