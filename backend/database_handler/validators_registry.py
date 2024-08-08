@@ -1,11 +1,9 @@
 # consensus/domain/state.py
 
-from backend.database_handler import models
-
-from backend.errors.errors import ValidatorNotFound
-
 from sqlalchemy.orm import Session
-from sqlalchemy import Engine
+
+from backend.database_handler import models
+from backend.errors.errors import ValidatorNotFound
 
 
 # the to_dict function lives in this module and not in models.py because it's on this layer of abstraction where we convert database objects to our custom data structures

@@ -1,31 +1,15 @@
 from datetime import datetime
+from typing import Iterable
+
+import pytest
+from sqlalchemy.orm import Session
+
 from backend.database_handler.models import Base
 from backend.database_handler.validators_registry import ValidatorsRegistry
-import pytest
-import os
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 
 @pytest.fixture
-def engine():
-    postgres_url = os.getenv("POSTGRES_URL")
-    engine = create_engine(postgres_url)
-    Base.metadata.create_all(engine)
-    yield engine
-    Base.metadata.drop_all(engine)
-
-
-@pytest.fixture
-def session(engine):
-    session_maker = sessionmaker(bind=engine)
-    session = session_maker()
-    yield session
-    session.close()
-
-
-@pytest.fixture
-def validators_registry(session):
+def validators_registry(session: Session) -> Iterable[ValidatorsRegistry]:
     yield ValidatorsRegistry(session)
 
 
