@@ -316,7 +316,6 @@ def send_raw_transaction(
         # Contract deployment
         decoded_data = decode_deployment_data(decoded_transaction["data"])
         new_contract_address = accounts_manager.create_new_account().address
-        print("New contract address", new_contract_address)
 
         transaction_data = {
             "contract_address": new_contract_address,
