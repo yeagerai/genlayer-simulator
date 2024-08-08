@@ -88,12 +88,16 @@ const handleDeployContract = async ({
 };
 
 const handleClearTransactions = () => {
-  transactionsStore.processingQueue = transactionsStore.processingQueue.filter(
-    (t) => t.localContractId !== contractsStore.currentContractId,
-  );
-  transactionsStore.transactions = transactionsStore.transactions.filter(
-    (t) => t.localContractId !== contractsStore.currentContractId,
-  );
+  transactionsStore.processingQueue.forEach((t) => {
+    if (t.localContractId === contractsStore.currentContractId) {
+      transactionsStore.removeTransaction(t);
+    }
+  });
+  transactionsStore.transactions.forEach((t) => {
+    if (t.localContractId === contractsStore.currentContractId) {
+      transactionsStore.removeTransaction(t);
+    }
+  });
 };
 
 const debouncedGetConstructorInputs = debounce(
@@ -185,7 +189,7 @@ onUnmounted(() => {
           class="flex w-full flex-col bg-slate-100 px-2 py-2 dark:bg-zinc-700"
         >
           <div class="text-sm">Intelligent Contract:</div>
-          <div class="text-xs text-neutral-800 dark:text-neutral-200">
+          <div data-testid="current-contract-name" class="text-xs text-neutral-800 dark:text-neutral-200">
             {{ contractsStore.currentContract?.name }}
           </div>
         </div>
@@ -215,14 +219,13 @@ onUnmounted(() => {
             :calling-method="contractsStore.callingContractMethod"
           />
         </div>
-        <div class="flex flex-col">
-          <TransactionsList
-            :transactions="contractTransactions"
-            @clear-transactions="handleClearTransactions"
-          />
-        </div>
+        <TransactionsList
+          :transactions="contractTransactions"
+          @clear-transactions="handleClearTransactions"
+        />
       </div>
     </div>
+
     <div
       class="flex w-full flex-col bg-slate-100 px-2 py-2 dark:dark:bg-zinc-700"
       v-else

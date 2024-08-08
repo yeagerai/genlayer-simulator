@@ -2,6 +2,7 @@ FROM python:3.12.2-slim AS base
 
 ARG path=/app
 
+RUN mkdir $path
 WORKDIR $path
 
 ADD backend/protocol_rpc/requirements.txt backend/protocol_rpc/requirements.txt
@@ -11,6 +12,8 @@ RUN pip install --no-cache-dir -r backend/protocol_rpc/requirements.txt
 
 ENV PYTHONPATH "${PYTHONPATH}:/${path}"
 ENV FLASK_APP=backend/protocol_rpc/server.py
+RUN groupadd -r backend-user && useradd -r -g backend-user backend-user \
+    && chown -R backend-user:backend-user $path
 
 COPY ../.env .
 COPY backend $path/backend
@@ -18,7 +21,7 @@ COPY backend $path/backend
 ###########START NEW IMAGE : DEBUGGER ###################
 FROM base AS debug
 RUN pip install --no-cache-dir debugpy watchdog
-
+USER backend-user
 CMD watchmedo auto-restart --recursive --pattern="*.py" --ignore-patterns="*.pyc;*__pycache__*" -- python -m debugpy --listen 0.0.0.0:${RPCDEBUGPORT} -m flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}
 
 ###########START NEW IMAGE: PRODUCTION ###################

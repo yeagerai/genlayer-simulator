@@ -35,6 +35,6 @@ import { XMarkIcon } from '@heroicons/vue/16/solid';
 
 <style lang="css">
 .vue-notification-group {
-  margin: 65px 10px 10px;
+  margin: 65px 20px 20px;
 }
 </style>

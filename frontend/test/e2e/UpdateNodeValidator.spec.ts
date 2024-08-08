@@ -1,5 +1,5 @@
-import { WebDriver, By, until, Select } from 'selenium-webdriver'
-
+import { WebDriver, By, until } from 'selenium-webdriver';
+import { Select } from 'selenium-webdriver/lib/select';
 import { SettingsPage } from '../pages/SettingsPage.js'
 import { ContractsPage } from '../pages/ContractsPage.js'
 import { before, describe, after, it } from 'node:test'
@@ -37,32 +37,38 @@ describe('Settings - Update Node Validator', () => {
     ).be.greaterThan(0)
 
     const validator = await existingValidators[0].findElement(
-      By.xpath("//div[@data-testid = 'validator-item']")
+      By.xpath("//div[@data-testid = 'validator-item']"),
     )
     await validator.click()
 
     // provider select
     const selectProviderElement = await driver.wait(
-      until.elementLocated(By.xpath("//select[contains(@data-testid, 'dropdown-provider-update')]"))
+      until.elementLocated(
+        By.xpath("//select[contains(@data-testid, 'dropdown-provider')]"),
+      ),
+      2000,
     )
     const selectProvider = new Select(selectProviderElement)
     await selectProvider.selectByValue('ollama')
 
     // model select
     const selectModelElement = await driver.wait(
-      until.elementLocated(By.xpath("//select[contains(@data-testid, 'dropdown-model-update')]"))
+      until.elementLocated(By.xpath("//select[contains(@data-testid, 'dropdown-model')]")),
+      2000,
     )
     const selectModel = new Select(selectModelElement)
     await selectModel.selectByValue('llama2')
 
     const stakeInput = await driver.wait(
-      until.elementLocated(By.xpath("//input[@data-testid='input-stake-update']"))
+      until.elementLocated(By.xpath("//input[@data-testid='input-stake']")),
+      2000,
     )
     await stakeInput.clear()
     await stakeInput.sendKeys(8)
 
     const updateValidatorBtn = await driver.wait(
-      until.elementLocated(By.xpath("//button[@data-testid='btn-update-validator']"))
+      until.elementLocated(By.xpath("//button[@data-testid='btn-update-validator']")),
+      2000,
     )
     // call save validator button
     await updateValidatorBtn.click()
@@ -70,10 +76,10 @@ describe('Settings - Update Node Validator', () => {
     driver.sleep(10000)
     const validators = await settingsPage.getValidatorsElements()
     const provider = await validators[0].findElement(
-      By.xpath("//span[@data-testid = 'validator-item-provider']")
+      By.xpath("//span[@data-testid = 'validator-item-provider']"),
     )
     const model = await validators[0].findElement(
-      By.xpath("//span[@data-testid = 'validator-item-model']")
+      By.xpath("//span[@data-testid = 'validator-item-model']"),
     )
     const providerText = await provider.getText()
     const modelText = await model.getText()

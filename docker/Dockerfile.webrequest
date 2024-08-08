@@ -1,33 +1,25 @@
-FROM --platform=linux/amd64 python:3.8
+FROM --platform=linux/amd64 python:3.12-slim
 
-RUN apt update
-RUN apt upgrade -y
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends wget gnupg && \
+    wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+    echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends google-chrome-stable && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    useradd -m appuser
 
-RUN apt install wget python3 pip -y
+ENV base=/app
+ENV path=webrequest
+ENV PYTHONPATH="${base}/${path}"
+ENV PATH="${PATH}:${base}"
+RUN mkdir -p $base && chown -R appuser:appuser $base
 
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
-RUN echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list
-RUN apt-get update && apt-get install -y google-chrome-stable
-RUN google-chrome --version
-
-ARG base=/app
-ARG path=webrequest
-
-RUN mkdir $base
+USER appuser
 WORKDIR $base
-
-COPY ../.env .
-# TODO: Logging loaded here
-
-ADD $path $base/$path
-#ADD common $path/common
-
+COPY --chown=appuser:appuser ../.env .
+COPY --chown=appuser:appuser $path $base/$path
 RUN pip install --no-cache-dir -r $path/requirements.txt
-
-ENV PYTHONPATH "${base}/${path}"
-ENV PATH "${PATH}:/${base}"
-
 WORKDIR $path
-
-# You only need to specify python3 because it is an ubuntu image
 CMD ["python3", "server.py"]

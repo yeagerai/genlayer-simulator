@@ -1,4 +1,4 @@
-import { WebDriver, Select } from 'selenium-webdriver'
+import { WebDriver } from 'selenium-webdriver'
 
 import { SettingsPage } from '../pages/SettingsPage.js'
 import { ContractsPage } from '../pages/ContractsPage.js'

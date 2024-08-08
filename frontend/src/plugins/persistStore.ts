@@ -1,4 +1,4 @@
-import type { ContractFile, DeployedContract, TransactionItem } from '@/types';
+import type { ContractFile, DeployedContract } from '@/types';
 import { db, getContractFileName } from '@/utils';
 import { type PiniaPluginContext } from 'pinia';
 
@@ -119,7 +119,7 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
           case 'removeTransaction':
             await db.transactions
               .where('txId')
-              .equals((args[0] as any).id)
+              .equals((args[0] as any).txId)
               .delete();
             break;
           case 'updateTransaction':

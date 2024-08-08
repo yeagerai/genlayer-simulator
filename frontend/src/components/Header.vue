@@ -5,6 +5,7 @@ import { useUIStore, useAccountsStore } from '@/stores';
 import { shortenAddress } from '@/utils';
 import { RouterLink } from 'vue-router';
 import Logo from '@/assets/images/logo.svg';
+import GhostBtn from './global/GhostBtn.vue';
 
 const uiStore = useUIStore();
 const accounts = useAccountsStore();
@@ -30,42 +31,32 @@ const showTutorial = () => {
         ]"
       />
     </RouterLink>
+
     <div class="flex items-center gap-2 pr-2" id="tutorial-end">
-      <RouterLink
-        :to="{ name: 'profile' }"
-        class="rounded-md p-1 px-2 hover:bg-slate-200 dark:hover:bg-zinc-700"
-      >
-        <span class="text-sm font-medium text-primary dark:text-white">
+      <RouterLink :to="{ name: 'profile' }">
+        <GhostBtn class="px-2">
           {{ shortenAddress(accounts.currentUserAddress || '') }}
-        </span>
+        </GhostBtn>
+
         <ToolTip
           :text="accounts.currentUserAddress"
           :options="{ placement: 'bottom' }"
         />
       </RouterLink>
 
-      <button
-        @click="toggleMode"
-        class="rounded-md p-1 hover:bg-slate-200 dark:hover:bg-zinc-700"
-      >
-        <SunIcon
-          v-if="uiStore.mode === 'light'"
-          class="h-5 w-5 fill-gray-700"
-        />
+      <GhostBtn @click="toggleMode">
+        <SunIcon v-if="uiStore.mode === 'light'" class="h-5 w-5" />
         <MoonIcon v-else class="h-5 w-5 fill-gray-200" />
         <ToolTip text="Switch Theme" :options="{ placement: 'bottom' }" />
-      </button>
+      </GhostBtn>
 
-      <button
-        @click="showTutorial"
-        class="rounded-md p-1 hover:bg-slate-200 dark:hover:bg-zinc-700"
-      >
+      <GhostBtn @click="showTutorial">
         <PresentationChartLineIcon
           class="h-5 w-5"
           :class="uiStore.mode === 'light' ? 'fill-gray-700' : 'fill-gray-200'"
         />
         <ToolTip text="Show Tutorial" :options="{ placement: 'bottom' }" />
-      </button>
+      </GhostBtn>
     </div>
   </header>
 </template>

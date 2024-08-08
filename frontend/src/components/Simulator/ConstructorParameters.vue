@@ -3,6 +3,7 @@ import { ref, watch, onMounted } from 'vue';
 import { InputTypesMap } from '@/utils';
 import { notify } from '@kyvg/vue3-notification';
 import { useUIStore } from '@/stores';
+import { ArrowUpTrayIcon } from '@heroicons/vue/16/solid';
 import { ExclamationTriangleIcon } from '@heroicons/vue/24/solid';
 
 interface Props {
@@ -191,7 +192,12 @@ onMounted(() => {
       </div>
     </div>
     <div class="flex w-full flex-col justify-center p-2">
-      <Btn @click="handleDeployContract" :loading="deploying">
+      <Btn
+        testId="btn-deploy-contract"
+        @click="handleDeployContract"
+        :loading="deploying"
+      >
+        <ArrowUpTrayIcon class="h-4 w-4" />
         {{ deploying ? 'Deploying...' : 'Deploy' }}
       </Btn>
     </div>
