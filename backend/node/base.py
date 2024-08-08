@@ -71,8 +71,9 @@ class Node:
     ) -> dict:
         receipt = None
         try:
+            parsed_args = json.loads(args)
             receipt = await self.genvm.run_contract(
-                from_address, function_name, args, self.leader_receipt
+                from_address, function_name, parsed_args, self.leader_receipt
             )
         except Exception as e:
             print("Error running contract", e)
