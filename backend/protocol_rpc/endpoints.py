@@ -21,16 +21,15 @@ from backend.protocol_rpc.endpoint_generator import (
     generate_rpc_endpoint,
     generate_rpc_endpoint_for_partial,
 )
-from backend.protocol_rpc.address_utils import (
+from backend.protocol_rpc.address_manager import (
     address_is_in_correct_format,
     create_new_address,
 )
-from backend.protocol_rpc.transaction_utils import (
+from backend.protocol_rpc.transactions_parser import (
     decode_signed_transaction,
     transaction_has_valid_signature,
     decode_method_call_data,
     decode_deployment_data,
-    decode_data_field,
 )
 from backend.errors.errors import InvalidAddressError, InvalidTransactionError
 
@@ -328,7 +327,7 @@ def send_raw_transaction(
 
     from_address = decoded_transaction["from"]
     if not address_is_in_correct_format(from_address):
-        raise InvalidAddressError(from_address)
+        raise InvalidAddressError(from_address, f"Invalid address from_address: {from_address}")
     
     transaction_signature_valid = transaction_has_valid_signature(
         signed_transaction, decoded_transaction
@@ -346,7 +345,7 @@ def send_raw_transaction(
     if to_address and to_address != "0x":
         # Contract Call
         if not address_is_in_correct_format(to_address):
-            raise InvalidAddressError(to_address)
+            raise InvalidAddressError(to_address, f"Invalid address to_address: {to_address}")
         decoded_data = decode_method_call_data(decoded_transaction["data"])
         transaction_data = {
             "function_name": decoded_data["function_name"],
@@ -370,8 +369,6 @@ def send_raw_transaction(
     transaction_id = transactions_processor.insert_transaction(
         from_address, to_address, transaction_data, 0, transaction_type
     )
-
-    print("decoded_transaction", decoded_transaction, transaction_data)
     result["transaction_id"] = transaction_id
 
     return result
