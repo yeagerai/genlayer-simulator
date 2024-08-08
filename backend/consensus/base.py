@@ -7,15 +7,15 @@ DEFAULT_CONSENSUS_SLEEP_TIME = 5
 import asyncio
 import traceback
 
-from sqlalchemy.orm import Session
-
 from backend.consensus.vrf import get_validators_for_transaction
 from backend.database_handler.chain_snapshot import ChainSnapshot
 from backend.database_handler.contract_snapshot import ContractSnapshot
 from backend.database_handler.db_client import DBClient
 from backend.database_handler.transactions_processor import (
     TransactionsProcessor,
+   
     TransactionStatus,
+,
 )
 from backend.database_handler.types import ConsensusData
 from backend.node.base import Node
@@ -100,7 +100,7 @@ class ConsensusAlgorithm:
 
         print(" ~ ~ ~ ~ ~ EXECUTING TRANSACTION: ", transaction)
         # Update transaction status
-        with Session(self.dbclient.engine) as session:
+        with self.dbclient.get_session() as session:
             self.transactions_processor.update_transaction_status(
                 transaction["id"], TransactionStatus.PROPOSING, session
             )
@@ -130,7 +130,7 @@ class ConsensusAlgorithm:
         leader_receipt = await leader_node.exec_transaction(transaction)
         votes = {leader["address"]: leader_receipt.vote.value}
         # Update transaction status
-        with Session(self.dbclient.engine) as session:
+        with self.dbclient.get_session() as session:
             self.transactions_processor.update_transaction_status(
                 transaction["id"], TransactionStatus.COMMITTING, session
             )
@@ -163,7 +163,7 @@ class ConsensusAlgorithm:
 
         for i in range(len(validation_results)):
             votes[f"{validator_nodes[i].address}"] = validation_results[i].vote.value
-        with Session(self.dbclient.engine) as session:
+        with self.dbclient.get_session() as session:
             self.transactions_processor.update_transaction_status(
                 transaction["id"], TransactionStatus.REVEALING, session
             )
@@ -174,7 +174,7 @@ class ConsensusAlgorithm:
         ):
             raise Exception("Consensus not reached")
 
-        with Session(self.dbclient.engine) as session:
+        with self.dbclient.get_session() as session:
             self.transactions_processor.update_transaction_status(
                 transaction["id"], TransactionStatus.ACCEPTED, session
             )
@@ -203,7 +203,7 @@ class ConsensusAlgorithm:
             contract_snapshot.update_contract_state(leader_receipt.contract_state)
 
         # Finalize transaction
-        with Session(self.dbclient.engine) as session:
+        with self.dbclient.get_session() as session:
             self.transactions_processor.set_transaction_result(
                 transaction["id"], consensus_data, session
             )

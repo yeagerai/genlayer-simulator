@@ -1,10 +1,11 @@
 # database/client.py
-import psycopg2
-from psycopg2 import pool, extras
 from os import environ
-import sqlalchemy as db
 
+import psycopg2
 from dotenv import load_dotenv
+from psycopg2 import extras, pool
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 
 load_dotenv()
 
@@ -25,7 +26,7 @@ def get_db_name(database: str) -> str:
 
 class DBClient:
     def __init__(self, database: str) -> None:
-        self.engine = db.create_engine(
+        self.engine = create_engine(
             f"postgresql+psycopg2://{environ.get('DBUSER')}:{environ.get('DBPASSWORD')}@{environ.get('DBHOST')}/{get_db_name(database)}",
             echo=True,
         )
@@ -33,6 +34,10 @@ class DBClient:
         """Initialize the DBClient with connection parameters."""
         database_credentials = get_database_credentials(database)
         self.connection_pool = pool.SimpleConnectionPool(1, 10, database_credentials)
+
+    def get_session(self) -> Session:
+        """Return a SQLAlchemy session."""
+        return Session(self.engine)
 
     def get_connection(self):
         """Retrieve a connection from the connection pool."""
