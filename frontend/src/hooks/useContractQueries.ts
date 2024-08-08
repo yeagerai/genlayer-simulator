@@ -131,6 +131,10 @@ export function useContractQueries() {
     }
   }
 
+  const abiQueryEnabled = computed(
+    () => !!contract.value && !!isDeployed.value,
+  );
+
   const contractAbiQuery = useQuery({
     queryKey: [
       'abi',
@@ -138,7 +142,7 @@ export function useContractQueries() {
       () => deployedContract.value?.address,
     ],
     queryFn: fetchContractAbi,
-    enabled: isDeployed,
+    enabled: abiQueryEnabled,
     refetchOnWindowFocus: false,
     retry: 2,
   });
@@ -152,7 +156,12 @@ export function useContractQueries() {
     const result = await $jsonRpc?.getDeployedContractSchema({
       address: deployedContract.value?.address ?? '',
     });
-    // Handle errors here?
+
+    if (result?.status === 'error') {
+      console.error(result.message);
+      throw new Error('Error fetching contract abi');
+    }
+
     return result?.data;
   }
 
@@ -167,6 +176,7 @@ export function useContractQueries() {
       });
 
       if (result?.status === 'error') {
+        console.error(result.message);
         throw new Error(result.message);
       }
 
