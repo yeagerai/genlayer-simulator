@@ -15,7 +15,7 @@ export const useEventTracking = () => {
       };
 
       if (isLocalDebugMode) {
-        console.debug('Track Event', eventData);
+        console.debug('Mock Track Event', eventData);
       } else if (gtm?.enabled()) {
         gtm.trackEvent(eventData);
       } else {
