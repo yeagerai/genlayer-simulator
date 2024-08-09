@@ -47,6 +47,24 @@ class Node:
             receipt = ...
         return receipt
 
+    def parse_transaction_execution_receipt_on_success(self, receipt: dict) -> dict:
+        if self.validator_mode == "leader":
+            return {"vote": "agree", "execution_result": "OK", "result": receipt}
+
+        if self.leader_receipt["result"]["contract_state"] == receipt["contract_state"]:
+            return {"vote": "agree", "execution_result": "OK", "result": receipt}
+
+        return {"vote": "disagree", "execution_result": "OK", "result": receipt}
+
+    def parse_transaction_execution_receipt_on_error(self, error: Exception) -> dict:
+        if self.validator_mode == "leader":
+            return {"vote": "agree", "execution_result": "ERROR", "result": error}
+
+        if self.leader_receipt["execution_result"] == "ERROR":
+            return {"vote": "agree", "execution_result": "ERROR", "result": error}
+
+        return {"vote": "disagree", "execution_result": "ERROR", "result": error}
+
     def deploy_contract(
         self,
         from_address: str,
@@ -63,8 +81,9 @@ class Node:
         except Exception as e:
             print("Error deploying contract", e)
             print(traceback.format_exc())
-            # create error receipt
-        return {"vote": "agree", "result": receipt}
+            return self.parse_transaction_execution_receipt_on_error(e)
+
+        return self.parse_transaction_execution_receipt_on_success(receipt)
 
     async def run_contract(
         self, from_address: str, function_name: str, args: list
@@ -78,8 +97,9 @@ class Node:
         except Exception as e:
             print("Error running contract", e)
             print(traceback.format_exc())
-            # create error receipt
-        return {"vote": "agree", "result": receipt}
+            return self.parse_transaction_execution_receipt_on_error(e)
+
+        return self.parse_transaction_execution_receipt_on_success(receipt)
 
     def get_contract_data(
         self, code: str, state: str, method_name: str, method_args: list
