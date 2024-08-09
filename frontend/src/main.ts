@@ -8,6 +8,7 @@ import { persistStorePlugin, TransactionsListenerPlugin } from '@/plugins';
 import { RpcClient, setupStores } from '@/utils';
 import { JsonRpcService } from './services/JsonRpcService';
 import { VueSpinnersPlugin } from 'vue3-spinners';
+import { createGtm } from '@gtm-support/vue-gtm';
 import registerGlobalComponents from '@/components/global/registerGlobalComponents';
 import { VueQueryPlugin } from '@tanstack/vue-query';
 import FloatingVue from 'floating-vue';
@@ -36,6 +37,15 @@ app.use(VueSpinnersPlugin);
 app.use(TransactionsListenerPlugin, {
   interval: 5000,
 });
+
+app.use(
+  createGtm({
+    id: import.meta.env.VITE_GTM_ID,
+    enabled: import.meta.env.mode === 'production',
+    debug: false,
+    vueRouter: router,
+  }),
+);
 
 registerGlobalComponents(app);
 
