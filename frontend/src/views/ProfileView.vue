@@ -6,15 +6,20 @@ import AccountItem from '@/components/Simulator/AccountItem.vue';
 import MainTitle from '@/components/Simulator/MainTitle.vue';
 import PageSection from '@/components/Simulator/PageSection.vue';
 import { PlusIcon } from '@heroicons/vue/16/solid';
+import { useEventTracking } from '@/hooks';
+
 const store = useAccountsStore();
+const { trackEvent } = useEventTracking();
 
 const handleCreateNewAccount = async () => {
   const privateKey = store.generateNewAccount();
+
   if (privateKey) {
     notify({
       title: 'New Account Created',
       type: 'success',
     });
+    trackEvent('created_account', 'New Account', '');
   } else {
     notify({
       title: 'Error creating a new account',
