@@ -29,9 +29,9 @@ transaction_success: bool,          // Whether the transaction was successful
 transaction_error: str,             // Empty if transaction is successful
 updated_balances: object<str, int>  // Updated balances after the transaction
 }}
-It is mandatory that you respond with only the JSON output object, nothing 
-else whatsoever. Don't include any other words or characters, your 
-output must be only the JSON object"""
+It is mandatory that you respond only using the JSON format above,
+nothing else. Don't include any other words or characters,
+your output must be only JSON without any formatting or quotes of any kind."""
         print(prompt)
         final_result = {}
         async with EquivalencePrinciple(
