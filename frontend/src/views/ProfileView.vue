@@ -4,6 +4,8 @@ import { notify } from '@kyvg/vue3-notification';
 import SimulatorMenu from '@/components/SimulatorMenu.vue';
 import { CheckIcon } from '@heroicons/vue/24/solid';
 import { ref } from 'vue';
+
+import type {Address} from '@/types';
 const store = useAccountsStore();
 
 const showSetDefaultAccount = ref<Record<string, boolean>>({});
@@ -30,7 +32,7 @@ const handleShowSetDefaultAccount = (privateKey: string) => {
 const handleHideSetDefaultAccount = (privateKey: string) => {
   showSetDefaultAccount.value[privateKey] = false;
 };
-const setCurentUserAddress = (privateKey: `0x${string}`) => {
+const setCurentUserAddress = (privateKey: Address) => {
   if (privateKey) {
     store.currentPrivateKey = privateKey;
     showSetDefaultAccount.value = {};

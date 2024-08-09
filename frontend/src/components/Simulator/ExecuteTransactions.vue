@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { InputTypesMap } from '@/utils';
 import { useAccountsStore } from '@/stores';
-import type { ContractMethod } from '@/types';
+import type { ContractMethod, Address } from '@/types';
 import LoadingIndicator from '@/components/LoadingIndicator.vue';
 interface Abi {
   methods: {
@@ -62,7 +62,7 @@ const onMethodChange = (event: Event) => {
 const setCurentUserAddress = (event: Event) => {
   if ((event.target as HTMLSelectElement)?.value) {
     store.currentPrivateKey = (event.target as HTMLSelectElement)
-      ?.value as `0x${string}`;
+      ?.value as Address;
   }
 };
 </script>

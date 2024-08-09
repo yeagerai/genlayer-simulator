@@ -81,11 +81,11 @@ class GenVM:
 
     def deploy_contract(
         self,
-        class_name: str,
         from_address: str,
         code_to_deploy: str,
         constructor_args: dict,
     ):
+        class_name = self._get_contract_class_name(code_to_deploy)
         code_enforcement_check(code_to_deploy, class_name)
         self.contract_runner.from_address = from_address
 
@@ -94,7 +94,6 @@ class GenVM:
             local_namespace = {}
             exec(code_to_deploy, globals(), local_namespace)
 
-            class_name = self._get_contract_class_name(code_to_deploy)
             contract_class = local_namespace[class_name]
 
             module = sys.modules[__name__]
@@ -204,13 +203,66 @@ class GenVM:
                             ):
                                 variables[stmt.target.id] = stmt.annotation.id
 
+            abi = GenVM.generate_abi_from_schema_methods(methods)
+
             contract_schema = {
                 "class": class_name,
                 "methods": methods,
                 "variables": variables,
+                "abi": abi,
             }
 
         return contract_schema
+
+    @staticmethod
+    def get_abi_param_type(param_type: str) -> str:
+        if param_type == "int":
+            return "uint256"
+        if param_type == "str":
+            return "string"
+        if param_type == "bool":
+            return "bool"
+        if param_type == "dict":
+            return "bytes"
+        if param_type == "list":
+            return "bytes"
+        if param_type == "None":
+            return "None"
+        return param_type
+
+    @staticmethod
+    def generate_abi_from_schema_methods(contract_schema_methods: dict) -> list:
+        abi = []
+
+        for method_name, method_info in contract_schema_methods.items():
+            abi_entry = {
+                "name": method_name,
+                "type": "function",
+                "inputs": [],
+                "outputs": [],
+            }
+
+            for input_name, input_type in method_info["inputs"].items():
+                abi_entry["inputs"].append(
+                    {"name": input_name, "type": GenVM.get_abi_param_type(input_type)}
+                )
+
+            if method_info["output"]:
+                abi_entry["outputs"].append(
+                    {
+                        "name": "",
+                        "type": GenVM.get_abi_param_type(method_info["output"]),
+                    }
+                )
+
+            if method_name == "__init__":
+                abi_entry["type"] = "constructor"
+                del abi_entry["name"]
+                del abi_entry["outputs"]
+
+            abi.append(abi_entry)
+
+        return abi
 
     @staticmethod
     def get_contract_data(

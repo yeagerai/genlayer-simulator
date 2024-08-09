@@ -1,9 +1,10 @@
 # tests/e2e/test_storage.py
 
 from tests.common.request import (
+    deploy_intelligent_contract,
+    call_contract_method,
     payload,
     post_request_localhost,
-    post_request_and_wait_for_finalization,
 )
 from tests.integration.mocks.storage_get_contract_schema_for_code import (
     storage_contract_schema,
@@ -17,6 +18,8 @@ from tests.common.response import (
     has_success_status,
 )
 
+from tests.common.accounts import create_new_account
+
 INITIAL_STATE = "a"
 UPDATED_STATE = "b"
 
@@ -29,10 +32,7 @@ def test_storage():
     assert has_success_status(result)
 
     # Account Setup
-    result = post_request_localhost(payload("create_account")).json()
-    assert has_success_status(result)
-    assert "account_address" in result["result"]["data"]
-    from_address = result["result"]["data"]["account_address"]
+    from_account = create_new_account()
 
     # Get contract schema
     contract_code = open("examples/contracts/storage.py", "r").read()
@@ -43,15 +43,9 @@ def test_storage():
     assert_dict_struct(result_schema, storage_contract_schema)
 
     # Deploy Contract
-    data = [
-        from_address,  # from_account
-        "Storage",  # class_name
-        contract_code,  # contract_code
-        f'{{"initial_storage": "{INITIAL_STATE}"}}',  # initial_state
-    ]
     call_method_response_deploy, transaction_response_deploy = (
-        post_request_and_wait_for_finalization(
-            payload("deploy_intelligent_contract", *data)
+        deploy_intelligent_contract(
+            from_account, contract_code, f'{{"initial_storage": "{INITIAL_STATE}"}}'
         )
     )
 
@@ -66,15 +60,10 @@ def test_storage():
     assert contract_state_1["result"]["data"] == INITIAL_STATE
 
     # Update State
-    _, transaction_response_call_1 = post_request_and_wait_for_finalization(
-        payload(
-            "call_contract_function",
-            from_address,
-            contract_address,
-            "update_storage",
-            [UPDATED_STATE],
-        )
+    _, transaction_response_call_1 = call_contract_method(
+        from_account, contract_address, "update_storage", [UPDATED_STATE]
     )
+
     assert has_success_status(transaction_response_call_1)
 
     # Assert response format
