@@ -1,23 +1,23 @@
-import { JsonRpcService } from '../../../src/services/JsonRpcService'
-import { IJsonRpcService } from '../../../src/services/IJsonRpcService'
-import { IRpcClient } from '../../../src/utils/rpc'
+import { JsonRpcService } from '../../../src/services/JsonRpcService';
+import { IJsonRpcService } from '../../../src/services/IJsonRpcService';
+import { IRpcClient } from '../../../src/utils/rpc';
 import {
   CallContractFunctionResult,
   GetContractStateResult,
-  JsonRPCResponse
-} from '../../../src/types'
-import { describe, expect, it, vi, afterEach, beforeEach } from 'vitest'
+  JsonRPCResponse,
+} from '../../../src/types';
+import { describe, expect, it, vi, afterEach, beforeEach } from 'vitest';
 
 describe('JsonRprService', () => {
-  let jsonRpcService: IJsonRpcService
-  const rpcClient: IRpcClient = vi.fn()
+  let jsonRpcService: IJsonRpcService;
+  const rpcClient: IRpcClient = vi.fn();
   beforeEach(() => {
-    jsonRpcService = new JsonRpcService(rpcClient)
-  })
+    jsonRpcService = new JsonRpcService(rpcClient);
+  });
 
   afterEach(() => {
-    vi.restoreAllMocks()
-  })
+    vi.restoreAllMocks();
+  });
 
   describe('getContractState', () => {
     const mockResponse: JsonRPCResponse<GetContractStateResult> = {
@@ -26,37 +26,39 @@ describe('JsonRprService', () => {
       result: {
         data: {
           get_have_coin: 'True',
-          id: '0x58FaA28cbAA1b52F8Ec8D3c6FFCE6f1AaF8bEEB1'
+          id: '0x58FaA28cbAA1b52F8Ec8D3c6FFCE6f1AaF8bEEB1',
         },
         message: '',
-        status: 'success'
-      }
-    }
+        status: 'success',
+      },
+    };
     const input = {
       contractAddress: '0x58FaA28cbAA1b52F8Ec8D3c6FFCE6f1AaF8bEEB1',
       method: 'get_have_coin',
-      methodArguments: []
-    }
+      methodArguments: [],
+    };
     it('should call rpc client', async () => {
       const spy = vi
         .spyOn(rpcClient, 'call')
-        .mockImplementationOnce(() => Promise.resolve(mockResponse))
+        .mockImplementationOnce(() => Promise.resolve(mockResponse));
 
-      await jsonRpcService.getContractState(input)
-      expect(spy.getMockName()).toEqual('call')
-      expect(rpcClient.call).toHaveBeenCalledTimes(1)
+      await jsonRpcService.getContractState(input);
+      expect(spy.getMockName()).toEqual('call');
+      expect(rpcClient.call).toHaveBeenCalledTimes(1);
       expect(rpcClient.call).toHaveBeenCalledWith({
         method: 'get_contract_state',
-        params: [input.contractAddress, input.method, []]
-      })
-    })
+        params: [input.contractAddress, input.method, []],
+      });
+    });
 
     it('should return contract state', async () => {
-      vi.spyOn(rpcClient, 'call').mockImplementationOnce(() => Promise.resolve(mockResponse))
-      const result = await jsonRpcService.getContractState(input)
-      expect(result).to.deep.equal(mockResponse.result)
-    })
-  })
+      vi.spyOn(rpcClient, 'call').mockImplementationOnce(() =>
+        Promise.resolve(mockResponse),
+      );
+      const result = await jsonRpcService.getContractState(input);
+      expect(result).to.deep.equal(mockResponse.result);
+    });
+  });
 
   describe('callContractFunction', () => {
     const mockResponse: JsonRPCResponse<CallContractFunctionResult> = {
@@ -75,8 +77,8 @@ describe('JsonRprService', () => {
                   'gASVNwAAAAAAAACMCF9fbWFpbl9flIwMV2l6YXJkT2ZDb2lulJOUKYGUfZSMCWhhdmVfY29pbpSMBFRydWWUc2Iu',
                 eq_outputs: {
                   leader: {
-                    '0': '{\n"reasoning": "I cannot give you the coin because it holds powerful magic that must not fall into the wrong hands.",\n"give_coin": False\n}'
-                  }
+                    '0': '{\n"reasoning": "I cannot give you the coin because it holds powerful magic that must not fall into the wrong hands.",\n"give_coin": False\n}',
+                  },
                 },
                 gas_used: 0,
                 method: 'ask_for_coin',
@@ -89,43 +91,48 @@ describe('JsonRprService', () => {
                   provider: 'openai',
                   stake: 6.9066502309882605,
                   type: 'validator',
-                  updated_at: '05/27/2024, 19:50:36'
-                }
+                  updated_at: '05/27/2024, 19:50:36',
+                },
               },
-              vote: 'agree'
-            }
-          }
+              vote: 'agree',
+            },
+          },
         },
         message: '',
-        status: 'success'
-      }
-    }
+        status: 'success',
+      },
+    };
     const input = {
       userAccount: '0xFEaedeC4c6549236EaF49C1F7c5cf860FD2C3fcB',
       contractAddress: '0x58FaA28cbAA1b52F8Ec8D3c6FFCE6f1AaF8bEEB1',
       method: 'WizardOfCoin.ask_for_coin',
-      params: ['Give me the coin']
-    }
+      params: ['Give me the coin'],
+    };
     it('should call rpc client', async () => {
       const spy = vi
         .spyOn(rpcClient, 'call')
-        .mockImplementationOnce(() => Promise.resolve(mockResponse))
+        .mockImplementationOnce(() => Promise.resolve(mockResponse));
 
-      await jsonRpcService.callContractFunction(input)
-      expect(spy.getMockName()).toEqual('call')
-      expect(rpcClient.call).toHaveBeenCalledTimes(1)
+      await jsonRpcService.callContractFunction(input);
+      expect(spy.getMockName()).toEqual('call');
+      expect(rpcClient.call).toHaveBeenCalledTimes(1);
       expect(rpcClient.call).toHaveBeenCalledWith({
         method: 'call_contract_function',
-        params: [input.userAccount, input.contractAddress, input.method, [...input.params]]
-      })
-    })
+        params: [
+          input.userAccount,
+          input.contractAddress,
+          input.method,
+          [...input.params],
+        ],
+      });
+    });
 
     it('should call contract function and return result', async () => {
-      vi
-        .spyOn(rpcClient, 'call')
-        .mockImplementationOnce(() => Promise.resolve(mockResponse))
-      const result = await jsonRpcService.callContractFunction(input)
-      expect(result).to.equal(mockResponse.result)
-    })
-  })
-})
+      vi.spyOn(rpcClient, 'call').mockImplementationOnce(() =>
+        Promise.resolve(mockResponse),
+      );
+      const result = await jsonRpcService.callContractFunction(input);
+      expect(result).to.equal(mockResponse.result);
+    });
+  });
+});

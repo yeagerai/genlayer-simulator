@@ -3,7 +3,6 @@ import { RouterLink } from 'vue-router';
 
 defineProps({
   to: { type: Object, default: null },
-  tooltip: { type: String, default: '' },
 });
 </script>
 
@@ -22,8 +21,6 @@ defineProps({
       >
         <slot />
       </div>
-
-      <ToolTip :text="tooltip" :options="{ placement: 'right' }" />
     </div>
   </RouterLink>
 </template>

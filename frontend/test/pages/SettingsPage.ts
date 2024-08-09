@@ -1,74 +1,84 @@
-import { By, Locator, WebElement, until, Select } from 'selenium-webdriver'
-import { BasePage } from './BasePage'
-import { expect } from 'chai'
+import { By, Locator, WebElement, until, Select } from 'selenium-webdriver';
+import { BasePage } from './BasePage';
+import { expect } from 'chai';
 
 export class SettingsPage extends BasePage {
-  override baseurl = 'http://localhost:8080/simulator/settings'
+  override baseurl = 'http://localhost:8080/simulator/settings';
   override visibleLocator: Locator = By.xpath(
     "//*[@data-testid='settings-page-title']",
-  )
+  );
 
   async openNewValidatorModal() {
-    const locator = By.xpath("//button[@data-testid='create-new-validator-btn']")
-    return this.driver.wait(until.elementLocated(locator), 5000).click()
+    const locator = By.xpath(
+      "//button[@data-testid='create-new-validator-btn']",
+    );
+    return this.driver.wait(until.elementLocated(locator), 5000).click();
   }
   async getValidatorsElements(): Promise<WebElement[]> {
-    return this.driver.findElements(By.xpath("//div[@data-testid = 'validator-item']"))
+    return this.driver.findElements(
+      By.xpath("//div[@data-testid='validator-item']"),
+    );
   }
 
   async createValidator({
     provider,
     model,
-    stake
+    stake,
   }: {
-    provider: string
-    model: string
-    stake: number
+    provider: string;
+    model: string;
+    stake: number;
   }) {
     // get the list of validators
 
-    await this.openNewValidatorModal()
+    await this.openNewValidatorModal();
     // provider select
     const selectProviderElement = await this.driver.wait(
-      until.elementLocated(By.xpath("//select[contains(@data-testid, 'dropdown-provider')]"))
-    )
-    const selectProvider = new Select(selectProviderElement)
-    await selectProvider.selectByValue(provider)
+      until.elementLocated(
+        By.xpath("//select[contains(@data-testid, 'dropdown-provider')]"),
+      ),
+    );
+    const selectProvider = new Select(selectProviderElement);
+    await selectProvider.selectByValue(provider);
 
     // model select
     const selectModelElement = await this.driver.wait(
-      until.elementLocated(By.xpath("//select[contains(@data-testid, 'dropdown-model')]"))
-    )
-    const selectModel = new Select(selectModelElement)
-    await selectModel.selectByValue(model)
+      until.elementLocated(
+        By.xpath("//select[contains(@data-testid, 'dropdown-model')]"),
+      ),
+    );
+    const selectModel = new Select(selectModelElement);
+    await selectModel.selectByValue(model);
 
     const stakeInput = await this.driver.wait(
-      until.elementLocated(By.xpath("//input[@data-testid='input-stake']"))
-    )
-    await stakeInput.clear()
-    await stakeInput.sendKeys(stake)
+      until.elementLocated(By.xpath("//input[@data-testid='input-stake']")),
+    );
+    await stakeInput.clear();
+    await stakeInput.sendKeys(stake);
 
     const createValidatorBtn = await this.driver.wait(
-      until.elementLocated(By.xpath("//button[@data-testid='btn-create-validator']"))
-    )
+      until.elementLocated(
+        By.xpath("//button[@data-testid='btn-create-validator']"),
+      ),
+    );
     // call create validator button
-    await createValidatorBtn.click()
-    await this.driver.navigate().refresh()
+    await createValidatorBtn.click();
+    await this.driver.navigate().refresh();
   }
 
   async createValidatorIfRequired() {
-    const initialValidators = await this.getValidatorsElements()
+    const initialValidators = await this.getValidatorsElements();
     if (initialValidators.length < 1) {
       await this.createValidator({
         provider: 'heuristai',
         model: 'mistralai/mixtral-8x7b-instruct',
-        stake: 7
-      })
-      const existingValidators = await this.getValidatorsElements()
+        stake: 7,
+      });
+      const existingValidators = await this.getValidatorsElements();
       expect(
         existingValidators.length,
-        'number of validators should be greather than old validators list'
-      ).be.greaterThan(initialValidators.length)
+        'number of validators should be greather than old validators list',
+      ).be.greaterThan(initialValidators.length);
     }
   }
 }

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { getAccountFromPrivatekey, getPrivateKey } from '@/utils';
+import { shortenAddress } from '@/utils';
 
 export const useAccountsStore = defineStore('accountsStore', () => {
   const key = localStorage.getItem('accountsStore.currentPrivateKey');
@@ -25,7 +26,7 @@ export const useAccountsStore = defineStore('accountsStore', () => {
   function generateNewAccount(): `0x${string}` {
     const privateKey = getPrivateKey();
     privateKeys.value = [...privateKeys.value, privateKey];
-    currentPrivateKey.value = privateKey;
+    setCurrentAccount(privateKey);
     return privateKey;
   }
 
@@ -33,11 +34,36 @@ export const useAccountsStore = defineStore('accountsStore', () => {
     return getAccountFromPrivatekey(privateKey);
   }
 
+  function removeAccount(privateKey: `0x${string}`) {
+    privateKeys.value = privateKeys.value.filter((k) => k !== privateKey);
+
+    if (currentPrivateKey.value === privateKey) {
+      setCurrentAccount(privateKeys.value[0] || null);
+    }
+  }
+
+  function setCurrentAccount(privateKey: `0x${string}`) {
+    currentPrivateKey.value = privateKey;
+  }
+
+  const displayAddress = computed(() => {
+    if (!currentPrivateKey.value) {
+      return '';
+    } else {
+      return shortenAddress(
+        accountFromPrivateKey(currentPrivateKey.value).address,
+      );
+    }
+  });
+
   return {
     currentUserAddress,
     currentPrivateKey,
     privateKeys,
     generateNewAccount,
     accountFromPrivateKey,
+    removeAccount,
+    setCurrentAccount,
+    displayAddress,
   };
 });

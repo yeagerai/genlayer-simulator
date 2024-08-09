@@ -3,6 +3,11 @@ import { useNodeStore } from '@/stores';
 import { type ValidatorModel, type NewValidatorDataModel } from '@/types';
 import { notify } from '@kyvg/vue3-notification';
 import { computed, ref } from 'vue';
+import SelectInput from '@/components/global/inputs/SelectInput.vue';
+import NumberInput from '@/components/global/inputs/NumberInput.vue';
+import TextAreaInput from '@/components/global/inputs/TextAreaInput.vue';
+import FieldError from '@/components/global/fields/FieldError.vue';
+import FieldLabel from '@/components/global/fields/FieldLabel.vue';
 
 const nodeStore = useNodeStore();
 const emit = defineEmits(['close']);
@@ -124,7 +129,7 @@ const tryInitValues = () => {
 
     <div>
       <FieldLabel for="provider">Provider:</FieldLabel>
-      <SelectField
+      <SelectInput
         name="provider"
         :options="providerOptions"
         v-model="newValidatorData.provider"
@@ -137,7 +142,7 @@ const tryInitValues = () => {
 
     <div>
       <FieldLabel for="model">Model:</FieldLabel>
-      <SelectField
+      <SelectInput
         name="model"
         :options="nodeStore.nodeProviders[newValidatorData.provider] || []"
         v-model="newValidatorData.model"
@@ -149,7 +154,8 @@ const tryInitValues = () => {
 
     <div>
       <FieldLabel for="stake">Stake:</FieldLabel>
-      <NumberField
+      <NumberInput
+        id="stake"
         name="stake"
         :min="1"
         :step="1"
@@ -166,7 +172,8 @@ const tryInitValues = () => {
 
     <div>
       <FieldLabel for="config">Config:</FieldLabel>
-      <TextAreaField
+      <TextAreaInput
+        id="config"
         name="config"
         :rows="5"
         :cols="60"

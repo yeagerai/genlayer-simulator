@@ -12,7 +12,7 @@ export const DEFAULT_OPTIONS = {
     buttonNext: true,
     buttonStop: true,
   },
-  startTimeout: 1000,
+  startTimeout: 100,
   stopOnTargetNotFound: false,
   useKeyboardNavigation: true,
   enabledNavigationKeys: {

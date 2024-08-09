@@ -12,7 +12,7 @@ export default {
       },
       colors: {
         primary: '#1a3851',
-        accent: colors.blue[500],
+        accent: colors.sky[500],
         transparent: 'transparent',
       },
     },
