@@ -11,10 +11,6 @@ import { ref, watch } from 'vue';
 import { PlusIcon } from '@heroicons/vue/16/solid';
 import { shortenAddress } from '@/utils';
 
-// TODO: add account select
-// FIXME: deployment should replace contract, not clear the store
-// FIXME: add notification for deployment start...
-
 const { isDeployed, address, contract } = useContractQueries();
 
 const showDeployment = ref(!isDeployed.value);

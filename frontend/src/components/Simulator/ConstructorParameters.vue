@@ -42,18 +42,13 @@ const isValidDefaultState = computed(() => {
       return false;
     }
   } else {
-    // TODO: review this and test
-    const l1 = Object.keys(constructorInputs.value).length;
-    const l2 = Object.keys(inputParams.value).length;
-    console.log(l1, l2);
-    return l1 === l2;
+    return true;
   }
 });
 
 const jsonParams = ref('{}');
 const mode = ref<'json' | 'form'>('form');
 
-// TODO: review this
 const handleDeployContract = async () => {
   let constructorParams = {};
 
@@ -182,7 +177,6 @@ const hasConstructorInputs = computed(
         No constructor inputs.
       </EmptyListPlaceholder>
 
-      <!-- TODO: actual disabled states for fields -->
       <div
         v-else
         class="flex flex-col justify-start gap-1"

@@ -11,9 +11,6 @@ import { useDebounceFn } from '@vueuse/core';
 import { notify } from '@kyvg/vue3-notification';
 import { useMockContractData } from './useMockContractData';
 
-// TODO: review why we need this scoped here again
-const schema = ref<any>();
-
 export function useContractQueries() {
   const $jsonRpc = inject<IJsonRpcService>('$jsonRpc'); // This could be done without inject/provide
   const accountsStore = useAccountsStore();
@@ -34,6 +31,7 @@ export function useContractQueries() {
 
   const isDeployed = computed(() => !!deployedContract.value);
   const address = computed(() => deployedContract.value?.address);
+  const schema = ref<any>();
 
   const fetchContractSchemaDebounced = useDebounceFn(() => {
     console.log('fetchContractSchemaDebounced');
@@ -167,8 +165,6 @@ export function useContractQueries() {
     return result?.data;
   }
 
-  // TODO: review error handling
-  // TODO: add error in method UI
   async function callReadMethod(method: string, methodArguments: string[]) {
     try {
       const result = await $jsonRpc?.getContractState({
@@ -181,14 +177,6 @@ export function useContractQueries() {
         console.error(result.message);
         throw new Error(result.message);
       }
-
-      console.log('result', result);
-
-      // TODO: re-use this?
-      // currentContractState.value = {
-      //   ...currentContractState.value,
-      //   [method]: result?.data,
-      // };
 
       return result?.data;
     } catch (error) {
@@ -214,7 +202,6 @@ export function useContractQueries() {
         params,
       });
 
-      // TODO: Check potential race condition issue on contract id
       if (result?.status === 'success') {
         transactionsStore.addTransaction({
           contractAddress: address.value || '',
