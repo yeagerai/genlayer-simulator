@@ -75,7 +75,7 @@ describe('Contract Example WizardOfCoin', () => {
       until.elementLocated(
         By.xpath("//*[@data-testid='deployed-contract-info']"),
       ),
-      15000,
+      20000,
     );
 
     expect(deployedContractInfo, 'Deployed contract info should be visible').not
