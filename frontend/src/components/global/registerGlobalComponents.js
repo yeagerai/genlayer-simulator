@@ -5,6 +5,7 @@ import ConfirmationModal from '@/components/global/ConfirmationModal.vue';
 import CopyTextButton from '@/components/global/CopyTextButton.vue';
 import Alert from '@/components/global/Alert.vue';
 import Loader from '@/components/global/Loader.vue';
+import EmptyListPlaceholder from '@/components/global/EmptyListPlaceholder.vue';
 
 export default function registerGlobalComponents(app) {
   app.component('Modal', Modal);
