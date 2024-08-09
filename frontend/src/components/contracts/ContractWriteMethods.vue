@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { useContractQueries } from '@/hooks/useContractQueries';
 import { computed } from 'vue';
-import PageSection from '@/components/Simulator/PageSection.vue';
+import PageSection from '@/components/layout/PageSection.vue';
 import { type ContractMethod } from '@/types';
-import ContractMethodItem from '@/components/Simulator/ContractMethodItem.vue';
-import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
+import ContractMethodItem from '@/components/contracts/ContractMethodItem.vue';
 
 const { contractAbiQuery } = useContractQueries();
 

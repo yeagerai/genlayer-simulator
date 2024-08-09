@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { PlayIcon } from '@heroicons/vue/24/solid';
-import ContractTab from '@/components/Simulator/ContractTab.vue';
-import CodeEditor from '@/components/Simulator/CodeEditor.vue';
+import ContractTab from '@/components/contracts/ContractTab.vue';
+import CodeEditor from '@/components/CodeEditor.vue';
 import { useContractsStore } from '@/stores';
 import { computed } from 'vue';
-import HomeTab from './HomeTab.vue';
+import HomeTab from '@/components/HomeTab.vue';
 import { useRouter, useRoute } from 'vue-router';
 
 const store = useContractsStore();

@@ -14,4 +14,5 @@ export default function registerGlobalComponents(app) {
   app.component('CopyTextButton', CopyTextButton);
   app.component('Alert', Alert);
   app.component('Loader', Loader);
+  app.component('EmptyListPlaceholder', EmptyListPlaceholder);
 }

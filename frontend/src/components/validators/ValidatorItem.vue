@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { type ValidatorModel } from '@/types';
 import { PencilSquareIcon, TrashIcon } from '@heroicons/vue/24/solid';
-import ValidatorModal from '@/components/Simulator/ValidatorModal.vue';
-import DeleteValidatorModal from '@/components/Simulator/DeleteValidatorModal.vue';
+import ValidatorModal from '@/components/validators/ValidatorModal.vue';
+import DeleteValidatorModal from '@/components/validators/DeleteValidatorModal.vue';
 import { ref } from 'vue';
 
 const isUpdateModalMopen = ref(false);

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { RouterView } from 'vue-router';
-import SimulatorMenu from '@/components/SimulatorMenu.vue';
-import NodeLogs from '@/components/simulator/NodeLogs.vue';
-import ContractsPanel from '@/components/simulator/ContractsPanel.vue';
+import SimulatorMenu from '@/components/menu/SimulatorMenu.vue';
+import NodeLogs from '@/components/NodeLogs.vue';
+import ContractsPanel from '@/components/contracts/ContractsPanel.vue';
 import { Splitpanes, Pane } from 'splitpanes';
 import 'splitpanes/dist/splitpanes.css';
 

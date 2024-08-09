@@ -2,11 +2,11 @@
 import { onMounted } from 'vue';
 import { notify } from '@kyvg/vue3-notification';
 import { useNodeStore, useContractsStore } from '@/stores';
-import ValidatorItem from '@/components/simulator/ValidatorItem.vue';
-import ValidatorModal from '@/components/simulator/ValidatorModal.vue';
+import ValidatorItem from '@/components/validators/ValidatorItem.vue';
+import ValidatorModal from '@/components/validators/ValidatorModal.vue';
 import { ref } from 'vue';
-import MainTitle from '@/components/simulator/MainTitle.vue';
-import PageSection from '@/components/simulator/PageSection.vue';
+import MainTitle from '@/components/layout/MainTitle.vue';
+import PageSection from '@/components/layout/PageSection.vue';
 import { ArchiveBoxXMarkIcon } from '@heroicons/vue/24/solid';
 import { PlusIcon } from '@heroicons/vue/16/solid';
 

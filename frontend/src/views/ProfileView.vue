@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { useAccountsStore } from '@/stores';
 import { notify } from '@kyvg/vue3-notification';
-import SimulatorMenu from '@/components/SimulatorMenu.vue';
-import AccountItem from '@/components/simulator/AccountItem.vue';
-import MainTitle from '@/components/simulator/MainTitle.vue';
-import PageSection from '@/components/simulator/PageSection.vue';
+import SimulatorMenu from '@/components/menu/SimulatorMenu.vue';
+import AccountItem from '@/components/accounts/AccountItem.vue';
+import MainTitle from '@/components/layout/MainTitle.vue';
+import PageSection from '@/components/layout/PageSection.vue';
 import { PlusIcon } from '@heroicons/vue/16/solid';
 const store = useAccountsStore();
 

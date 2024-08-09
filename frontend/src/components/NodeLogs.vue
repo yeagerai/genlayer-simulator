@@ -2,9 +2,7 @@
 import { nextTick, ref, watch } from 'vue';
 import { useNodeStore, useUIStore } from '@/stores';
 import JsonViewer from '@/components/JsonViewer/json-viewer.vue';
-import GhostBtn from '../global/GhostBtn.vue';
-import { NoSymbolIcon, TrashIcon } from '@heroicons/vue/24/solid';
-import EmptyListPlaceholder from './EmptyListPlaceholder.vue';
+import { NoSymbolIcon } from '@heroicons/vue/24/solid';
 
 const nodeStore = useNodeStore();
 const uiStore = useUIStore();

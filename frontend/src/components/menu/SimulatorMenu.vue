@@ -9,8 +9,8 @@ import {
 } from '@heroicons/vue/24/solid';
 import DiscordIcon from '@/assets/icons/DiscordIcon.vue';
 import { LINKS } from '@/constants/links';
-import SimulatorMenuItem from './SimulatorMenuItem.vue';
-import SimulatorMenuLink from './SimulatorMenuLink.vue';
+import SimulatorMenuItem from '@/components/menu/SimulatorMenuItem.vue';
+import SimulatorMenuLink from '@/components/menu/SimulatorMenuLink.vue';
 </script>
 
 <template>

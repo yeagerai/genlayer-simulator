@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { useContractQueries } from '@/hooks/useContractQueries';
 import { ref, computed, watch, onMounted } from 'vue';
-import PageSection from '@/components/Simulator/PageSection.vue';
+import PageSection from '@/components/layout/PageSection.vue';
 import { ArrowUpTrayIcon } from '@heroicons/vue/16/solid';
 import { InputTypesMap } from '@/utils';
-import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
 import GhostBtn from '../global/GhostBtn.vue';
 import { notify } from '@kyvg/vue3-notification';
 import TextAreaInput from '@/components/inputs/TextAreaInput.vue';

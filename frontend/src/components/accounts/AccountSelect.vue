@@ -1,6 +1,6 @@
 <script setup>
 import { useAccountsStore } from '@/stores';
-import AccountItem from '@/components/Simulator/AccountItem.vue';
+import AccountItem from '@/components/accounts/AccountItem.vue';
 import { Dropdown } from 'floating-vue';
 import { Wallet } from 'lucide-vue-next';
 
