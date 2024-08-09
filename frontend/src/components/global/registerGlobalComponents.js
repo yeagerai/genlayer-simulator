@@ -7,13 +7,19 @@ import Alert from '@/components/global/Alert.vue';
 import Loader from '@/components/global/Loader.vue';
 import EmptyListPlaceholder from '@/components/global/EmptyListPlaceholder.vue';
 
-export default function registerGlobalComponents(app) {
-  app.component('Modal', Modal);
-  app.component('Btn', Btn);
-  app.component('GhostBtn', GhostBtn);
-  app.component('ConfirmationModal', ConfirmationModal);
-  app.component('CopyTextButton', CopyTextButton);
-  app.component('Alert', Alert);
-  app.component('Loader', Loader);
-  app.component('EmptyListPlaceholder', EmptyListPlaceholder);
+export const globalComponents = {
+  Modal,
+  Btn,
+  GhostBtn,
+  ConfirmationModal,
+  CopyTextButton,
+  Alert,
+  Loader,
+  EmptyListPlaceholder,
+};
+
+export function registerGlobalComponents(app) {
+  Object.keys(globalComponents).forEach((key) => {
+    app.component(key, globalComponents[key]);
+  });
 }

@@ -8,7 +8,7 @@ import { persistStorePlugin, TransactionsListenerPlugin } from '@/plugins';
 import { RpcClient, setupStores } from '@/utils';
 import { JsonRpcService } from './services/JsonRpcService';
 import { VueSpinnersPlugin } from 'vue3-spinners';
-import registerGlobalComponents from '@/components/global/registerGlobalComponents';
+import { registerGlobalComponents } from '@/components/global/registerGlobalComponents';
 import { VueQueryPlugin } from '@tanstack/vue-query';
 import FloatingVue from 'floating-vue';
 import 'floating-vue/dist/style.css';
