@@ -1,7 +1,6 @@
 FROM python:3.12.5-slim AS base
 
 ARG path=/app
-
 WORKDIR $path
 
 ADD backend/protocol_rpc/requirements.txt backend/protocol_rpc/requirements.txt
