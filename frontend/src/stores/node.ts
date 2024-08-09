@@ -117,6 +117,10 @@ export const useNodeStore = defineStore('nodeStore', () => {
     validators.value.slice().sort((a, b) => a.id - b.id),
   );
 
+  const clearLogs = () => {
+    logs.value = [];
+  };
+
   return {
     logs,
     listenWebsocket,
@@ -128,6 +132,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
     createNewValidator,
     deleteValidator,
     updateValidator,
+    clearLogs,
 
     validatorsOrderedById,
   };

@@ -44,7 +44,7 @@ const isDetailsModalOpen = ref(false);
         <div class="mt-2 flex flex-col">
           <p class="text-md mb-1 font-semibold">Ouput:</p>
           <JsonViewer
-            class="overflow-y-auto rounded-md p-2"
+            class="overflow-y-auto rounded-md bg-white p-2 dark:bg-zinc-800"
             :value="transaction.data || {}"
             :theme="uiStore.mode === 'light' ? 'light' : 'dark'"
             :expand="true"
