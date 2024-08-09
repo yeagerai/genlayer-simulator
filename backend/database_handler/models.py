@@ -17,6 +17,8 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, MappedAsDatac
 import datetime
 import decimal
 
+from .transaction_status import TransactionStatus
+
 
 # We map them to `DataClass`es in order to have better type hints https://docs.sqlalchemy.org/en/20/orm/dataclasses.html#declarative-dataclass-mapping
 class Base(MappedAsDataclass, DeclarativeBase):
@@ -45,19 +47,13 @@ class Transactions(Base):
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, init=False)
-    status: Mapped[Optional[str]] = mapped_column(
+    status: Mapped[TransactionStatus] = mapped_column(
         Enum(
-            "PENDING",
-            "CANCELED",
-            "PROPOSING",
-            "COMMITTING",
-            "REVEALING",
-            "ACCEPTED",
-            "FINALIZED",
-            "UNDETERMINED",
+            TransactionStatus,
             name="transaction_status",
         ),
         server_default=text("'PENDING'::transaction_status"),
+        nullable=False,
     )
     from_address: Mapped[Optional[str]] = mapped_column(String(255))
     to_address: Mapped[Optional[str]] = mapped_column(String(255))

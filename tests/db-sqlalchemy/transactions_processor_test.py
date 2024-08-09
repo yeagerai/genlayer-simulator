@@ -28,7 +28,7 @@ def test_transactions_processor(transactions_processor: TransactionsProcessor):
     assert actual_transaction["data"] == data
     assert math.isclose(actual_transaction["value"], value)
     assert actual_transaction["type"] == transaction_type
-    assert actual_transaction["status"] == TransactionStatus.PENDING.value
+    assert actual_transaction["status"] == TransactionStatus.PENDING
     assert actual_transaction["id"] == actual_transaction_id
     created_at = actual_transaction["created_at"]
     assert datetime.fromisoformat(created_at)
@@ -40,7 +40,7 @@ def test_transactions_processor(transactions_processor: TransactionsProcessor):
         actual_transaction_id
     )
 
-    assert actual_transaction["status"] == new_status.value
+    assert actual_transaction["status"] == new_status
     assert actual_transaction["id"] == actual_transaction_id
     assert actual_transaction["from_address"] == from_address
     assert actual_transaction["to_address"] == to_address
@@ -56,7 +56,7 @@ def test_transactions_processor(transactions_processor: TransactionsProcessor):
         actual_transaction_id
     )
 
-    assert actual_transaction["status"] == TransactionStatus.FINALIZED.value
+    assert actual_transaction["status"] == TransactionStatus.FINALIZED
     assert actual_transaction["consensus_data"] == consensus_data
     assert actual_transaction["id"] == actual_transaction_id
     assert actual_transaction["from_address"] == from_address

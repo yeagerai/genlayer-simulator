@@ -27,7 +27,7 @@ class ChainSnapshot:
         with self.get_session() as session:
             pending_transactions = (
                 session.query(Transactions)
-                .filter(Transactions.status == TransactionStatus.PENDING.value)
+                .filter(Transactions.status == TransactionStatus.PENDING)
                 .all()
             )
         return [

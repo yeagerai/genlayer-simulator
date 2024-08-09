@@ -1,21 +1,9 @@
 # consensus/services/transactions_db_service.py
 
-from enum import Enum
-
 from .models import Transactions, TransactionsAudit
 from sqlalchemy.orm import Session
 
-
-# TODO: unify this enum with the one in models.py. We should probably use enums in the database instead of strings
-class TransactionStatus(Enum):
-    PENDING = "PENDING"
-    CANCELED = "CANCELED"
-    PROPOSING = "PROPOSING"
-    COMMITTING = "COMMITTING"
-    REVEALING = "REVEALING"
-    ACCEPTED = "ACCEPTED"
-    FINALIZED = "FINALIZED"
-    UNDETERMINED = "UNDETERMINED"
+from .transaction_status import TransactionStatus
 
 
 class TransactionsProcessor:
@@ -29,7 +17,7 @@ class TransactionsProcessor:
             "from_address": transaction_data.from_address,
             "to_address": transaction_data.to_address,
             "data": transaction_data.data,
-            "value": transaction_data.value,
+            "value": float(transaction_data.value),
             "type": transaction_data.type,
             "status": transaction_data.status,
             "consensus_data": transaction_data.consensus_data,

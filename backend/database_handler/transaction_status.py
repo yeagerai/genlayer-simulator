@@ -1,0 +1,12 @@
+from enum import Enum
+
+
+class TransactionStatus(Enum):
+    PENDING = "PENDING"
+    CANCELED = "CANCELED"
+    PROPOSING = "PROPOSING"
+    COMMITTING = "COMMITTING"
+    REVEALING = "REVEALING"
+    ACCEPTED = "ACCEPTED"
+    FINALIZED = "FINALIZED"
+    UNDETERMINED = "UNDETERMINED"

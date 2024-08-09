@@ -8,12 +8,12 @@ from backend.database_handler.transactions_processor import TransactionsProcesso
 
 def test_chain_snapshot(session: Session):
     pending_transaction_1 = Transactions(
-        status=TransactionStatus.PENDING.value,
+        status=TransactionStatus.PENDING,
         from_address="0x123",
         to_address="0x456",
         data="data",
         consensus_data="consensus_data",
-        value=None,
+        value=10,
         type=0,
         gaslimit=None,
         input_data=None,
@@ -24,12 +24,12 @@ def test_chain_snapshot(session: Session):
     )
 
     pending_transaction_2 = Transactions(
-        status=TransactionStatus.PENDING.value,
+        status=TransactionStatus.PENDING,
         from_address="0x789",
         to_address="0xabc",
         data="data",
         consensus_data="consensus_data",
-        value=None,
+        value=20,
         type=0,
         gaslimit=None,
         input_data=None,
@@ -40,12 +40,12 @@ def test_chain_snapshot(session: Session):
     )
 
     finalized_transaction = Transactions(
-        status=TransactionStatus.FINALIZED.value,
+        status=TransactionStatus.FINALIZED,
         from_address="0xdef",
         to_address="0x123",
         data="data",
         consensus_data="consensus_data",
-        value=None,
+        value=30,
         type=0,
         gaslimit=None,
         input_data=None,
