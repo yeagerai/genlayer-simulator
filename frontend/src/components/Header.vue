@@ -5,7 +5,7 @@ import { useUIStore } from '@/stores';
 import { RouterLink } from 'vue-router';
 import Logo from '@/assets/images/logo.svg';
 import GhostBtn from './global/GhostBtn.vue';
-import AccountSelect from '@/components/Simulator/AccountSelect.vue';
+import AccountSelect from '@/components/simulator/AccountSelect.vue';
 
 const uiStore = useUIStore();
 

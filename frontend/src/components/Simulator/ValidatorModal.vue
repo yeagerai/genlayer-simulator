@@ -3,11 +3,11 @@ import { useNodeStore } from '@/stores';
 import { type ValidatorModel, type NewValidatorDataModel } from '@/types';
 import { notify } from '@kyvg/vue3-notification';
 import { computed, ref } from 'vue';
-import SelectInput from '@/components/global/inputs/SelectInput.vue';
-import NumberInput from '@/components/global/inputs/NumberInput.vue';
-import TextAreaInput from '@/components/global/inputs/TextAreaInput.vue';
-import FieldError from '@/components/global/fields/FieldError.vue';
-import FieldLabel from '@/components/global/fields/FieldLabel.vue';
+import SelectInput from '@/components/inputs/SelectInput.vue';
+import NumberInput from '@/components/inputs/NumberInput.vue';
+import TextAreaInput from '@/components/inputs/TextAreaInput.vue';
+import FieldError from '@/components/fields/FieldError.vue';
+import FieldLabel from '@/components/fields/FieldLabel.vue';
 
 const nodeStore = useNodeStore();
 const emit = defineEmits(['close']);

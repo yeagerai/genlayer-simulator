@@ -1,7 +1,7 @@
-import StringField from '@/components/global/fields/StringField.vue';
-import IntegerField from '@/components/global/fields/IntegerField.vue';
-import FloatField from '@/components/global/fields/FloatField.vue';
-import BooleanField from '@/components/global/fields/BooleanField.vue';
+import StringField from '@/components/fields/StringField.vue';
+import IntegerField from '@/components/fields/IntegerField.vue';
+import FloatField from '@/components/fields/FloatField.vue';
+import BooleanField from '@/components/fields/BooleanField.vue';
 
 export const InputTypesMap: { [k: string]: any } = {
   str: StringField,

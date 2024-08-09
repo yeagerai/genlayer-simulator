@@ -2,7 +2,7 @@
 import { useNodeStore } from '@/stores';
 import { type ValidatorModel } from '@/types';
 import { notify } from '@kyvg/vue3-notification';
-import FieldLabel from '@/components/global/fields/FieldLabel.vue';
+import FieldLabel from '@/components/fields/FieldLabel.vue';
 
 const nodeStore = useNodeStore();
 

@@ -3,8 +3,8 @@ import { useContractsStore } from '@/stores';
 import { ArrowUpTrayIcon, PlusIcon } from '@heroicons/vue/20/solid';
 import { ref } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
-import ContractItem from '@/components/Simulator/ContractItem.vue';
-import MainTitle from '@/components/Simulator/MainTitle.vue';
+import ContractItem from '@/components/simulator/ContractItem.vue';
+import MainTitle from '@/components/simulator/MainTitle.vue';
 
 const store = useContractsStore();
 const showNewFileInput = ref(false);

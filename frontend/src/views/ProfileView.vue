@@ -2,9 +2,9 @@
 import { useAccountsStore } from '@/stores';
 import { notify } from '@kyvg/vue3-notification';
 import SimulatorMenu from '@/components/SimulatorMenu.vue';
-import AccountItem from '@/components/Simulator/AccountItem.vue';
-import MainTitle from '@/components/Simulator/MainTitle.vue';
-import PageSection from '@/components/Simulator/PageSection.vue';
+import AccountItem from '@/components/simulator/AccountItem.vue';
+import MainTitle from '@/components/simulator/MainTitle.vue';
+import PageSection from '@/components/simulator/PageSection.vue';
 import { PlusIcon } from '@heroicons/vue/16/solid';
 const store = useAccountsStore();
 

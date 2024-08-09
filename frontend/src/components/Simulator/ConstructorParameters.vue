@@ -7,8 +7,8 @@ import { InputTypesMap } from '@/utils';
 import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
 import GhostBtn from '../global/GhostBtn.vue';
 import { notify } from '@kyvg/vue3-notification';
-import TextAreaInput from '@/components/global/inputs/TextAreaInput.vue';
-import FieldError from '@/components/global/fields/FieldError.vue';
+import TextAreaInput from '@/components/inputs/TextAreaInput.vue';
+import FieldError from '@/components/fields/FieldError.vue';
 
 const { contractSchemaQuery, deployContract, isDeploying } =
   useContractQueries();

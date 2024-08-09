@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import ConstructorParameters from '@/components/Simulator/ConstructorParameters.vue';
-import ContractReadMethods from '@/components/Simulator/ContractReadMethods.vue';
-import ContractWriteMethods from '@/components/Simulator/ContractWriteMethods.vue';
-import TransactionsList from '@/components/Simulator/TransactionsList.vue';
+import ConstructorParameters from '@/components/simulator/ConstructorParameters.vue';
+import ContractReadMethods from '@/components/simulator/ContractReadMethods.vue';
+import ContractWriteMethods from '@/components/simulator/ContractWriteMethods.vue';
+import TransactionsList from '@/components/simulator/TransactionsList.vue';
 import { useContractQueries } from '@/hooks/useContractQueries';
-import MainTitle from '@/components/Simulator/MainTitle.vue';
+import MainTitle from '@/components/simulator/MainTitle.vue';
 import { ref, watch } from 'vue';
 import { useContractsStore } from '@/stores';
-import ContractInfo from '@/components/Simulator/ContractInfo.vue';
+import ContractInfo from '@/components/simulator/ContractInfo.vue';
 
 const contractsStore = useContractsStore();
 const { isDeployed, address, contract } = useContractQueries();
