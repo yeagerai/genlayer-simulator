@@ -3,7 +3,7 @@
 from .models import Transactions, TransactionsAudit
 from sqlalchemy.orm import Session
 
-from .transaction_status import TransactionStatus
+from .models import TransactionStatus
 
 
 class TransactionsProcessor:
@@ -19,7 +19,7 @@ class TransactionsProcessor:
             "data": transaction_data.data,
             "value": float(transaction_data.value),
             "type": transaction_data.type,
-            "status": transaction_data.status,
+            "status": transaction_data.status.value,
             "consensus_data": transaction_data.consensus_data,
             "gaslimit": transaction_data.nonce,
             "nonce": transaction_data.nonce,
@@ -44,7 +44,7 @@ class TransactionsProcessor:
             data=data,
             value=value,
             type=type,
-            status=TransactionStatus.PENDING.value,
+            status=TransactionStatus.PENDING,
             consensus_data=None,  # Will be set when the transaction is finalized
             # Future fields, unused for now
             gaslimit=None,
@@ -89,7 +89,7 @@ class TransactionsProcessor:
 
         transaction = session.query(Transactions).filter_by(id=transaction_id).one()
 
-        transaction.status = new_status.value
+        transaction.status = new_status
         session.commit()
 
     def set_transaction_result(
@@ -99,7 +99,7 @@ class TransactionsProcessor:
 
         transaction = session.query(Transactions).filter_by(id=transaction_id).one()
 
-        transaction.status = TransactionStatus.FINALIZED.value
+        transaction.status = TransactionStatus.FINALIZED
         transaction.consensus_data = consensus_data
 
         print(

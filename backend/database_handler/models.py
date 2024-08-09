@@ -16,8 +16,18 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, MappedAsDataclass
 import datetime
 import decimal
+import enum
 
-from .transaction_status import TransactionStatus
+
+class TransactionStatus(enum.Enum):
+    PENDING = "PENDING"
+    CANCELED = "CANCELED"
+    PROPOSING = "PROPOSING"
+    COMMITTING = "COMMITTING"
+    REVEALING = "REVEALING"
+    ACCEPTED = "ACCEPTED"
+    FINALIZED = "FINALIZED"
+    UNDETERMINED = "UNDETERMINED"
 
 
 # We map them to `DataClass`es in order to have better type hints https://docs.sqlalchemy.org/en/20/orm/dataclasses.html#declarative-dataclass-mapping

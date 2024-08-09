@@ -37,7 +37,7 @@ class AccountsManager:
     def is_valid_address(self, address: str) -> bool:
         return is_valid_address(address)
 
-    def get_account(self, account_address: str) -> CurrentState | None:
+    def _get_account(self, account_address: str) -> CurrentState | None:
         """Private method to retrieve an account from the data base"""
         account = (
             self.session.query(CurrentState)
@@ -48,7 +48,7 @@ class AccountsManager:
 
     def get_account_or_fail(self, account_address: str) -> dict:
         """Private method to check if an account exists, and raise an error if not."""
-        account_data = self.get_account(account_address)
+        account_data = self._get_account(account_address)
         if not account_data:
             raise AccountNotFoundError(
                 account_address, f"Account {account_address} does not exist."
@@ -65,7 +65,7 @@ class AccountsManager:
 
     def fund_account(self, account_address: str, amount: int):
         # account creation or balance update
-        account_data = self.get_account(account_address)
+        account_data = self._get_account(account_address)
         if account_data is not None:
             # Account exists, update it
             # Dicts are mutable objects, we need to do something in order for SQLAlchemy to track their changes https://docs.sqlalchemy.org/en/20/orm/extensions/mutable.html

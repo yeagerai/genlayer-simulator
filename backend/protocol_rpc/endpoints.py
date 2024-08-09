@@ -124,7 +124,6 @@ def get_contract_schema_for_code(
     return node.get_contract_schema(contract_code)
 
 
-####### VALIDATORS ENDPOINTS #######
 def get_providers_and_models(config: GlobalConfiguration) -> dict:
     default_config = get_default_config_for_providers_and_nodes()
     providers = get_providers()
@@ -256,25 +255,23 @@ def get_transaction_by_id(
 
 def get_contract_state(
     accounts_manager: AccountsManager,
-    msg_handler: MessageHandler,
     contract_address: str,
     method_name: str,
     method_args: list,
 ) -> dict:
-    if not accounts_manager.is_valid_address(contract_address):
+    if not address_is_in_correct_format(contract_address):
         raise InvalidAddressError(contract_address)
 
-    contract_account = accounts_manager.get_account(contract_address)
+    contract_account = accounts_manager.get_account_or_fail(contract_address)
     node = Node(
         contract_snapshot=None,
         address="",
-        validator_mode=ExecutionMode.LEADER,
+        validator_mode="leader",
         stake=0,
         provider="",
         model="",
         config=None,
         leader_receipt=None,
-        msg_handler=msg_handler,
     )
     return node.get_contract_data(
         code=contract_account["data"]["code"],
