@@ -48,13 +48,13 @@ class EquivalencePrinciple:
 
         if self.contract_runner.mode == "validator" and self.comparative == True:
             llm_function = self.__get_llm_function()
-            eq_prompt = f"""Given the equivalence principle '{self.principle}', 
+            eq_prompt = f"""Given the equivalence principle '{self.principle}',
             decide whether the following two outputs can be considered equivalent.
-            
+
             Leader's Output: {self.contract_runner.eq_outputs['leader'][str(self.contract_runner.eq_num - 1)]}
-            
+
             Validator's Output: {self.result['validator_value']}
-            
+
             Respond with: TRUE or FALSE"""
             validation_response = await llm_function(
                 self.contract_runner.node_config, eq_prompt, None, None

@@ -1,19 +1,22 @@
-FROM python:3.12.2-slim AS base
+FROM python:3.12.5-slim AS base
 
 ARG path=/app
-
-RUN mkdir $path
 WORKDIR $path
 
 ADD backend/protocol_rpc/requirements.txt backend/protocol_rpc/requirements.txt
-RUN echo 'deb http://deb.debian.org/debian testing main' >> /etc/apt/sources.list \
-    && apt-get update && apt-get install -y --no-install-recommends -o APT::Immediate-Configure=false gcc g++
-RUN pip install --no-cache-dir -r backend/protocol_rpc/requirements.txt
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu \
+    && pip install --no-cache-dir -r backend/protocol_rpc/requirements.txt
+
+RUN groupadd -r backend-group \
+    && useradd -r -g backend-group backend-user \
+    && mkdir -p /home/backend-user/.cache/huggingface \
+    && chown -R backend-user:backend-group /home/backend-user \
+    && chown -R backend-user:backend-group $path
 
 ENV PYTHONPATH "${PYTHONPATH}:/${path}"
 ENV FLASK_APP=backend/protocol_rpc/server.py
-RUN groupadd -r backend-user && useradd -r -g backend-user backend-user \
-    && chown -R backend-user:backend-user $path
+ENV TRANSFORMERS_CACHE=/home/backend-user/.cache/huggingface
 
 COPY ../.env .
 COPY backend $path/backend
@@ -26,5 +29,5 @@ CMD watchmedo auto-restart --recursive --pattern="*.py" --ignore-patterns="*.pyc
 
 ###########START NEW IMAGE: PRODUCTION ###################
 FROM base AS prod
-
+USER backend-user
 CMD flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}

@@ -10,7 +10,7 @@ class LlmErc20(IContract):
 
     async def transfer(self, amount: int, to_address: str) -> None:
         prompt = f"""
-You keep track of transactions between users and their balance in coins. 
+You keep track of transactions between users and their balance in coins.
 The current balance for all users in JSON format is:
 {json.dumps(self.balances)}
 The transaction to compute is: {{
@@ -19,10 +19,10 @@ recipient: "{to_address}",
 amount: {amount},
 }}
 
-For every transaction, validate that the user sending the Coins has 
-enough balance. If any transaction is invalid, it shouldn't be processed. 
+For every transaction, validate that the user sending the Coins has
+enough balance. If any transaction is invalid, it shouldn't be processed.
 Update the balances based on the valid transactions only.
-Given the current balance in JSON format and the transaction provided, 
+Given the current balance in JSON format and the transaction provided,
 please provide the result of your calculation with the following format:
 {{
 transaction_success: bool,          // Whether the transaction was successful
@@ -36,7 +36,7 @@ your output must be only JSON without any formatting or quotes of any kind."""
         final_result = {}
         async with EquivalencePrinciple(
             result=final_result,
-            principle="""The new_balance of the sender should have decreased 
+            principle="""The new_balance of the sender should have decreased
             in the amount sent and the new_balance of the receiver should have
             increased by the amount sent. Also, the total sum of all balances
             should have remain the same before and after the transaction""",

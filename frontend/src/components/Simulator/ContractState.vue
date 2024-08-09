@@ -17,9 +17,9 @@ const props = defineProps<{
   contractState: any;
   deployedContract?: DeployedContract;
   getContractState: (
-    contractAddress: string,
-    method: string,
-    methodArguments: string[],
+    _contractAddress: string,
+    _method: string,
+    _methodArguments: string[],
   ) => void;
   callingState: boolean;
 }>();
