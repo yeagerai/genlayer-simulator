@@ -22,13 +22,14 @@ class TransactionsProcessor:
     def __init__(self, session: Session):
         self.session = session
 
-    def _parse_transaction_data(self, transaction_data: Transactions) -> dict:
+    @staticmethod
+    def _parse_transaction_data(transaction_data: Transactions) -> dict:
         return {
             "id": transaction_data.id,
             "from_address": transaction_data.from_address,
             "to_address": transaction_data.to_address,
             "data": transaction_data.data,
-            "value": float(transaction_data.value),
+            "value": transaction_data.value,
             "type": transaction_data.type,
             "status": transaction_data.status,
             "consensus_data": transaction_data.consensus_data,

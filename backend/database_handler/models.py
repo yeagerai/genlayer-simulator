@@ -69,7 +69,7 @@ class Transactions(Base):
     type: Mapped[Optional[int]] = mapped_column(Integer)
     gaslimit: Mapped[Optional[int]] = mapped_column(BigInteger)
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(
-        DateTime(True), server_default=func.current_timestamp, init=False
+        DateTime(True), server_default=func.current_timestamp(), init=False
     )
     r: Mapped[Optional[int]] = mapped_column(Integer)
     s: Mapped[Optional[int]] = mapped_column(Integer)
@@ -84,7 +84,7 @@ class TransactionsAudit(Base):
     transaction_id: Mapped[Optional[int]] = mapped_column(Integer)
     data: Mapped[Optional[dict]] = mapped_column(JSONB)
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(
-        DateTime(True), server_default=func.current_timestamp, init=False
+        DateTime(True), server_default=func.current_timestamp(), init=False
     )
 
 
@@ -102,5 +102,5 @@ class Validators(Base):
     provider: Mapped[Optional[str]] = mapped_column(String(255))
     model: Mapped[Optional[str]] = mapped_column(String(255))
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(
-        DateTime(True), server_default=func.current_timestamp, init=False
+        DateTime(True), server_default=func.current_timestamp(), init=False
     )

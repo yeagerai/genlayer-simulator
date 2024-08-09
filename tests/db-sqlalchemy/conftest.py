@@ -29,7 +29,7 @@ def engine() -> Iterable[Engine]:
 
 @pytest.fixture
 def session(engine: Engine) -> Iterable[Session]:
-    session_maker = sessionmaker(bind=engine)
+    session_maker = sessionmaker(bind=engine, expire_on_commit=False)
     session = session_maker()
     yield session
     session.close()

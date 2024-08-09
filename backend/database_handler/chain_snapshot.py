@@ -1,47 +1,37 @@
 # database_handler/chain_snapshot.py
 
+from typing import Callable, List
 from sqlalchemy.orm import Session
 
-from backend.database_handler.db_client import DBClient
-from backend.database_handler.transactions_processor import TransactionStatus
+from backend.database_handler.transactions_processor import (
+    TransactionStatus,
+    Transactions,
+)
+from .transactions_processor import TransactionsProcessor
 from backend.database_handler.validators_registry import ValidatorsRegistry
 
 
 class ChainSnapshot:
-    def __init__(self, dbclient: DBClient):
-        self.dbclient = dbclient
-        self.validators_registry = ValidatorsRegistry(Session(dbclient.engine.connect))
-        self.db_transactions_table = "transactions"
+    def __init__(self, get_session: Callable[[], Session]):
+        self.get_session = get_session
+        self.validators_registry = ValidatorsRegistry(get_session())
 
-        with Session(dbclient.engine, expire_on_commit=False) as session:
+        with get_session() as session:
             self.all_validators = ValidatorsRegistry(session).get_all_validators()
         self.pending_transactions = self._load_pending_transactions()
         self.num_validators = len(self.all_validators)
 
-    def _parse_transaction_data(self, transaction_data: dict) -> dict:
-        return {
-            "id": transaction_data["id"],
-            "status": transaction_data["status"],
-            "from_address": transaction_data["from_address"],
-            "to_address": transaction_data["to_address"],
-            "data": transaction_data["data"],
-            "consensus_data": transaction_data["consensus_data"],
-            "nonce": transaction_data["nonce"],
-            "value": float(transaction_data["value"]),
-            "type": transaction_data["type"],
-            "gaslimit": transaction_data["gaslimit"],
-            "created_at": transaction_data["created_at"].isoformat(),
-            "r": transaction_data["r"],
-            "v": transaction_data["v"],
-        }
-
-    def _load_pending_transactions(self):
+    def _load_pending_transactions(self) -> List[dict]:
         """Load and return the list of pending transactions from the database."""
-        pending_transactions = self.dbclient.get(
-            self.db_transactions_table, f"status = '{TransactionStatus.PENDING.value}'"
-        )
+
+        with self.get_session() as session:
+            pending_transactions = (
+                session.query(Transactions)
+                .filter(Transactions.status == TransactionStatus.PENDING.value)
+                .all()
+            )
         return [
-            self._parse_transaction_data(transaction)
+            TransactionsProcessor._parse_transaction_data(transaction)
             for transaction in pending_transactions
         ]
 

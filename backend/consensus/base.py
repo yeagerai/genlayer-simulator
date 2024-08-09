@@ -43,7 +43,7 @@ class ConsensusAlgorithm:
 
     async def _crawl_snapshot(self):
         while True:
-            chain_snapshot = ChainSnapshot(self.dbclient)
+            chain_snapshot = ChainSnapshot(self.dbclient.get_session)
             pending_transactions = chain_snapshot.get_pending_transactions()
             for transaction in pending_transactions:
                 contract_address = (
@@ -66,7 +66,7 @@ class ConsensusAlgorithm:
         # watch out! as ollama uses GPU resources and webrequest aka selenium uses RAM
         while True:
             if self.queues:
-                chain_snapshot = ChainSnapshot(self.dbclient)
+                chain_snapshot = ChainSnapshot(self.dbclient.get_session)
                 tasks = []
 
                 for queue in self.queues.values():
