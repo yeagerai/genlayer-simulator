@@ -36,8 +36,7 @@ const handleResetStorage = async () => {
     await contractsStore.resetStorage();
 
     notify({
-      title: 'Success',
-      text: 'Storage reset successfully',
+      title: 'Storage reset successfully',
       type: 'success',
     });
   } catch (error) {
