@@ -30,8 +30,6 @@ const handleCallReadMethod = async () => {
       Object.values(inputs.value),
     );
 
-    console.log(result);
-
     responseMessage.value = JSON.stringify(result);
   } catch (error) {
     notify({
@@ -43,13 +41,17 @@ const handleCallReadMethod = async () => {
 };
 
 const handleCallWriteMethod = async () => {
-  const result = await callWriteMethod({
+  await callWriteMethod({
     userAccount: accountsStore.currentUserAddress || '',
     method: props.methodName,
     params: Object.values(inputs.value),
   });
 
-  console.log(result);
+  notify({
+    text: 'Write method called',
+    type: 'success',
+  });
+
   clearInputs();
 };
 

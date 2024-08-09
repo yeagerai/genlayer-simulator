@@ -26,7 +26,6 @@ export function useContractQueries() {
 
   const isMock = computed(() => contract.value?.id === mockContractId);
 
-
   const deployedContract = computed(() =>
     contractsStore.deployedContracts.find(
       ({ contractId }) => contractId === contract.value?.id,
@@ -230,6 +229,7 @@ export function useContractQueries() {
       }
     } catch (error) {
       console.error(error);
+      throw new Error('Error writing to contract');
     }
     return false;
   }
