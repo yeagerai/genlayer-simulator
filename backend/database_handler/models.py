@@ -29,7 +29,7 @@ class CurrentState(Base):
     id: Mapped[str] = mapped_column(String(255), primary_key=True)
     data: Mapped[dict] = mapped_column(JSONB)
     updated_at: Mapped[Optional[datetime.datetime]] = mapped_column(
-        DateTime(True), server_default=text("CURRENT_TIMESTAMP")
+        DateTime(True), server_default=text("CURRENT_TIMESTAMP"), init=False
     )
 
 

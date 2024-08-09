@@ -42,7 +42,9 @@ def create_app():
     socketio = SocketIO(app, cors_allowed_origins="*")
     msg_handler = MessageHandler(app, socketio)
     genlayer_db_client = DBClient(database_name_seed)
-    transactions_processor = TransactionsProcessor(sqlalchemy_db.session)
+    transactions_processor = TransactionsProcessor(
+        sqlalchemy_db.session, genlayer_db_client
+    )
     accounts_manager = AccountsManager(genlayer_db_client, transactions_processor)
     validators_registry = ValidatorsRegistry(sqlalchemy_db.session)
 

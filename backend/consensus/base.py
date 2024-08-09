@@ -112,7 +112,9 @@ class ConsensusAlgorithm:
         num_validators = len(remaining_validators) + 1
 
         contract_address = transaction.get("to_address", None)
-        contract_snapshot = ContractSnapshot(contract_address, self.dbclient)
+        contract_snapshot = ContractSnapshot(
+            contract_address, self.dbclient.get_session
+        )
 
         # Create Leader
         leader_node = Node(

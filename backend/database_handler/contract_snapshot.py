@@ -1,31 +1,58 @@
 # database_handler/contract_snapshot.py
-import json
-from backend.database_handler.db_client import DBClient
+from .models import CurrentState
+from sqlalchemy.orm import Session
+from typing import Callable
+
+# At this moment, `ContractSnapshot` is creating its own sessions on each method call. This can be further improved by injecting the session into the method. This way, the session can be reused across multiple method calls. This is a common pattern in SQLAlchemy applications.
+# Given that it might be a bit verbose to inject the session into each method, there's the possibility of creating a decorator to handle this injection. This decorator would check if the session is already present in the method's keyword arguments. If it's not, it would create a new session and inject it into the method. Here's a possible implementation of this decorator:
+
+# def inject_session(func):
+#     """
+#     Decorator to inject a session into a function if it's not already present in the function's keyword arguments.
+#     It expects to be added to a method of a class that has a `session` attribute.
+#     The class is expected to have an `engine` attribute that is an instance of `Engine`.
+#     """
+
+#     @wraps(func)
+#     def wrapper(self, *args, **kwargs):
+#         # Check if 'session' is in the function's keyword arguments or not
+#         if "session" not in kwargs or kwargs["session"] is None:
+#             if self.session is not None:
+#                 kwargs["session"] = self.session
+#                 return func(self, *args, **kwargs)
+#             else:
+#                 with Session(self.engine) as session:
+#                     kwargs["session"] = session
+#         return func(*args, **kwargs)
+#     return wrapper
 
 
 class ContractSnapshot:
-    def __init__(self, contract_address: str, dbclient: DBClient):
-        self.dbclient = dbclient
-        self.db_state_table = "current_state"
-        self.db_transactions_table = "transactions"
+    """
+    Warning: if you initialize this class with a contract_address:
+    - The contract_address must exist in the database.
+    - `self.contract_data`, `self.contract_code` and `self.cencoded_state` will be loaded from the database **only once** at initialization.
+    """
 
-        if not contract_address is None:
+    def __init__(self, contract_address: str, get_session: Callable[[], Session]):
+        self.get_session = get_session
+
+        if contract_address is not None:
             self.contract_address = contract_address
 
             contract_account = self._load_contract_account()
-            self.contract_data = contract_account["data"]
+            self.contract_data = contract_account.data
             self.contract_code = self.contract_data["code"]
             self.encoded_state = self.contract_data["state"]
 
-    def _load_contract_account(self):
+    def _load_contract_account(self) -> CurrentState:
         """Load and return the current state of the contract from the database."""
-        # Use the `get` method which retrieves rows based on a condition
-        result = self.dbclient.get(
-            self.db_state_table, f"id = '{self.contract_address}'", limit=1
-        )
-        if result:
-            return result[0]
-        return None
+        with self.get_session() as session:
+            return (
+                session.query(CurrentState)
+                .filter(CurrentState.id == self.contract_address)
+                .one()
+            )
 
     def register_contract(self, contract: dict):
         """Register a new contract in the database."""
@@ -34,17 +61,21 @@ class ContractSnapshot:
             {"data": json.dumps(contract["data"])},
             f"id = '{contract["id"]}'",
         )
+        with self.get_session() as session:
+            new_contract = CurrentState(id=contract["id"], data=contract["data"])
+            session.add(new_contract)
+            session.commit()
 
     def update_contract_state(self, new_state: str):
         """Update the state of the contract in the database."""
-        new_contract_nada = json.dumps(
-            {
-                "code": self.contract_data["code"],
-                "state": new_state,
-            }
-        )
-        self.dbclient.update(
-            self.db_state_table,
-            {"data": new_contract_nada},
-            f"id = '{self.contract_address}'",
-        )
+        new_contract_nada = {
+            "code": self.contract_data["code"],
+            "state": new_state,
+        }
+
+        with self.get_session() as session:
+            contract = (
+                session.query(CurrentState).filter_by(id=self.contract_address).one()
+            )
+            contract.data = new_contract_nada
+            session.commit()

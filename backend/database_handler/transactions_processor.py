@@ -6,6 +6,7 @@ from .models import Transactions, TransactionsAudit
 from sqlalchemy.orm import Session
 
 
+# TODO: unify this enum with the one in models.py. We should probably use enums in the database instead of strings
 class TransactionStatus(Enum):
     PENDING = "PENDING"
     CANCELED = "CANCELED"
@@ -40,7 +41,12 @@ class TransactionsProcessor:
         }
 
     def insert_transaction(
-        self, from_address: str, to_address: str, data: dict, value: float, type: int
+        self,
+        from_address: str,
+        to_address: str,
+        data: dict,
+        value: float,
+        type: int,
     ) -> int:
         # Insert transaction into the transactions table
         new_transaction = Transactions(
