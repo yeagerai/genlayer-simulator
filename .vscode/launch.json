@@ -32,6 +32,22 @@
         "host": "localhost"
       },
       "justMyCode": true
+    },
+    {
+      "name": "SQLAlchemy tests: Remote Attach",
+      "type": "debugpy",
+      "request": "attach",
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}",
+          "remoteRoot": "/app"
+        }
+      ],
+      "connect": {
+        "port": 5678,
+        "host": "localhost"
+      },
+      "justMyCode": true
     }
   ],
   "compounds": [

@@ -9,6 +9,7 @@ from sqlalchemy import (
     Numeric,
     PrimaryKeyConstraint,
     String,
+    func,
     text,
 )
 from sqlalchemy.dialects.postgresql import JSONB
@@ -29,7 +30,10 @@ class CurrentState(Base):
     id: Mapped[str] = mapped_column(String(255), primary_key=True)
     data: Mapped[dict] = mapped_column(JSONB)
     updated_at: Mapped[Optional[datetime.datetime]] = mapped_column(
-        DateTime(True), server_default=text("CURRENT_TIMESTAMP"), init=False
+        DateTime(True),
+        init=False,
+        server_default=func.current_timestamp(),
+        onupdate=func.current_timestamp(),
     )
 
 
@@ -65,7 +69,7 @@ class Transactions(Base):
     type: Mapped[Optional[int]] = mapped_column(Integer)
     gaslimit: Mapped[Optional[int]] = mapped_column(BigInteger)
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(
-        DateTime(True), server_default=text("CURRENT_TIMESTAMP"), init=False
+        DateTime(True), server_default=func.current_timestamp, init=False
     )
     r: Mapped[Optional[int]] = mapped_column(Integer)
     s: Mapped[Optional[int]] = mapped_column(Integer)
@@ -80,7 +84,7 @@ class TransactionsAudit(Base):
     transaction_id: Mapped[Optional[int]] = mapped_column(Integer)
     data: Mapped[Optional[dict]] = mapped_column(JSONB)
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(
-        DateTime(True), server_default=text("CURRENT_TIMESTAMP"), init=False
+        DateTime(True), server_default=func.current_timestamp, init=False
     )
 
 
@@ -98,5 +102,5 @@ class Validators(Base):
     provider: Mapped[Optional[str]] = mapped_column(String(255))
     model: Mapped[Optional[str]] = mapped_column(String(255))
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(
-        DateTime(True), server_default=text("CURRENT_TIMESTAMP"), init=False
+        DateTime(True), server_default=func.current_timestamp, init=False
     )

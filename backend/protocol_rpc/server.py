@@ -35,6 +35,7 @@ def create_app():
 
     app = Flask("jsonrpc_api")
     app.config["SQLALCHEMY_DATABASE_URI"] = db_uri
+    app.config["SQLALCHEMY_ECHO"] = True
     sqlalchemy_db.init_app(app)
 
     CORS(app, resources={r"/api/*": {"origins": "*"}}, intercept_exceptions=False)
@@ -45,7 +46,7 @@ def create_app():
     transactions_processor = TransactionsProcessor(
         sqlalchemy_db.session, genlayer_db_client
     )
-    accounts_manager = AccountsManager(genlayer_db_client, transactions_processor)
+    accounts_manager = AccountsManager(sqlalchemy_db.session, transactions_processor)
     validators_registry = ValidatorsRegistry(sqlalchemy_db.session)
 
     consensus = ConsensusAlgorithm(

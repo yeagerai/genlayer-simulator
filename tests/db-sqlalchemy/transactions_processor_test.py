@@ -1,19 +1,10 @@
 import math
 from datetime import datetime
-from typing import Iterable
-
-import pytest
-from sqlalchemy.orm import Session
 
 from backend.database_handler.transactions_processor import (
     TransactionsProcessor,
     TransactionStatus,
 )
-
-
-@pytest.fixture
-def transactions_processor(session: Session) -> Iterable[TransactionsProcessor]:
-    yield TransactionsProcessor(session)
 
 
 def test_transactions_processor(transactions_processor: TransactionsProcessor):
