@@ -5,6 +5,7 @@ from functools import partial
 from flask_jsonrpc import JSONRPC
 
 from backend.database_handler.db_client import DBClient
+from backend.database_handler.models import Base
 from backend.protocol_rpc.configuration import GlobalConfiguration
 from backend.protocol_rpc.message_handler.base import MessageHandler
 from backend.database_handler.accounts_manager import AccountsManager
@@ -345,6 +346,24 @@ def send_raw_transaction(
     result["transaction_id"] = transaction_id
 
     return result
+    validator_address = create_new_address()
+    details = random_validator_config(config.get_ollama_url)
+    response = validators_registry.create_validator(
+        validator_address,
+        stake,
+        details["provider"],
+        details["model"],
+        details["config"],
+    )
+    return response
+
+
+def count_validators(validators_registry: ValidatorsRegistry) -> dict:
+    return validators_registry.count_validators()
+
+
+def clear_db_tables(db_client: DBClient, tables: list) -> dict:
+    Base.metadata.drop_all(db_client.engine)
 
 
 def register_all_rpc_endpoints(
