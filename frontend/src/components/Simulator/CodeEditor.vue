@@ -4,7 +4,6 @@ import { ref, shallowRef, watch, computed } from 'vue';
 import { pythonSyntaxDefinition } from '@/utils';
 import { useContractsStore, useUIStore } from '@/stores';
 import { type ContractFile } from '@/types';
-import { useElementResize } from '@/hooks';
 
 const uiStore = useUIStore();
 const contractStore = useContractsStore();
@@ -14,7 +13,6 @@ const props = defineProps<{
 
 const editorElement = ref<HTMLDivElement | null>(null);
 const containerElement = ref<HTMLElement | null | undefined>(null);
-useElementResize(containerElement);
 const editorRef = shallowRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 const theme = computed(() => (uiStore.mode === 'light' ? 'vs' : 'vs-dark'));
 
