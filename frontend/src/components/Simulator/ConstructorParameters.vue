@@ -200,7 +200,6 @@ const hasConstructorInputs = computed(
           name="state"
           :rows="5"
           :invalid="!isValidDefaultState"
-          class="w-full bg-slate-100 p-2 dark:dark:bg-zinc-700"
           v-model="jsonParams"
         />
         <FieldError v-if="!isValidDefaultState"
