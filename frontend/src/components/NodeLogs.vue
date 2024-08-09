@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { nextTick, ref, watch } from 'vue';
 import { useNodeStore, useUIStore } from '@/stores';
-import JsonViewer from '@/components/JsonViewer/json-viewer.vue';
+import JsonViewer from '@/components/json-viewer/json-viewer.vue';
 import { NoSymbolIcon } from '@heroicons/vue/24/solid';
 
 const nodeStore = useNodeStore();

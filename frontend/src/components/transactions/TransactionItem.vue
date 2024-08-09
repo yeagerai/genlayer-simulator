@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import JsonViewer from '@/components/JsonViewer/json-viewer.vue';
+import JsonViewer from '@/components/json-viewer/json-viewer.vue';
 import { useUIStore } from '@/stores';
 import type { TransactionItem } from '@/types';
 import TransactionStatusBadge from '@/components/transactions/TransactionStatusBadge.vue';
