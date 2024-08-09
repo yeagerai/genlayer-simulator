@@ -4,14 +4,11 @@ import json
 import requests
 import time
 from dotenv import load_dotenv
-
 from eth_account import Account
 
-load_dotenv()
+from tests.common.transactions import construct_signed_transaction
 
-account = Account.from_key(
-    "0x8b077ea579fbe175d1f3ce2f04b32cbbed0b7b47cb1d572c3c7581249c4512bd"
-)
+load_dotenv()
 
 
 def payload(function_name: str, *args) -> dict:
@@ -46,10 +43,29 @@ def get_transaction_by_id(transaction_id: str):
     return raw_response.json()
 
 
-def post_request_and_wait_for_finalization(
-    payload: dict, interval: int = 10, retries: int = 15
+def call_contract_method(
+    account: Account, contract_address: str, method_name: str, method_args: list
 ):
-    raw_response = post_request_localhost(payload)
+    call_data = [method_name, json.dumps(method_args)]
+    signed_transaction = construct_signed_transaction(
+        account, call_data, contract_address
+    )
+    return send_raw_transaction(signed_transaction)
+
+
+def deploy_intelligent_contract(
+    account: Account, contract_code: str, constructor_params: str
+):
+    deploy_data = [contract_code, constructor_params]
+    signed_transaction = construct_signed_transaction(account, deploy_data)
+    return send_raw_transaction(signed_transaction)
+
+
+def send_raw_transaction(
+    signed_transaction: str, interval: int = 10, retries: int = 15
+):
+    payload_data = payload("send_raw_transaction", signed_transaction)
+    raw_response = post_request_localhost(payload_data)
     call_method_response = raw_response.json()
     if not call_method_response["result"]:
         raise ValueError("No result found in the call_method_response")
