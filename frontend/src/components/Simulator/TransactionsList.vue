@@ -27,7 +27,7 @@ const handleClearTransactions = () => {
   transactionsStore.clearTransactionsForContract(
     contractsStore.currentContractId ?? '',
   );
-  
+
   isClearTransactionsModalOpen.value = false;
 };
 </script>
