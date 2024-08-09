@@ -11,6 +11,8 @@ import { useDebounceFn } from '@vueuse/core';
 import { notify } from '@kyvg/vue3-notification';
 import { useMockContractData } from './useMockContractData';
 
+const schema = ref<any>();
+
 export function useContractQueries() {
   const $jsonRpc = inject<IJsonRpcService>('$jsonRpc'); // This could be done without inject/provide
   const accountsStore = useAccountsStore();
@@ -31,7 +33,6 @@ export function useContractQueries() {
 
   const isDeployed = computed(() => !!deployedContract.value);
   const address = computed(() => deployedContract.value?.address);
-  const schema = ref<any>();
 
   const fetchContractSchemaDebounced = useDebounceFn(() => {
     return fetchContractSchema();

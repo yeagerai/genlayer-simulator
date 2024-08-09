@@ -14,11 +14,11 @@ const transactions = computed(() => {
     (t) => t.localContractId === contractsStore.currentContractId,
   );
 
-  const transactionsById = contractTransactions
+  const transactionsOrderedById = contractTransactions
     .slice()
     .sort((a, b) => b.txId - a.txId);
 
-  return transactionsById;
+  return transactionsOrderedById;
 });
 
 const isClearTransactionsModalOpen = ref(false);
