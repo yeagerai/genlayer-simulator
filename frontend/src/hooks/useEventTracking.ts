@@ -1,9 +1,9 @@
 import { useGtm } from '@gtm-support/vue-gtm';
 
-const isLocalMode = import.meta.env.MODE === 'development';
-const gtm = useGtm();
-
 export const useEventTracking = () => {
+  const isLocalDebugMode = import.meta.env.MODE === 'development';
+  const gtm = useGtm();
+
   const trackEvent = (name: string, label: string, value: any) => {
     try {
       const eventData = {
@@ -14,10 +14,12 @@ export const useEventTracking = () => {
         value,
       };
 
-      if (isLocalMode) {
-        console.debug('trackEvent', eventData);
+      if (isLocalDebugMode) {
+        console.debug('Track Event', eventData);
+      } else if (gtm?.enabled()) {
+        gtm.trackEvent(eventData);
       } else {
-        gtm?.trackEvent(eventData);
+        console.error('GTM not initialized');
       }
     } catch (err) {
       console.error('Failed to track event', err);
