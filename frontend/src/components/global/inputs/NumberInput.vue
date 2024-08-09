@@ -8,9 +8,28 @@ const props = defineProps<{
   invalid?: boolean;
   placeholder?: string;
   tiny?: boolean;
+  forceInteger?: boolean;
 }>();
 
 const model = defineModel();
+
+const handleChange = (e: Event) => {
+  if (props.forceInteger) {
+    const target = e.target as HTMLInputElement;
+    model.value = parseInt(target.value, 10);
+  }
+};
+
+const handleKeydown = (event: KeyboardEvent) => {
+  if (
+    props.forceInteger &&
+    !(event.ctrlKey || event.metaKey) &&
+    event.key.length === 1 &&
+    isNaN(Number(event.key))
+  ) {
+    event.preventDefault();
+  }
+};
 </script>
 
 <template>
@@ -26,5 +45,7 @@ const model = defineModel();
         'ring-gray-400/60 hover:ring-gray-400 dark:ring-zinc-500/60 dark:hover:ring-zinc-500',
       tiny && 'px-2 py-1',
     ]"
+    @input="handleChange"
+    @keydown="handleKeydown"
   />
 </template>
