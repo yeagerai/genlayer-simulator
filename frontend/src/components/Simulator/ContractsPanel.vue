@@ -16,7 +16,6 @@ const handleRunDebug = () => {
 };
 
 const setCurrentContractTab = (id?: string) => {
-  console.log(' setCurrentContractTab', id);
   store.setCurrentContractId(id);
 };
 

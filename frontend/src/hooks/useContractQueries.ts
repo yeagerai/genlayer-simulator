@@ -34,7 +34,6 @@ export function useContractQueries() {
   const schema = ref<any>();
 
   const fetchContractSchemaDebounced = useDebounceFn(() => {
-    console.log('fetchContractSchemaDebounced');
     return fetchContractSchema();
   }, 300);
 
@@ -148,7 +147,6 @@ export function useContractQueries() {
   });
 
   async function fetchContractAbi() {
-    console.log('fetchContractAbi', address.value);
     if (isMock.value) {
       return mockContractSchema;
     }
