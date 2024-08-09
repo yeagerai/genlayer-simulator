@@ -37,7 +37,7 @@ class DBClient:
 
     def get_session(self) -> Session:
         """Return a SQLAlchemy session."""
-        return Session(self.engine)
+        return Session(self.engine, expire_on_commit=False)
 
     def get_connection(self):
         """Retrieve a connection from the connection pool."""
