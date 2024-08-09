@@ -4,7 +4,7 @@ import { BasePage } from './BasePage'
 export class TutorialPage extends BasePage {
   override baseurl = 'http://localhost:8080/simulator/contracts'
   override visibleLocator: Locator = By.xpath("//*[@data-testid='contracts-page-title']")
-  
+
   async getStepElement(target: string): Promise<WebElement> {
     const stepElement = await this.driver.wait(
       until.elementLocated(By.xpath(`//div[@data-testid='tutorial-step-${target}']`))

@@ -22,7 +22,7 @@ jobs:
 
       - name: Changing URL for rpc server to localhost
         run: sed -i "s/'jsonrpc'/'localhost'/g" .env
-      
+
       - name: Remove OPENAIKEY from the .env file so it can be loaded from the environment
         run: sed -i "/^OPENAIKEY *= *'<add_your_api_key_here>'$/d" .env
 
