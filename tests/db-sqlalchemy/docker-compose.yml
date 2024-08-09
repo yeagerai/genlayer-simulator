@@ -19,6 +19,9 @@ services:
     build:
       context: ./
       dockerfile: ./tests/db-sqlalchemy/Dockerfile
+    # Uncomment for debugging
+    # ports:
+    #   - 5678:5678
     environment:
       POSTGRES_URL: postgresql+psycopg2://postgres:postgres@postgrestest:5432/postgres
     depends_on:

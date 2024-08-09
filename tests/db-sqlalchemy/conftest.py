@@ -6,12 +6,22 @@ from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from backend.database_handler.models import Base
+from backend.database_handler.transactions_processor import TransactionsProcessor
+
+import debugpy
+
+debugpy.listen(("0.0.0.0", 5678))
+# Uncomment the following line to wait for the debugger to attach
+# debugpy.wait_for_client()
 
 
 @pytest.fixture
 def engine() -> Iterable[Engine]:
     postgres_url = os.getenv("POSTGRES_URL")
-    engine = create_engine(postgres_url)
+    engine = create_engine(
+        postgres_url,
+        # echo=True # Uncomment this line to see the SQL queries
+    )
     Base.metadata.create_all(engine)
     yield engine
     Base.metadata.drop_all(engine)
@@ -23,3 +33,8 @@ def session(engine: Engine) -> Iterable[Session]:
     session = session_maker()
     yield session
     session.close()
+
+
+@pytest.fixture
+def transactions_processor(session: Session) -> Iterable[TransactionsProcessor]:
+    yield TransactionsProcessor(session)

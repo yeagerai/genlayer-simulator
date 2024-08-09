@@ -1,8 +1,3 @@
-import math
-from datetime import datetime
-from typing import Iterable
-
-import pytest
 from sqlalchemy.orm import Session
 
 from backend.database_handler.contract_snapshot import ContractSnapshot
