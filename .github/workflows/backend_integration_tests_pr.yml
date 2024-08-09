@@ -67,15 +67,28 @@ jobs:
       - name: Wait for services to be up
         timeout-minutes: 5
         run: |
-          while ! curl -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"ping","params":[],"id":1}' http://0.0.0.0:4000/api > /dev/null; do
-            echo "Waiting for rpc server..."
-            sleep 5
+          timeout=60
+          counter=0
+          while [[ "$counter" -lt "$timeout" ]]; do
+            if curl -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"ping","params":[],"id":1}' http://0.0.0.0:4000/api | grep -q "OK"; then
+              echo "RPC server is up!"
+              break
+            else
+              echo "Waiting for RPC server... ($counter/$timeout)"
+              sleep 5
+              counter=$((counter+1))
+            fi
           done
+          # Fail if the service didn't start within the timeout
+          if [[ "$counter" -ge "$timeout" ]]; then
+            echo "Error: Timeout while waiting for RPC server"
+            exit 1
+          fi
 
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.12.2
+          python-version: 3.12.4
 
       - name: Install dependencies
         run: |
