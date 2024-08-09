@@ -1,12 +1,13 @@
-FROM python:3.12.2-slim AS base
+FROM python:3.12.5-slim AS base
 
 ARG path=/app
 
-RUN mkdir $path
 WORKDIR $path
 
 ADD backend/protocol_rpc/requirements.txt backend/protocol_rpc/requirements.txt
-RUN pip install --no-cache-dir -r backend/protocol_rpc/requirements.txt
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu \
+    && pip install --no-cache-dir -r backend/protocol_rpc/requirements.txt
 
 ENV PYTHONPATH "${PYTHONPATH}:/${path}"
 ENV FLASK_APP=backend/protocol_rpc/server.py
@@ -24,5 +25,5 @@ CMD watchmedo auto-restart --recursive --pattern="*.py" --ignore-patterns="*.pyc
 
 ###########START NEW IMAGE: PRODUCTION ###################
 FROM base AS prod
-
+USER backend-user
 CMD flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}
