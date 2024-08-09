@@ -134,6 +134,11 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
               .where('txId')
               .equals((args[0] as any).id)
               .modify({ data: args[0], status: args[0].status });
+          case 'clearTransactionsForContract':
+            await db.transactions
+              .where('localContractId')
+              .equals(args[0])
+              .delete();
             break;
           default:
             break;

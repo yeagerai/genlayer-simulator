@@ -110,6 +110,9 @@ export function useContractQueries() {
           type: 'success',
         });
 
+        transactionsStore.clearTransactionsForContract(
+          contract.value?.id ?? '',
+        );
         transactionsStore.addTransaction(tx);
 
         return tx;

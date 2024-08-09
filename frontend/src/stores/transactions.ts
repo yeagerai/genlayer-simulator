@@ -36,6 +36,16 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
     return $jsonRpc?.getTransactionById(txId);
   }
 
+  function clearTransactionsForContract(contractId: string) {
+    processingQueue.value = processingQueue.value.filter(
+      (t) => t.localContractId !== contractId,
+    );
+
+    transactions.value = transactions.value.filter(
+      (t) => t.localContractId !== contractId,
+    );
+  }
+
   return {
     transactions,
     pendingTransactions,
@@ -44,5 +54,6 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
     addTransaction,
     removeTransaction,
     updateTransaction,
+    clearTransactionsForContract,
   };
 });

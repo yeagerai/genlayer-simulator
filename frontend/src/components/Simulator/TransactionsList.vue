@@ -24,16 +24,10 @@ const transactions = computed(() => {
 const isClearTransactionsModalOpen = ref(false);
 
 const handleClearTransactions = () => {
-  transactionsStore.processingQueue.forEach((t) => {
-    if (t.localContractId === contractsStore.currentContractId) {
-      transactionsStore.removeTransaction(t);
-    }
-  });
-  transactionsStore.transactions.forEach((t) => {
-    if (t.localContractId === contractsStore.currentContractId) {
-      transactionsStore.removeTransaction(t);
-    }
-  });
+  transactionsStore.clearTransactionsForContract(
+    contractsStore.currentContractId ?? '',
+  );
+  
   isClearTransactionsModalOpen.value = false;
 };
 </script>
