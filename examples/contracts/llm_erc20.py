@@ -25,13 +25,14 @@ Update the balances based on the valid transactions only.
 Given the current balance in JSON format and the transaction provided,
 please provide the result of your calculation with the following format:
 {{
-transaction_success: bool,          // Whether the transaction was successful
-transaction_error: str,             // Empty if transaction is successful
-updated_balances: object<str, int>  // Updated balances after the transaction
+"transaction_success": bool,          // Whether the transaction was successful
+"transaction_error": str,             // Empty if transaction is successful
+"updated_balances": object<str, int>  // Updated balances after the transaction
 }}
 It is mandatory that you respond only using the JSON format above,
 nothing else. Don't include any other words or characters,
-your output must be only JSON without any formatting or quotes of any kind."""
+your output must be only JSON without any formatting prefix or suffix.
+This result should be perfectly parseable by a JSON parser without errors."""
         print(prompt)
         final_result = {}
         async with EquivalencePrinciple(
@@ -46,6 +47,8 @@ your output must be only JSON without any formatting or quotes of any kind."""
             result_clean = result.replace("True", "true").replace("False", "false")
             eq.set(result_clean)
 
+        print("final_result: ", final_result)
+        print("final_result[output]: ", final_result["output"])
         result_json = json.loads(final_result["output"])
         self.balances = result_json["updated_balances"]
 

@@ -60,7 +60,8 @@ class PredictionMarket(IContract):
             }}
             It is mandatory that you respond only using the JSON format above,
             nothing else. Don't include any other words or characters,
-            your output must be only JSON without any formatting or quotes of any kind.
+            your output must be only JSON without any formatting prefix or suffix.
+            This result should be perfectly parseable by a JSON parser without errors.
             """
             result = await eq.call_llm(task)
             print(result)
