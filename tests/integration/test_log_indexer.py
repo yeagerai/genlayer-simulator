@@ -201,11 +201,10 @@ def test_log_indexer():
     assert float(closest_vector_log_0_3["result"]["data"]["similarity"]) > 0.50
     assert float(closest_vector_log_0_3["result"]["data"]["similarity"]) < 0.51
 
-
     # ########################################
     # ##### Test id uniqueness after deletion #
     # ########################################
-    
+
     # Add third log
     _, transaction_response_add_log_2 = post_request_and_wait_for_finalization(
         payload(
@@ -231,7 +230,3 @@ def test_log_indexer():
     assert float(closest_vector_log_2["result"]["data"]["similarity"]) > 0.99
     assert closest_vector_log_2["result"]["data"]["id"] == 2
     assert closest_vector_log_2["result"]["data"]["text"] == "This is the third log"
-
-   
-
-  
