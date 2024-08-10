@@ -5,7 +5,7 @@ import SimulatorMenu from '@/components/SimulatorMenu.vue';
 import { CheckIcon } from '@heroicons/vue/24/solid';
 import { ref } from 'vue';
 
-import type {Address} from '@/types';
+import type { Address } from '@/types';
 const store = useAccountsStore();
 
 const showSetDefaultAccount = ref<Record<string, boolean>>({});

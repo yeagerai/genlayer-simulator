@@ -1,5 +1,10 @@
 import type { IJsonRpcService } from '@/services';
-import type { Address, ContractFile, DeployedContract, TransactionItem } from '@/types';
+import type {
+  Address,
+  ContractFile,
+  DeployedContract,
+  TransactionItem,
+} from '@/types';
 import { db, getContractFileName, setupStores, signTransaction } from '@/utils';
 import { defineStore } from 'pinia';
 import { ref, inject, computed } from 'vue';
@@ -182,17 +187,14 @@ export const useContractsStore = defineStore('contractsStore', () => {
         return false;
       }
 
-      const methodParamsAsString = JSON.stringify(params)
-      const data = toRlp([
-        toHex(method),
-        toHex(methodParamsAsString)
-      ])
-      
-      const to = contract?.address as Address ?? null;
+      const methodParamsAsString = JSON.stringify(params);
+      const data = toRlp([toHex(method), toHex(methodParamsAsString)]);
+
+      const to = (contract?.address as Address) ?? null;
       const signed = await signTransaction(
         accountsStore.currentPrivateKey,
         data,
-        to
+        to,
       );
 
       const result = await $jsonRpc?.sendTransaction(signed);
@@ -278,45 +280,45 @@ export const useContractsStore = defineStore('contractsStore', () => {
           deployingContract.value = true;
           try {
             if (!accountsStore.currentPrivateKey) {
-              return
+              return;
             }
-              const constructorParamsAsString = JSON.stringify(constructorParams)
-              const data = toRlp([
-                toHex(currentContract.value.content),
-                toHex(constructorParamsAsString)
-              ])
+            const constructorParamsAsString = JSON.stringify(constructorParams);
+            const data = toRlp([
+              toHex(currentContract.value.content),
+              toHex(constructorParamsAsString),
+            ]);
 
-              const signed = await signTransaction(
-                accountsStore.currentPrivateKey,
-                data,
+            const signed = await signTransaction(
+              accountsStore.currentPrivateKey,
+              data,
+            );
+
+            const result = await $jsonRpc?.sendTransaction(signed);
+
+            deployingContract.value = false;
+            if (result?.status === 'success') {
+              deployedContracts.value = deployedContracts.value.filter(
+                (c) => c.contractId !== currentContract.value?.id,
               );
+              const tx: TransactionItem = {
+                contractAddress: result?.data.contract_address,
+                localContractId: currentContract.value.id,
+                txId: result?.data.transaction_id,
+                type: 'deploy',
+                status: 'PENDING',
+                data: {},
+              };
 
-              const result = await $jsonRpc?.sendTransaction(signed);
+              transactionsStore.addTransaction(tx);
 
-              deployingContract.value = false;
-              if (result?.status === 'success') {
-                deployedContracts.value = deployedContracts.value.filter(
-                  (c) => c.contractId !== currentContract.value?.id,
-                );
-                const tx: TransactionItem = {
-                  contractAddress: result?.data.contract_address,
-                  localContractId: currentContract.value.id,
-                  txId: result?.data.transaction_id,
-                  type: 'deploy',
-                  status: 'PENDING',
-                  data: {},
-                };
-
-                transactionsStore.addTransaction(tx);
-
-                return tx;
-              } else {
-                throw new Error(
-                  typeof result?.message === 'string'
-                    ? result.message
-                    : 'Error Deploying the contract',
-                );
-              }
+              return tx;
+            } else {
+              throw new Error(
+                typeof result?.message === 'string'
+                  ? result.message
+                  : 'Error Deploying the contract',
+              );
+            }
           } catch (error) {
             console.error(error);
             throw new Error('Error Deploying the contract');

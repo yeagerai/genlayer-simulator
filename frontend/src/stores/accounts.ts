@@ -1,13 +1,11 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { getAccountFromPrivatekey, getPrivateKey } from '@/utils';
-import type {Address} from '@/types';
+import type { Address } from '@/types';
 
 export const useAccountsStore = defineStore('accountsStore', () => {
   const key = localStorage.getItem('accountsStore.currentPrivateKey');
-  const currentPrivateKey = ref<Address | null>(
-    key ? (key as Address) : null,
-  );
+  const currentPrivateKey = ref<Address | null>(key ? (key as Address) : null);
 
   const currentUserAddress = computed(() => {
     return currentPrivateKey.value

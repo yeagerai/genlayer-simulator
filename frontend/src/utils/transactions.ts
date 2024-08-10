@@ -1,6 +1,6 @@
 import { getAccountFromPrivatekey } from './accounts';
 
-import type {Address} from '@/types';
+import type { Address } from '@/types';
 
 export async function signTransaction(
   privateKey: Address,
