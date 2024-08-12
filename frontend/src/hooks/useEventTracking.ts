@@ -1,10 +1,11 @@
 import { useGtm } from '@gtm-support/vue-gtm';
 
 export const useEventTracking = () => {
-  const isLocalDebugMode = import.meta.env.MODE === 'development';
-  const gtm = useGtm();
+  const isDevelopment = import.meta.env.MODE === 'development';
 
   const trackEvent = (name: string, label: string, value: any) => {
+    const gtm = useGtm();
+    
     try {
       const eventData = {
         event: name,
