@@ -41,7 +41,7 @@ app.use(TransactionsListenerPlugin, {
 app.use(
   createGtm({
     id: import.meta.env.VITE_GTM_ID,
-    enabled: import.meta.env.mode === 'production',
+    enabled: import.meta.env.MODE === 'production',
     debug: false,
     vueRouter: router,
   }),
