@@ -193,11 +193,9 @@ export function useContractQueries() {
   }
 
   async function callWriteMethod({
-    userAccount,
     method,
     params,
   }: {
-    userAccount: string;
     method: string;
     params: any[];
   }) {
