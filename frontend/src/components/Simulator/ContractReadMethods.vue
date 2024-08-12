@@ -1,0 +1,56 @@
+<script setup lang="ts">
+import { useContractQueries } from '@/hooks/useContractQueries';
+import { computed } from 'vue';
+import PageSection from '@/components/Simulator/PageSection.vue';
+import { type ContractMethod } from '@/types';
+import ContractMethodItem from '@/components/Simulator/ContractMethodItem.vue';
+import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
+
+const { contractAbiQuery } = useContractQueries();
+
+const { data, isPending, isError, error, isRefetching } = contractAbiQuery;
+
+const readMethods = computed(() => {
+  return Object.entries(data.value.methods)
+    .filter((m) => m[0].startsWith('get_'))
+    .map(([methodName, method]) => ({
+      methodName,
+      method: method as ContractMethod, // Explicitly type 'method' as 'ContractMethod'
+    }));
+});
+</script>
+
+<template>
+  <PageSection data-testid="contract-read-methods">
+    <template #title
+      >Read Methods
+      <Loader v-if="isRefetching" :size="14" />
+    </template>
+
+    <div
+      v-if="isPending"
+      class="flex flex-row items-center justify-center gap-2 p-1"
+    >
+      <Loader />
+      Loading...
+    </div>
+
+    <Alert v-else-if="isError" error>
+      {{ error?.message }}
+    </Alert>
+
+    <template v-else-if="data">
+      <ContractMethodItem
+        v-for="method in readMethods"
+        :key="method.methodName"
+        :methodName="method.methodName"
+        :method="method.method"
+        methodType="read"
+      />
+
+      <EmptyListPlaceholder v-if="readMethods.length === 0">
+        No read methods.
+      </EmptyListPlaceholder>
+    </template>
+  </PageSection>
+</template>

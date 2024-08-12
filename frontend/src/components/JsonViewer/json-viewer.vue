@@ -165,6 +165,9 @@ export default {
 .jv-container {
   box-sizing: border-box;
   position: relative;
+  font-size: 12px;
+  font-family: Consolas, Menlo, Courier, monospace;
+  white-space: nowrap;
 }
 .jv-container.boxed {
   border: 1px solid #eee;
@@ -176,22 +179,15 @@ export default {
   position: relative;
 }
 .jv-container.jv-light {
-  background: #fff;
-  white-space: nowrap;
   color: #525252;
-  font-size: 14px;
-  font-family: Consolas, Menlo, Courier, monospace;
 }
 .jv-container.jv-dark {
-  background: #282c34;
-  white-space: nowrap;
   color: #fff;
-  font-size: 14px;
-  font-family: Consolas, Menlo, Courier, monospace;
 }
 .jv-container.jv-light .jv-ellipsis {
   color: #999;
   background-color: #eee;
+  border: 1px solid #dbdbdb;
   display: inline-block;
   line-height: 0.9;
   font-size: 0.9em;

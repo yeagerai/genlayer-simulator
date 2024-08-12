@@ -4,6 +4,6 @@ import { BasePage } from './BasePage';
 export class RunDebugPage extends BasePage {
   override baseurl = 'http://localhost:8080/simulator/run-debug';
   override visibleLocator: Locator = By.xpath(
-    "//h3[contains(text(), 'Run and Debug')]",
+    "//*[@data-testid='run-debug-page-title']",
   );
 }

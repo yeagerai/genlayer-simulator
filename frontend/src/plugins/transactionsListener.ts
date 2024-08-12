@@ -2,6 +2,8 @@ import { useContractsStore, useTransactionsStore } from '@/stores';
 import type { TransactionItem } from '@/types';
 import type { App } from 'vue';
 
+const ENABLE_LOGS = false;
+
 export const TransactionsListenerPlugin = {
   install(_app: App, { interval = 5000 }: { interval: number }) {
     const contractsStore = useContractsStore();
@@ -41,6 +43,10 @@ export const TransactionsListenerPlugin = {
               tx?.data?.status === 'FINALIZED' &&
               currentTx?.type === 'deploy'
             ) {
+              if (ENABLE_LOGS) {
+                console.log('New deployed contract', currentTx);
+              }
+
               contractsStore.addDeployedContract({
                 contractId: currentTx.localContractId,
                 address: currentTx.contractAddress,
@@ -50,7 +56,9 @@ export const TransactionsListenerPlugin = {
           }
         }
 
-        console.log(`There are ${pendingTxs.length} pending transactions`);
+        if (ENABLE_LOGS) {
+          console.log(`There are ${pendingTxs.length} pending transactions`);
+        }
       }
     };
     setInterval(listener, interval);

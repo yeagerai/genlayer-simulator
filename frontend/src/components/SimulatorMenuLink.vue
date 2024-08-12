@@ -1,7 +1,6 @@
 <script setup lang="ts">
 defineProps({
   href: { type: String, default: '/' },
-  tooltip: { type: String, default: '' },
 });
 </script>
 
@@ -13,8 +12,6 @@ defineProps({
       >
         <slot />
       </div>
-
-      <ToolTip :text="tooltip" :options="{ placement: 'right' }" />
     </div>
   </a>
 </template>

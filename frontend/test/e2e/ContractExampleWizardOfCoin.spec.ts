@@ -32,7 +32,7 @@ describe('Contract Example WizardOfCoin', () => {
     const tabs = await driver.findElements(
       By.xpath("//div[contains(@class, 'contract-item')]"),
     );
-    expect(tabs.length, 'Number of tabs should be 2').equal(2);
+    expect(tabs.length, 'Number of tabs should be 1').equal(1);
   });
 
   it('should open Run debug page and set constructor arguments for WizardOfCoin', async () => {
@@ -71,29 +71,21 @@ describe('Contract Example WizardOfCoin', () => {
       .click();
 
     // locate elements that should be visible
-    const contractStateTitle = await driver.wait(
+    const deployedContractInfo = await driver.wait(
       until.elementLocated(
-        By.xpath(
-          "//h5[contains(@class, 'text-sm') and contains(text(), 'Current Intelligent Contract State')]",
-        ),
+        By.xpath("//*[@data-testid='deployed-contract-info']"),
       ),
-      15000,
+      20000,
     );
-    expect(contractStateTitle, 'Contract state title section should be visible')
-      .not.null;
 
-    const executeTransactionsTitle = await driver.wait(
-      until.elementLocated(
-        By.xpath(
-          "//h5[contains(@class, 'text-sm') and contains(text(), 'Execute Transactions')]",
-        ),
-      ),
-      2000,
+    expect(deployedContractInfo, 'Deployed contract info should be visible').not
+      .null;
+
+    const readMethods = await driver.findElement(
+      By.xpath("//*[@data-testid='contract-read-methods']"),
     );
-    expect(
-      executeTransactionsTitle,
-      'Execute transactions title section should be visible',
-    ).not.null;
+
+    expect(readMethods, 'Read methods should be visible').not.null;
 
     const latestTransactions = await driver.findElement(
       By.xpath("//*[@data-testid='latest-transactions']"),
@@ -104,44 +96,41 @@ describe('Contract Example WizardOfCoin', () => {
   });
 
   it('should call get_have_coin state', async () => {
-    const stateBtn = await driver.wait(
-      until.elementLocated(By.xpath("//button[text()='get_have_coin']")),
-      25000,
+    const methodBtn = await driver.findElement(
+      By.xpath("//button[@data-testid='expand-method-btn-get_have_coin']"),
     );
-    await stateBtn.click();
+    await methodBtn.click();
 
-    const stateResult = await driver.wait(
-      until.elementLocated(
-        By.xpath("//div[contains(@data-testid, 'get_have_coin')]"),
-      ),
+    const readBtn = await driver.findElement(
+      By.xpath("//button[@data-testid='read-method-btn-get_have_coin']"),
     );
-    expect(stateResult, 'get_have_coin result should be visible').not.null;
 
-    const stateResultText = await driver
-      .wait(until.elementTextContains(stateResult, 'True'))
+    await readBtn.click();
+
+    const methodResponse = await driver.findElement(
+      By.xpath("//*[@data-testid='method-response-get_have_coin']"),
+    );
+
+    expect(methodResponse, 'get_have_coin result should be visible').not.null;
+
+    const methodResponseText = await driver
+      .wait(until.elementTextContains(methodResponse, 'True'), 5000)
       .getText();
 
-    console.log(`get_have_coin result: ${stateResultText}`);
-    expect(stateResultText, 'get_have_coin result should true').be.equal(
-      'True',
-    );
+    expect(
+      methodResponseText.includes('True'),
+      'get_have_coin result should contain "True"',
+    ).to.be.true;
   });
 
   it('should call ask_for_coin() method', async () => {
-    const dropdownExecuteMethod = await driver.wait(
-      until.elementLocated(
-        By.xpath("//select[@name='dropdown-execute-method']"),
-      ),
+    const methodBtn = await driver.findElement(
+      By.xpath("//button[@data-testid='expand-method-btn-ask_for_coin']"),
     );
-    expect(dropdownExecuteMethod, 'select with method list should be visible')
-      .not.null;
+    await methodBtn.click();
 
-    await dropdownExecuteMethod
-      .findElement(By.xpath("//option[@value='ask_for_coin']"))
-      .click();
-
-    const requestInput = await driver.wait(
-      until.elementLocated(By.xpath("//input[@name='request']")),
+    const requestInput = await driver.findElement(
+      By.xpath("//input[@name='request']"),
     );
     await requestInput.clear();
     await requestInput.sendKeys('Please give me the coin');
@@ -151,13 +140,11 @@ describe('Contract Example WizardOfCoin', () => {
       'The input text should be equal to `Please give me the coin`',
     ).to.be.equal('Please give me the coin');
 
-    await driver
-      .wait(
-        until.elementLocated(
-          By.xpath("//button[text()='Execute ask_for_coin()']"),
-        ),
-      )
-      .click();
+    const writeBtn = await driver.findElement(
+      By.xpath("//button[@data-testid='write-method-btn-ask_for_coin']"),
+    );
+
+    await writeBtn.click();
   });
   after(() => driver.quit());
 });
