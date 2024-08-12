@@ -1,138 +1,158 @@
-import { WebDriver, By, until } from 'selenium-webdriver'
-import { ContractsPage } from '../pages/ContractsPage.js'
-import { RunDebugPage } from '../pages/RunDebugPage.js'
-import { SettingsPage } from '../pages/SettingsPage.js'
-import { before, describe, after, it } from 'node:test'
-import { expect } from 'chai'
-import { getDriver } from '../utils/driver.js'
+import { WebDriver, By, until } from 'selenium-webdriver';
+import { ContractsPage } from '../pages/ContractsPage.js';
+import { RunDebugPage } from '../pages/RunDebugPage.js';
+import { SettingsPage } from '../pages/SettingsPage.js';
+import { before, describe, after, it } from 'node:test';
+import { expect } from 'chai';
+import { getDriver } from '../utils/driver.js';
 
-let driver: WebDriver
-let contractsPage: ContractsPage
-let runDebugPage: RunDebugPage
-let settingsPage: SettingsPage
+let driver: WebDriver;
+let contractsPage: ContractsPage;
+let runDebugPage: RunDebugPage;
+let settingsPage: SettingsPage;
 
 describe('Contract Example Storage', () => {
   before(async () => {
-    driver = await getDriver()
-    contractsPage = new ContractsPage(driver)
-    runDebugPage = new RunDebugPage(driver)
-    settingsPage = new SettingsPage(driver)
+    driver = await getDriver();
+    contractsPage = new ContractsPage(driver);
+    runDebugPage = new RunDebugPage(driver);
+    settingsPage = new SettingsPage(driver);
 
-    await contractsPage.navigate()
-    await contractsPage.waitUntilVisible()
-    await contractsPage.skipTutorial()
-    await settingsPage.navigate()
-    await settingsPage.createValidatorIfRequired()
-  })
+    await contractsPage.navigate();
+    await contractsPage.waitUntilVisible();
+    await contractsPage.skipTutorial();
+    await settingsPage.navigate();
+    await settingsPage.createValidatorIfRequired();
+  });
 
   it('should open Storage example contract', async () => {
-    await contractsPage.navigate()
-    await contractsPage.waitUntilVisible()
-    await contractsPage.openContract('storage.gpy')
-    const tabs = await driver.findElements(By.xpath("//div[contains(@class, 'contract-item')]"))
-    expect(tabs.length, 'Number of tabs should be 2').equal(2)
-  })
+    await contractsPage.navigate();
+    await contractsPage.waitUntilVisible();
+    await contractsPage.openContract('storage.gpy');
+    const tabs = await driver.findElements(
+      By.xpath("//div[contains(@class, 'contract-item')]"),
+    );
+    expect(tabs.length, 'Number of tabs should be 1').equal(1);
+  });
 
   it('should open Run debug page and set constructor arguments for Storage', async () => {
-    await runDebugPage.navigate()
-    await runDebugPage.waitUntilVisible()
+    await runDebugPage.navigate();
+    await runDebugPage.waitUntilVisible();
 
-    const nameOfContract = await driver.wait(
-      until.elementLocated(
-        By.xpath(
-          "//*[@data-testid='current-contract-name' and text()='storage.gpy']"
-        )
+    const nameOfContract = await driver.findElement(
+      By.xpath(
+        "//*[@data-testid='current-contract-name' and contains(text(), 'storage.gpy')]",
       ),
-      2000
-    )
-    expect(nameOfContract, 'Storage file name contract should be visible').not.null
+    );
 
-    const initialStorageInput = await driver.wait(
-      until.elementLocated(
-        By.xpath("//input[contains(@name, 'initial_storage') and contains(@type, 'text')]")
+    expect(nameOfContract, 'Storage file name contract should be visible').not
+      .null;
+
+    const initialStorageInput = await driver.findElement(
+      By.xpath(
+        "//input[contains(@name, 'initial_storage') and contains(@type, 'text')]",
       ),
-      2000
-    )
-    expect(initialStorageInput, 'Initial Storage input should be visible').not.null
-    await initialStorageInput.clear()
-    await initialStorageInput.sendKeys('Test initial storage')
-    const storageText = await initialStorageInput.getAttribute('value')
-    expect(storageText, 'The input text should be equal to `Test initial storage`').to.be.equal(
-      'Test initial storage'
-    )
-  })
+    );
+
+    expect(initialStorageInput, 'Initial Storage input should be visible').not
+      .null;
+    await initialStorageInput.clear();
+    await initialStorageInput.sendKeys('Test initial storage');
+    const storageText = await initialStorageInput.getAttribute('value');
+    expect(
+      storageText,
+      'The input text should be equal to `Test initial storage`',
+    ).to.be.equal('Test initial storage');
+  });
 
   it('should deploy the contract Storage', async () => {
-    await driver.wait(until.elementLocated(By.xpath("//button[@data-testid='btn-deploy-contract']")), 2000).click()
+    await driver
+      .wait(
+        until.elementLocated(
+          By.xpath("//button[@data-testid='btn-deploy-contract']"),
+        ),
+        2000,
+      )
+      .click();
 
     // locate elements that should be visible
-    const contractStateTitle = await driver.wait(
+    const deployedContractInfo = await driver.wait(
       until.elementLocated(
-        By.xpath(
-          "//h5[contains(@class, 'text-sm') and contains(text(), 'Current Intelligent Contract State')]"
-        )
+        By.xpath("//*[@data-testid='deployed-contract-info']"),
       ),
-      15000
-    )
-    expect(contractStateTitle, 'Contract state title section should be visible').not.null
+      20000,
+    );
 
-    const executeTransactionsTitle = await driver.wait(
-      until.elementLocated(
-        By.xpath("//h5[contains(@class, 'text-sm') and contains(text(), 'Execute Transactions')]")
-      ),
-      2000
-    )
-    expect(executeTransactionsTitle, 'Execute transactions title section should be visible').not
-      .null
+    expect(deployedContractInfo, 'Deployed contract info should be visible').not
+      .null;
 
-    const latestTransactions = await driver.findElement(By.xpath("//*[@data-testid='latest-transactions']"));
-    expect(latestTransactions, 'Latest transactions section should be visible').not.null
-  })
+    const readMethods = await driver.findElement(
+      By.xpath("//*[@data-testid='contract-read-methods']"),
+    );
 
-  it('should call get_storage state', async () => {
-    const stateBtn = await driver.wait(
-      until.elementLocated(By.xpath("//button[text()='get_storage']")),
-      25000
-    )
-    await stateBtn.click()
+    expect(readMethods, 'Read methods should be visible').not.null;
 
-    const stateResult = await driver.wait(
-      until.elementLocated(By.xpath("//div[contains(@data-testid, 'get_storage')]")),
-      10000
-    )
-    expect(stateResult, 'get_storage result should be visible').not.null
+    const latestTransactions = await driver.findElement(
+      By.xpath("//*[@data-testid='latest-transactions']"),
+    );
+    expect(latestTransactions, 'Latest transactions section should be visible')
+      .not.null;
+  });
 
-    const stateResultText = await driver
-      .wait(until.elementTextContains(stateResult, 'Test initial storage'))
-      .getText()
+  it('should open get_storage method', async () => {
+    const methodBtn = await driver.findElement(
+      By.xpath("//button[@data-testid='expand-method-btn-get_storage']"),
+    );
+    await methodBtn.click();
 
-    console.log(`get_storage result: ${stateResultText}`)
-    expect(stateResultText, 'get_storage result should be Test initial storage').be.equal(
-      'Test initial storage'
-    )
-  })
+    const readBtn = await driver.findElement(
+      By.xpath("//button[@data-testid='read-method-btn-get_storage']"),
+    );
+
+    await readBtn.click();
+
+    const methodResponse = await driver.findElement(
+      By.xpath("//*[@data-testid='method-response-get_storage']"),
+    );
+
+    expect(methodResponse, 'get_storage result should be visible').not.null;
+
+    const methodResponseText = await driver
+      .wait(
+        until.elementTextContains(methodResponse, 'Test initial storage'),
+        5000,
+      )
+      .getText();
+
+    expect(
+      methodResponseText.includes('Test initial storage'),
+      'get_storage result should contain "Test initial storage"',
+    ).to.be.true;
+  });
 
   it('should call update_storage() method', async () => {
-    const dropdownExecuteMethod = await driver.wait(
-      until.elementLocated(By.xpath("//select[@name='dropdown-execute-method']"))
-    )
-    expect(dropdownExecuteMethod, 'select with method list should be visible').not.null
+    const methodBtn = await driver.findElement(
+      By.xpath("//button[@data-testid='expand-method-btn-update_storage']"),
+    );
+    await methodBtn.click();
 
-    await dropdownExecuteMethod.findElement(By.xpath("//option[@value='update_storage']")).click()
+    const newStorageInput = await driver.findElement(
+      By.xpath("//input[@name='new_storage']"),
+    );
 
-    const newStorageInput = await driver.wait(
-      until.elementLocated(By.xpath("//input[@name='new_storage']"))
-    )
-    await newStorageInput.clear()
-    await newStorageInput.sendKeys('Updated storage text')
-    const newStorageText = await newStorageInput.getAttribute('value')
-    expect(newStorageText, 'The input text should be equal to `Updated storage text`').to.be.equal(
-      'Updated storage text'
-    )
+    await newStorageInput.clear();
+    await newStorageInput.sendKeys('Updated storage text');
+    const newStorageText = await newStorageInput.getAttribute('value');
+    expect(
+      newStorageText,
+      'The input text should be equal to `Updated storage text`',
+    ).to.be.equal('Updated storage text');
 
-    await driver
-      .wait(until.elementLocated(By.xpath("//button[text()='Execute update_storage()']")))
-      .click()
-  })
-  after(() => driver.quit())
-})
+    const writeBtn = await driver.findElement(
+      By.xpath("//button[@data-testid='write-method-btn-update_storage']"),
+    );
+
+    await writeBtn.click();
+  });
+  after(() => driver.quit());
+});

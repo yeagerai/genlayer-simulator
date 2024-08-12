@@ -40,22 +40,24 @@ defineProps<{
       </span>
     </div>
 
-    <div class="invisible flex flex-row gap-1 group-hover:visible">
-      <button @click.stop="isUpdateModalMopen = true">
+    <div class="hidden flex-row gap-1 group-hover:flex">
+      <button
+        @click.stop="isUpdateModalMopen = true"
+        v-tooltip="'Update Validator'"
+      >
         <PencilSquareIcon
           class="h-5 w-5 p-[2px] text-slate-400 transition-colors hover:text-slate-800 active:scale-90 dark:hover:text-white"
         />
-        <ToolTip text="Update Validator" :options="{ placement: 'bottom' }" />
       </button>
 
       <button
         data-testid="validator-item-delete"
         @click.stop="isDeleteModalOpen = true"
+        v-tooltip="'Delete Validator'"
       >
         <TrashIcon
           class="h-5 w-5 p-[2px] text-slate-400 transition-colors hover:text-slate-800 active:scale-90 dark:hover:text-white"
         />
-        <ToolTip text="Delete validator" :options="{ placement: 'bottom' }" />
       </button>
     </div>
   </div>

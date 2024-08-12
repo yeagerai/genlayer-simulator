@@ -14,6 +14,12 @@
   }
 }
 
+@layer components {
+  .input-style {
+    @apply flex w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-accent hover:focus:ring-accent sm:text-sm sm:leading-6 dark:bg-zinc-800 dark:text-white;
+  }
+}
+
 body {
   transition:
     color 0.5s,
@@ -36,4 +42,40 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+/* floating-vue customization */
+
+.v-popper--theme-tooltip .v-popper__inner {
+  font-size: 0.8rem !important;
+  padding: 2px 8px !important;
+  background: rgba(25, 26, 27, 0.95) !important;
+}
+
+[data-mode='dark'] .v-popper--theme-dropdown .v-popper__inner {
+  color: inherit;
+  padding: 0px;
+  border: 1px solid #4b5563;
+  background: none;
+}
+
+.v-popper__arrow-outer {
+  visibility: hidden !important;
+}
+
+.v-popper__arrow-inner {
+  visibility: hidden !important;
+  display: none !important;
 }
