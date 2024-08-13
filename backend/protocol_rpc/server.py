@@ -2,7 +2,7 @@
 
 import os
 import threading
-
+import logging
 from flask import Flask
 from flask_jsonrpc import JSONRPC
 from flask_socketio import SocketIO
@@ -75,6 +75,7 @@ def run_socketio():
         host="0.0.0.0",
         allow_unsafe_werkzeug=True,
     )
+    logging.getLogger("werkzeug").setLevel(logging.ERROR)
 
 
 # Thread for the Flask-SocketIO server
