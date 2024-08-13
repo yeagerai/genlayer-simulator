@@ -120,6 +120,10 @@ const tryInitValues = () => {
     <template #title v-if="isCreateMode">Create New Validator</template>
     <template #title v-else>Update Validator</template>
 
+    <Alert warning v-if="providerOptions.length === 0">
+      No node providers available. Please configure a provider first.
+    </Alert>
+
     <template #info v-if="!isCreateMode">
       <div class="text-xs">
         <div>ID: {{ props.validator?.id }}</div>
@@ -137,6 +141,7 @@ const tryInitValues = () => {
         :invalid="!newValidatorData.provider"
         required
         testId="dropdown-provider"
+        :disabled="providerOptions.length === 0"
       />
     </div>
 
@@ -149,6 +154,7 @@ const tryInitValues = () => {
         :invalid="!newValidatorData.model"
         required
         testId="dropdown-model"
+        :disabled="providerOptions.length === 0"
       />
     </div>
 
