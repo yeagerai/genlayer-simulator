@@ -12,6 +12,7 @@ import registerGlobalComponents from '@/components/global/registerGlobalComponen
 import { VueQueryPlugin } from '@tanstack/vue-query';
 import FloatingVue from 'floating-vue';
 import 'floating-vue/dist/style.css';
+import { createPlausible } from 'v-plausible/vue';
 
 const app = createApp(App);
 const pinia = createPinia();
@@ -36,6 +37,18 @@ app.use(VueSpinnersPlugin);
 app.use(TransactionsListenerPlugin, {
   interval: 5000,
 });
+
+const plausible = createPlausible({
+  init: {
+    domain: import.meta.env.VITE_PLAUSIBLE_DOMAIN || 'simulator.genlayer.com',
+    trackLocalhost: true,
+  },
+  settings: {
+    enableAutoPageviews: true,
+  },
+});
+
+app.use(plausible);
 
 registerGlobalComponents(app);
 
