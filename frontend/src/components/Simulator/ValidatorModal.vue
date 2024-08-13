@@ -23,16 +23,19 @@ const isCreateMode = computed(() => !props.validator);
 async function handleCreateValidator() {
   try {
     await nodeStore.createNewValidator(newValidatorData.value);
+
     notify({
       title: 'OK',
       text: 'New validator created',
       type: 'success',
     });
+
     trackEvent('created_validator', {
       validator_provider: newValidatorData.value.provider,
       validator_model: newValidatorData.value.model,
       validator_stake: newValidatorData.value.stake,
     });
+    
     emit('close');
   } catch (error) {
     console.error(error);
