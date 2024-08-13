@@ -1,12 +1,14 @@
 import { watch, ref, inject, computed } from 'vue';
+import { toHex, toRlp } from 'viem';
 import type { IJsonRpcService } from '@/services';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
-import type { TransactionItem } from '@/types';
+import type { Address, TransactionItem } from '@/types';
 import {
   useContractsStore,
   useTransactionsStore,
   useAccountsStore,
 } from '@/stores';
+import { signTransaction } from '@/utils';
 import { useDebounceFn } from '@vueuse/core';
 import { notify } from '@kyvg/vue3-notification';
 import { useMockContractData } from './useMockContractData';
@@ -85,14 +87,20 @@ export function useContractQueries() {
     isDeploying.value = true;
 
     try {
+      if (!contract.value || !accountsStore.currentPrivateKey) {
+        throw new Error('Error Deploying the contract');
+      }
       const constructorParamsAsString = JSON.stringify(constructorParams);
+      const data = toRlp([
+        toHex(contract.value?.content ?? ''),
+        toHex(constructorParamsAsString),
+      ]);
 
-      const result = await $jsonRpc?.deployContract({
-        userAccount: accountsStore.currentUserAddress || '',
-        className: schema.value.class,
-        code: contract.value?.content ?? '',
-        constructorParams: constructorParamsAsString,
-      });
+      const signed = await signTransaction(
+        accountsStore.currentPrivateKey,
+        data,
+      );
+      const result = await $jsonRpc?.sendTransaction(signed);
 
       if (result?.status === 'success') {
         const tx: TransactionItem = {
@@ -191,21 +199,26 @@ export function useContractQueries() {
   }
 
   async function callWriteMethod({
-    userAccount,
     method,
     params,
   }: {
-    userAccount: string;
     method: string;
     params: any[];
   }) {
     try {
-      const result = await $jsonRpc?.callContractFunction({
-        userAccount,
-        contractAddress: address.value || '',
-        method,
-        params,
-      });
+      if (!accountsStore.currentPrivateKey) {
+        throw new Error('Error Deploying the contract');
+      }
+      const methodParamsAsString = JSON.stringify(params);
+      const data = toRlp([toHex(method), toHex(methodParamsAsString)]);
+
+      const to = (address.value as Address) || null;
+      const signed = await signTransaction(
+        accountsStore.currentPrivateKey,
+        data,
+        to,
+      );
+      const result = await $jsonRpc?.sendTransaction(signed);
 
       if (result?.status === 'success') {
         transactionsStore.addTransaction({

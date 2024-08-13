@@ -66,6 +66,22 @@ export class JsonRpcService implements IJsonRpcService {
   /**
    * Deploys a new intelligent contract.
    *
+   * @param {Object} signedTransaction - The signed transaction to be sent
+   * @return {Promise<JsonRpcResult<any>>} A promise that resolves to the result of the transaction being received and processed.
+   */
+  async sendTransaction(
+    signedTransaction: string,
+  ): Promise<JsonRpcResult<any>> {
+    const { result } = await this.rpcClient.call({
+      method: 'send_raw_transaction',
+      params: [signedTransaction],
+    });
+    return result;
+  }
+
+  /**
+   * Deploys a new intelligent contract.
+   *
    * @param {Object} params - The parameters for the function.
    * @param {string} params.userAccount - The user account calling the function.
    * @param {string} params.className - The name of the class for the contract.

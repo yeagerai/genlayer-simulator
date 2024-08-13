@@ -1,13 +1,12 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { getAccountFromPrivatekey, getPrivateKey } from '@/utils';
+import type { Address } from '@/types';
 import { shortenAddress } from '@/utils';
 
 export const useAccountsStore = defineStore('accountsStore', () => {
   const key = localStorage.getItem('accountsStore.currentPrivateKey');
-  const currentPrivateKey = ref<`0x${string}` | null>(
-    key ? (key as `0x${string}`) : null,
-  );
+  const currentPrivateKey = ref<Address | null>(key ? (key as Address) : null);
 
   const currentUserAddress = computed(() => {
     return currentPrivateKey.value
@@ -15,26 +14,26 @@ export const useAccountsStore = defineStore('accountsStore', () => {
       : '';
   });
 
-  const privateKeys = ref<`0x${string}`[]>(
+  const privateKeys = ref<Address[]>(
     localStorage.getItem('accountsStore.privateKeys')
       ? ((localStorage.getItem('accountsStore.privateKeys') || '').split(
           ',',
-        ) as `0x${string}`[])
+        ) as Address[])
       : [],
   );
 
-  function generateNewAccount(): `0x${string}` {
+  function generateNewAccount(): Address {
     const privateKey = getPrivateKey();
     privateKeys.value = [...privateKeys.value, privateKey];
     setCurrentAccount(privateKey);
     return privateKey;
   }
 
-  function accountFromPrivateKey(privateKey: `0x${string}`) {
+  function accountFromPrivateKey(privateKey: Address) {
     return getAccountFromPrivatekey(privateKey);
   }
 
-  function removeAccount(privateKey: `0x${string}`) {
+  function removeAccount(privateKey: Address) {
     privateKeys.value = privateKeys.value.filter((k) => k !== privateKey);
 
     if (currentPrivateKey.value === privateKey) {
@@ -42,7 +41,7 @@ export const useAccountsStore = defineStore('accountsStore', () => {
     }
   }
 
-  function setCurrentAccount(privateKey: `0x${string}`) {
+  function setCurrentAccount(privateKey: Address) {
     currentPrivateKey.value = privateKey;
   }
 

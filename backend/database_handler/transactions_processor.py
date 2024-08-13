@@ -85,6 +85,6 @@ class TransactionsProcessor:
         update_condition = f"id = {transaction_id}"
         update_data = {
             "status": TransactionStatus.FINALIZED.value,
-            "consensus_data": json.dumps(consensus_data),
+            "consensus_data": consensus_data,
         }
         self.db_client.update(self.db_transactions_table, update_data, update_condition)
