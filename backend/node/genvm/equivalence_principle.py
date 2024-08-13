@@ -81,13 +81,13 @@ class EquivalencePrinciple:
     def set(self, value):
         if self.contract_runner.mode == ExecutionMode.LEADER:
             self.result["output"] = value
-            self.contract_runner.eq_outputs[ExecutionMode.LEADER][
+            self.contract_runner.eq_outputs[ExecutionMode.LEADER.value][
                 str(self.contract_runner.eq_num)
             ] = value
         else:
             self.result["validator_value"] = value
             self.result["output"] = self.contract_runner.eq_outputs[
-                ExecutionMode.LEADER
+                ExecutionMode.LEADER.value
             ][str(self.contract_runner.eq_num)]
         self.contract_runner.eq_num += 1
 

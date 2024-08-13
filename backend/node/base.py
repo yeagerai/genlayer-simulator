@@ -12,7 +12,7 @@ class Node:
         self,
         contract_snapshot: ContractSnapshot,
         address: str,
-        validator_mode: str,
+        validator_mode: ExecutionMode,
         stake: int,
         provider: str,
         model: str,

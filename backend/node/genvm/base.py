@@ -33,14 +33,14 @@ def safe_globals():
 
 
 class ContractRunner:
-    def __init__(self, mode: str, node_config: dict):
+    def __init__(self, mode: ExecutionMode, node_config: dict):
         self.mode = mode  # if the node is acting as "validator" or "leader"
         self.node_config = node_config  # provider, model, config, stake
         self.from_address = None  # the address of the transaction sender
         self.gas_used = 0  # the amount of gas used by the contract
         self.eq_num = 0  # keeps track of the eq principle number being executed
         self.eq_outputs = {
-            [ExecutionMode.LEADER]: {}
+            ExecutionMode.LEADER.value: {}
         }  # the eq principle outputs for the leader and validators
 
 
@@ -135,7 +135,7 @@ class GenVM:
 
     async def run_contract(
         self, from_address: str, function_name: str, args: list, leader_receipt: dict
-    ):
+    ) -> Receipt:
         self.contract_runner.from_address = from_address
         contract_code = self.snapshot.contract_code
         execution_result = ExecutionResultStatus.SUCCESS
@@ -158,11 +158,8 @@ class GenVM:
             current_contract = pickle.loads(decoded_pickled_object)
 
             if self.contract_runner.mode == ExecutionMode.VALIDATOR:
-                leader_receipt_eq_result = leader_receipt["result"]["eq_outputs"][
-                    ExecutionMode.LEADER
-                ]
-                self.contract_runner.eq_outputs[ExecutionMode.LEADER] = (
-                    leader_receipt_eq_result
+                self.contract_runner.eq_outputs[ExecutionMode.LEADER.value] = (
+                    leader_receipt.eq_outputs[ExecutionMode.LEADER.value]
                 )
 
             function_to_run = getattr(current_contract, function_name, None)
