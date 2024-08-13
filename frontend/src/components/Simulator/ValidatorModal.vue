@@ -28,7 +28,11 @@ async function handleCreateValidator() {
       text: 'New validator created',
       type: 'success',
     });
-    trackEvent('created_validator', 'Create', newValidatorData.value || {});
+    trackEvent('created_validator', {
+      validator_provider: newValidatorData.value.provider,
+      validator_model: newValidatorData.value.model,
+      validator_stake: newValidatorData.value.stake,
+    });
     emit('close');
   } catch (error) {
     console.error(error);

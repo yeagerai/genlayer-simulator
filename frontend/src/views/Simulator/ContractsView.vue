@@ -54,7 +54,9 @@ const handleSaveNewFile = (name: string) => {
 
   showNewFileInput.value = false;
 
-  trackEvent('created_contract', 'New Contract', name ?? '');
+  trackEvent('created_contract', {
+    contract_name: name,
+  });
 };
 </script>
 

@@ -9,7 +9,7 @@ import { notify } from '@kyvg/vue3-notification';
 import { ChevronDownIcon } from '@heroicons/vue/16/solid';
 import { useEventTracking } from '@/hooks';
 
-const { callWriteMethod, callReadMethod } = useContractQueries();
+const { callWriteMethod, callReadMethod, contract } = useContractQueries();
 const { trackEvent } = useEventTracking();
 const accountsStore = useAccountsStore();
 
@@ -33,7 +33,11 @@ const handleCallReadMethod = async () => {
     );
 
     responseMessage.value = JSON.stringify(result);
-    trackEvent('called_read_method', 'Read', props.methodName ?? '');
+
+    trackEvent('called_read_method', {
+      contract_name: contract.value?.name || '',
+      method_name: props.methodName,
+    });
   } catch (error) {
     notify({
       title: 'Error',
@@ -57,7 +61,10 @@ const handleCallWriteMethod = async () => {
     type: 'success',
   });
 
-  trackEvent('called_write_method', 'Write', props.methodName ?? '');
+  trackEvent('called_write_method', {
+    contract_name: contract.value?.name || '',
+    method_name: props.methodName,
+  });
 };
 
 const clearInputs = () => {

@@ -1,26 +1,21 @@
-import { useGtm } from '@gtm-support/vue-gtm';
+import { usePlausible } from 'v-plausible/vue';
+import { type EventName, type EventProperties } from '@/types';
 
 export const useEventTracking = () => {
-  const isDevelopment = import.meta.env.MODE === 'development';
+  const isDevelopment = false; // TODO:
+  // const isDevelopment = import.meta.env.MODE === 'development';
+  const { trackEvent: trackPlausibleEvent } = usePlausible();
 
-  const trackEvent = (name: string, label: string, value: any) => {
-    const gtm = useGtm();
-    
+  const trackEvent = <T extends EventName>(
+    name: T,
+    properties?: EventProperties[T]
+  ) => {
     try {
-      const eventData = {
-        event: name,
-        category: 'button',
-        action: 'click',
-        label,
-        value,
-      };
-
       if (isDevelopment) {
-        console.debug('Track Event (mock)', eventData);
-      } else if (gtm?.enabled()) {
-        gtm.trackEvent(eventData);
+        console.debug('Track Event (mock)', { name, properties });
       } else {
-        console.error('GTM not initialized');
+        console.debug('Track Event', { name, properties });
+        trackPlausibleEvent(name, { props: properties });
       }
     } catch (err) {
       console.error('Failed to track event', err);

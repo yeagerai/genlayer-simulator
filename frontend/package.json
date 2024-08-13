@@ -43,6 +43,7 @@
     "splitpanes": "^3.1.5",
     "tippy.js": "^6.3.7",
     "uuid": "^9.0.1",
+    "v-plausible": "^1.2.0",
     "viem": "^2.16.5",
     "vite-svg-loader": "^5.1.0",
     "vue": "^3.4.21",

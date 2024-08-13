@@ -19,7 +19,7 @@ const handleCreateNewAccount = async () => {
       title: 'New Account Created',
       type: 'success',
     });
-    trackEvent('created_account', 'New Account', '');
+    trackEvent('created_account');
   } else {
     notify({
       title: 'Error creating a new account',

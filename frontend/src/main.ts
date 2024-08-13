@@ -8,11 +8,11 @@ import { persistStorePlugin, TransactionsListenerPlugin } from '@/plugins';
 import { RpcClient, setupStores } from '@/utils';
 import { JsonRpcService } from './services/JsonRpcService';
 import { VueSpinnersPlugin } from 'vue3-spinners';
-import { createGtm } from '@gtm-support/vue-gtm';
 import registerGlobalComponents from '@/components/global/registerGlobalComponents';
 import { VueQueryPlugin } from '@tanstack/vue-query';
 import FloatingVue from 'floating-vue';
 import 'floating-vue/dist/style.css';
+import { createPlausible } from 'v-plausible/vue'
 
 const app = createApp(App);
 const pinia = createPinia();
@@ -38,14 +38,17 @@ app.use(TransactionsListenerPlugin, {
   interval: 5000,
 });
 
-app.use(
-  createGtm({
-    id: import.meta.env.VITE_GTM_ID,
-    enabled: import.meta.env.MODE === 'production',
-    debug: false,
-    vueRouter: router,
-  }),
-);
+const plausible = createPlausible({
+  init: {
+    domain: import.meta.env.VITE_PLAUSIBLE_DOMAIN,
+    trackLocalhost: true,
+  },
+  settings: {
+    enableAutoPageviews: true,
+  },
+})
+
+app.use(plausible)
 
 registerGlobalComponents(app);
 
