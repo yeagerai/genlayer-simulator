@@ -283,7 +283,7 @@ def send_raw_transaction(
     if decoded_transaction is None:
         raise InvalidTransactionError("Invalid transaction data")
 
-    from_address = decoded_transaction["from"]
+    from_address = decoded_transaction.from_address
     if not accounts_manager.is_valid_address(from_address):
         raise InvalidAddressError(
             from_address, f"Invalid address from_address: {from_address}"
@@ -295,7 +295,7 @@ def send_raw_transaction(
     if not transaction_signature_valid:
         raise InvalidTransactionError("Transaction signature verification failed")
 
-    to_address = decoded_transaction["to"]
+    to_address = decoded_transaction.to_address
 
     transaction_data = {}
     result = {}
@@ -306,21 +306,21 @@ def send_raw_transaction(
             raise InvalidAddressError(
                 to_address, f"Invalid address to_address: {to_address}"
             )
-        decoded_data = decode_method_call_data(decoded_transaction["data"])
+        decoded_data = decode_method_call_data(decoded_transaction.data)
         transaction_data = {
-            "function_name": decoded_data["function_name"],
-            "function_args": decoded_data["function_args"],
+            "function_name": decoded_data.function_name,
+            "function_args": decoded_data.function_args,
         }
         transaction_type = 2
     else:
         # Contract deployment
-        decoded_data = decode_deployment_data(decoded_transaction["data"])
+        decoded_data = decode_deployment_data(decoded_transaction.data)
         new_contract_address = accounts_manager.create_new_account().address
 
         transaction_data = {
             "contract_address": new_contract_address,
-            "contract_code": decoded_data["contract_code"],
-            "constructor_args": decoded_data["constructor_args"],
+            "contract_code": decoded_data.contract_code,
+            "constructor_args": decoded_data.constructor_args,
         }
         result["contract_address"] = new_contract_address
         to_address = None

@@ -7,12 +7,14 @@ import asyncio
 import pickle
 import base64
 import sys
+import traceback
 from contextlib import contextmanager
 
 from backend.database_handler.contract_snapshot import ContractSnapshot
 from backend.node.genvm.equivalence_principle import EquivalencePrinciple
 from backend.node.genvm.code_enforcement import code_enforcement_check
 from backend.node.genvm.std.vector_store import VectorStore
+from backend.node.genvm.types import Receipt, ExecutionResultStatus
 
 
 @contextmanager
@@ -64,20 +66,27 @@ class GenVM:
             raise Exception("No class name found")
         return matches[0]
 
-    def _generate_receipt(self, class_name, encoded_object, method_name, args):
-        receipt = {
-            # You can't get the name of the inherited class here
-            "class": class_name,
-            "method": method_name,
-            "args": args,
-            "gas_used": self.contract_runner.gas_used,
-            "mode": self.contract_runner.mode,
-            "contract_state": encoded_object,
-            "node_config": self.contract_runner.node_config,
-            "eq_outputs": self.contract_runner.eq_outputs,
-        }
-
-        return receipt
+    def _generate_receipt(
+        self,
+        class_name: str,
+        encoded_object: str,
+        method_name: str,
+        args: str,
+        execution_result: ExecutionResultStatus,
+        error: Exception,
+    ) -> Receipt:
+        return Receipt(
+            class_name,
+            method_name,
+            args,
+            self.contract_runner.gas_used,
+            self.contract_runner.mode,
+            encoded_object,
+            self.contract_runner.node_config,
+            self.contract_runner.eq_outputs,
+            execution_result,
+            error,
+        )
 
     def deploy_contract(
         self,
@@ -88,6 +97,8 @@ class GenVM:
         class_name = self._get_contract_class_name(code_to_deploy)
         code_enforcement_check(code_to_deploy, class_name)
         self.contract_runner.from_address = from_address
+        execution_result = ExecutionResultStatus.SUCCESS
+        error = None
 
         with safe_globals():
             globals()["contract_runner"] = self.contract_runner
@@ -99,7 +110,13 @@ class GenVM:
             module = sys.modules[__name__]
             setattr(module, class_name, contract_class)
 
-            current_contract = contract_class(**constructor_args)
+            try:
+                current_contract = contract_class(**constructor_args)
+            except Exception as e:
+                print("Error deploying contract", e)
+                print(traceback.format_exc())
+                error = e
+                execution_result = ExecutionResultStatus.ERROR
 
             pickled_object = pickle.dumps(current_contract)
             encoded_pickled_object = base64.b64encode(pickled_object).decode("utf-8")
@@ -108,7 +125,12 @@ class GenVM:
             delattr(module, class_name)
 
         return self._generate_receipt(
-            class_name, encoded_pickled_object, "__init__", [constructor_args]
+            class_name,
+            encoded_pickled_object,
+            "__init__",
+            [constructor_args],
+            execution_result,
+            error,
         )
 
     async def run_contract(
@@ -116,6 +138,8 @@ class GenVM:
     ):
         self.contract_runner.from_address = from_address
         contract_code = self.snapshot.contract_code
+        execution_result = ExecutionResultStatus.SUCCESS
+        error = None
 
         with safe_globals():
             globals()["contract_runner"] = self.contract_runner
@@ -140,17 +164,29 @@ class GenVM:
                 self.contract_runner.eq_outputs["leader"] = leader_receipt_eq_result
 
             function_to_run = getattr(current_contract, function_name, None)
-            if asyncio.iscoroutinefunction(function_to_run):
-                await function_to_run(*args)
-            else:
-                function_to_run(*args)
+
+            try:
+                if asyncio.iscoroutinefunction(function_to_run):
+                    await function_to_run(*args)
+                else:
+                    function_to_run(*args)
+            except Exception as e:
+                print("Error running contract", e)
+                print(traceback.format_exc())
+                error = e
+                execution_result = ExecutionResultStatus.ERROR
 
             pickled_object = pickle.dumps(current_contract)
             encoded_pickled_object = base64.b64encode(pickled_object).decode("utf-8")
             class_name = self._get_contract_class_name(contract_code)
 
         return self._generate_receipt(
-            class_name, encoded_pickled_object, function_name, [args]
+            class_name,
+            encoded_pickled_object,
+            function_name,
+            [args],
+            execution_result,
+            error,
         )
 
     @staticmethod
