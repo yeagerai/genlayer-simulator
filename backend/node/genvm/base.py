@@ -14,7 +14,7 @@ from backend.database_handler.contract_snapshot import ContractSnapshot
 from backend.node.genvm.equivalence_principle import EquivalencePrinciple
 from backend.node.genvm.code_enforcement import code_enforcement_check
 from backend.node.genvm.std.vector_store import VectorStore
-from backend.node.genvm.types import Receipt, ExecutionResultStatus
+from backend.node.genvm.types import Receipt, ExecutionResultStatus, ExecutionMode
 
 
 @contextmanager
@@ -40,7 +40,7 @@ class ContractRunner:
         self.gas_used = 0  # the amount of gas used by the contract
         self.eq_num = 0  # keeps track of the eq principle number being executed
         self.eq_outputs = {
-            "leader": {}
+            [ExecutionMode.LEADER]: {}
         }  # the eq principle outputs for the leader and validators
 
 
@@ -157,11 +157,13 @@ class GenVM:
             decoded_pickled_object = base64.b64decode(contract_encoded_state)
             current_contract = pickle.loads(decoded_pickled_object)
 
-            if self.contract_runner.mode == "validator":
+            if self.contract_runner.mode == ExecutionMode.VALIDATOR:
                 leader_receipt_eq_result = leader_receipt["result"]["eq_outputs"][
-                    "leader"
+                    ExecutionMode.LEADER
                 ]
-                self.contract_runner.eq_outputs["leader"] = leader_receipt_eq_result
+                self.contract_runner.eq_outputs[ExecutionMode.LEADER] = (
+                    leader_receipt_eq_result
+                )
 
             function_to_run = getattr(current_contract, function_name, None)
 

@@ -31,6 +31,7 @@ from backend.errors.errors import InvalidAddressError, InvalidTransactionError
 
 from backend.database_handler.transactions_processor import TransactionsProcessor
 from backend.node.base import Node
+from backend.node.genvm.types import Receipt, ExecutionResultStatus, ExecutionMode
 
 
 def ping() -> dict:
@@ -91,7 +92,7 @@ def get_contract_schema(
     node = Node(
         contract_snapshot=None,
         address="",
-        validator_mode="leader",
+        validator_mode=ExecutionMode.LEADER,
         stake=0,
         provider="",
         model="",
@@ -105,7 +106,7 @@ def get_contract_schema_for_code(contract_code: str) -> dict:
     node = Node(
         contract_snapshot=None,
         address="",
-        validator_mode="leader",
+        validator_mode=ExecutionMode.LEADER,
         stake=0,
         provider="",
         model="",
@@ -128,7 +129,7 @@ def get_contract_state(
     node = Node(
         contract_snapshot=None,
         address="",
-        validator_mode="leader",
+        validator_mode=ExecutionMode.LEADER,
         stake=0,
         provider="",
         model="",
