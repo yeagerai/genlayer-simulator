@@ -87,4 +87,9 @@ class TransactionsProcessor:
             "status": TransactionStatus.FINALIZED.value,
             "consensus_data": json.dumps(consensus_data),
         }
+        print(
+            "Updating transaction status",
+            transaction_id,
+            TransactionStatus.FINALIZED.value,
+        )
         self.db_client.update(self.db_transactions_table, update_data, update_condition)
