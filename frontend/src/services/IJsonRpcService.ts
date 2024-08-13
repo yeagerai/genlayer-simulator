@@ -22,6 +22,7 @@ export interface IJsonRpcService {
   callContractFunction(
     request: CallContractFunctionRequest,
   ): Promise<JsonRpcResult<CallContractFunctionResult>>;
+  sendTransaction(singedTransaction: string): Promise<JsonRpcResult<any>>;
   deployContract(request: DeployContractRequest): Promise<JsonRpcResult<any>>;
   getContractSchema(
     request: GetContractSchemaRequest,

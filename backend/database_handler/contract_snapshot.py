@@ -29,8 +29,11 @@ class ContractSnapshot:
 
     def register_contract(self, contract: dict):
         """Register a new contract in the database."""
-        parsed_contract = {"id": contract["id"], "data": json.dumps(contract["data"])}
-        self.dbclient.insert(self.db_state_table, parsed_contract)
+        self.dbclient.update(
+            self.db_state_table,
+            {"data": json.dumps(contract["data"])},
+            f"id = '{contract["id"]}'",
+        )
 
     def update_contract_state(self, new_state: str):
         """Update the state of the contract in the database."""

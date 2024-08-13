@@ -4,6 +4,7 @@ from typing import Optional
 from backend.node.genvm.context_wrapper import enforce_with_context
 from backend.node.genvm import llms
 from backend.node.genvm.webpage_utils import get_webpage_content
+from backend.node.genvm.types import ExecutionMode
 
 
 def clear_locals(scope):
@@ -46,7 +47,10 @@ class EquivalencePrinciple:
         if self.principle == None:
             return
 
-        if self.contract_runner.mode == "validator" and self.comparative == True:
+        if (
+            self.contract_runner.mode == ExecutionMode.VALIDATOR
+            and self.comparative == True
+        ):
             llm_function = self.__get_llm_function()
             eq_prompt = f"""Given the equivalence principle '{self.principle}',
             decide whether the following two outputs can be considered equivalent.
@@ -75,16 +79,16 @@ class EquivalencePrinciple:
         return final_response
 
     def set(self, value):
-        if self.contract_runner.mode == "leader":
+        if self.contract_runner.mode == ExecutionMode.LEADER:
             self.result["output"] = value
-            self.contract_runner.eq_outputs["leader"][
+            self.contract_runner.eq_outputs[ExecutionMode.LEADER.value][
                 str(self.contract_runner.eq_num)
             ] = value
         else:
             self.result["validator_value"] = value
-            self.result["output"] = self.contract_runner.eq_outputs["leader"][
-                str(self.contract_runner.eq_num)
-            ]
+            self.result["output"] = self.contract_runner.eq_outputs[
+                ExecutionMode.LEADER.value
+            ][str(self.contract_runner.eq_num)]
         self.contract_runner.eq_num += 1
 
     def __get_llm_function(self):

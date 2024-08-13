@@ -2,6 +2,7 @@
 
 DEPLOY_CONTRACTS_QUEUE_KEY = "deploy_contracts"
 DEFAULT_VALIDATORS_COUNT = 5
+DEFAULT_CONSENSUS_SLEEP_TIME = 5
 
 import traceback
 import asyncio
@@ -15,6 +16,7 @@ from backend.database_handler.transactions_processor import (
     TransactionsProcessor,
     TransactionStatus,
 )
+from backend.node.genvm.types import ExecutionMode, Vote
 
 
 class ConsensusAlgorithm:
@@ -45,7 +47,7 @@ class ConsensusAlgorithm:
                     if contract_address not in self.queues:
                         self.queues[contract_address] = asyncio.Queue()
                     await self.queues[contract_address].put(transaction)
-            await asyncio.sleep(10)
+            await asyncio.sleep(DEFAULT_CONSENSUS_SLEEP_TIME)
 
     def run_consensus_loop(self):
         loop = asyncio.new_event_loop()
@@ -72,7 +74,7 @@ class ConsensusAlgorithm:
                     except Exception as e:
                         print("Error running consensus", e)
                         print(traceback.format_exc())
-            await asyncio.sleep(10)
+            await asyncio.sleep(DEFAULT_CONSENSUS_SLEEP_TIME)
 
     async def exec_transaction(
         self,
@@ -98,7 +100,7 @@ class ConsensusAlgorithm:
         leader_node = Node(
             contract_snapshot=contract_snapshot,
             address=leader["address"],
-            validator_mode="leader",
+            validator_mode=ExecutionMode.LEADER,
             stake=leader["stake"],
             provider=leader["provider"],
             model=leader["model"],
@@ -107,7 +109,7 @@ class ConsensusAlgorithm:
 
         # Leader executes transaction
         leader_receipt = await leader_node.exec_transaction(transaction)
-        votes = {leader["address"]: leader_receipt["vote"]}
+        votes = {leader["address"]: leader_receipt.vote.value}
         # Update transaction status
         self.transactions_processor.update_transaction_status(
             transaction["id"], TransactionStatus.COMMITTING.value
@@ -118,7 +120,7 @@ class ConsensusAlgorithm:
             Node(
                 contract_snapshot=contract_snapshot,
                 address=validator["address"],
-                validator_mode="validator",
+                validator_mode=ExecutionMode.VALIDATOR,
                 stake=validator["stake"],
                 provider=validator["provider"],
                 model=validator["model"],
@@ -139,13 +141,13 @@ class ConsensusAlgorithm:
         validation_results = await asyncio.gather(*validation_tasks)
 
         for i in range(len(validation_results)):
-            votes[f"{validator_nodes[i].address}"] = validation_results[i]["vote"]
+            votes[f"{validator_nodes[i].address}"] = validation_results[i].vote.value
         self.transactions_processor.update_transaction_status(
             transaction["id"], TransactionStatus.REVEALING.value
         )
 
         if (
-            len([vote for vote in votes.values() if vote == "agree"])
+            len([vote for vote in votes.values() if vote == Vote.AGREE.value])
             < num_validators // 2
         ):
             raise Exception("Consensus not reached")
@@ -158,20 +160,16 @@ class ConsensusAlgorithm:
         consensus_data = ConsensusData(
             final=final,
             votes=votes,
-            leader=leader_receipt,
+            leader_receipt=leader_receipt,
             validators=validators_results,
-        ).model_dump_json()
-
-        execution_output = {}
-        execution_output["leader_data"] = leader_receipt
-        execution_output["consensus_data"] = consensus_data
+        ).to_json()
 
         # Register contract if it is a new contract
         if transaction["type"] == 1:
             new_contract = {
                 "id": transaction["data"]["contract_address"],
                 "data": {
-                    "state": leader_receipt["result"]["contract_state"],
+                    "state": leader_receipt.contract_state,
                     "code": transaction["data"]["contract_code"],
                 },
             }
@@ -179,11 +177,9 @@ class ConsensusAlgorithm:
 
         # Update contract state if it is an existing contract
         else:
-            contract_snapshot.update_contract_state(
-                leader_receipt["result"]["contract_state"]
-            )
+            contract_snapshot.update_contract_state(leader_receipt.contract_state)
 
         # Finalize transaction
         self.transactions_processor.set_transaction_result(
-            transaction["id"], execution_output
+            transaction["id"], consensus_data
         )

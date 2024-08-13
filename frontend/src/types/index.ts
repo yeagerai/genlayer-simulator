@@ -25,3 +25,5 @@ export interface ContractMethod {
   name: string;
   inputs: { [k: string]: string };
 }
+
+export type Address = `0x${string}`;

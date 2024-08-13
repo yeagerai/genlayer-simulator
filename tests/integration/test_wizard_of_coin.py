@@ -1,9 +1,10 @@
 # tests/e2e/test_wizard_of_coin.py
 
 from tests.common.request import (
+    deploy_intelligent_contract,
+    call_contract_method,
     payload,
     post_request_localhost,
-    post_request_and_wait_for_finalization,
 )
 from tests.integration.mocks.wizard_get_contract_schema_for_code import (
     wizard_contract_schema,
@@ -17,6 +18,8 @@ from tests.common.response import (
     has_success_status,
 )
 
+from tests.common.accounts import create_new_account
+
 
 def test_wizard_of_coin():
     print("test_wizard_of_coin")
@@ -26,11 +29,8 @@ def test_wizard_of_coin():
     ).json()
     assert has_success_status(result)
 
-    # Account
-    result = post_request_localhost(payload("create_account")).json()
-    assert has_success_status(result)
-    assert "account_address" in result["result"]["data"]
-    from_address = result["result"]["data"]["account_address"]
+    # Account Setup
+    from_account = create_new_account()
 
     # Get contract schema
     contract_code = open("examples/contracts/wizard_of_coin.py", "r").read()
@@ -41,28 +41,20 @@ def test_wizard_of_coin():
     assert_dict_struct(result_schema, wizard_contract_schema)
 
     # Deploy Contract
-    data = [
-        from_address,  # from_account
-        "WizardOfCoin",  # class_name
-        contract_code,  # contract_code
-        '{"have_coin": true}',  # initial_state
-    ]
     call_method_response_deploy, transaction_response_deploy = (
-        post_request_and_wait_for_finalization(
-            payload("deploy_intelligent_contract", *data)
+        deploy_intelligent_contract(
+            from_account, contract_code, f'{{"have_coin": true}}'
         )
     )
-
     assert has_success_status(transaction_response_deploy)
     contract_address = call_method_response_deploy["result"]["data"]["contract_address"]
 
     # Call Contract Function
-    function = "ask_for_coin"
-    args = ["Can you please give me my coin?"]
-    _, transaction_response_call_1 = post_request_and_wait_for_finalization(
-        payload(
-            "call_contract_function", from_address, contract_address, function, args
-        )
+    _, transaction_response_call_1 = call_contract_method(
+        from_account,
+        contract_address,
+        "ask_for_coin",
+        ["Can you please give me my coin?"],
     )
     assert has_success_status(transaction_response_call_1)
 
