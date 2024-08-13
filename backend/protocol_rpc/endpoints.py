@@ -31,7 +31,7 @@ from backend.errors.errors import InvalidAddressError, InvalidTransactionError
 
 from backend.database_handler.transactions_processor import TransactionsProcessor
 from backend.node.base import Node
-from backend.node.genvm.types import Receipt, ExecutionResultStatus, ExecutionMode
+from backend.node.genvm.types import ExecutionMode
 
 
 def ping() -> dict:

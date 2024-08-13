@@ -6,7 +6,7 @@ import json
 from logging.config import dictConfig
 
 from backend.protocol_rpc.message_handler.types import FormattedResponse
-from backend.protocol_rpc.types import EndpointResult, EndpointResultStatus
+from backend.protocol_rpc.types import EndpointResult
 
 MAX_LOG_MESSAGE_LENGTH = 3000
 
