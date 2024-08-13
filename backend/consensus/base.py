@@ -164,9 +164,6 @@ class ConsensusAlgorithm:
             validators=validators_results,
         ).to_json()
 
-        execution_output = {}
-        execution_output["consensus_data"] = consensus_data
-
         # Register contract if it is a new contract
         if transaction["type"] == 1:
             new_contract = {
@@ -184,5 +181,5 @@ class ConsensusAlgorithm:
 
         # Finalize transaction
         self.transactions_processor.set_transaction_result(
-            transaction["id"], execution_output
+            transaction["id"], consensus_data
         )
