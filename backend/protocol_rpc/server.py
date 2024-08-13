@@ -75,7 +75,9 @@ def run_socketio():
         host="0.0.0.0",
         allow_unsafe_werkzeug=True,
     )
-    logging.getLogger("werkzeug").setLevel(logging.ERROR)
+    logging.getLogger("werkzeug").setLevel(
+        os.environ.get("FLASK_LOG_LEVEL", logging.ERROR)
+    )
 
 
 # Thread for the Flask-SocketIO server

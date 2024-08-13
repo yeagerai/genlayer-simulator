@@ -321,7 +321,7 @@ def register_all_rpc_endpoints(
     validators_registry: ValidatorsRegistry,
     config: GlobalConfiguration,
 ):
-    register_rpc_endpoint = partial(generate_rpc_endpoint, jsonrpc, msg_handler)
+    register_rpc_endpoint = partial(generate_rpc_endpoint, jsonrpc, msg_handler, config)
     register_rpc_endpoint_for_partial = partial(
         generate_rpc_endpoint_for_partial, register_rpc_endpoint
     )

@@ -3,29 +3,24 @@ import traceback
 from functools import partial, wraps
 from typing import Callable
 from flask_jsonrpc import JSONRPC
+
+from backend.protocol_rpc.configuration import GlobalConfiguration
 from backend.protocol_rpc.message_handler.base import MessageHandler
 from backend.protocol_rpc.types import EndpointResult, EndpointResultStatus
-
-"""
-Add the function name to this list to disable info logs for that endpoint
-The info logs are the Starting... and Endpoint successfully executed messages
-"""
-disableInfoLogs = [
-    "get_transaction_by_id",
-    "get_contract_schema_for_code",
-    "get_contract_schema",
-]
 
 
 def generate_rpc_endpoint(
     jsonrpc: JSONRPC,
     msg_handler: MessageHandler,
+    config: GlobalConfiguration,
     function: Callable,
 ) -> Callable:
     @jsonrpc.method(function.__name__)
     @wraps(function)
     def endpoint(*args, **kwargs):
-        shouldPrintInfoLogs = function.__name__ not in disableInfoLogs
+        shouldPrintInfoLogs = (
+            function.__name__ not in config.get_disabled_info_logs_endpoints()
+        )
         send_message = partial(msg_handler.send_message, function.__name__)
         if shouldPrintInfoLogs:
             send_message(EndpointResult(EndpointResultStatus.INFO, "Starting..."))
