@@ -56,7 +56,9 @@ class VectorStore:
         results = self.get_k_closest_vectors(text, k=1)
         return results[0] if results else None
 
-    def get_k_closest_vectors(self, text: str, k: int = 5) -> list[tuple[float, int, str, any, list[float]]]:
+    def get_k_closest_vectors(
+        self, text: str, k: int = 5
+    ) -> list[tuple[float, int, str, any, list[float]]]:
         """
         Get the closest k vectors to the given text along with the similarity percentages and metadata.
 
@@ -146,7 +148,11 @@ class VectorStore:
 
         vector_id = int(vector_id)
         if vector_id in self.vector_data:
-            return self.texts[vector_id], self.metadata[vector_id], self.vector_data[vector_id]
+            return (
+                self.texts[vector_id],
+                self.metadata[vector_id],
+                self.vector_data[vector_id],
+            )
         else:
             raise ValueError("Vector ID does not exist")
 
@@ -165,7 +171,7 @@ class VectorStore:
         norm_a = np.linalg.norm(a)
         norm_b = np.linalg.norm(b)
         return dot_product / (norm_a * norm_b)
-    
+
     def get_all_items(self) -> list[tuple[str, any]]:
         """
         Get all vectors and their metadata from the store.
