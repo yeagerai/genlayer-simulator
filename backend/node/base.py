@@ -4,7 +4,7 @@ from typing import Optional
 
 from backend.node.genvm.base import GenVM
 from backend.database_handler.contract_snapshot import ContractSnapshot
-from backend.node.genvm.types import Receipt, ExecutionResultStatus, ExecutionMode, Vote
+from backend.node.genvm.types import Receipt, ExecutionMode, Vote
 
 
 class Node:
