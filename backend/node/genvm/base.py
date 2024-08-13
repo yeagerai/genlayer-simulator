@@ -76,16 +76,16 @@ class GenVM:
         error: Exception,
     ) -> Receipt:
         return Receipt(
-            class_name,
-            method_name,
-            args,
-            self.contract_runner.gas_used,
-            self.contract_runner.mode,
-            encoded_object,
-            self.contract_runner.node_config,
-            self.contract_runner.eq_outputs,
-            execution_result,
-            error,
+            class_name=class_name,
+            method=method_name,
+            args=args,
+            gas_used=self.contract_runner.gas_used,
+            mode=self.contract_runner.mode,
+            contract_state=encoded_object,
+            node_config=self.contract_runner.node_config,
+            eq_outputs=self.contract_runner.eq_outputs,
+            execution_result=execution_result,
+            error=error,
         )
 
     def deploy_contract(
