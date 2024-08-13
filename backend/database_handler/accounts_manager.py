@@ -26,6 +26,10 @@ class AccountsManager:
         }
 
     def create_new_account(self, balance: int = 0) -> Account:
+        """
+        Used when generating intelligent contract's accounts or dending funds to a new account.
+        Users should create their accounts client-side
+        """
         account = Account.create()
         self.register_new_account(account.address, balance)
         return account
