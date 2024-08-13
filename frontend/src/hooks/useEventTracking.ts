@@ -2,7 +2,10 @@ import { usePlausible } from 'v-plausible/vue';
 import { type EventName, type EventProperties } from '@/types';
 
 export const useEventTracking = () => {
-  const isDevelopment = import.meta.env.MODE === 'development';
+  // This enables/disables the tracking of events
+  // It could be defined based on the environment or a user setting like
+  // `import.meta.env.MODE === 'development';`
+  const isTrackingEnabled = true;
   const { trackEvent: trackPlausibleEvent } = usePlausible();
 
   const trackEvent = <T extends EventName>(
@@ -10,13 +13,14 @@ export const useEventTracking = () => {
     properties?: EventProperties[T],
   ) => {
     try {
-      if (isDevelopment) {
-        console.debug('Track Event (blocked in dev mode)', {
+      console.debug(
+        `Track Event${isTrackingEnabled ? '' : ' (blocked in dev mode)'}`,
+        {
           name,
           properties,
-        });
-      } else {
-        console.debug('Track Event', { name, properties });
+        },
+      );
+      if (isTrackingEnabled) {
         trackPlausibleEvent(name, { props: properties });
       }
     } catch (err) {
