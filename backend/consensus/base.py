@@ -2,6 +2,7 @@
 
 DEPLOY_CONTRACTS_QUEUE_KEY = "deploy_contracts"
 DEFAULT_VALIDATORS_COUNT = 5
+DEFAULT_CONSENSUS_SLEEP_TIME = 10
 
 import traceback
 import asyncio
@@ -46,7 +47,7 @@ class ConsensusAlgorithm:
                     if contract_address not in self.queues:
                         self.queues[contract_address] = asyncio.Queue()
                     await self.queues[contract_address].put(transaction)
-            await asyncio.sleep(10)
+            await asyncio.sleep(DEFAULT_CONSENSUS_SLEEP_TIME)
 
     def run_consensus_loop(self):
         loop = asyncio.new_event_loop()
@@ -73,7 +74,7 @@ class ConsensusAlgorithm:
                     except Exception as e:
                         print("Error running consensus", e)
                         print(traceback.format_exc())
-            await asyncio.sleep(10)
+            await asyncio.sleep(DEFAULT_CONSENSUS_SLEEP_TIME)
 
     async def exec_transaction(
         self,
