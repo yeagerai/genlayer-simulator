@@ -35,7 +35,7 @@ async function handleCreateValidator() {
       validator_model: newValidatorData.value.model,
       validator_stake: newValidatorData.value.stake,
     });
-    
+
     emit('close');
   } catch (error) {
     console.error(error);
