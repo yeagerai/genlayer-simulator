@@ -121,6 +121,8 @@ export const useNodeStore = defineStore('nodeStore', () => {
     logs.value = [];
   };
 
+  const hasAtLeastOneValidator = computed(() => validators.value.length >= 1);
+
   return {
     logs,
     listenWebsocket,
@@ -135,5 +137,6 @@ export const useNodeStore = defineStore('nodeStore', () => {
     clearLogs,
 
     validatorsOrderedById,
+    hasAtLeastOneValidator,
   };
 });

@@ -5,6 +5,9 @@ import { CheckCircleIcon } from '@heroicons/vue/24/outline';
 import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
 import { PlusIcon } from '@heroicons/vue/16/solid';
 import { shortenAddress } from '@/utils';
+import { useNodeStore } from '@/stores';
+
+const nodeStore = useNodeStore();
 
 defineProps<{
   showNewDeploymentButton: boolean;
@@ -40,6 +43,15 @@ const { isDeployed, address, contract } = useContractQueries();
     </div>
 
     <EmptyListPlaceholder v-else>Not deployed yet.</EmptyListPlaceholder>
+
+    <Alert warning v-if="!nodeStore.hasAtLeastOneValidator">
+      You need at least one validator before you can deploy or interact with a
+      contract.
+
+      <Btn secondary tiny class="mt-1">
+        <RouterLink :to="{ name: 'settings' }"> Go to settings </RouterLink>
+      </Btn>
+    </Alert>
 
     <Btn
       secondary

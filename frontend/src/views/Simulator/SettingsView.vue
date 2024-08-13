@@ -9,6 +9,7 @@ import MainTitle from '@/components/Simulator/MainTitle.vue';
 import PageSection from '@/components/Simulator/PageSection.vue';
 import { ArchiveBoxXMarkIcon } from '@heroicons/vue/24/solid';
 import { PlusIcon } from '@heroicons/vue/16/solid';
+import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
 
 const contractsStore = useContractsStore();
 const nodeStore = useNodeStore();
@@ -62,6 +63,10 @@ const handleResetStorage = async () => {
         Validators
         <span class="opacity-50">{{ nodeStore.validators.length }}</span>
       </template>
+
+      <EmptyListPlaceholder v-if="nodeStore.validators.length < 1">
+        No validators.
+      </EmptyListPlaceholder>
 
       <div
         class="overflow-hidden rounded-md border border-gray-300 dark:border-gray-800"

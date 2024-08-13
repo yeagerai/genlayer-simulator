@@ -6,11 +6,12 @@ import TransactionsList from '@/components/Simulator/TransactionsList.vue';
 import { useContractQueries } from '@/hooks/useContractQueries';
 import MainTitle from '@/components/Simulator/MainTitle.vue';
 import { ref, watch } from 'vue';
-import { useContractsStore } from '@/stores';
+import { useContractsStore, useNodeStore } from '@/stores';
 import ContractInfo from '@/components/Simulator/ContractInfo.vue';
 
 const contractsStore = useContractsStore();
 const { isDeployed, address, contract } = useContractQueries();
+const nodeStore = useNodeStore();
 
 const isDeploymentOpen = ref(!isDeployed.value);
 
@@ -43,9 +44,15 @@ watch(
         @deployedContract="isDeploymentOpen = false"
       />
 
-      <ContractReadMethods v-if="isDeployed" id="tutorial-read-methods" />
+      <ContractReadMethods
+        v-if="isDeployed && nodeStore.hasAtLeastOneValidator"
+        id="tutorial-read-methods"
+      />
 
-      <ContractWriteMethods v-if="isDeployed" id="tutorial-write-methods" />
+      <ContractWriteMethods
+        v-if="isDeployed && nodeStore.hasAtLeastOneValidator"
+        id="tutorial-write-methods"
+      />
 
       <TransactionsList id="tutorial-tx-response" />
     </template>
