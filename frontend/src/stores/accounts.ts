@@ -35,6 +35,10 @@ export const useAccountsStore = defineStore('accountsStore', () => {
   }
 
   function removeAccount(privateKey: `0x${string}`) {
+    if (privateKeys.value.length <= 1) {
+      throw new Error('You need at least 1 account');
+    }
+
     privateKeys.value = privateKeys.value.filter((k) => k !== privateKey);
 
     if (currentPrivateKey.value === privateKey) {

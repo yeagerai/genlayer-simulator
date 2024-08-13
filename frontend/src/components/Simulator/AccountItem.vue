@@ -17,12 +17,21 @@ const setCurentAddress = () => {
 };
 
 const deleteAddress = () => {
-  store.removeAccount(props.privateKey);
-  notify({
-    title: 'Account deleted',
-    type: 'success',
-  });
-  deleteModalOpen.value = false;
+  try {
+    store.removeAccount(props.privateKey);
+    notify({
+      title: 'Account deleted',
+      type: 'success',
+    });
+  } catch (err) {
+    notify({
+      title: 'Error',
+      text: (err as Error)?.message || 'Error deleting account',
+      type: 'error',
+    });
+  } finally {
+    deleteModalOpen.value = false;
+  }
 };
 
 const props = defineProps<{
