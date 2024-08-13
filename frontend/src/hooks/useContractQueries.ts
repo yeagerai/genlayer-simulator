@@ -10,6 +10,7 @@ import {
 import { useDebounceFn } from '@vueuse/core';
 import { notify } from '@kyvg/vue3-notification';
 import { useMockContractData } from './useMockContractData';
+import { useEventTracking } from '@/hooks';
 
 const schema = ref<any>();
 
@@ -19,6 +20,7 @@ export function useContractQueries() {
   const transactionsStore = useTransactionsStore();
   const contractsStore = useContractsStore();
   const queryClient = useQueryClient();
+  const { trackEvent } = useEventTracking();
   const contract = computed(() => contractsStore.currentContract);
 
   const { mockContractId, mockContractSchema } = useMockContractData();
@@ -105,6 +107,10 @@ export function useContractQueries() {
         notify({
           title: 'Started deploying contract',
           type: 'success',
+        });
+
+        trackEvent('deployed_contract', {
+          contract_name: contract.value?.name || '',
         });
 
         transactionsStore.clearTransactionsForContract(

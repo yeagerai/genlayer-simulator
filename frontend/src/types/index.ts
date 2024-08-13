@@ -2,6 +2,7 @@ export * from './results';
 export * from './requests';
 export * from './responses';
 export * from './store';
+export * from './events';
 
 export interface ValidatorModel {
   address: string;
