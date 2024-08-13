@@ -12,7 +12,7 @@ import registerGlobalComponents from '@/components/global/registerGlobalComponen
 import { VueQueryPlugin } from '@tanstack/vue-query';
 import FloatingVue from 'floating-vue';
 import 'floating-vue/dist/style.css';
-import { createPlausible } from 'v-plausible/vue'
+import { createPlausible } from 'v-plausible/vue';
 
 const app = createApp(App);
 const pinia = createPinia();
@@ -46,9 +46,9 @@ const plausible = createPlausible({
   settings: {
     enableAutoPageviews: true,
   },
-})
+});
 
-app.use(plausible)
+app.use(plausible);
 
 registerGlobalComponents(app);
 
