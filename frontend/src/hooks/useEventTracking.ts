@@ -11,7 +11,7 @@ export const useEventTracking = () => {
   ) => {
     try {
       if (isDevelopment) {
-        console.debug('Track Event (mock)', { name, properties });
+        console.debug('Track Event (blocked in dev mode)', { name, properties });
       } else {
         console.debug('Track Event', { name, properties });
         trackPlausibleEvent(name, { props: properties });
