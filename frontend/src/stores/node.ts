@@ -13,7 +13,6 @@ export const useNodeStore = defineStore('nodeStore', () => {
   // state
   const $jsonRpc = inject<IJsonRpcService>('$jsonRpc')!;
   const validators = ref<ValidatorModel[]>([]);
-
   if (!webSocketClient.connected) webSocketClient.connect();
   webSocketClient.on('status_update', (event) => {
     if (listenWebsocket.value) {
