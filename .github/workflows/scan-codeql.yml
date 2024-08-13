@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - staging
-      - fix-codeql # Remove me on merge
   pull_request:
     types:
       - opened
