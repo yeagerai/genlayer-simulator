@@ -273,10 +273,6 @@ def get_contract_state(
     )
 
 
-def count_validators(validators_registry: ValidatorsRegistry) -> dict:
-    return validators_registry.count_validators()
-
-
 def send_raw_transaction(
     transactions_processor: TransactionsProcessor,
     accounts_manager: AccountsManager,
