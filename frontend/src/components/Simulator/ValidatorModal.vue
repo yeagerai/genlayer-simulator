@@ -22,8 +22,7 @@ async function handleCreateValidator() {
   try {
     await nodeStore.createNewValidator(newValidatorData.value);
     notify({
-      title: 'OK',
-      text: 'New validator created',
+      title: 'New validator created',
       type: 'success',
     });
     emit('close');
@@ -41,8 +40,7 @@ async function handleUpdateValidator(validator: ValidatorModel) {
   try {
     await nodeStore.updateValidator(validator, newValidatorData.value);
     notify({
-      title: 'OK',
-      text: 'Validator updated successfully',
+      title: 'Validator updated',
       type: 'success',
     });
     emit('close');
