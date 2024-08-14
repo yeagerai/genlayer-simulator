@@ -89,3 +89,14 @@ class ItemNotFoundError(Exception):
         self.id = id
         self.message = message
         super().__init__(self.message)
+
+
+class InvalidTransactionError(Exception):
+    """Exception raised when the given transaction is not valid or can't be validated ."""
+
+    def __init__(
+        self,
+        message: str = "Invalid transaction",
+    ):
+        self.message = message
+        super().__init__(self.message)

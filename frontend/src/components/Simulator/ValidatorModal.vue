@@ -8,8 +8,10 @@ import NumberInput from '@/components/global/inputs/NumberInput.vue';
 import TextAreaInput from '@/components/global/inputs/TextAreaInput.vue';
 import FieldError from '@/components/global/fields/FieldError.vue';
 import FieldLabel from '@/components/global/fields/FieldLabel.vue';
+import { useEventTracking } from '@/hooks';
 
 const nodeStore = useNodeStore();
+const { trackEvent } = useEventTracking();
 const emit = defineEmits(['close']);
 
 const props = defineProps<{
@@ -21,10 +23,18 @@ const isCreateMode = computed(() => !props.validator);
 async function handleCreateValidator() {
   try {
     await nodeStore.createNewValidator(newValidatorData.value);
+
     notify({
       title: 'New validator created',
       type: 'success',
     });
+
+    trackEvent('created_validator', {
+      validator_provider: newValidatorData.value.provider,
+      validator_model: newValidatorData.value.model,
+      validator_stake: newValidatorData.value.stake,
+    });
+
     emit('close');
   } catch (error) {
     console.error(error);

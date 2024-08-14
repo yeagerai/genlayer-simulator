@@ -5,9 +5,11 @@ import { ref } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
 import ContractItem from '@/components/Simulator/ContractItem.vue';
 import MainTitle from '@/components/Simulator/MainTitle.vue';
+import { useEventTracking } from '@/hooks';
 
 const store = useContractsStore();
 const showNewFileInput = ref(false);
+const { trackEvent } = useEventTracking();
 
 /**
  * Loads content from a file and adds it to the contract file store.
@@ -51,6 +53,10 @@ const handleSaveNewFile = (name: string) => {
   }
 
   showNewFileInput.value = false;
+
+  trackEvent('created_contract', {
+    contract_name: name,
+  });
 };
 </script>
 

@@ -26,7 +26,6 @@ watch(
         'python',
         pythonSyntaxDefinition,
       );
-
       editorRef.value = monaco.editor.create(editorElement.value!, {
         value: props.contract.content || '',
         language: 'python',

@@ -3,13 +3,13 @@ import type { ContractMethod } from '@/types';
 import { ref } from 'vue';
 import { Collapse } from 'vue-collapsed';
 import { InputTypesMap } from '@/utils';
-import { useAccountsStore } from '@/stores';
 import { useContractQueries } from '@/hooks/useContractQueries';
 import { notify } from '@kyvg/vue3-notification';
 import { ChevronDownIcon } from '@heroicons/vue/16/solid';
+import { useEventTracking } from '@/hooks';
 
-const { callWriteMethod, callReadMethod } = useContractQueries();
-const accountsStore = useAccountsStore();
+const { callWriteMethod, callReadMethod, contract } = useContractQueries();
+const { trackEvent } = useEventTracking();
 
 const props = defineProps<{
   methodName: string;
@@ -31,6 +31,11 @@ const handleCallReadMethod = async () => {
     );
 
     responseMessage.value = JSON.stringify(result);
+
+    trackEvent('called_read_method', {
+      contract_name: contract.value?.name || '',
+      method_name: props.methodName,
+    });
   } catch (error) {
     notify({
       title: 'Error',
@@ -42,17 +47,21 @@ const handleCallReadMethod = async () => {
 
 const handleCallWriteMethod = async () => {
   await callWriteMethod({
-    userAccount: accountsStore.currentUserAddress || '',
     method: props.methodName,
     params: Object.values(inputs.value),
   });
+
+  clearInputs();
 
   notify({
     text: 'Write method called',
     type: 'success',
   });
 
-  clearInputs();
+  trackEvent('called_write_method', {
+    contract_name: contract.value?.name || '',
+    method_name: props.methodName,
+  });
 };
 
 const clearInputs = () => {

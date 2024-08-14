@@ -6,6 +6,7 @@ import {
 } from '@/stores';
 import { db } from './db';
 import { v4 as uuidv4 } from 'uuid';
+import type { Address } from '@/types';
 
 // for old version and local storage
 export const examplesNames = [
@@ -61,7 +62,7 @@ export const setupStores = async () => {
     )
       ? ((localStorage.getItem('accountsStore.privateKeys') || '').split(
           ',',
-        ) as `0x${string}`[])
+        ) as Address[])
       : [];
   }
 };

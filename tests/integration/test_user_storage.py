@@ -1,10 +1,12 @@
 # tests/e2e/test_storage.py
 
 from tests.common.request import (
+    deploy_intelligent_contract,
+    call_contract_method,
     payload,
     post_request_localhost,
-    post_request_and_wait_for_finalization,
 )
+
 from tests.integration.mocks.user_storage_get_contract_schema_for_code import (
     user_storage_contract_schema,
 )
@@ -16,6 +18,8 @@ from tests.common.response import (
     assert_dict_struct,
     has_success_status,
 )
+
+from tests.common.accounts import create_new_account
 
 INITIAL_STATE_USER_A = "user_a_initial_state"
 UPDATED_STATE_USER_A = "user_a_updated_state"
@@ -31,15 +35,8 @@ def test_user_storage():
     assert has_success_status(result)
 
     # Account Setup
-    result = post_request_localhost(payload("create_account")).json()
-    assert has_success_status(result)
-    assert "account_address" in result["result"]["data"]
-    from_address_a = result["result"]["data"]["account_address"]
-
-    result = post_request_localhost(payload("create_account")).json()
-    assert has_success_status(result)
-    assert "account_address" in result["result"]["data"]
-    from_address_b = result["result"]["data"]["account_address"]
+    from_account_a = create_new_account()
+    from_account_b = create_new_account()
 
     # Get contract schema
     contract_code = open("examples/contracts/user_storage.py", "r").read()
@@ -50,16 +47,9 @@ def test_user_storage():
     assert_dict_struct(result_schema, user_storage_contract_schema)
 
     # Deploy Contract
-    data = [
-        from_address_a,  # from_account
-        "UserStorage",  # class_name
-        contract_code,  # contract_code
-        "{}",  # constructor_args
-    ]
+    # Deploy Contract
     call_method_response_deploy, transaction_response_deploy = (
-        post_request_and_wait_for_finalization(
-            payload("deploy_intelligent_contract", *data)
-        )
+        deploy_intelligent_contract(from_account_a, contract_code, "{}")
     )
 
     assert has_success_status(transaction_response_deploy)
@@ -77,14 +67,8 @@ def test_user_storage():
     ########################################
     ########## ADD User A State ############
     ########################################
-    _, transaction_response_call_1 = post_request_and_wait_for_finalization(
-        payload(
-            "call_contract_function",
-            from_address_a,
-            contract_address,
-            "update_storage",
-            [INITIAL_STATE_USER_A],
-        )
+    _, transaction_response_call_1 = call_contract_method(
+        from_account_a, contract_address, "update_storage", [INITIAL_STATE_USER_A]
     )
     assert has_success_status(transaction_response_call_1)
 
@@ -96,7 +80,10 @@ def test_user_storage():
         payload("get_contract_state", contract_address, "get_complete_storage", [])
     ).json()
     assert has_success_status(contract_state_2_1)
-    assert contract_state_2_1["result"]["data"][from_address_a] == INITIAL_STATE_USER_A
+    assert (
+        contract_state_2_1["result"]["data"][from_account_a.address]
+        == INITIAL_STATE_USER_A
+    )
 
     # Get Updated State
     contract_state_2_2 = post_request_localhost(
@@ -104,7 +91,7 @@ def test_user_storage():
             "get_contract_state",
             contract_address,
             "get_account_storage",
-            [from_address_a],
+            [from_account_a.address],
         )
     ).json()
     assert has_success_status(contract_state_2_2)
@@ -113,52 +100,52 @@ def test_user_storage():
     ########################################
     ########## ADD User B State ############
     ########################################
-    _, transaction_response_call_1 = post_request_and_wait_for_finalization(
-        payload(
-            "call_contract_function",
-            from_address_b,
-            contract_address,
-            "update_storage",
-            [INITIAL_STATE_USER_B],
-        )
+    _, transaction_response_call_2 = call_contract_method(
+        from_account_b, contract_address, "update_storage", [INITIAL_STATE_USER_B]
     )
-    assert has_success_status(transaction_response_call_1)
+    assert has_success_status(transaction_response_call_2)
 
     # Assert response format
-    assert_dict_struct(transaction_response_call_1, call_contract_function_response)
+    assert_dict_struct(transaction_response_call_2, call_contract_function_response)
 
     # Get Updated State
     contract_state_3 = post_request_localhost(
         payload("get_contract_state", contract_address, "get_complete_storage", [])
     ).json()
     assert has_success_status(contract_state_3)
-    assert contract_state_3["result"]["data"][from_address_a] == INITIAL_STATE_USER_A
-    assert contract_state_3["result"]["data"][from_address_b] == INITIAL_STATE_USER_B
+    assert (
+        contract_state_3["result"]["data"][from_account_a.address]
+        == INITIAL_STATE_USER_A
+    )
+    assert (
+        contract_state_3["result"]["data"][from_account_b.address]
+        == INITIAL_STATE_USER_B
+    )
 
     #########################################
     ######### UPDATE User A State ###########
     #########################################
-    _, transaction_response_call_1 = post_request_and_wait_for_finalization(
-        payload(
-            "call_contract_function",
-            from_address_a,
-            contract_address,
-            "update_storage",
-            [UPDATED_STATE_USER_A],
-        )
+    _, transaction_response_call_3 = call_contract_method(
+        from_account_a, contract_address, "update_storage", [UPDATED_STATE_USER_A]
     )
-    assert has_success_status(transaction_response_call_1)
+    assert has_success_status(transaction_response_call_3)
 
     # Assert response format
-    assert_dict_struct(transaction_response_call_1, call_contract_function_response)
+    assert_dict_struct(transaction_response_call_3, call_contract_function_response)
 
     # Get Updated State
     contract_state_4_1 = post_request_localhost(
         payload("get_contract_state", contract_address, "get_complete_storage", [])
     ).json()
     assert has_success_status(contract_state_4_1)
-    assert contract_state_4_1["result"]["data"][from_address_a] == UPDATED_STATE_USER_A
-    assert contract_state_4_1["result"]["data"][from_address_b] == INITIAL_STATE_USER_B
+    assert (
+        contract_state_4_1["result"]["data"][from_account_a.address]
+        == UPDATED_STATE_USER_A
+    )
+    assert (
+        contract_state_4_1["result"]["data"][from_account_b.address]
+        == INITIAL_STATE_USER_B
+    )
 
     # Get Updated State
     contract_state_4_2 = post_request_localhost(
@@ -166,7 +153,7 @@ def test_user_storage():
             "get_contract_state",
             contract_address,
             "get_account_storage",
-            [from_address_b],
+            [from_account_b.address],
         )
     ).json()
     assert has_success_status(contract_state_4_2)
