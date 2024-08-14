@@ -20,6 +20,7 @@ export const useUIStore = defineStore('ui', {
     },
     initialize() {
       localStorage.setItem('genLayer.ui-mode', this.mode);
+      document.documentElement.setAttribute('data-mode', this.mode);
     },
     runTutorial() {
       this.showTutorial = true;

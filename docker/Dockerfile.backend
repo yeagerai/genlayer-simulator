@@ -1,14 +1,22 @@
-FROM python:3.12.2-slim AS base
+FROM python:3.12.5-slim AS base
 
 ARG path=/app
-
 WORKDIR $path
 
 ADD backend/protocol_rpc/requirements.txt backend/protocol_rpc/requirements.txt
-RUN pip install --no-cache-dir -r backend/protocol_rpc/requirements.txt
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu \
+    && pip install --no-cache-dir -r backend/protocol_rpc/requirements.txt
+
+RUN groupadd -r backend-group \
+    && useradd -r -g backend-group backend-user \
+    && mkdir -p /home/backend-user/.cache/huggingface \
+    && chown -R backend-user:backend-group /home/backend-user \
+    && chown -R backend-user:backend-group $path
 
 ENV PYTHONPATH "${PYTHONPATH}:/${path}"
 ENV FLASK_APP=backend/protocol_rpc/server.py
+ENV TRANSFORMERS_CACHE=/home/backend-user/.cache/huggingface
 
 COPY ../.env .
 COPY backend $path/backend
@@ -16,10 +24,10 @@ COPY backend $path/backend
 ###########START NEW IMAGE : DEBUGGER ###################
 FROM base AS debug
 RUN pip install --no-cache-dir debugpy watchdog
-
+USER backend-user
 CMD watchmedo auto-restart --recursive --pattern="*.py" --ignore-patterns="*.pyc;*__pycache__*" -- python -m debugpy --listen 0.0.0.0:${RPCDEBUGPORT} -m flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}
 
 ###########START NEW IMAGE: PRODUCTION ###################
 FROM base AS prod
-
+USER backend-user
 CMD flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}

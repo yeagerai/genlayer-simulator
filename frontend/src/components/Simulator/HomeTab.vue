@@ -90,8 +90,12 @@
         <div class="mb-2 mt-4 flex">
           <h2 class="text-xl">Intelligent Contracts Templates</h2>
         </div>
-        <div class="flex flex-col rounded-md bg-slate-400 p-6">
-          <div class="m-2 flex flex-col rounded-md bg-slate-100 p-6">
+        <div
+          class="flex flex-col rounded-md bg-slate-400 p-6 dark:bg-slate-600"
+        >
+          <div
+            class="m-2 flex flex-col rounded-md bg-slate-100 p-6 dark:bg-slate-500"
+          >
             <div class="flex">
               <h4 class="text-md font-semibold">Wizard of Coin</h4>
             </div>
@@ -105,7 +109,9 @@
               engaging way.
             </div>
           </div>
-          <div class="m-2 flex flex-col rounded-md bg-slate-100 p-6">
+          <div
+            class="m-2 flex flex-col rounded-md bg-slate-100 p-6 dark:bg-slate-500"
+          >
             <div class="flex">
               <h4 class="text-md font-semibold">Simple Storage</h4>
             </div>

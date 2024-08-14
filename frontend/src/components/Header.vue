@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import { PresentationChartLineIcon } from '@heroicons/vue/24/solid';
 import { SunIcon, MoonIcon } from '@heroicons/vue/16/solid';
-import { useUIStore, useAccountsStore } from '@/stores';
-import { shortenAddress } from '@/utils';
+import { useUIStore } from '@/stores';
 import { RouterLink } from 'vue-router';
 import Logo from '@/assets/images/logo.svg';
+import GhostBtn from './global/GhostBtn.vue';
+import AccountSelect from '@/components/Simulator/AccountSelect.vue';
 
 const uiStore = useUIStore();
-const accounts = useAccountsStore();
+
 const toggleMode = () => {
   uiStore.toggleMode();
 };
+
 const showTutorial = () => {
   uiStore.runTutorial();
 };
@@ -30,42 +32,25 @@ const showTutorial = () => {
         ]"
       />
     </RouterLink>
-    <div class="flex items-center gap-2 pr-2" id="tutorial-end">
-      <RouterLink
-        :to="{ name: 'profile' }"
-        class="rounded-md p-1 px-2 hover:bg-slate-200 dark:hover:bg-zinc-700"
-      >
-        <span class="text-sm font-medium text-primary dark:text-white">
-          {{ shortenAddress(accounts.currentUserAddress || '') }}
-        </span>
-        <ToolTip
-          :text="accounts.currentUserAddress"
-          :options="{ placement: 'bottom' }"
-        />
-      </RouterLink>
 
-      <button
-        @click="toggleMode"
-        class="rounded-md p-1 hover:bg-slate-200 dark:hover:bg-zinc-700"
-      >
-        <SunIcon
-          v-if="uiStore.mode === 'light'"
-          class="h-5 w-5 fill-gray-700"
-        />
+    <div class="flex items-center gap-2 pr-2">
+      <AccountSelect />
+
+      <GhostBtn @click="toggleMode" v-tooltip="'Switch theme'">
+        <SunIcon v-if="uiStore.mode === 'light'" class="h-5 w-5" />
         <MoonIcon v-else class="h-5 w-5 fill-gray-200" />
-        <ToolTip text="Switch Theme" :options="{ placement: 'bottom' }" />
-      </button>
+      </GhostBtn>
 
-      <button
+      <GhostBtn
         @click="showTutorial"
-        class="rounded-md p-1 hover:bg-slate-200 dark:hover:bg-zinc-700"
+        v-tooltip="'Show Tutorial'"
+        id="tutorial-end"
       >
         <PresentationChartLineIcon
           class="h-5 w-5"
           :class="uiStore.mode === 'light' ? 'fill-gray-700' : 'fill-gray-200'"
         />
-        <ToolTip text="Show Tutorial" :options="{ placement: 'bottom' }" />
-      </button>
+      </GhostBtn>
     </div>
   </header>
 </template>

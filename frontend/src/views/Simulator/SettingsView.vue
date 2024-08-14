@@ -1,12 +1,19 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { notify } from '@kyvg/vue3-notification';
-import { TrashIcon } from '@heroicons/vue/24/solid';
-import { useNodeStore } from '@/stores';
+import { useNodeStore, useContractsStore } from '@/stores';
+import ValidatorItem from '@/components/Simulator/ValidatorItem.vue';
+import ValidatorModal from '@/components/Simulator/ValidatorModal.vue';
+import { ref } from 'vue';
+import MainTitle from '@/components/Simulator/MainTitle.vue';
+import PageSection from '@/components/Simulator/PageSection.vue';
+import { ArchiveBoxXMarkIcon } from '@heroicons/vue/24/solid';
+import { PlusIcon } from '@heroicons/vue/16/solid';
 
+const contractsStore = useContractsStore();
 const nodeStore = useNodeStore();
+const isNewValidatorModalOpen = ref(false);
 
-// Hooks
 onMounted(async () => {
   try {
     await nodeStore.getValidatorsData();
@@ -20,66 +27,16 @@ onMounted(async () => {
   }
 });
 
-async function handleCreateNewValidator() {
-  try {
-    await nodeStore.createNewValidator();
-    notify({
-      title: 'OK',
-      text: 'New validator created',
-      type: 'success',
-    });
-  } catch (error) {
-    console.error(error);
-    notify({
-      title: 'Error',
-      text: (error as Error)?.message || 'Error creating new validator',
-      type: 'error',
-    });
-  }
-}
-
-async function handleUpdateValidator() {
-  try {
-    await nodeStore.updateValidator();
-    notify({
-      title: 'OK',
-      text: 'Validator updated successfully',
-      type: 'success',
-    });
-  } catch (error) {
-    console.error(error);
-    notify({
-      title: 'Error',
-      text: (error as Error)?.message || 'Error udpating the validator',
-      type: 'error',
-    });
-  }
-}
-
-async function handleDeleteValidator() {
-  try {
-    await nodeStore.deleteValidator();
-    notify({
-      title: 'OK',
-      text: 'Validator deleted successfully',
-      type: 'success',
-    });
-  } catch (error) {
-    console.error(error);
-    notify({
-      title: 'Error',
-      text: (error as Error)?.message || 'Error deleting a validator',
-      type: 'error',
-    });
-  }
-}
+const isResetStorageModalOpen = ref(false);
+const isResetting = ref(false);
 
 const handleResetStorage = async () => {
+  isResetting.value = true;
   try {
-    await nodeStore.resetStorage();
+    await contractsStore.resetStorage();
+
     notify({
-      title: 'Success',
-      text: 'Storage reset successfully',
+      title: 'Storage reset successfully',
       type: 'success',
     });
   } catch (error) {
@@ -90,392 +47,95 @@ const handleResetStorage = async () => {
       type: 'error',
     });
   } finally {
-    nodeStore.closeResetStorageModal();
-  }
-};
-
-const handleNumberInput = (event: Event) => {
-  const formattedValue = parseInt((event?.target as any)?.value || '', 10);
-
-  if (!isNaN(formattedValue)) {
-    (event?.target as any).value = '';
-    (event?.target as any).value = formattedValue;
-  } else {
-    event.preventDefault();
+    isResetStorageModalOpen.value = false;
+    isResetting.value = false;
   }
 };
 </script>
 
 <template>
   <div class="flex max-h-[93vh] w-full flex-col overflow-y-auto">
-    <div class="flex w-full flex-col p-2">
-      <h3 class="text-xl">Settings</h3>
-    </div>
-    <div class="flex w-full items-center justify-between p-2">
-      <div class="flex items-center">Number of validators:</div>
-      <div
-        class="flex items-center text-xl font-semibold text-primary dark:text-white"
-      >
-        {{ nodeStore.validators.length }}
-      </div>
-    </div>
+    <MainTitle data-testid="settings-page-title">Settings</MainTitle>
 
-    <div class="flex w-full flex-col bg-slate-100 p-2 dark:dark:bg-zinc-700">
-      <h4 class="text-md" id="tutorial-validators">Validators Configuration</h4>
-    </div>
-    <div class="flex flex-col" id="tutorial-validators">
-      <div class="flex w-full flex-col text-xs">
-        <div
-          data-testid="validator-item-container"
-          class="flex items-center justify-between p-1 px-2 hover:bg-slate-100 dark:hover:bg-zinc-700"
-          v-for="validator in nodeStore.validators"
-          :key="validator.id"
-        >
-          <div
-            class="flex cursor-pointer items-center"
-            data-testid="validator-item"
-            @click="nodeStore.openUpdateValidatorModal(validator)"
-          >
-            <div class="flex text-primary dark:text-white">
-              {{ validator.id }} -
-            </div>
-            <div class="ml-2 flex flex-col items-start">
-              <div class="flex">
-                <span class="mr-1 font-semibold">Model: </span>
-                <span
-                  class="text-primary dark:text-white"
-                  data-testid="validator-item-model"
-                  >{{ validator.model }}</span
-                >
-              </div>
-              <div class="flex">
-                <span class="mr-1 font-semibold">Provider: </span>
-                <span data-testid="validator-item-provider">{{
-                  validator.provider
-                }}</span>
-              </div>
-            </div>
-          </div>
-          <div class="flex text-primary dark:text-white">
-            <button
-              @click="nodeStore.openDeleteValidatorModal(validator)"
-              data-testid="validator-item-delete"
-            >
-              <ToolTip
-                text="Delete Validator"
-                :options="{ placement: 'bottom' }"
-              />
-              <TrashIcon class="mr-1 h-4 w-4" />
-            </button>
-          </div>
+    <PageSection id="tutorial-validators">
+      <template #title>
+        Validators
+        <span class="opacity-50">{{ nodeStore.validators.length }}</span>
+      </template>
+
+      <div
+        class="overflow-hidden rounded-md border border-gray-300 dark:border-gray-800"
+        v-if="nodeStore.validators.length > 0"
+      >
+        <div class="divide-y divide-gray-200 dark:divide-gray-800">
+          <ValidatorItem
+            v-for="validator in nodeStore.validatorsOrderedById"
+            :key="validator.id"
+            :validator="validator"
+          />
         </div>
       </div>
-    </div>
-    <div class="mt-4 flex w-full flex-col px-2">
+
       <Btn
-        @click="nodeStore.openCreateNewValidatorModal"
+        @click="isNewValidatorModalOpen = true"
         data-testid="create-new-validator-btn"
       >
+        <PlusIcon class="h-5 w-5" />
         New Validator
       </Btn>
-    </div>
-    <div
-      class="mt-10 flex w-full flex-col bg-slate-100 p-2 dark:dark:bg-zinc-700"
-    >
-      <h4 class="text-md" id="tutorial-validators">Simulator Storage</h4>
-    </div>
-    <div class="mt-4 flex w-full flex-col px-2">
+
+      <ValidatorModal
+        :open="isNewValidatorModalOpen"
+        @close="isNewValidatorModalOpen = false"
+      />
+    </PageSection>
+
+    <PageSection>
+      <template #title>Simulator Storage</template>
+
       <Btn
-        @click="nodeStore.openResetStorageModal"
+        @click="isResetStorageModalOpen = true"
         :disabled="nodeStore.contractsToDelete.length < 1"
+        secondary
+        v-tooltip="
+          nodeStore.contractsToDelete.length < 1 &&
+          'No contracts files to delete'
+        "
       >
+        <ArchiveBoxXMarkIcon class="h-4 w-4" />
         Reset Storage
       </Btn>
-      <ToolTip
-        text="No Contracts file to delete"
-        :options="{ placement: 'right' }"
-        v-if="nodeStore.contractsToDelete.length < 1"
-      />
-    </div>
-    <Modal
-      :open="nodeStore.createValidatorModalOpen"
-      @close="nodeStore.closeNewValidatorModal"
-    >
-      <div class="flex w-full flex-col">
-        <div class="flex justify-between">
-          <div class="text-xl">Create New Validator</div>
-        </div>
-        <div class="mt-2 flex flex-col p-2">
-          <p class="text-md font-semibold">Provider:</p>
-          <select
-            :class="
-              nodeStore.validatorToCreate.provider
-                ? ''
-                : 'border border-red-500'
-            "
-            class="w-full overflow-y-auto bg-slate-100 p-2 dark:bg-zinc-700"
-            data-testid="dropdown-provider-create"
-            v-model="nodeStore.validatorToCreate.provider"
-            required
-          >
-            <option
-              v-for="(_, provider) in nodeStore.nodeProviders"
-              :key="provider"
-              :value="provider"
-              :selected="provider === nodeStore.validatorToCreate.provider"
-            >
-              {{ provider }}
-            </option>
-          </select>
-        </div>
-        <div class="mt-2 flex flex-col p-2">
-          <p class="text-md font-semibold">Model:</p>
-          <select
-            :class="
-              nodeStore.validatorToCreate.model ? '' : 'border border-red-500'
-            "
-            class="w-full overflow-y-auto bg-slate-100 p-2 dark:bg-zinc-700"
-            data-testid="dropdown-model-create"
-            v-model="nodeStore.validatorToCreate.model"
-            required
-          >
-            <option
-              v-for="model in nodeStore.nodeProviders[
-                nodeStore.validatorToCreate.provider
-              ]"
-              :key="model"
-              :value="model"
-              :selected="model === nodeStore.validatorToCreate.model"
-            >
-              {{ model }}
-            </option>
-          </select>
-        </div>
-        <div class="mt-2 flex flex-col p-2">
-          <p class="text-md font-semibold">Stake:</p>
-          <input
-            type="number"
-            min="1"
-            step="1"
-            data-testid="input-stake-create"
-            @input="handleNumberInput"
-            v-model="nodeStore.validatorToCreate.stake"
-            :class="
-              nodeStore.validatorToCreate.stake ? '' : 'border border-red-500'
-            "
-            class="w-full bg-slate-100 p-2 dark:bg-zinc-700"
-            required
-          />
-        </div>
-        <div class="mt-2 flex flex-col p-2">
-          <p class="text-md font-semibold">Config:</p>
 
-          <textarea
-            name=""
-            id=""
-            rows="5"
-            cols="60"
-            class="max-h-64 w-full bg-slate-100 p-2 dark:bg-zinc-700"
-            v-model="nodeStore.validatorToCreate.config"
-          >
-          </textarea>
-        </div>
-      </div>
-      <div class="mt-4 flex w-full flex-col">
-        <Btn
-          @click="handleCreateNewValidator"
-          :disabled="!nodeStore.createValidatorModelValid"
-          data-testid="btn-create-validator"
+      <ConfirmationModal
+        :open="isResetStorageModalOpen"
+        @confirm="handleResetStorage"
+        @close="isResetStorageModalOpen = false"
+        buttonText="Reset Storage"
+        buttonTestId="btn-reset-storage"
+        :dangerous="true"
+        :confirming="isResetting"
+      >
+        <template #title>Reset Simulator Storage</template>
+        <template #description
+          >Are you sure? All the examples will be restored, and the following
+          intelligent contracts will be removed.</template
         >
-          Create
-        </Btn>
-      </div>
-    </Modal>
-    <Modal
-      :open="nodeStore.updateValidatorModalOpen"
-      @close="nodeStore.closeUpdateValidatorModal"
-    >
-      <div class="flex flex-col">
-        <div class="flex justify-between">
-          <div class="text-xl">Validator Details</div>
-          <div class="text-primary dark:text-white">
-            ID: {{ nodeStore.selectedValidator?.id }}
-          </div>
-        </div>
-        <div class="mt-2 flex flex-col p-2">
-          <p class="text-md font-semibold">Address:</p>
 
-          <div class="w-full py-2">
-            {{ nodeStore.selectedValidator?.address }}
+        <template #info>
+          <div
+            class="text-xs"
+            v-for="contract in nodeStore.contractsToDelete"
+            :key="contract.id"
+          >
+            {{ contract.name }}
           </div>
-        </div>
-        <div class="mt-2 flex flex-col p-2">
-          <p class="text-md font-semibold">Provider:</p>
-          <select
-            :class="
-              nodeStore.validatorToUpdate.provider
-                ? ''
-                : 'border border-red-500'
-            "
-            data-testid="dropdown-provider-update"
-            class="w-full overflow-y-auto bg-slate-100 p-2 dark:bg-zinc-700"
-            v-model="nodeStore.validatorToUpdate.provider"
-            required
-          >
-            <option
-              v-for="(_, provider) in nodeStore.nodeProviders"
-              :key="provider"
-              :value="provider"
-              :selected="provider === nodeStore.validatorToUpdate.provider"
-            >
-              {{ provider }}
-            </option>
-          </select>
-        </div>
-        <div class="mt-2 flex flex-col p-2">
-          <p class="text-md font-semibold">Model:</p>
-          <select
-            :class="
-              nodeStore.validatorToUpdate.model ? '' : 'border border-red-500'
-            "
-            class="w-full overflow-y-auto bg-slate-100 p-2 dark:bg-zinc-700"
-            name="dropdown-model"
-            data-testid="dropdown-model-update"
-            v-model="nodeStore.validatorToUpdate.model"
-            required
-          >
-            <option
-              v-for="model in nodeStore.nodeProviders[
-                nodeStore.validatorToUpdate.provider
-              ]"
-              :key="model"
-              :value="model"
-              :selected="model === nodeStore.validatorToUpdate.model"
-            >
-              {{ model }}
-            </option>
-          </select>
-        </div>
-        <div class="mt-2 flex flex-col p-2">
-          <p class="text-md font-semibold">Stake:</p>
-          <input
-            type="number"
-            min="1"
-            step="1"
-            @input="handleNumberInput"
-            v-model="nodeStore.validatorToUpdate.stake"
-            :class="
-              nodeStore.validatorToUpdate.stake ? '' : 'border border-red-500'
-            "
-            data-testid="input-stake-update"
-            class="w-full bg-slate-100 p-2 dark:bg-zinc-700"
-            required
-          />
-        </div>
-        <div class="mt-2 flex flex-col p-2">
-          <p class="text-md font-semibold">Config:</p>
+        </template>
 
-          <textarea
-            name=""
-            id=""
-            rows="5"
-            cols="60"
-            class="max-h-64 w-full bg-slate-100 p-2 dark:bg-zinc-700"
-            v-model="nodeStore.validatorToUpdate.config"
-          >
-          </textarea>
+        <div class="mt-1 text-xs italic">
+          <span class="font-semibold">Note:</span> if you want to preserve any
+          of these contracts, make a copy of them in the files section.
         </div>
-      </div>
-      <div class="mt-4 flex w-full flex-col">
-        <Btn
-          @click="handleUpdateValidator"
-          :disabled="!nodeStore.updateValidatorModelValid"
-          data-testid="btn-update-validator"
-        >
-          Save
-        </Btn>
-      </div>
-    </Modal>
-    <Modal
-      :open="nodeStore.deleteValidatorModalOpen"
-      @close="nodeStore.closeDeleteValidatorModal"
-    >
-      <div class="flex flex-col">
-        <div class="flex justify-between">
-          <div class="text-xl">Delete Validator</div>
-          <div class="text-primary dark:text-white">
-            ID: {{ nodeStore.selectedValidator?.id }}
-          </div>
-        </div>
-        <div class="mt-4 flex justify-between bg-slate-100 p-2 font-bold">
-          Are you sure you want to delete this validator?
-        </div>
-        <div class="mt-2 flex flex-col p-2">
-          <p class="text-md font-semibold">Address:</p>
-
-          <div class="w-full py-2">
-            {{ nodeStore.selectedValidator?.address }}
-          </div>
-        </div>
-        <div class="mt-2 flex flex-col p-2">
-          <p class="text-md font-semibold">Provider:</p>
-          {{ nodeStore.selectedValidator?.provider }}
-        </div>
-        <div class="mt-2 flex flex-col p-2">
-          <p class="text-md font-semibold">Model:</p>
-          {{ nodeStore.selectedValidator?.model }}
-        </div>
-        <div class="mt-2 flex flex-col p-2">
-          <p class="text-md font-semibold">Stake:</p>
-          {{ nodeStore.selectedValidator?.stake }}
-        </div>
-      </div>
-      <div class="mt-4 flex w-full flex-col">
-        <Btn @click="handleDeleteValidator" data-testid="btn-delete-validator">
-          Delete Validator
-        </Btn>
-      </div>
-    </Modal>
-    <Modal
-      :open="nodeStore.resetStorageModalOpen"
-      @close="nodeStore.closeResetStorageModal"
-    >
-      <div class="flex flex-col">
-        <div class="flex justify-between">
-          <div class="text-xl">Reset Simulator Storage</div>
-        </div>
-        <div class="mt-4 flex justify-between bg-slate-100 p-2 font-bold">
-          Are you sure you want to reset the simulator storage?
-        </div>
-        <div class="mt-2 flex flex-col p-2">
-          <div class="w-full py-2">
-            All the examples will be restored, and the following intelligent
-            contracts will be removed.
-          </div>
-        </div>
-        <div class="mt-2 flex flex-col overflow-y-auto p-2">
-          <ul class="list-inside list-disc">
-            <li
-              class="text-md font-semibold"
-              v-for="contract in nodeStore.contractsToDelete"
-              :key="contract.id"
-            >
-              {{ contract.name }}
-            </li>
-          </ul>
-        </div>
-        <div class="mt-2 flex flex-col p-2">
-          <div class="text-md italic">
-            <span class="font-semibold">Note:</span> if you want to preserve any
-            of these contracts, make a copy of them in the files section.
-          </div>
-        </div>
-      </div>
-      <div class="mt-4 flex w-full flex-col">
-        <Btn @click="handleResetStorage" :loading="nodeStore.resettingStorage">
-          {{ nodeStore.resettingStorage ? 'Resetting...' : 'Reset' }}
-        </Btn>
-      </div>
-    </Modal>
+      </ConfirmationModal>
+    </PageSection>
   </div>
 </template>

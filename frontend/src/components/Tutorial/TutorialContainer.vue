@@ -3,35 +3,38 @@ import { useRouter } from 'vue-router';
 import { DEFAULT_OPTIONS, KEYS } from './constants';
 import TutorialStep from './TutorialStep.vue';
 import { useContractsStore, useTutorialStore, useUIStore } from '@/stores';
-import { notify } from '@kyvg/vue3-notification';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 const contractsStore = useContractsStore();
 const tutorialStore = useTutorialStore();
 const uiStore = useUIStore();
 const router = useRouter();
-const contract = computed(() => contractsStore.contracts[0]);
-const contracts = computed(() => contractsStore.contracts);
+
+tutorialStore.resetTutorialState();
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const steps = ref([
   {
     target: '#tutorial-welcome',
     header: {
-      title: 'Welcome to GenLayer Simulator!',
+      title: 'Welcome to the GenLayer Simulator!',
     },
-    content:
-      'This tutorial will guide you through the basics. Click “Next” to begin!',
+    content: 'This tutorial will guide you through the basics.',
+
     onNextStep: async () => {
-      contractsStore.openFile(contract.value?.id);
+      await tutorialStore.addAndOpenContract();
     },
   },
   {
-    target: `.contract-item`,
+    target: `#contract-item-${tutorialStore.mockContractId}`,
     header: {
       title: 'Code Editor',
     },
-    content: `Write and edit your Intelligent Contracts here. This example contract is preloaded for you.`,
+    content: `Edit your Intelligent Contracts here.<br/><br/>This example contract is preloaded for you.`,
     onNextStep: async () => {
       router.push({ name: 'run-debug', query: { tutorial: 1 } });
+      await sleep(200);
     },
   },
   {
@@ -40,31 +43,36 @@ const steps = ref([
       title: 'Deploying Contracts',
     },
     content:
-      'Click “Next” to automatically deploy your Intelligent Contract to the GenLayer network.',
+      'Deploy contracts along with constructor inputs from here.<br/><br/>Click “Next” to automatically deploy the contract.',
+    placement: 'right',
     onNextStep: async () => {
-      await tutorialStore.deployContract();
-      notify({
-        title: 'OK',
-        text: 'Contract deployed',
-        type: 'success',
-      });
+      await tutorialStore.deployMockContract();
     },
   },
   {
-    target: '#tutorial-creating-transactions',
+    target: '#tutorial-read-methods',
     header: {
-      title: 'Creating Transactions',
+      title: 'Reading contract state',
+    },
+    content: 'Here you can read the contract state by calling read methods.',
+    placement: 'right',
+  },
+  {
+    target: '#tutorial-write-methods',
+    header: {
+      title: 'Writing to a contract',
     },
     content:
-      'This is where you can interact with the deployed contract. You can select a method you want to use from the dropdown, and provide the parameters.  Click “Next” to automatically create a transaction and interact with your deployed contract.',
-    onNextStep: async () => {
-      tutorialStore.callContractMethod();
-      notify({
-        title: 'OK',
-        text: 'Contract method called',
-        type: 'success',
-      });
+      'Here you can interact with the contract by calling write methods.',
+    placement: 'right',
+  },
+  {
+    target: '#tutorial-tx-response',
+    header: {
+      title: 'Transaction Response',
     },
+    content: 'See the results of your transactions in this area.',
+    placement: 'right',
   },
   {
     target: '#tutorial-node-output',
@@ -72,35 +80,20 @@ const steps = ref([
       title: 'Node Output',
     },
     content:
-      'View real-time feedback as your transaction execution and debug any issues.',
-  },
-
-  {
-    target: '#tutorial-contract-state',
-    header: {
-      title: 'Contract State',
-    },
-    content:
-      "This panel shows the contract's data after executing transactions.",
-  },
-  {
-    target: '#tutorial-tx-response',
-    header: {
-      title: 'Transaction Response',
-    },
-    content:
-      'See the results of your transaction interaction with the contract in this area.',
+      'View real-time feedback as your transactions execute and debug any issues.',
     onNextStep: async () => {
       router.push({ name: 'contracts' });
+      await sleep(200);
     },
   },
   {
     header: {
-      title: 'Switching Examples',
+      title: 'Switching contracts',
     },
     target: '#tutorial-how-to-change-example',
     content:
-      'Switch between different example contracts to explore various features and functionalities.',
+      'Switch between different contracts to explore various features and functionalities.',
+    placement: 'right',
     onNextStep: async () => {
       await router.push({ name: 'settings' });
     },
@@ -112,6 +105,7 @@ const steps = ref([
     target: '#tutorial-validators',
     content:
       'Configure the number of validators and set up their parameters here.',
+    placement: 'right',
   },
   {
     header: {
@@ -126,17 +120,15 @@ const steps = ref([
 const currentStep = ref(-1);
 const options = ref(DEFAULT_OPTIONS);
 const numberOfSteps = computed(() => steps.value.length);
-const isRunning = computed(() => {
-  return currentStep.value > -1 && currentStep.value < numberOfSteps.value;
-});
 const isFirst = computed(() => currentStep.value === 0);
 const isLast = computed(() => currentStep.value === steps.value.length - 1);
-const step = computed(() => steps.value[currentStep.value]);
 const showTutorial = computed(() => uiStore.showTutorial);
 
 function stop() {
   document.body.classList.remove('v-tour--active');
   currentStep.value = -1;
+  tutorialStore.resetTutorialState();
+  uiStore.showTutorial = false;
 }
 
 function skip() {
@@ -187,9 +179,8 @@ async function start(startStep?: number) {
   let step = steps.value[startStep];
 
   let process = () =>
-    new Promise((resolve, _reject) => {
+    new Promise((resolve) => {
       setTimeout(() => {
-        contractsStore.openFile(contracts.value[0].id);
         currentStep.value = startStep;
         resolve(0);
       }, options.value.startTimeout);
@@ -211,7 +202,7 @@ async function previousStep() {
   let futureStep = currentStep.value - 1;
 
   let process = () =>
-    new Promise((resolve, reject) => {
+    new Promise((resolve) => {
       const cb = steps.value[futureStep].onNextStep;
       if (cb) {
         cb().then(() => {
@@ -245,7 +236,7 @@ async function nextStep() {
   let futureStep = currentStep.value + 1;
 
   let process = () =>
-    new Promise((resolve, _reject) => {
+    new Promise((resolve) => {
       const cb = steps.value[currentStep.value].onNextStep;
       if (cb) {
         cb().then(() => {
@@ -277,7 +268,9 @@ async function nextStep() {
 
 onMounted(() => {
   if (!localStorage.getItem('genlayer.tutorial')) {
-    start();
+    setTimeout(() => {
+      start();
+    }, 1000);
   }
 });
 
@@ -295,6 +288,7 @@ watch(showTutorial, () => {
   }
 });
 </script>
+
 <template>
   <div class="v-tour bg-slate-300 dark:bg-zinc-700">
     <slot
@@ -348,10 +342,17 @@ body.v-tour--active {
   pointer-events: auto;
 }
 
-.v-tour__target--highlighted {
-  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.4);
+.v-tour__target--highlighted::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  box-shadow: inset 0 0 0 4px #47c5ffd9;
+  border-radius: 4px;
+  overflow: hidden;
   pointer-events: auto;
   z-index: 9999;
+  pointer-events: none; /* Ensure the highlight doesn't interfere with clicks */
 }
 
 .v-tour__target--relative {

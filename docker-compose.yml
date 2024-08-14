@@ -11,6 +11,7 @@ services:
       - jsonrpc
     expose:
       - "${FRONTEND_PORT}"
+
   jsonrpc:
     build:
       context: ./
@@ -59,6 +60,7 @@ services:
     pull_policy: always
     tty: true
     restart: always
+
   postgres:
     build:
       context: ./

@@ -2,6 +2,9 @@
 import { nextTick, ref, watch } from 'vue';
 import { useNodeStore, useUIStore } from '@/stores';
 import JsonViewer from '@/components/JsonViewer/json-viewer.vue';
+import GhostBtn from '../global/GhostBtn.vue';
+import { NoSymbolIcon } from '@heroicons/vue/24/solid';
+import EmptyListPlaceholder from './EmptyListPlaceholder.vue';
 
 const nodeStore = useNodeStore();
 const uiStore = useUIStore();
@@ -24,14 +27,27 @@ watch(nodeStore.logs, () => {
 </script>
 
 <template>
-  <div class="absolute bottom-0 left-0 z-20 flex h-full w-full flex-col">
+  <div class="flex h-full w-full flex-col">
+    <div
+      class="flex flex-row items-center justify-between gap-1 border-b bg-white p-1 dark:border-b-zinc-700 dark:bg-zinc-800"
+    >
+      Logs
+      <GhostBtn
+        @click="nodeStore.clearLogs"
+        v-tooltip="{ content: 'Clear Logs', placement: 'left' }"
+        class="opacity-50"
+      >
+        <NoSymbolIcon class="h-4 w-4" />
+      </GhostBtn>
+    </div>
+
     <div
       id="tutorial-node-output"
-      class="flex h-full w-full cursor-text flex-col overflow-y-auto bg-white p-1 dark:bg-zinc-800 dark:text-white"
+      class="flex h-full w-full cursor-text flex-col overflow-y-auto bg-slate-50 dark:bg-zinc-900"
     >
       <div
         v-show="nodeStore.logs.length > 0"
-        class="flex flex-col overflow-y-auto scroll-smooth p-0"
+        class="relative flex flex-col overflow-y-auto scroll-smooth p-1 pr-8"
         ref="scrollContainer"
       >
         <div
@@ -79,14 +95,12 @@ watch(nodeStore.logs, () => {
           </div>
         </div>
       </div>
+
       <div
         v-show="nodeStore.logs.length < 1"
-        class="flex h-full flex-col items-center justify-center"
+        class="grid h-full w-full place-items-center"
       >
-        <div class="flex text-xl">Logs</div>
-        <div class="flex">
-          Here you will see every log produced by the simulator
-        </div>
+        <EmptyListPlaceholder> No logs found. </EmptyListPlaceholder>
       </div>
     </div>
   </div>

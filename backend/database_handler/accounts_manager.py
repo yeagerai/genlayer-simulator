@@ -2,6 +2,8 @@
 
 import json
 from enum import Enum
+from eth_account import Account
+from eth_account._utils.validation import is_valid_address
 
 from backend.database_handler.db_client import DBClient
 from backend.database_handler.errors import AccountNotFoundError
@@ -23,6 +25,18 @@ class AccountsManager:
             "updated_at": account_data["updated_at"].isoformat(),
         }
 
+    def create_new_account(self, balance: int = 0) -> Account:
+        """
+        Used when generating intelligent contract's accounts or dending funds to a new account.
+        Users should create their accounts client-side
+        """
+        account = Account.create()
+        self.register_new_account(account.address, balance)
+        return account
+
+    def is_valid_address(self, address: str) -> bool:
+        return is_valid_address(address)
+
     def get_account(self, account_address: str):
         """Private method to retrieve if an account from the data base"""
         condition = f"id = '{account_address}'"
@@ -38,7 +52,7 @@ class AccountsManager:
             )
         return account_data
 
-    def create_new_account(self, address: str, balance: int) -> None:
+    def register_new_account(self, address: str, balance: int) -> None:
         account_state = {
             "id": address,
             "data": json.dumps({"balance": balance}),

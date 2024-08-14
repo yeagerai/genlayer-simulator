@@ -1,14 +1,11 @@
 import { defineStore } from 'pinia';
 import { useContractsStore } from './contracts';
 import { useNodeStore } from './node';
-import { v4 as uuidv4 } from 'uuid';
 import { useTransactionsStore } from './transactions';
+import { useMockContractData } from '@/hooks/useMockContractData';
 
-const deployedContract = {
-  address: '0x3F9Fb6C6aBaBD0Ae6cB27c513E7b0fE4C0B3E9C8',
-  contractId: '1a621cad-1cfd-4dbd-892a-f6bbde7a2fa1',
-  defaultState: '{}',
-};
+const { mockContractId, mockDeployedContract, mockDeploymentTx } =
+  useMockContractData();
 
 const contractFunctionLogs = [
   {
@@ -110,6 +107,16 @@ export const useTutorialStore = defineStore('tutorialStore', () => {
   const transactionsStore = useTransactionsStore();
   const nodeStore = useNodeStore();
 
+  const resetTutorialState = () => {
+    contractsStore.removeContractFile(mockContractId);
+    contractsStore.removeDeployedContract(mockContractId);
+    transactionsStore.transactions.forEach((t) => {
+      if (t.localContractId === mockContractId) {
+        transactionsStore.removeTransaction(t);
+      }
+    });
+  };
+
   const addLog = async (message: any) => {
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -122,55 +129,67 @@ export const useTutorialStore = defineStore('tutorialStore', () => {
     });
   };
 
-  async function deployContract() {
-    contractsStore.loadingConstructorInputs = true;
+  async function addAndOpenContract() {
+    const contractBlob = await import(
+      '@/assets/examples/contracts/storage.py?raw'
+    );
 
-    setTimeout(() => {
-      contractsStore.loadingConstructorInputs = false;
-      contractsStore.currentErrorConstructorInputs = undefined;
+    const contractFile = {
+      id: mockContractId,
+      name: 'tutorial_storage.py',
+      content: ((contractBlob.default as string) || '').trim(),
+      example: true,
+    };
 
-      // Deploy the contract
-      contractsStore.deployingContract = true;
-      nodeStore.logs.push({
-        date: new Date().toISOString(),
-        message: {
-          function: 'deploy_intelligent_contract',
-          trace_id: 'dstukqao9',
-          response: { status: 'info', message: 'Starting...', data: {} },
-        },
-      });
-
-      setTimeout(() => {
-        contractsStore.deployingContract = false;
-        nodeStore.logs.push({
-          date: new Date().toISOString(),
-          message: {
-            function: 'deploy_intelligent_contract',
-            trace_id: 'dstukqao9',
-            response: {
-              status: 'success',
-              message: '',
-              data: {
-                contract_id: '0x4Fb3673Ab7274ebBA6ff38EDB1ca5Bd0cd06C0FD',
-              },
-            },
-          },
-        });
-        contractsStore.addDeployedContract(deployedContract);
-        return deployedContract;
-      }, 3000);
-    }, 2000);
+    contractsStore.addContractFile(contractFile);
+    contractsStore.openFile(mockContractId);
   }
+
+  async function deployMockContract() {
+    // For now we instantly mock the deployment of contract
+    // In the future, we can improve this by properly mocking through the single contract store like for the schema
+    // and thus preserve the appearance of async delays / loading times
+
+    contractsStore.addDeployedContract(mockDeployedContract);
+
+    nodeStore.logs.push({
+      date: new Date().toISOString(),
+      message: {
+        function: 'deploy_intelligent_contract',
+        trace_id: 'dstukqao9',
+        response: { status: 'info', message: 'Starting...', data: {} },
+      },
+    });
+
+    nodeStore.logs.push({
+      date: new Date().toISOString(),
+      message: {
+        function: 'deploy_intelligent_contract',
+        trace_id: 'dstukqao9',
+        response: {
+          status: 'success',
+          message: '',
+          data: {
+            contract_id: '0x4Fb3673Ab7274ebBA6ff38EDB1ca5Bd0cd06C0FD',
+          },
+        },
+      },
+    });
+
+    transactionsStore.addTransaction(mockDeploymentTx);
+
+    return mockDeployedContract;
+  }
+
   async function callContractMethod() {
-    contractsStore.callingContractMethod = true;
     for (const log of contractFunctionLogs) {
       await addLog(log);
     }
     return new Promise((resolve) => {
       setTimeout(() => {
         transactionsStore.addTransaction({
-          contractAddress: deployedContract.address || '',
-          localContractId: deployedContract.contractId || '',
+          contractAddress: mockDeployedContract.address || '',
+          localContractId: mockDeployedContract.contractId || '',
           txId: 100000,
           type: 'method',
           status: 'PENDING',
@@ -181,5 +200,11 @@ export const useTutorialStore = defineStore('tutorialStore', () => {
     });
   }
 
-  return { deployContract, callContractMethod };
+  return {
+    mockContractId,
+    resetTutorialState,
+    addAndOpenContract,
+    deployMockContract,
+    callContractMethod,
+  };
 });

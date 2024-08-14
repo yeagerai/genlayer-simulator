@@ -5,17 +5,17 @@ import CodeEditor from '@/components/Simulator/CodeEditor.vue';
 import { useContractsStore } from '@/stores';
 import { computed } from 'vue';
 import HomeTab from './HomeTab.vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 const store = useContractsStore();
 const router = useRouter();
+const route = useRoute();
 
 const handleRunDebug = () => {
   router.push({ name: 'run-debug' });
 };
 
 const setCurrentContractTab = (id?: string) => {
-  console.log(' setCurrentContractTab', id);
   store.setCurrentContractId(id);
 };
 
@@ -66,13 +66,19 @@ const handleHorizontalScroll = (event: WheelEvent) => {
           @selectContract="setCurrentContractTab(contract.id)"
         />
       </div>
-      <div class="mr-3 flex p-2">
-        <button class="ml-3 flex" @click="handleRunDebug">
-          <PlayIcon class="h-5 w-5 fill-primary dark:fill-white" />
-          <ToolTip text="Run and Debug" :options="{ placement: 'bottom' }" />
-        </button>
+
+      <div>
+        <Btn
+          v-if="route.name !== 'run-debug'"
+          class="m-1 flex items-center !p-1"
+          @click="handleRunDebug"
+          v-tooltip="'Run and Debug'"
+        >
+          <PlayIcon class="h-5 w-5" />
+        </Btn>
       </div>
     </nav>
+
     <div v-show="showHome" class="flex h-full w-full">
       <HomeTab />
     </div>

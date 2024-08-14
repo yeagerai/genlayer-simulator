@@ -31,9 +31,18 @@ To contribute to feature development or bug fixes. Check our [issue tracker](htt
 
 #### Setup Simulator manually
 
+###### Frontend
+
+We run ESLint and Prettier on the frontend code. To install the dependencies, run:
+
+```sh
+$ cd frontend
+$ npm install
+```
+
 ##### Window One
 
-```
+```sh
 $ cp .env.example .env
 $ docker compose up
 ```
@@ -42,7 +51,7 @@ $ docker compose up
 
 1. Installing the Ollama model
 
-   ```
+   ```sh
    $ docker exec ollama ollama pull llama3
    ```
 
@@ -50,7 +59,7 @@ $ docker compose up
 
    - Linux / MacOS
 
-     ```
+     ```sh
      $ virtualenv .venv
      $ source .venv/bin/activate
      (.venv) $ pip install -r requirements.txt
@@ -59,7 +68,7 @@ $ docker compose up
 
    - Windows (cmd)
 
-     ```
+     ```sh
      $ virtualenv .venv
      $  .\.venv\Scripts\activate
      (.venv) $ pip install -r requirements.txt
@@ -68,16 +77,32 @@ $ docker compose up
 
    - Windows (PowerShell)
 
-     ```
+     ```sh
      $ virtualenv .venv
      $  .\.venv\Scripts\activate
      (.venv) $ pip install -r requirements.txt
      (.venv) $ $env:PYTHONPATH = (Get-Location).Path
      ```
 
-3. Execute the Demo
+3. Install [pre-commit](https://pre-commit.com) hooks (used for linting, testing, conventions)
 
+   ```sh
+   (.venv) $ pre-commit install
    ```
+
+   To see the configuration, check the `.pre-commit-config.yaml` file.
+
+   Some of our configurations are:
+
+   - Python Black formatter
+   - Python pytest for unit tests
+   - ESLint for frontend code
+   - Prettier for frontend code
+   - [Conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) for commit messages
+
+4. Execute the Demo
+
+   ```sh
    (.venv) $ python scripts/debug_simulator.py
    ```
 

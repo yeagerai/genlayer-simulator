@@ -2,42 +2,29 @@
 import { useAccountsStore } from '@/stores';
 import { notify } from '@kyvg/vue3-notification';
 import SimulatorMenu from '@/components/SimulatorMenu.vue';
-import { CheckIcon } from '@heroicons/vue/24/solid';
-import { ref } from 'vue';
-const store = useAccountsStore();
+import AccountItem from '@/components/Simulator/AccountItem.vue';
+import MainTitle from '@/components/Simulator/MainTitle.vue';
+import PageSection from '@/components/Simulator/PageSection.vue';
+import { PlusIcon } from '@heroicons/vue/16/solid';
+import { useEventTracking } from '@/hooks';
 
-const showSetDefaultAccount = ref<Record<string, boolean>>({});
+const store = useAccountsStore();
+const { trackEvent } = useEventTracking();
+
 const handleCreateNewAccount = async () => {
   const privateKey = store.generateNewAccount();
+
   if (privateKey) {
     notify({
-      title: 'OK',
-      text: 'New Account Created',
+      title: 'New Account Created',
       type: 'success',
     });
+
+    trackEvent('created_account');
   } else {
     notify({
-      title: 'Error',
-      text: 'Error creating a new account',
+      title: 'Error creating a new account',
       type: 'error',
-    });
-  }
-};
-
-const handleShowSetDefaultAccount = (privateKey: string) => {
-  showSetDefaultAccount.value[privateKey] = true;
-};
-const handleHideSetDefaultAccount = (privateKey: string) => {
-  showSetDefaultAccount.value[privateKey] = false;
-};
-const setCurentUserAddress = (privateKey: `0x${string}`) => {
-  if (privateKey) {
-    store.currentPrivateKey = privateKey;
-    showSetDefaultAccount.value = {};
-    notify({
-      title: 'OK',
-      text: 'Default account updated',
-      type: 'success',
     });
   }
 };
@@ -46,70 +33,34 @@ const setCurentUserAddress = (privateKey: `0x${string}`) => {
 <template>
   <div class="flex w-full">
     <SimulatorMenu />
-    <div class="relative flex w-full">
-      <div class="flex flex-col p-4">
-        <div class="flex flex-col">
-          <h3 class="text-xl">Your Profile</h3>
-        </div>
-        <div class="flex flex-col py-2">
-          <div class="flex flex-col">
-            <div class="mt-2 flex flex-col">
-              <p class="text-md font-semibold">Your Accounts:</p>
-            </div>
-            <div class="flex flex-col">
-              <div
-                class="flex max-h-56 w-full flex-col overflow-y-auto text-xs"
-              >
-                <div
-                  class="flex items-center justify-between p-1 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700"
-                  v-for="privateKey in store.privateKeys"
-                  :key="privateKey"
-                >
-                  <template v-if="privateKey === store.currentPrivateKey">
-                    <div class="flex items-center">
-                      <ToolTip
-                        text="Your Current Account"
-                        :options="{ placement: 'right' }"
-                      />
-                      <div class="flex pl-4 pr-2 text-primary dark:text-white">
-                        {{ store.accountFromPrivateKey(privateKey).address }}
-                      </div>
-                    </div>
-                    <div class="flex h-6 w-6 text-primary dark:text-white">
-                      <CheckIcon class="mr-1 h-4 w-4" />
-                    </div>
-                  </template>
-                  <template v-else>
-                    <div
-                      class="flex cursor-pointer items-center"
-                      @click="setCurentUserAddress(privateKey)"
-                      @mouseover="handleShowSetDefaultAccount(privateKey)"
-                      @mouseleave="handleHideSetDefaultAccount(privateKey)"
-                    >
-                      <ToolTip
-                        text="Set as Current Account"
-                        :options="{ placement: 'right' }"
-                      />
-                      <div class="flex pl-4 pr-2 text-primary dark:text-white">
-                        {{ store.accountFromPrivateKey(privateKey).address }}
-                      </div>
-                    </div>
-                    <div class="flex h-6 w-6 text-primary dark:text-white">
-                      <CheckIcon
-                        v-show="showSetDefaultAccount[privateKey]"
-                        class="mr-1 h-4 w-4"
-                      />
-                    </div>
-                  </template>
-                </div>
-              </div>
+
+    <div class="relative flex w-full flex-col">
+      <MainTitle>Profile</MainTitle>
+
+      <PageSection>
+        <template #title>Accounts</template>
+
+        <div class="div mr-auto">
+          <div
+            class="overflow-hidden rounded-md border border-gray-300 dark:border-gray-800"
+          >
+            <div class="divide-y divide-gray-200 dark:divide-gray-800">
+              <AccountItem
+                v-for="privateKey in store.privateKeys"
+                :key="privateKey"
+                :privateKey="privateKey"
+                :active="privateKey === store.currentPrivateKey"
+                :canDelete="true"
+              />
             </div>
           </div>
-          <div class="mt-4 flex flex-col">
-            <Btn @click="handleCreateNewAccount"> Generate New Address </Btn>
-          </div>
+
+          <Btn @click="handleCreateNewAccount" class="mt-2 w-full">
+            <PlusIcon class="h-5 w-5" />
+            Generate New Address</Btn
+          >
         </div>
-      </div>
+      </PageSection>
     </div>
   </div>
 </template>

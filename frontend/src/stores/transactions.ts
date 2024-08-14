@@ -20,7 +20,6 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
 
   function updateTransaction(tx: any) {
     const index = transactions.value.findIndex((t) => t.txId === tx.id);
-    console.log(`Updating transaction ${tx.id} at index ${index}`);
     if (index !== -1) {
       const current = transactions.value[index];
       transactions.value.splice(index, 1, {
@@ -35,6 +34,16 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
     return $jsonRpc?.getTransactionById(txId);
   }
 
+  function clearTransactionsForContract(contractId: string) {
+    processingQueue.value = processingQueue.value.filter(
+      (t) => t.localContractId !== contractId,
+    );
+
+    transactions.value = transactions.value.filter(
+      (t) => t.localContractId !== contractId,
+    );
+  }
+
   return {
     transactions,
     pendingTransactions,
@@ -43,5 +52,6 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
     addTransaction,
     removeTransaction,
     updateTransaction,
+    clearTransactionsForContract,
   };
 });
