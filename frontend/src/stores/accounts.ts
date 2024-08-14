@@ -51,12 +51,18 @@ export const useAccountsStore = defineStore('accountsStore', () => {
   }
 
   const displayAddress = computed(() => {
-    if (!currentPrivateKey.value) {
-      return '';
-    } else {
-      return shortenAddress(
-        accountFromPrivateKey(currentPrivateKey.value).address,
-      );
+    try {
+      if (!currentPrivateKey.value) {
+        console.log('no current private key');
+        return '';
+      } else {
+        return shortenAddress(
+          accountFromPrivateKey(currentPrivateKey.value).address,
+        );
+      }
+    } catch (err) {
+      console.error(err);
+      return '0x';
     }
   });
 
