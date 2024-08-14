@@ -363,7 +363,9 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint_for_partial(
         update_validator, validators_registry, accounts_manager
     )
-    register_rpc_endpoint_for_partial(delete_validator, validators_registry)
+    register_rpc_endpoint_for_partial(
+        delete_validator, validators_registry, accounts_manager
+    )
     register_rpc_endpoint_for_partial(get_validator, validators_registry)
     register_rpc_endpoint_for_partial(delete_all_validators, validators_registry)
     register_rpc_endpoint_for_partial(get_all_validators, validators_registry)
