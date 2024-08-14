@@ -52,7 +52,6 @@ export const useAccountsStore = defineStore('accountsStore', () => {
   const displayAddress = computed(() => {
     try {
       if (!currentPrivateKey.value) {
-        console.log('no current private key');
         return '';
       } else {
         return shortenAddress(
