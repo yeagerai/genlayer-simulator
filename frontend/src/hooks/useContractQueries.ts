@@ -69,7 +69,7 @@ export function useContractQueries() {
     });
 
     if (result?.status === 'error') {
-      throw new Error('Error fetching contract schema');
+      throw new Error(result?.message || 'Error fetching contract schema');
     }
 
     schema.value = result?.data;
