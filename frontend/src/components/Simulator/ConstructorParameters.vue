@@ -9,11 +9,9 @@ import GhostBtn from '../global/GhostBtn.vue';
 import { notify } from '@kyvg/vue3-notification';
 import TextAreaInput from '@/components/global/inputs/TextAreaInput.vue';
 import FieldError from '@/components/global/fields/FieldError.vue';
-import { useNodeStore } from '@/stores';
 
 const { contractSchemaQuery, deployContract, isDeploying } =
   useContractQueries();
-const nodeStore = useNodeStore();
 
 const { data, error, isPending, isRefetching, isError } = contractSchemaQuery;
 const inputParams = ref<{ [k: string]: any }>({});
@@ -213,7 +211,7 @@ const hasConstructorInputs = computed(
         testId="btn-deploy-contract"
         @click="handleDeployContract"
         :loading="isDeploying"
-        :disabled="!isValidDefaultState || !nodeStore.hasAtLeastOneValidator"
+        :disabled="!isValidDefaultState"
         v-tooltip="!isValidDefaultState && 'Provide default state'"
       >
         <template v-if="isDeploying"> Deploying... </template>
