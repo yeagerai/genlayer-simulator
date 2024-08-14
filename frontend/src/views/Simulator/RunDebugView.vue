@@ -38,23 +38,17 @@ watch(
         @openDeployment="isDeploymentOpen = true"
       />
 
-      <ConstructorParameters
-        id="tutorial-how-to-deploy"
-        v-if="isDeploymentOpen"
-        @deployedContract="isDeploymentOpen = false"
-      />
+      <template v-if="nodeStore.hasAtLeastOneValidator">
+        <ConstructorParameters
+          id="tutorial-how-to-deploy"
+          v-if="isDeploymentOpen"
+          @deployedContract="isDeploymentOpen = false"
+        />
 
-      <ContractReadMethods
-        v-if="isDeployed && nodeStore.hasAtLeastOneValidator"
-        id="tutorial-read-methods"
-      />
-
-      <ContractWriteMethods
-        v-if="isDeployed && nodeStore.hasAtLeastOneValidator"
-        id="tutorial-write-methods"
-      />
-
-      <TransactionsList id="tutorial-tx-response" />
+        <ContractReadMethods v-if="isDeployed" id="tutorial-read-methods" />
+        <ContractWriteMethods v-if="isDeployed" id="tutorial-write-methods" />
+        <TransactionsList id="tutorial-tx-response" />
+      </template>
     </template>
 
     <div

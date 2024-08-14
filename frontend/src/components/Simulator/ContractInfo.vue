@@ -44,7 +44,12 @@ const { isDeployed, address, contract } = useContractQueries();
 
     <EmptyListPlaceholder v-else>Not deployed yet.</EmptyListPlaceholder>
 
-    <Alert warning v-if="!nodeStore.hasAtLeastOneValidator">
+    <Alert
+      warning
+      v-if="
+        !nodeStore.isLoadingValidatorData && !nodeStore.hasAtLeastOneValidator
+      "
+    >
       You need at least one validator before you can deploy or interact with a
       contract.
 
@@ -57,7 +62,7 @@ const { isDeployed, address, contract } = useContractQueries();
       secondary
       tiny
       class="inline-flex w-auto shrink grow-0"
-      v-if="showNewDeploymentButton"
+      v-else-if="showNewDeploymentButton"
       @click="emit('openDeployment')"
     >
       <PlusIcon class="h-4 w-4 shrink-0" />

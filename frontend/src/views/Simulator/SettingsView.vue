@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
 import { notify } from '@kyvg/vue3-notification';
 import { useNodeStore, useContractsStore } from '@/stores';
 import ValidatorItem from '@/components/Simulator/ValidatorItem.vue';
@@ -14,20 +13,6 @@ import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vu
 const contractsStore = useContractsStore();
 const nodeStore = useNodeStore();
 const isNewValidatorModalOpen = ref(false);
-
-onMounted(async () => {
-  try {
-    await nodeStore.getValidatorsData();
-  } catch (error) {
-    console.error(error);
-    notify({
-      title: 'Error',
-      text: (error as Error)?.message || 'Error loading validators',
-      type: 'error',
-    });
-  }
-});
-
 const isResetStorageModalOpen = ref(false);
 const isResetting = ref(false);
 
@@ -64,7 +49,15 @@ const handleResetStorage = async () => {
         <span class="opacity-50">{{ nodeStore.validators.length }}</span>
       </template>
 
-      <EmptyListPlaceholder v-if="nodeStore.validators.length < 1">
+      <div
+        v-if="nodeStore.isLoadingValidatorData"
+        class="flex flex-row items-center justify-center gap-2 p-1"
+      >
+        <Loader />
+        Loading...
+      </div>
+
+      <EmptyListPlaceholder v-else-if="nodeStore.validators.length < 1">
         No validators.
       </EmptyListPlaceholder>
 
