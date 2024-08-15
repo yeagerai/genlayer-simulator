@@ -31,7 +31,7 @@ from backend.errors.errors import InvalidAddressError, InvalidTransactionError
 
 from backend.database_handler.transactions_processor import TransactionsProcessor
 from backend.node.base import Node
-from backend.node.genvm.types import Receipt, ExecutionResultStatus, ExecutionMode
+from backend.node.genvm.types import ExecutionMode
 
 
 def ping() -> dict:
@@ -345,7 +345,7 @@ def register_all_rpc_endpoints(
     validators_registry: ValidatorsRegistry,
     config: GlobalConfiguration,
 ):
-    register_rpc_endpoint = partial(generate_rpc_endpoint, jsonrpc, msg_handler)
+    register_rpc_endpoint = partial(generate_rpc_endpoint, jsonrpc, msg_handler, config)
     register_rpc_endpoint_for_partial = partial(
         generate_rpc_endpoint_for_partial, register_rpc_endpoint
     )
