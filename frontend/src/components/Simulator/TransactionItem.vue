@@ -164,10 +164,10 @@ const leaderReceipt = computed(() => {
         </ModalSection>
 
         <ModalSection v-if="leaderReceipt?.eq_outputs?.leader">
-          <template #title>Output</template>
+          <template #title>Equivalence Principle Output</template>
 
           <pre
-            class="overflow-hidden rounded bg-gray-200 p-1 text-xs text-gray-600 dark:bg-zinc-800 dark:text-gray-300"
+            class="overflow-scroll rounded bg-gray-200 p-1 text-xs text-gray-600 dark:bg-zinc-800 dark:text-gray-300"
             >{{ leaderReceipt?.eq_outputs?.leader }}</pre
           >
         </ModalSection>
