@@ -4,6 +4,7 @@ import { webSocketClient } from '@/utils';
 import { defineStore } from 'pinia';
 import { computed, inject, ref } from 'vue';
 import { useContractsStore } from './contracts';
+import { notify } from '@kyvg/vue3-notification';
 
 export const useNodeStore = defineStore('nodeStore', () => {
   const logs = ref<NodeLog[]>([]);
@@ -13,6 +14,8 @@ export const useNodeStore = defineStore('nodeStore', () => {
   // state
   const $jsonRpc = inject<IJsonRpcService>('$jsonRpc')!;
   const validators = ref<ValidatorModel[]>([]);
+  const isLoadingValidatorData = ref<boolean>(true);
+
   if (!webSocketClient.connected) webSocketClient.connect();
   webSocketClient.on('status_update', (event) => {
     if (listenWebsocket.value) {
@@ -46,21 +49,34 @@ export const useNodeStore = defineStore('nodeStore', () => {
   });
 
   async function getValidatorsData() {
-    const [validatorsResult, modelsResult] = await Promise.all([
-      $jsonRpc.getValidators(),
-      $jsonRpc.getProvidersAndModels(),
-    ]);
+    isLoadingValidatorData.value = true;
 
-    if (validatorsResult?.status === 'success') {
-      validators.value = validatorsResult.data;
-    } else {
-      throw new Error('Error getting validators');
-    }
+    try {
+      const [validatorsResult, modelsResult] = await Promise.all([
+        $jsonRpc.getValidators(),
+        $jsonRpc.getProvidersAndModels(),
+      ]);
 
-    if (modelsResult?.status === 'success') {
-      nodeProviders.value = modelsResult.data;
-    } else {
-      throw new Error('Error getting Providers and Models data');
+      if (validatorsResult?.status === 'success') {
+        validators.value = validatorsResult.data;
+      } else {
+        throw new Error('Error getting validators');
+      }
+
+      if (modelsResult?.status === 'success') {
+        nodeProviders.value = modelsResult.data;
+      } else {
+        throw new Error('Error getting Providers and Models data');
+      }
+    } catch (error) {
+      console.error(error);
+      notify({
+        title: 'Error',
+        text: (error as Error)?.message || 'Error loading validators',
+        type: 'error',
+      });
+    } finally {
+      isLoadingValidatorData.value = false;
     }
   }
 
@@ -140,12 +156,15 @@ export const useNodeStore = defineStore('nodeStore', () => {
     logs.value = [];
   };
 
+  const hasAtLeastOneValidator = computed(() => validators.value.length >= 1);
+
   return {
     logs,
     listenWebsocket,
     validators,
     nodeProviders,
     contractsToDelete,
+    isLoadingValidatorData,
 
     getValidatorsData,
     createNewValidator,
@@ -154,5 +173,6 @@ export const useNodeStore = defineStore('nodeStore', () => {
     clearLogs,
 
     validatorsOrderedById,
+    hasAtLeastOneValidator,
   };
 });

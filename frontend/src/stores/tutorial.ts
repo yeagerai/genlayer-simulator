@@ -131,7 +131,7 @@ export const useTutorialStore = defineStore('tutorialStore', () => {
 
   async function addAndOpenContract() {
     const contractBlob = await import(
-      '@/assets/examples/contracts/storage.py?raw'
+      '../assets/examples/contracts/storage.py?raw'
     );
 
     const contractFile = {

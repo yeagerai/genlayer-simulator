@@ -34,7 +34,7 @@ watch(nodeStore.logs, () => {
 <template>
   <div class="flex h-full w-full flex-col">
     <div
-      class="flex flex-row items-center justify-between gap-1 border-b bg-white p-1 dark:border-b-zinc-700 dark:bg-zinc-800"
+      class="flex flex-row items-center justify-between gap-1 border-b bg-white p-1 pl-2 dark:border-b-zinc-700 dark:bg-zinc-800"
     >
       Logs
       <GhostBtn
