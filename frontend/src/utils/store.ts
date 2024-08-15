@@ -2,6 +2,7 @@ import {
   useAccountsStore,
   useContractsStore,
   useTransactionsStore,
+  useNodeStore,
 } from '@/stores';
 import { db } from './db';
 import { v4 as uuidv4 } from 'uuid';
@@ -20,6 +21,7 @@ export const setupStores = async () => {
   const contractsStore = useContractsStore();
   const accountsStore = useAccountsStore();
   const transactionsStore = useTransactionsStore();
+  const nodeStore = useNodeStore();
   const contractFiles = await db.contractFiles.toArray();
   const filteredFiles = contractFiles.filter(
     (c) => (c.example && !c.updatedAt) || (!c.example && !c.updatedAt),
@@ -49,6 +51,9 @@ export const setupStores = async () => {
 
   contractsStore.deployedContracts = await db.deployedContracts.toArray();
   transactionsStore.transactions = await db.transactions.toArray();
+
+  nodeStore.getValidatorsData();
+
   if (accountsStore.privateKeys.length < 1) {
     accountsStore.generateNewAccount();
   } else {

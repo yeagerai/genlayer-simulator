@@ -19,13 +19,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
   );
   const deployedContracts = ref<DeployedContract[]>([]);
 
-  const currentConstructorInputs = ref<{ [k: string]: string }>({});
-  const currentErrorConstructorInputs = ref<Error>();
-  const currentDeployedContractAbi = ref<any>();
-
-  const loadingConstructorInputs = ref(false);
-  const deployingContract = ref(false);
-
   function addContractFile(contract: ContractFile): void {
     const name = getContractFileName(contract.name);
     contracts.value.push({ ...contract, name });
@@ -168,11 +161,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
     openedFiles,
     currentContractId,
     deployedContracts,
-    currentConstructorInputs,
-    currentErrorConstructorInputs,
-    currentDeployedContractAbi,
-    loadingConstructorInputs,
-    deployingContract,
 
     //getters
     currentContract,
