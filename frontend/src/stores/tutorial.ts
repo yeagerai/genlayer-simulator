@@ -3,6 +3,7 @@ import { useContractsStore } from './contracts';
 import { useNodeStore } from './node';
 import { useTransactionsStore } from './transactions';
 import { useMockContractData } from '@/hooks/useMockContractData';
+import contractBlob from '@/assets/examples/contracts/storage.py?raw';
 
 const { mockContractId, mockDeployedContract, mockDeploymentTx } =
   useMockContractData();
@@ -130,14 +131,10 @@ export const useTutorialStore = defineStore('tutorialStore', () => {
   };
 
   async function addAndOpenContract() {
-    const contractBlob = await import(
-      '@/assets/examples/contracts/storage.py?raw'
-    );
-
     const contractFile = {
       id: mockContractId,
       name: 'tutorial_storage.py',
-      content: ((contractBlob.default as string) || '').trim(),
+      content: ((contractBlob as string) || '').trim(),
       example: true,
     };
 
