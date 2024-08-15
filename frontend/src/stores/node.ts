@@ -17,10 +17,30 @@ export const useNodeStore = defineStore('nodeStore', () => {
   webSocketClient.on('status_update', (event) => {
     if (listenWebsocket.value) {
       if (event.message?.function !== 'get_transaction_by_id') {
-        logs.value.push({
-          date: new Date().toISOString(),
-          message: event.message,
-        });
+        if (event.message?.function === 'intelligent_contract_execution') {
+          const executionLogs: string[] =
+            event.message.response.message.split('\n\n');
+          executionLogs
+            .filter((log: string) => log.trim().length > 0)
+            .forEach((log: string) => {
+              logs.value.push({
+                date: new Date().toISOString(),
+                message: {
+                  function: 'Intelligent Contract Execution Log',
+                  trace_id: String(Math.random() * 100),
+                  response: {
+                    status: 'contractLog',
+                    message: log,
+                  },
+                },
+              });
+            });
+        } else {
+          logs.value.push({
+            date: new Date().toISOString(),
+            message: event.message,
+          });
+        }
       }
     }
   });

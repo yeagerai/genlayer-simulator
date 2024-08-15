@@ -25,7 +25,7 @@ export interface NodeLog {
     response: {
       status: string;
       message: string;
-      data: any;
+      data?: any;
     };
   };
   mock?: boolean;
