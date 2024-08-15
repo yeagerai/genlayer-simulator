@@ -25,7 +25,7 @@ class ConsensusAlgorithm:
     ):
         self.dbclient = dbclient
         self.transactions_processor = transactions_processor
-        self.queues = {}
+        self.queues: dict[str, asyncio.Queue] = {}
 
     def run_crawl_snapshot_loop(self):
         loop = asyncio.new_event_loop()
@@ -37,16 +37,14 @@ class ConsensusAlgorithm:
         while True:
             chain_snapshot = ChainSnapshot(self.dbclient)
             pending_transactions = chain_snapshot.get_pending_transactions()
-            if len(pending_transactions) > 0:
-                for transaction in pending_transactions:
-                    contract_address = (
-                        transaction["to_address"]
-                        if transaction["to_address"] is not None
-                        else DEPLOY_CONTRACTS_QUEUE_KEY
-                    )
-                    if contract_address not in self.queues:
-                        self.queues[contract_address] = asyncio.Queue()
-                    await self.queues[contract_address].put(transaction)
+            for transaction in pending_transactions:
+                contract_address = (
+                    transaction["to_address"] or DEPLOY_CONTRACTS_QUEUE_KEY
+                )
+
+                if contract_address not in self.queues:
+                    self.queues[contract_address] = asyncio.Queue()
+                await self.queues[contract_address].put(transaction)
             await asyncio.sleep(DEFAULT_CONSENSUS_SLEEP_TIME)
 
     def run_consensus_loop(self):
@@ -63,24 +61,35 @@ class ConsensusAlgorithm:
                 chain_snapshot = ChainSnapshot(self.dbclient)
                 tasks = []
 
-                for key in self.queues.keys():
-                    if not self.queues[key].empty():
-                        transaction = await self.queues[key].get()
+                for queue in self.queues.values():
+                    if not queue.empty():
+                        transaction = await queue.get()
                         tasks.append(self.exec_transaction(transaction, chain_snapshot))
 
-                if len(tasks) > 0:
-                    try:
-                        await asyncio.gather(*tasks)
-                    except Exception as e:
-                        print("Error running consensus", e)
-                        print(traceback.format_exc())
+                try:
+                    await asyncio.gather(*tasks)
+                except Exception as e:
+                    print("Error running consensus", e)
+                    print(traceback.format_exc())
             await asyncio.sleep(DEFAULT_CONSENSUS_SLEEP_TIME)
 
     async def exec_transaction(
         self,
         transaction: dict,
         snapshot: ChainSnapshot,
-    ) -> dict:
+    ):
+        if (
+            self.transactions_processor.get_transaction_by_id(transaction["id"])[
+                "status"
+            ]
+            != TransactionStatus.PENDING.value
+        ):
+            # This is a patch for a TOCTOU problem we have https://github.com/yeagerai/genlayer-simulator/issues/387
+            # Problem: Pending transactions are checked by `_crawl_snapshot`, which appends them to queues. These queues are consumed by `_run_consensus`, which processes the transactions. This means that a transaction can be processed multiple times, since `_crawl_snapshot` can append the same transaction to the queue multiple times.
+            # Partial solution: This patch checks if the transaction is still pending before processing it. This is not the best solution, but we'll probably refactor the whole consensus algorithm in the short term.
+            print(" ~ ~ ~ ~ ~ TRANSACTION ALREADY IN PROCESS: ", transaction)
+            return
+
         print(" ~ ~ ~ ~ ~ EXECUTING TRANSACTION: ", transaction)
         # Update transaction status
         self.transactions_processor.update_transaction_status(
