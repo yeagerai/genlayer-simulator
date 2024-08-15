@@ -6,10 +6,13 @@ import { useContractsStore } from '@/stores';
 import { computed } from 'vue';
 import HomeTab from './HomeTab.vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useContractQueries } from '@/hooks/useContractQueries';
 
 const store = useContractsStore();
 const router = useRouter();
 const route = useRoute();
+const { contractSchemaQuery } = useContractQueries();
+const { error } = contractSchemaQuery;
 
 const handleRunDebug = () => {
   router.push({ name: 'run-debug' });
@@ -82,6 +85,14 @@ const handleHorizontalScroll = (event: WheelEvent) => {
     <div v-show="showHome" class="flex h-full w-full">
       <HomeTab />
     </div>
+
+    <div
+      v-if="!!error"
+      class="left-O right-O absolute bottom-0 z-10 w-full bg-red-500 px-2 py-1 text-sm text-white"
+    >
+      {{ error }}
+    </div>
+
     <div
       v-for="contract in contracts"
       :key="contract.id"

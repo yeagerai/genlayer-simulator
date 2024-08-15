@@ -168,9 +168,7 @@ const hasConstructorInputs = computed(
       Loading...
     </div>
 
-    <Alert v-else-if="isError" error>
-      {{ error?.message }}
-    </Alert>
+    <Alert v-else-if="isError" error> Could not load contract schema. </Alert>
 
     <template v-else-if="data">
       <EmptyListPlaceholder v-if="!hasConstructorInputs">
