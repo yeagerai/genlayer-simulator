@@ -15,8 +15,7 @@ async function handleDeleteValidator() {
   try {
     await nodeStore.deleteValidator(props.validator);
     notify({
-      title: 'OK',
-      text: 'Validator deleted successfully',
+      title: 'Validator deleted',
       type: 'success',
     });
   } catch (error) {

@@ -106,7 +106,7 @@ const clearInputs = () => {
             @click="handleCallReadMethod"
             tiny
             :data-testid="`read-method-btn-${methodName}`"
-            >Read</Btn
+            >Call Contract</Btn
           >
 
           <Btn
@@ -114,7 +114,7 @@ const clearInputs = () => {
             @click="handleCallWriteMethod"
             tiny
             :data-testid="`write-method-btn-${methodName}`"
-            >Write</Btn
+            >Send Transaction</Btn
           >
         </div>
 

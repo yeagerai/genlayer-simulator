@@ -34,6 +34,10 @@ export const useAccountsStore = defineStore('accountsStore', () => {
   }
 
   function removeAccount(privateKey: Address) {
+    if (privateKeys.value.length <= 1) {
+      throw new Error('You need at least 1 account');
+    }
+
     privateKeys.value = privateKeys.value.filter((k) => k !== privateKey);
 
     if (currentPrivateKey.value === privateKey) {
@@ -46,12 +50,17 @@ export const useAccountsStore = defineStore('accountsStore', () => {
   }
 
   const displayAddress = computed(() => {
-    if (!currentPrivateKey.value) {
-      return '';
-    } else {
-      return shortenAddress(
-        accountFromPrivateKey(currentPrivateKey.value).address,
-      );
+    try {
+      if (!currentPrivateKey.value) {
+        return '';
+      } else {
+        return shortenAddress(
+          accountFromPrivateKey(currentPrivateKey.value).address,
+        );
+      }
+    } catch (err) {
+      console.error(err);
+      return '0x';
     }
   });
 
