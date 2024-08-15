@@ -52,10 +52,11 @@ class GenVM:
         snapshot: ContractSnapshot,
         validator_mode: str,
         validator_info: dict,
+        msg_handler: MessageHandler = None,
     ):
         self.snapshot = snapshot
         self.validator_mode = validator_mode
-
+        self.msg_handler = msg_handler
         self.contract_runner = ContractRunner(validator_mode, validator_info)
 
     @staticmethod

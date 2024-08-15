@@ -17,14 +17,19 @@ from backend.database_handler.transactions_processor import (
     TransactionStatus,
 )
 from backend.node.genvm.types import ExecutionMode, Vote
+from backend.protocol_rpc.message_handler.base import MessageHandler
 
 
 class ConsensusAlgorithm:
     def __init__(
-        self, dbclient: DBClient, transactions_processor: TransactionsProcessor
+        self,
+        dbclient: DBClient,
+        transactions_processor: TransactionsProcessor,
+        msg_handler: MessageHandler,
     ):
         self.dbclient = dbclient
         self.transactions_processor = transactions_processor
+        self.msg_handler = msg_handler
         self.queues = {}
 
     def run_crawl_snapshot_loop(self):
@@ -105,6 +110,7 @@ class ConsensusAlgorithm:
             provider=leader["provider"],
             model=leader["model"],
             config=leader["config"],
+            msg_handler=self.msg_handler,
         )
 
         # Leader executes transaction
@@ -126,6 +132,7 @@ class ConsensusAlgorithm:
                 model=validator["model"],
                 config=validator["config"],
                 leader_receipt=leader_receipt,
+                msg_handler=self.msg_handler,
             )
             for i, validator in enumerate(remaining_validators)
         ]
