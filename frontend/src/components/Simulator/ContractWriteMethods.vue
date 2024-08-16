@@ -13,7 +13,10 @@ const { data, isPending, isError, error, isRefetching } = contractAbiQuery;
 const writeMethods = computed(() => {
   return data.value.abi
     .filter((method: ContractMethod) => method.type !== 'constructor')
-    .filter((method: ContractMethod) => !method.name.startsWith('get_'));
+    .filter(
+      (method: ContractMethod) =>
+        !method.name.startsWith('get_') && !method.name.startsWith('_'),
+    );
 });
 </script>
 
