@@ -11,12 +11,9 @@ const { contractAbiQuery } = useContractQueries();
 const { data, isPending, isError, error, isRefetching } = contractAbiQuery;
 
 const writeMethods = computed(() => {
-  return Object.entries(data.value.methods)
-    .filter((m) => !m[0].startsWith('_') && !m[0].startsWith('get_'))
-    .map(([methodName, method]) => ({
-      methodName,
-      method: method as ContractMethod,
-    }));
+  return data.value.abi
+    .filter((method: ContractMethod) => method.type !== 'constructor')
+    .filter((method: ContractMethod) => !method.name.startsWith('get_'));
 });
 </script>
 
@@ -43,9 +40,8 @@ const writeMethods = computed(() => {
     <template v-else-if="data">
       <ContractMethodItem
         v-for="method in writeMethods"
-        :key="method.methodName"
-        :methodName="method.methodName"
-        :method="method.method"
+        :key="method.name"
+        :method="method"
         methodType="write"
       />
 
