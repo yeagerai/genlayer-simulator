@@ -80,22 +80,10 @@ def send_transaction(
 
 
 ####### CONTRACT CODE SCHEMA ENDPOINTS #######
-def get_contract_schema_for_code(contract_code: str) -> dict:
-    node = Node(
-        contract_snapshot=None,
-        address="",
-        validator_mode=ExecutionMode.LEADER,
-        stake=0,
-        provider="",
-        model="",
-        config=None,
-        leader_receipt=None,
-    )
-    return node.get_contract_schema(contract_code)
-
-
 def get_contract_schema(
-    accounts_manager: AccountsManager, contract_address: str
+    accounts_manager: AccountsManager,
+    msg_handler: MessageHandler,
+    contract_address: str,
 ) -> dict:
     if not accounts_manager.is_valid_address(contract_address):
         raise InvalidAddressError(
@@ -113,11 +101,29 @@ def get_contract_schema(
         model="",
         config=None,
         leader_receipt=None,
+        msg_handler=msg_handler,
     )
     return node.get_contract_schema(contract_account["data"]["code"])
 
 
-####### PROVIDERS, MODELS, AND VALIDATORS ENDPOINTS #######
+def get_contract_schema_for_code(
+    msg_handler: MessageHandler, contract_code: str
+) -> dict:
+    node = Node(
+        contract_snapshot=None,
+        address="",
+        validator_mode=ExecutionMode.LEADER,
+        stake=0,
+        provider="",
+        model="",
+        config=None,
+        leader_receipt=None,
+        msg_handler=msg_handler,
+    )
+    return node.get_contract_schema(contract_code)
+
+
+####### VALIDATORS ENDPOINTS #######
 def get_providers_and_models(config: GlobalConfiguration) -> dict:
     default_config = get_default_config_for_providers_and_nodes()
     providers = get_providers()
@@ -202,8 +208,9 @@ def update_validator(
     model: str,
     config: json,
 ) -> dict:
-    if not accounts_manager.is_valid_address(validator_address):
-        raise InvalidAddressError(validator_address)
+    # Remove validation while adding migration to update the db address
+    # if not accounts_manager.is_valid_address(validator_address):
+    #     raise InvalidAddressError(validator_address)
     return validators_registry.update_validator(
         validator_address, stake, provider, model, config
     )
@@ -214,8 +221,9 @@ def delete_validator(
     accounts_manager: AccountsManager,
     validator_address: str,
 ) -> dict:
-    if not accounts_manager.is_valid_address(validator_address):
-        raise InvalidAddressError(validator_address)
+    # Remove validation while adding migration to update the db address
+    # if not accounts_manager.is_valid_address(validator_address):
+    #     raise InvalidAddressError(validator_address)
 
     validators_registry.delete_validator(validator_address)
     return validator_address
@@ -228,14 +236,14 @@ def delete_all_validators(
     return validators_registry.get_all_validators()
 
 
+def get_all_validators(validators_registry: ValidatorsRegistry) -> dict:
+    return validators_registry.get_all_validators()
+
+
 def get_validator(
     validators_registry: ValidatorsRegistry, validator_address: str
 ) -> dict:
     return validators_registry.get_validator(validator_address)
-
-
-def get_all_validators(validators_registry: ValidatorsRegistry) -> dict:
-    return validators_registry.get_all_validators()
 
 
 ####### TRANSACTIONS ENDPOINTS #######
@@ -247,6 +255,7 @@ def get_transaction_by_id(
 
 def get_contract_state(
     accounts_manager: AccountsManager,
+    msg_handler: MessageHandler,
     contract_address: str,
     method_name: str,
     method_args: list,
@@ -264,6 +273,7 @@ def get_contract_state(
         model="",
         config=None,
         leader_receipt=None,
+        msg_handler=msg_handler,
     )
     return node.get_contract_data(
         code=contract_account["data"]["code"],
@@ -362,8 +372,10 @@ def register_all_rpc_endpoints(
         send_transaction, transactions_processor, accounts_manager
     )
 
-    register_rpc_endpoint(get_contract_schema_for_code)
-    register_rpc_endpoint_for_partial(get_contract_schema, accounts_manager)
+    register_rpc_endpoint_for_partial(
+        get_contract_schema, accounts_manager, msg_handler
+    )
+    register_rpc_endpoint_for_partial(get_contract_schema_for_code, msg_handler)
 
     register_rpc_endpoint_for_partial(get_providers_and_models, config)
     register_rpc_endpoint_for_partial(
@@ -382,12 +394,11 @@ def register_all_rpc_endpoints(
         delete_validator, validators_registry, accounts_manager
     )
     register_rpc_endpoint_for_partial(delete_all_validators, validators_registry)
-    register_rpc_endpoint_for_partial(get_validator, validators_registry)
     register_rpc_endpoint_for_partial(get_all_validators, validators_registry)
+    register_rpc_endpoint_for_partial(get_validator, validators_registry)
 
     register_rpc_endpoint_for_partial(get_transaction_by_id, transactions_processor)
-
-    register_rpc_endpoint_for_partial(get_contract_state, accounts_manager)
+    register_rpc_endpoint_for_partial(get_contract_state, accounts_manager, msg_handler)
     register_rpc_endpoint_for_partial(
         send_raw_transaction, transactions_processor, accounts_manager
     )
