@@ -65,7 +65,25 @@ const handleCallWriteMethod = async () => {
 
 const resetInputs = () => {
   props.method.inputs.forEach((input: any) => {
-    inputs.value[input.name] = null;
+    let defaultValue;
+
+    switch (input.type) {
+      case 'uint256':
+      case 'float':
+        defaultValue = 0;
+        break;
+      case 'bool':
+        defaultValue = false;
+        break;
+      case 'string':
+        defaultValue = '';
+        break;
+      default:
+        defaultValue = '';
+        break;
+    }
+
+    inputs.value[input.name] = defaultValue;
   });
 };
 
@@ -95,7 +113,6 @@ onMounted(() => {
 
     <Collapse :when="isExpanded">
       <div class="flex flex-col items-start gap-2 p-2">
-        {{ inputs }}
         <component
           v-for="input in method.inputs"
           :key="input.name"

@@ -13,7 +13,7 @@ import FieldError from '@/components/global/fields/FieldError.vue';
 const { contractSchemaQuery, deployContract, isDeploying } =
   useContractQueries();
 
-const { data, error, isPending, isRefetching, isError } = contractSchemaQuery;
+const { data, isPending, isRefetching, isError } = contractSchemaQuery;
 const inputParams = ref<{ [k: string]: any }>({});
 
 const constructorInputs = computed<{ [k: string]: string }>(
