@@ -80,7 +80,9 @@ def get_transaction_by_id(
 
 
 def get_contract_schema(
-    accounts_manager: AccountsManager, contract_address: str
+    accounts_manager: AccountsManager,
+    msg_handler: MessageHandler,
+    contract_address: str,
 ) -> dict:
     if not accounts_manager.is_valid_address(contract_address):
         raise InvalidAddressError(
@@ -98,11 +100,14 @@ def get_contract_schema(
         model="",
         config=None,
         leader_receipt=None,
+        msg_handler=msg_handler,
     )
     return node.get_contract_schema(contract_account["data"]["code"])
 
 
-def get_contract_schema_for_code(contract_code: str) -> dict:
+def get_contract_schema_for_code(
+    msg_handler: MessageHandler, contract_code: str
+) -> dict:
     node = Node(
         contract_snapshot=None,
         address="",
@@ -112,12 +117,14 @@ def get_contract_schema_for_code(contract_code: str) -> dict:
         model="",
         config=None,
         leader_receipt=None,
+        msg_handler=msg_handler,
     )
     return node.get_contract_schema(contract_code)
 
 
 def get_contract_state(
     accounts_manager: AccountsManager,
+    msg_handler: MessageHandler,
     contract_address: str,
     method_name: str,
     method_args: list,
@@ -135,6 +142,7 @@ def get_contract_state(
         model="",
         config=None,
         leader_receipt=None,
+        msg_handler=msg_handler,
     )
     return node.get_contract_data(
         code=contract_account["data"]["code"],
@@ -351,7 +359,6 @@ def register_all_rpc_endpoints(
     )
 
     register_rpc_endpoint(ping)
-    register_rpc_endpoint(get_contract_schema_for_code)
 
     register_rpc_endpoint_for_partial(
         clear_db_tables, genlayer_db_client, ["current_state", "transactions"]
@@ -378,8 +385,11 @@ def register_all_rpc_endpoints(
     )
     register_rpc_endpoint_for_partial(create_account, accounts_manager)
     register_rpc_endpoint_for_partial(fund_account, accounts_manager)
-    register_rpc_endpoint_for_partial(get_contract_schema, accounts_manager)
-    register_rpc_endpoint_for_partial(get_contract_state, accounts_manager)
+    register_rpc_endpoint_for_partial(
+        get_contract_schema, accounts_manager, msg_handler
+    )
+    register_rpc_endpoint_for_partial(get_contract_schema_for_code, msg_handler)
+    register_rpc_endpoint_for_partial(get_contract_state, accounts_manager, msg_handler)
     register_rpc_endpoint_for_partial(get_transaction_by_id, transactions_processor)
     register_rpc_endpoint_for_partial(
         send_raw_transaction, transactions_processor, accounts_manager
