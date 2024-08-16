@@ -16,7 +16,7 @@ onBeforeMount(() => {
   <TutorialContainer />
   <main class="flex h-screen w-full flex-col">
     <Header />
-    <div class="flex h-full">
+    <div class="flex" :style="{ height: 'calc(100vh - 53px)' }">
       <RouterView />
     </div>
   </main>

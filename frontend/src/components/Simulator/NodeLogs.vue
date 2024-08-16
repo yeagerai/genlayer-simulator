@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, ref, watch } from 'vue';
+import { nextTick, ref, watch, computed, type ComputedRef } from 'vue';
 import { useNodeStore, useUIStore } from '@/stores';
 import JsonViewer from '@/components/JsonViewer/json-viewer.vue';
 import GhostBtn from '../global/GhostBtn.vue';
@@ -9,12 +9,17 @@ import EmptyListPlaceholder from './EmptyListPlaceholder.vue';
 const nodeStore = useNodeStore();
 const uiStore = useUIStore();
 const scrollContainer = ref<HTMLDivElement>();
-const colorMap: Record<string, string> = {
+
+type ColorMapType = {
+  [key: string]: string; // Add index signature
+};
+const colorMap: ComputedRef<ColorMapType> = computed(() => ({
+  contractLog: uiStore.mode === 'light' ? 'text-black' : 'text-white',
   info: 'text-blue-500',
   error: 'text-red-500',
   warning: 'text-yellow-500',
   success: 'text-green-500',
-};
+}));
 
 watch(nodeStore.logs, () => {
   nextTick(() => {
@@ -29,7 +34,7 @@ watch(nodeStore.logs, () => {
 <template>
   <div class="flex h-full w-full flex-col">
     <div
-      class="flex flex-row items-center justify-between gap-1 border-b bg-white p-1 dark:border-b-zinc-700 dark:bg-zinc-800"
+      class="flex flex-row items-center justify-between gap-1 border-b bg-white p-1 pl-2 dark:border-b-zinc-700 dark:bg-zinc-800"
     >
       Logs
       <GhostBtn
@@ -86,6 +91,7 @@ watch(nodeStore.logs, () => {
               </div>
               <JsonViewer
                 class="ml-2"
+                v-if="message.response?.data"
                 :value="message.response?.data"
                 :theme="uiStore.mode === 'light' ? 'light' : 'dark'"
                 :expand="false"

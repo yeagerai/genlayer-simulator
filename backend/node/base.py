@@ -5,6 +5,7 @@ from typing import Optional
 from backend.node.genvm.base import GenVM
 from backend.database_handler.contract_snapshot import ContractSnapshot
 from backend.node.genvm.types import Receipt, ExecutionMode, Vote
+from backend.protocol_rpc.message_handler.base import MessageHandler
 
 
 class Node:
@@ -18,6 +19,7 @@ class Node:
         model: str,
         config: dict,
         leader_receipt: Optional[Receipt] = None,
+        msg_handler: MessageHandler = None,
     ):
         self.validator_mode = validator_mode
         self.address = address
@@ -28,7 +30,9 @@ class Node:
             "stake": stake,
         }
         self.leader_receipt = leader_receipt
-        self.genvm = GenVM(contract_snapshot, self.validator_mode, self.validator_info)
+        self.genvm = GenVM(
+            contract_snapshot, self.validator_mode, self.validator_info, msg_handler
+        )
 
     async def exec_transaction(self, transaction: dict):
         transaction_data = transaction["data"]
@@ -85,7 +89,7 @@ class Node:
     def get_contract_data(
         self, code: str, state: str, method_name: str, method_args: list
     ):
-        return GenVM.get_contract_data(code, state, method_name, method_args)
+        return self.genvm.get_contract_data(code, state, method_name, method_args)
 
     def get_contract_schema(self, code: str):
         return GenVM.get_contract_schema(code)

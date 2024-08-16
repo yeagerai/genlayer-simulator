@@ -25,8 +25,7 @@ async function handleCreateValidator() {
     await nodeStore.createNewValidator(newValidatorData.value);
 
     notify({
-      title: 'OK',
-      text: 'New validator created',
+      title: 'New validator created',
       type: 'success',
     });
 
@@ -51,8 +50,7 @@ async function handleUpdateValidator(validator: ValidatorModel) {
   try {
     await nodeStore.updateValidator(validator, newValidatorData.value);
     notify({
-      title: 'OK',
-      text: 'Validator updated successfully',
+      title: 'Validator updated',
       type: 'success',
     });
     emit('close');
@@ -130,6 +128,10 @@ const tryInitValues = () => {
     <template #title v-if="isCreateMode">Create New Validator</template>
     <template #title v-else>Update Validator</template>
 
+    <Alert warning v-if="providerOptions.length === 0">
+      No node providers available. Please configure a provider first.
+    </Alert>
+
     <template #info v-if="!isCreateMode">
       <div class="text-xs">
         <div>ID: {{ props.validator?.id }}</div>
@@ -147,6 +149,7 @@ const tryInitValues = () => {
         :invalid="!newValidatorData.provider"
         required
         testId="dropdown-provider"
+        :disabled="providerOptions.length === 0"
       />
     </div>
 
@@ -159,6 +162,7 @@ const tryInitValues = () => {
         :invalid="!newValidatorData.model"
         required
         testId="dropdown-model"
+        :disabled="providerOptions.length === 0"
       />
     </div>
 

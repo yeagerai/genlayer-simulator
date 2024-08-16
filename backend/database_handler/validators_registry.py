@@ -53,9 +53,6 @@ class ValidatorsRegistry:
             raise ValidatorNotFound(validator_address)
         return to_dict(validator_data)
 
-    def count_validators(self):
-        return self.db_client.count(self.db_validators_table)
-
     def get_all_validators(self) -> list:
         validators_data = self.db_client.get(self.db_validators_table)
         return [self._parse_validator_data(validator) for validator in validators_data]

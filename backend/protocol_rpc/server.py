@@ -2,7 +2,7 @@
 
 import os
 import threading
-
+import logging
 from flask import Flask
 from flask_jsonrpc import JSONRPC
 from flask_socketio import SocketIO
@@ -30,7 +30,9 @@ def create_app():
     accounts_manager = AccountsManager(genlayer_db_client, transactions_processor)
     validators_registry = ValidatorsRegistry(genlayer_db_client)
 
-    consensus = ConsensusAlgorithm(genlayer_db_client, transactions_processor)
+    consensus = ConsensusAlgorithm(
+        genlayer_db_client, transactions_processor, msg_handler
+    )
     return (
         app,
         jsonrpc,
@@ -74,6 +76,9 @@ def run_socketio():
         port=os.environ.get("RPCPORT"),
         host="0.0.0.0",
         allow_unsafe_werkzeug=True,
+    )
+    logging.getLogger("werkzeug").setLevel(
+        os.environ.get("FLASK_LOG_LEVEL", logging.ERROR)
     )
 
 

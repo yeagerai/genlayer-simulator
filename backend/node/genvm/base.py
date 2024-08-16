@@ -8,13 +8,15 @@ import pickle
 import base64
 import sys
 import traceback
-from contextlib import contextmanager
+import io
+from contextlib import contextmanager, redirect_stdout
 
 from backend.database_handler.contract_snapshot import ContractSnapshot
 from backend.node.genvm.equivalence_principle import EquivalencePrinciple
 from backend.node.genvm.code_enforcement import code_enforcement_check
 from backend.node.genvm.std.vector_store import VectorStore
 from backend.node.genvm.types import Receipt, ExecutionResultStatus, ExecutionMode
+from backend.protocol_rpc.message_handler.base import MessageHandler
 
 
 @contextmanager
@@ -52,10 +54,11 @@ class GenVM:
         snapshot: ContractSnapshot,
         validator_mode: str,
         validator_info: dict,
+        msg_handler: MessageHandler = None,
     ):
         self.snapshot = snapshot
         self.validator_mode = validator_mode
-
+        self.msg_handler = msg_handler
         self.contract_runner = ContractRunner(validator_mode, validator_info)
 
     @staticmethod
@@ -100,7 +103,10 @@ class GenVM:
         execution_result = ExecutionResultStatus.SUCCESS
         error = None
 
-        with safe_globals():
+        # Buffers to capture stdout and stderr
+        stdout_buffer = io.StringIO()
+
+        with redirect_stdout(stdout_buffer), safe_globals():
             globals()["contract_runner"] = self.contract_runner
             local_namespace = {}
             exec(code_to_deploy, globals(), local_namespace)
@@ -124,6 +130,16 @@ class GenVM:
             ## Clean up
             delattr(module, class_name)
 
+        if self.contract_runner.mode == ExecutionMode.LEADER:
+            # Retrieve the captured stdout and stderr
+            captured_stdout = stdout_buffer.getvalue()
+            if captured_stdout:
+                socket_message = {
+                    "function": "intelligent_contract_execution",
+                    "response": {"status": "info", "message": captured_stdout},
+                }
+                self.msg_handler.socket_emit(socket_message)
+
         return self._generate_receipt(
             class_name,
             encoded_pickled_object,
@@ -141,7 +157,10 @@ class GenVM:
         execution_result = ExecutionResultStatus.SUCCESS
         error = None
 
-        with safe_globals():
+        # Buffers to capture stdout and stderr
+        stdout_buffer = io.StringIO()
+
+        with redirect_stdout(stdout_buffer), safe_globals():
             globals()["contract_runner"] = self.contract_runner
             local_namespace = {}
             # Execute the code to ensure all classes are defined in the local_namespace
@@ -170,14 +189,24 @@ class GenVM:
                 else:
                     function_to_run(*args)
             except Exception as e:
-                print("Error running contract", e)
-                print(traceback.format_exc())
+                print("\nError running contract", e)
+                print(f"\n{traceback.format_exc()}")
                 error = e
                 execution_result = ExecutionResultStatus.ERROR
 
             pickled_object = pickle.dumps(current_contract)
             encoded_pickled_object = base64.b64encode(pickled_object).decode("utf-8")
             class_name = self._get_contract_class_name(contract_code)
+
+        if self.contract_runner.mode == ExecutionMode.LEADER:
+            # Retrieve the captured stdout and stderr
+            captured_stdout = stdout_buffer.getvalue()
+            if captured_stdout:
+                socket_message = {
+                    "function": "intelligent_contract_execution",
+                    "response": {"status": "info", "message": captured_stdout},
+                }
+                self.msg_handler.socket_emit(socket_message)
 
         return self._generate_receipt(
             class_name,
@@ -299,12 +328,15 @@ class GenVM:
 
         return abi
 
-    @staticmethod
     def get_contract_data(
-        code: str, state: str, method_name: str, method_args: list
+        self, code: str, state: str, method_name: str, method_args: list
     ) -> dict:
         namespace = {}
-        with safe_globals():
+
+        # Buffers to capture stdout and stderr
+        stdout_buffer = io.StringIO()
+
+        with redirect_stdout(stdout_buffer), safe_globals():
             # Execute the code to ensure all classes are defined in the namespace
             exec(code, globals(), namespace)
 
@@ -321,5 +353,15 @@ class GenVM:
             # Clean up
             for name in namespace.keys():
                 del globals()[name]
+
+        if self.contract_runner.mode == ExecutionMode.LEADER:
+            # Retrieve the captured stdout and stderr
+            captured_stdout = stdout_buffer.getvalue()
+            if captured_stdout:
+                socket_message = {
+                    "function": "intelligent_contract_execution",
+                    "response": {"status": "info", "message": captured_stdout},
+                }
+                self.msg_handler.socket_emit(socket_message)
 
         return result
