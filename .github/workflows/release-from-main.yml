@@ -7,6 +7,8 @@ on:
 jobs:
   release-main:
     runs-on: ubuntu-latest
+    permissions: # As per https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#create-a-release
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
