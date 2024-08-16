@@ -1,4 +1,4 @@
-name: Changelog
+name: Create Release from main
 on:
   push:
     branches:
