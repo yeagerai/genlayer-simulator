@@ -134,7 +134,11 @@ class GenVM:
             # Retrieve the captured stdout and stderr
             captured_stdout = stdout_buffer.getvalue()
             if captured_stdout:
-                self.msg_handler.socket_emit(captured_stdout)
+                socket_message = {
+                    "function": "intelligent_contract_execution",
+                    "response": {"status": "info", "message": captured_stdout},
+                }
+                self.msg_handler.socket_emit(socket_message)
 
         return self._generate_receipt(
             class_name,
@@ -354,6 +358,10 @@ class GenVM:
             # Retrieve the captured stdout and stderr
             captured_stdout = stdout_buffer.getvalue()
             if captured_stdout:
-                self.msg_handler.socket_emit(captured_stdout)
+                socket_message = {
+                    "function": "intelligent_contract_execution",
+                    "response": {"status": "info", "message": captured_stdout},
+                }
+                self.msg_handler.socket_emit(socket_message)
 
         return result
