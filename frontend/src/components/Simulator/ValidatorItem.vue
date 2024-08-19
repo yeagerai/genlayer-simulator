@@ -1,16 +1,33 @@
 <script setup lang="ts">
 import { type ValidatorModel } from '@/types';
-import { PencilSquareIcon, TrashIcon } from '@heroicons/vue/24/solid';
+import {
+  DocumentDuplicateIcon,
+  PencilSquareIcon,
+  TrashIcon,
+} from '@heroicons/vue/16/solid';
 import ValidatorModal from '@/components/Simulator/ValidatorModal.vue';
 import DeleteValidatorModal from '@/components/Simulator/DeleteValidatorModal.vue';
 import { ref } from 'vue';
+import { useNodeStore } from '@/stores';
+import { notify } from '@kyvg/vue3-notification';
+
+const nodeStore = useNodeStore();
 
 const isUpdateModalMopen = ref(false);
 const isDeleteModalOpen = ref(false);
 
-defineProps<{
+const props = defineProps<{
   validator: ValidatorModel;
 }>();
+
+const handleCloneValidator = () => {
+  nodeStore.cloneValidator(props.validator);
+
+  notify({
+    title: 'Successfully cloned validator',
+    type: 'success',
+  });
+};
 </script>
 
 <template>
@@ -46,6 +63,12 @@ defineProps<{
         v-tooltip="'Update Validator'"
       >
         <PencilSquareIcon
+          class="h-5 w-5 p-[2px] text-slate-400 transition-colors hover:text-slate-800 active:scale-90 dark:hover:text-white"
+        />
+      </button>
+
+      <button @click.stop="handleCloneValidator" v-tooltip="'Clone Validator'">
+        <DocumentDuplicateIcon
           class="h-5 w-5 p-[2px] text-slate-400 transition-colors hover:text-slate-800 active:scale-90 dark:hover:text-white"
         />
       </button>

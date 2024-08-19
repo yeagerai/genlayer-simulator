@@ -142,6 +142,15 @@ export const useNodeStore = defineStore('nodeStore', () => {
     }
   }
 
+  async function cloneValidator(validator: ValidatorModel) {
+    const result = await $jsonRpc.createValidator(validator);
+    if (result?.status === 'success') {
+      validators.value.push(result.data);
+    } else {
+      throw new Error('Error cloning validator');
+    }
+  }
+
   const contractsToDelete = computed(() =>
     contractsStore.contracts.filter(
       (c) => (c.example && !c.updatedAt) || (!c.example && !c.updatedAt),
@@ -168,6 +177,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
 
     getValidatorsData,
     createNewValidator,
+    cloneValidator,
     deleteValidator,
     updateValidator,
     clearLogs,
