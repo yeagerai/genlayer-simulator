@@ -271,7 +271,6 @@ class GenVM:
 
             contract_schema = {
                 "class": class_name,
-                "methods": methods,
                 "variables": variables,
                 "abi": abi,
             }
