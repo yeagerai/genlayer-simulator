@@ -4,6 +4,11 @@ import type { TransactionItem } from '@/types';
 import TransactionStatusBadge from '@/components/Simulator/TransactionStatusBadge.vue';
 import { useTimeAgo } from '@vueuse/core';
 import ModalSection from '@/components/Simulator/ModalSection.vue';
+import JsonViewer from '@/components/JsonViewer/json-viewer.vue';
+import { useUIStore } from '@/stores';
+import { CheckCircleIcon, XCircleIcon } from '@heroicons/vue/16/solid';
+
+const uiStore = useUIStore();
 
 const props = defineProps<{
   transaction: TransactionItem;
@@ -153,11 +158,20 @@ const leaderReceipt = computed(() => {
               :key="address"
               class="flex flex-row items-center justify-between p-2 text-xs dark:border-gray-600"
             >
-              <div>
+              <div class="font-mono text-xs">
                 {{ address }}
               </div>
-              <div>
-                {{ vote }}
+
+              <div class="flex flex-row items-center gap-1 capitalize">
+                <template v-if="vote === 'agree'">
+                  <CheckCircleIcon class="h-4 w-4 text-green-500" />
+                  Agree
+                </template>
+
+                <template v-if="vote === 'disagree'">
+                  <XCircleIcon class="h-4 w-4 text-red-500" />
+                  Disagree
+                </template>
               </div>
             </div>
           </div>
@@ -167,9 +181,21 @@ const leaderReceipt = computed(() => {
           <template #title>Equivalence Principle Output</template>
 
           <pre
-            class="overflow-scroll rounded bg-gray-200 p-1 text-xs text-gray-600 dark:bg-zinc-800 dark:text-gray-300"
+            class="overflow-x-auto rounded bg-gray-200 p-1 text-xs text-gray-600 dark:bg-zinc-800 dark:text-gray-300"
             >{{ leaderReceipt?.eq_outputs?.leader }}</pre
           >
+        </ModalSection>
+
+        <ModalSection v-if="transaction.data">
+          <template #title>Full Transaction Data</template>
+
+          <JsonViewer
+            class="overflow-y-auto rounded-md bg-white p-2 dark:bg-zinc-800"
+            :value="transaction.data || {}"
+            :theme="uiStore.mode === 'light' ? 'light' : 'dark'"
+            :expand="true"
+            sort
+          />
         </ModalSection>
       </div>
     </Modal>
