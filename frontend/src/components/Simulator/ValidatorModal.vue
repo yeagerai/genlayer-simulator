@@ -16,7 +16,7 @@ const { trackEvent } = useEventTracking();
 const emit = defineEmits(['close']);
 
 const props = defineProps<{
-  validator: ValidatorModel;
+  validator?: ValidatorModel;
 }>();
 
 const isCreateMode = computed(() => !props.validator);
@@ -51,7 +51,7 @@ async function handleUpdateValidator(validator: ValidatorModel) {
   try {
     await nodeStore.updateValidator(validator, newValidatorData.value);
     notify({
-      title: `Updated validator #${props.validator.id}`,
+      title: `Updated validator #${validator.id}`,
       type: 'success',
     });
     emit('close');
