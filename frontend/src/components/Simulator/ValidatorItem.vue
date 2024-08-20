@@ -49,10 +49,10 @@ async function handleDeleteValidator() {
 
 <template>
   <div
-    @mouseleave="showConfirmDelete = false"
     data-testid="validator-item"
     class="group flex cursor-pointer flex-row items-center justify-between gap-2 bg-slate-100 p-2 hover:bg-slate-200 dark:bg-gray-700 dark:hover:bg-gray-600"
     @click="isUpdateModalMopen = true"
+    @mouseleave="showConfirmDelete = false"
   >
     <div
       class="flex rounded-md bg-slate-400 px-1 py-0.5 text-xs font-semibold text-white dark:bg-gray-200 dark:text-slate-800"
@@ -124,7 +124,7 @@ async function handleDeleteValidator() {
   />
 </template>
 
-<style>
+<style scoped>
 .v-enter-active,
 .v-leave-active {
   transition: all 0.15s ease;
