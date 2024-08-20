@@ -110,7 +110,7 @@ async function handleDeleteValidator() {
           v-tooltip="'Confirm deletion'"
         >
           <CheckIcon
-            class="h-5 w-5 p-[2px] text-red-400 transition-colors hover:text-red-800 active:scale-90 dark:hover:text-red-400"
+            class="h-5 w-5 p-[2px] text-red-500 transition-colors hover:text-red-400 active:scale-90"
           />
         </button>
       </Transition>
