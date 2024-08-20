@@ -16,7 +16,7 @@ const { trackEvent } = useEventTracking();
 const emit = defineEmits(['close']);
 
 const props = defineProps<{
-  validator?: ValidatorModel;
+  validator: ValidatorModel;
 }>();
 
 const isCreateMode = computed(() => !props.validator);
