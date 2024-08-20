@@ -40,7 +40,9 @@ const hasAnySampleContract = computed(() => {
       class="mx-auto flex h-full max-w-[1200px] flex-col gap-4 p-4 @[1024px]:flex-row @[1024px]:gap-8"
     >
       <div class="grid place-content-center">
-        <div class="rounded-md bg-slate-600 bg-opacity-10 p-4 @[1024px]:p-8">
+        <div
+          class="rounded-md bg-slate-50 p-4 @[1024px]:p-8 dark:bg-slate-600 dark:bg-opacity-10"
+        >
           <h1 class="mb-4 text-lg font-semibold">
             Welcome to the GenLayer Simulator
           </h1>
