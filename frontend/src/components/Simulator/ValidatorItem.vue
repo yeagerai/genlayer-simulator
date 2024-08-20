@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { type ValidatorModel } from '@/types';
 import {
+  CheckIcon,
   DocumentDuplicateIcon,
   PencilSquareIcon,
   TrashIcon,
 } from '@heroicons/vue/16/solid';
 import ValidatorModal from '@/components/Simulator/ValidatorModal.vue';
-import DeleteValidatorModal from '@/components/Simulator/DeleteValidatorModal.vue';
 import { ref } from 'vue';
 import { useNodeStore } from '@/stores';
 import { notify } from '@kyvg/vue3-notification';
@@ -14,7 +14,7 @@ import { notify } from '@kyvg/vue3-notification';
 const nodeStore = useNodeStore();
 
 const isUpdateModalMopen = ref(false);
-const isDeleteModalOpen = ref(false);
+const showConfirmDelete = ref(false);
 
 const props = defineProps<{
   validator: ValidatorModel;
@@ -28,10 +28,28 @@ const handleCloneValidator = () => {
     type: 'success',
   });
 };
+
+async function handleDeleteValidator() {
+  try {
+    await nodeStore.deleteValidator(props.validator);
+    notify({
+      title: `Deleted validator #${props.validator.id}`,
+      type: 'success',
+    });
+  } catch (error) {
+    console.error(error);
+    notify({
+      title: 'Error',
+      text: (error as Error)?.message || 'Error deleting validator',
+      type: 'error',
+    });
+  }
+}
 </script>
 
 <template>
   <div
+    @mouseleave="showConfirmDelete = false"
     data-testid="validator-item"
     class="group flex cursor-pointer flex-row items-center justify-between gap-2 bg-slate-100 p-2 hover:bg-slate-200 dark:bg-gray-700 dark:hover:bg-gray-600"
     @click="isUpdateModalMopen = true"
@@ -73,15 +91,29 @@ const handleCloneValidator = () => {
         />
       </button>
 
-      <button
-        data-testid="validator-item-delete"
-        @click.stop="isDeleteModalOpen = true"
-        v-tooltip="'Delete Validator'"
-      >
-        <TrashIcon
-          class="h-5 w-5 p-[2px] text-slate-400 transition-colors hover:text-slate-800 active:scale-90 dark:hover:text-white"
-        />
-      </button>
+      <Transition mode="out-in">
+        <button
+          v-if="!showConfirmDelete"
+          data-testid="validator-item-delete"
+          @click.stop="showConfirmDelete = true"
+          v-tooltip="'Delete Validator'"
+        >
+          <TrashIcon
+            class="h-5 w-5 p-[2px] text-slate-400 transition-colors hover:text-slate-800 active:scale-90 dark:hover:text-white"
+          />
+        </button>
+
+        <button
+          v-else
+          data-testid="validator-item-confirm-delete"
+          @click.stop="handleDeleteValidator"
+          v-tooltip="'Confirm deletion'"
+        >
+          <CheckIcon
+            class="h-5 w-5 p-[2px] text-red-400 transition-colors hover:text-red-800 active:scale-90 dark:hover:text-red-400"
+          />
+        </button>
+      </Transition>
     </div>
   </div>
 
@@ -90,10 +122,17 @@ const handleCloneValidator = () => {
     :open="isUpdateModalMopen"
     @close="isUpdateModalMopen = false"
   />
-
-  <DeleteValidatorModal
-    :validator="validator"
-    :open="isDeleteModalOpen"
-    @close="isDeleteModalOpen = false"
-  />
 </template>
+
+<style>
+.v-enter-active,
+.v-leave-active {
+  transition: all 0.15s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+  transform: rotate(45deg);
+}
+</style>
