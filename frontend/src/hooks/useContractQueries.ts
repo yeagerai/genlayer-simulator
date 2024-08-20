@@ -1,6 +1,5 @@
-import { watch, ref, inject, computed } from 'vue';
+import { watch, ref, computed } from 'vue';
 import { toHex, toRlp } from 'viem';
-import type { IJsonRpcService } from '@/services';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import type { Address, TransactionItem } from '@/types';
 import {
@@ -12,12 +11,12 @@ import { signTransaction } from '@/utils';
 import { useDebounceFn } from '@vueuse/core';
 import { notify } from '@kyvg/vue3-notification';
 import { useMockContractData } from './useMockContractData';
-import { useEventTracking } from '@/hooks';
+import { useEventTracking, useRpcClient } from '@/hooks';
 
 const schema = ref<any>();
 
 export function useContractQueries() {
-  const $jsonRpc = inject<IJsonRpcService>('$jsonRpc'); // This could be done without inject/provide
+  const rpcClient = useRpcClient();
   const accountsStore = useAccountsStore();
   const transactionsStore = useTransactionsStore();
   const contractsStore = useContractsStore();
@@ -64,7 +63,7 @@ export function useContractQueries() {
       return mockContractSchema;
     }
 
-    const result = await $jsonRpc?.getContractSchema({
+    const result = await rpcClient.getContractSchema({
       code: contract.value?.content ?? '',
     });
 
@@ -100,7 +99,7 @@ export function useContractQueries() {
         accountsStore.currentPrivateKey,
         data,
       );
-      const result = await $jsonRpc?.sendTransaction(signed);
+      const result = await rpcClient.sendTransaction(signed);
 
       if (result?.status === 'success') {
         const tx: TransactionItem = {
@@ -166,7 +165,7 @@ export function useContractQueries() {
       return mockContractSchema;
     }
 
-    const result = await $jsonRpc?.getDeployedContractSchema({
+    const result = await rpcClient.getDeployedContractSchema({
       address: deployedContract.value?.address ?? '',
     });
 
@@ -180,7 +179,7 @@ export function useContractQueries() {
 
   async function callReadMethod(method: string, methodArguments: string[]) {
     try {
-      const result = await $jsonRpc?.getContractState({
+      const result = await rpcClient.getContractState({
         contractAddress: address.value || '',
         method,
         methodArguments,
@@ -218,7 +217,7 @@ export function useContractQueries() {
         data,
         to,
       );
-      const result = await $jsonRpc?.sendTransaction(signed);
+      const result = await rpcClient.sendTransaction(signed);
 
       if (result?.status === 'success') {
         transactionsStore.addTransaction({
