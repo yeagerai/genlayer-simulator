@@ -82,9 +82,7 @@ const handleHorizontalScroll = (event: WheelEvent) => {
       </div>
     </nav>
 
-    <div v-show="showHome" class="flex h-full w-full">
-      <HomeTab />
-    </div>
+    <HomeTab v-show="showHome" />
 
     <div
       v-if="!!error"
