@@ -35,9 +35,6 @@ services:
         condition: service_completed_successfully
     expose:
       - "${RPCPORT}"
-    networks:
-      - feed_buzz
-      - default
 
   webrequest:
     build:
