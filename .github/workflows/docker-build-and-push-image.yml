@@ -20,9 +20,6 @@ on:
     secrets:
       dockerhub_token:
         required: true
-  push:
-    tags:
-      - "v*.*.*"
 
 permissions:
   contents: read
