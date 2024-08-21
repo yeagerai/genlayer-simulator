@@ -49,6 +49,16 @@ const handleResetStorage = async () => {
         <span class="opacity-50">{{ nodeStore.validators.length }}</span>
       </template>
 
+      <template #actions>
+        <GhostBtn
+          @click="isNewValidatorModalOpen = true"
+          v-tooltip="'New Validator'"
+          testId="create-new-validator-btn"
+        >
+          <PlusIcon class="h-4 w-4" />
+        </GhostBtn>
+      </template>
+
       <div
         v-if="nodeStore.isLoadingValidatorData"
         class="flex flex-row items-center justify-center gap-2 p-1"
@@ -75,8 +85,8 @@ const handleResetStorage = async () => {
       </div>
 
       <Btn
+        v-if="!nodeStore.hasAtLeastOneValidator"
         @click="isNewValidatorModalOpen = true"
-        data-testid="create-new-validator-btn"
       >
         <PlusIcon class="h-5 w-5" />
         New Validator
