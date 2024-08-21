@@ -126,7 +126,7 @@ const tryInitValues = () => {
 
 <template>
   <Modal @close="emit('close')" @onOpen="tryInitValues">
-    <template #title v-if="isCreateMode">Create New Validator</template>
+    <template #title v-if="isCreateMode">New Validator</template>
     <template #title v-else>Validator #{{ validator?.id }}</template>
 
     <Alert warning v-if="providerOptions.length === 0">

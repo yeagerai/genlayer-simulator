@@ -87,8 +87,8 @@ const handleResetStorage = async () => {
       <Btn
         v-if="!nodeStore.hasAtLeastOneValidator"
         @click="isNewValidatorModalOpen = true"
+        :icon="PlusIcon"
       >
-        <PlusIcon class="h-5 w-5" />
         New Validator
       </Btn>
 
@@ -103,6 +103,7 @@ const handleResetStorage = async () => {
 
       <Btn
         @click="isResetStorageModalOpen = true"
+        :icon="ArchiveBoxXMarkIcon"
         :disabled="nodeStore.contractsToDelete.length < 1"
         secondary
         v-tooltip="
@@ -110,7 +111,6 @@ const handleResetStorage = async () => {
           'No contracts files to delete'
         "
       >
-        <ArchiveBoxXMarkIcon class="h-4 w-4" />
         Reset Storage
       </Btn>
 
