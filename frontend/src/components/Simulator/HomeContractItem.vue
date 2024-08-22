@@ -12,7 +12,7 @@ defineProps<{
 
 <template>
   <div
-    class="rounded-md border border-gray-300 bg-slate-100 p-2 dark:border-gray-800 dark:bg-gray-700 dark:bg-opacity-50"
+    class="rounded-md border border-gray-300 bg-slate-100 p-2 dark:border-0 dark:bg-gray-700 dark:bg-opacity-50"
   >
     <h4 class="text-sm font-semibold text-gray-500 dark:text-gray-400">
       {{ title }}
