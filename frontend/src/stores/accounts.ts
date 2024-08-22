@@ -1,13 +1,13 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import type { Address } from '@/types';
-import { shortenAddress } from '@/utils';
-import { useEth } from '@/hooks';
+import { useEth, useShortAddress } from '@/hooks';
 
 export const useAccountsStore = defineStore('accountsStore', () => {
   const key = localStorage.getItem('accountsStore.currentPrivateKey');
   const currentPrivateKey = ref<Address | null>(key ? (key as Address) : null);
   const eth = useEth();
+  const { shortenAddress } = useShortAddress();
 
   const currentUserAddress = computed(() => {
     return currentPrivateKey.value
