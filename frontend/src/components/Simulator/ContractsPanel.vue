@@ -72,7 +72,7 @@ const handleHorizontalScroll = (event: WheelEvent) => {
 
       <div>
         <Btn
-          v-if="route.name !== 'run-debug'"
+          v-if="route.name !== 'run-debug' && store.currentContractId"
           class="m-1 flex items-center !p-1"
           @click="handleRunDebug"
           v-tooltip="'Run and Debug'"
