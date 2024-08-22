@@ -1,5 +1,4 @@
 import { watch, ref, computed } from 'vue';
-import { toHex, toRlp } from 'viem';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import type { Address, TransactionItem } from '@/types';
 import {
@@ -7,11 +6,10 @@ import {
   useTransactionsStore,
   useAccountsStore,
 } from '@/stores';
-import { signTransaction } from '@/utils';
 import { useDebounceFn } from '@vueuse/core';
 import { notify } from '@kyvg/vue3-notification';
 import { useMockContractData } from './useMockContractData';
-import { useEventTracking, useRpcClient } from '@/hooks';
+import { useEventTracking, useRpcClient, useEth } from '@/hooks';
 
 const schema = ref<any>();
 
@@ -22,6 +20,7 @@ export function useContractQueries() {
   const contractsStore = useContractsStore();
   const queryClient = useQueryClient();
   const { trackEvent } = useEventTracking();
+  const eth = useEth();
   const contract = computed(() => contractsStore.currentContract);
 
   const { mockContractId, mockContractSchema } = useMockContractData();
@@ -90,12 +89,8 @@ export function useContractQueries() {
         throw new Error('Error Deploying the contract');
       }
       const constructorParamsAsString = JSON.stringify(constructorParams);
-      const data = toRlp([
-        toHex(contract.value?.content ?? ''),
-        toHex(constructorParamsAsString),
-      ]);
-
-      const signed = await signTransaction(
+      const data = [contract.value?.content ?? '', constructorParamsAsString];
+      const signed = await eth.signTransaction(
         accountsStore.currentPrivateKey,
         data,
       );
@@ -209,10 +204,10 @@ export function useContractQueries() {
         throw new Error('Error Deploying the contract');
       }
       const methodParamsAsString = JSON.stringify(params);
-      const data = toRlp([toHex(method), toHex(methodParamsAsString)]);
-
+      const data = [method, methodParamsAsString];
       const to = (address.value as Address) || null;
-      const signed = await signTransaction(
+
+      const signed = await eth.signTransaction(
         accountsStore.currentPrivateKey,
         data,
         to,
