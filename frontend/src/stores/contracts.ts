@@ -4,20 +4,27 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { notify } from '@kyvg/vue3-notification';
 
-const getInitialOPenedFiles = (): string[] => {
-  const storage = localStorage.getItem('contractsStore.openedFiles');
-  if (storage) return storage.split(',');
-  return [];
-};
-
 export const useContractsStore = defineStore('contractsStore', () => {
   const contracts = ref<ContractFile[]>([]);
-  const openedFiles = ref<string[]>(getInitialOPenedFiles());
+  const openedFiles = ref<string[]>([]);
 
   const currentContractId = ref<string | undefined>(
     localStorage.getItem('contractsStore.currentContractId') || '',
   );
   const deployedContracts = ref<DeployedContract[]>([]);
+
+  function getInitialOpenedFiles() {
+    const storage = localStorage.getItem('contractsStore.openedFiles');
+
+    if (storage) {
+      openedFiles.value = storage.split(',');
+      openedFiles.value = openedFiles.value.filter((id) =>
+        contracts.value.find((c) => c.id === id),
+      );
+    } else {
+      return [];
+    }
+  }
 
   function addContractFile(contract: ContractFile): void {
     const name = getContractFileName(contract.name);
@@ -28,6 +35,9 @@ export const useContractsStore = defineStore('contractsStore', () => {
     contracts.value = [...contracts.value.filter((c) => c.id !== id)];
     deployedContracts.value = [
       ...deployedContracts.value.filter((c) => c.contractId !== id),
+    ];
+    openedFiles.value = [
+      ...openedFiles.value.filter((contractId) => contractId !== id),
     ];
 
     if (currentContractId.value === id) {
@@ -176,5 +186,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
     removeDeployedContract,
     setCurrentContractId,
     resetStorage,
+    getInitialOpenedFiles,
   };
 });

@@ -49,6 +49,7 @@ export const setupStores = async () => {
     contractsStore.contracts = await db.contractFiles.toArray();
   }
 
+  contractsStore.getInitialOpenedFiles();
   contractsStore.deployedContracts = await db.deployedContracts.toArray();
   transactionsStore.transactions = await db.transactions.toArray();
 
