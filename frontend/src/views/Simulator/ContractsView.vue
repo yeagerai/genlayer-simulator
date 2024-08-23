@@ -6,6 +6,8 @@ import { v4 as uuidv4 } from 'uuid';
 import ContractItem from '@/components/Simulator/ContractItem.vue';
 import MainTitle from '@/components/Simulator/MainTitle.vue';
 import { useEventTracking } from '@/hooks';
+import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
+import type { ContractFile } from '@/types';
 
 const store = useContractsStore();
 const showNewFileInput = ref(false);
@@ -26,12 +28,14 @@ const loadContentFromFile = (event: Event) => {
     reader.onload = (ev: ProgressEvent<FileReader>) => {
       if (ev.target?.result) {
         const id = uuidv4();
-        store.addContractFile({
+        const contractFile: ContractFile = {
           id,
           name: file.name,
-          content: (ev.target?.result as string) || '',
-        });
-        store.openFile(id);
+          content: ev.target.result as string,
+        };
+
+        store.addContractFile(contractFile);
+        store.openFile(contractFile.id);
       }
     };
 
@@ -48,8 +52,9 @@ const handleAddNewFile = () => {
 const handleSaveNewFile = (name: string) => {
   if (name && name.replace('.gpy', '') !== '') {
     const id = uuidv4();
-    store.addContractFile({ id, name, content: '' });
-    store.openFile(id);
+    const contractFile: ContractFile = { id, name, content: '' };
+    store.addContractFile(contractFile);
+    store.openFile(contractFile.id);
   }
 
   showNewFileInput.value = false;
@@ -84,6 +89,13 @@ const handleSaveNewFile = (name: string) => {
     </MainTitle>
 
     <div id="tutorial-how-to-change-example">
+      <EmptyListPlaceholder v-if="store.contracts.length < 1" class="m-2">
+        No contracts.
+      </EmptyListPlaceholder>
+
+      <!-- TODO: loader ? -->
+      <!-- TODO: load examples button ? -->
+
       <ContractItem
         @click="store.openFile(contract.id)"
         v-for="contract in store.contractsOrderedByName"

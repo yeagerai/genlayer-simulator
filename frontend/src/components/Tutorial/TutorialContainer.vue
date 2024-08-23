@@ -10,6 +10,7 @@ const tutorialStore = useTutorialStore();
 const uiStore = useUIStore();
 const router = useRouter();
 
+// TODO: can I simply remove this?
 tutorialStore.resetTutorialState();
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

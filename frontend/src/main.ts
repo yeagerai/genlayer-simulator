@@ -11,11 +11,13 @@ import { VueQueryPlugin } from '@tanstack/vue-query';
 import FloatingVue from 'floating-vue';
 import 'floating-vue/dist/style.css';
 import { createPlausible } from 'v-plausible/vue';
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 
 const app = createApp(App);
 const pinia = createPinia();
-
+pinia.use(piniaPluginPersistedstate);
 pinia.use(persistStorePlugin);
+
 app.use(pinia);
 app.use(VueQueryPlugin);
 app.use(router);

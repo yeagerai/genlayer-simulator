@@ -1,194 +1,212 @@
-import type { ContractFile, DeployedContract } from '@/types';
+import type { ContractFile, Address } from '@/types';
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { notify } from '@kyvg/vue3-notification';
 import { useDb, useFileName, useSetupStores } from '@/hooks';
+import { v4 as uuidv4 } from 'uuid';
 
-export const useContractsStore = defineStore('contractsStore', () => {
-  const contracts = ref<ContractFile[]>([]);
-  const openedFiles = ref<string[]>([]);
-  const db = useDb();
-  const { setupStores } = useSetupStores();
-  const { cleanupFileName } = useFileName();
+// TODO: challenge contractFile vs id -> normalize? use middleware?
+export const useContractsStore = defineStore(
+  'contractsStore',
+  () => {
+    const contracts = ref<ContractFile[]>([]);
+    const db = useDb();
+    // const { setupStores } = useSetupStores();
+    const { cleanupFileName } = useFileName();
 
-  const currentContractId = ref<string | undefined>(
-    localStorage.getItem('contractsStore.currentContractId') || '',
-  );
-  const deployedContracts = ref<DeployedContract[]>([]);
+    const currentContractId = ref<string>('');
 
-  function getInitialOpenedFiles() {
-    const storage = localStorage.getItem('contractsStore.openedFiles');
+    function addContractFile(contract: ContractFile): void {
+      const name = cleanupFileName(contract.name);
+      contracts.value.push({ ...contract, name });
+    }
 
-    if (storage) {
-      openedFiles.value = storage.split(',');
-      openedFiles.value = openedFiles.value.filter((id) =>
-        contracts.value.find((c) => c.id === id),
+    function checkOpenTabs() {
+      console.log('checkOpenTabs', currentContractId.value);
+      // TODO: triple check this logic
+      const currentlyOpenContract = contracts.value.find(
+        (c) => c.id === currentContractId.value && c.isOpened,
       );
-    } else {
-      return [];
-    }
-  }
 
-  function addContractFile(contract: ContractFile): void {
-    const name = cleanupFileName(contract.name);
-    contracts.value.push({ ...contract, name });
-  }
+      if (currentlyOpenContract) {
+        console.log('stop');
 
-  function removeContractFile(id: string): void {
-    contracts.value = [...contracts.value.filter((c) => c.id !== id)];
-    deployedContracts.value = [
-      ...deployedContracts.value.filter((c) => c.contractId !== id),
-    ];
-    openedFiles.value = [
-      ...openedFiles.value.filter((contractId) => contractId !== id),
-    ];
-
-    if (currentContractId.value === id) {
-      setCurrentContractId('');
-    }
-  }
-
-  function updateContractFile(
-    id: string,
-    {
-      name,
-      content,
-      updatedAt,
-    }: { name?: string; content?: string; updatedAt?: string },
-  ) {
-    contracts.value = [
-      ...contracts.value.map((c) => {
-        if (c.id === id) {
-          const _name = cleanupFileName(name || c.name);
-          const _content = content || c.content;
-          return { ...c, name: _name, content: _content, updatedAt };
-        }
-        return c;
-      }),
-    ];
-  }
-
-  function openFile(id: string) {
-    const index = contracts.value.findIndex((c) => c.id === id);
-    const openedIndex = openedFiles.value.findIndex((c) => c === id);
-
-    if (index > -1 && openedIndex === -1) {
-      openedFiles.value = [...openedFiles.value, id];
-    }
-    currentContractId.value = id;
-  }
-
-  function closeFile(id: string) {
-    openedFiles.value = [...openedFiles.value.filter((c) => c !== id)];
-    if (openedFiles.value.length > 0) {
-      currentContractId.value = openedFiles.value[openedFiles.value.length - 1];
-    } else {
-      currentContractId.value = '';
-    }
-  }
-
-  function addDeployedContract({
-    contractId,
-    address,
-    defaultState,
-  }: DeployedContract): void {
-    const index = deployedContracts.value.findIndex(
-      (c) => c.contractId === contractId,
-    );
-    const newItem = { contractId, address, defaultState };
-    if (index === -1) deployedContracts.value.push(newItem);
-    else deployedContracts.value.splice(index, 1, newItem);
-
-    notify({
-      title: 'Contract deployed',
-      type: 'success',
-    });
-  }
-
-  function removeDeployedContract(contractId: string): void {
-    deployedContracts.value = [
-      ...deployedContracts.value.filter((c) => c.contractId !== contractId),
-    ];
-  }
-
-  function setCurrentContractId(id?: string) {
-    currentContractId.value = id || '';
-  }
-
-  async function resetStorage(): Promise<void> {
-    try {
-      const idsToDelete = contracts.value
-        .filter((c) => c.example || (!c.example && !c.updatedAt))
-        .map((c) => c.id);
-
-      await db.deployedContracts
-        .where('contractId')
-        .anyOf(idsToDelete)
-        .delete();
-      await db.contractFiles.where('id').anyOf(idsToDelete).delete();
-
-      deployedContracts.value = [
-        ...deployedContracts.value.filter(
-          (c) => !idsToDelete.includes(c.contractId),
-        ),
-      ];
-      contracts.value = [
-        ...contracts.value.filter((c) => !idsToDelete.includes(c.id)),
-      ];
-      openedFiles.value = [
-        ...openedFiles.value.filter((c) => !idsToDelete.includes(c)),
-      ];
-      if (
-        currentContractId.value &&
-        idsToDelete.includes(currentContractId.value)
-      ) {
-        currentContractId.value = '';
+        return;
       }
 
-      localStorage.setItem(
-        'mainStore.currentContractId',
-        currentContractId.value || '',
-      );
-      localStorage.setItem(
-        'mainStore.openedFiles',
-        openedFiles.value.join(','),
-      );
+      const anyOpenFile = contracts.value.find((c) => c.isOpened);
 
-      await setupStores();
-    } catch (error) {
-      console.error(error);
+      if (anyOpenFile) {
+        console.log('anyOpenFile');
+
+        focusFile(anyOpenFile.id);
+      } else {
+        console.log('fallback to home tab');
+
+        setCurrentContractId('');
+      }
     }
-  }
 
-  const currentContract = computed(() => {
-    return contracts.value.find((c) => c.id === currentContractId.value);
-  });
+    function removeContractFile(id: string): void {
+      contracts.value = contracts.value.filter((c) => c.id !== id);
+      checkOpenTabs();
+    }
 
-  const contractsOrderedByName = computed(() => {
-    return contracts.value.slice().sort((a, b) => a.name.localeCompare(b.name));
-  });
+    // TODO: could use the interface for the second argument as well
+    function updateContractFile(
+      id: string,
+      { name, content }: { name?: string; content?: string },
+    ) {
+      const contract = contracts.value.find((c) => c.id === id);
 
-  return {
-    // state
-    contracts,
-    openedFiles,
-    currentContractId,
-    deployedContracts,
+      if (!contract) {
+        return;
+      }
 
-    //getters
-    currentContract,
-    contractsOrderedByName,
+      if (name) {
+        contract.name = cleanupFileName(contract.name);
+      }
 
-    //actions
-    addContractFile,
-    removeContractFile,
-    updateContractFile,
-    openFile,
-    closeFile,
-    addDeployedContract,
-    removeDeployedContract,
-    setCurrentContractId,
-    resetStorage,
-    getInitialOpenedFiles,
-  };
-});
+      if (content) {
+        contract.content = content;
+      }
+
+      if (name || content) {
+        contract.updatedAt = new Date().toISOString();
+      }
+    }
+
+    function openFile(id: string) {
+      const contract = contracts.value.find((c) => c.id === id);
+
+      if (contract) {
+        contract.isOpened = true;
+        focusFile(contract.id);
+      }
+    }
+
+    function focusFile(id: string) {
+      console.log('focusFile', id);
+      setCurrentContractId(id);
+    }
+
+    function closeFile(id: string) {
+      const contract = contracts.value.find((c) => c.id === id);
+
+      if (contract) {
+        contract.isOpened = false;
+        checkOpenTabs();
+      }
+    }
+
+    function setContractAsDeployed(
+      id: string,
+      {
+        address,
+        defaultState,
+      }: {
+        address: Address;
+        defaultState: string;
+      },
+    ): void {
+      const contract = contracts.value.find((c) => c.id === id);
+
+      if (!contract) {
+        return;
+      }
+
+      contract.address = address;
+      contract.defaultState = defaultState;
+
+      notify({
+        title: 'Contract deployed',
+        type: 'success',
+      });
+    }
+
+    function setCurrentContractId(id?: string) {
+      console.trace('setCurrentContractId', id);
+      currentContractId.value = id || '';
+    }
+
+    async function loadExampleContracts() {
+      const contractsBlob = import.meta.glob(
+        '@/assets/examples/contracts/*.py',
+        {
+          query: '?raw',
+          import: 'default',
+        },
+      );
+
+      for (const key of Object.keys(contractsBlob)) {
+        const raw = await contractsBlob[key]();
+        const name = key.split('/').pop() || 'ExampleContract.py';
+
+        if (!contracts.value.some((c) => c.name === name)) {
+          const contract = {
+            id: uuidv4(),
+            name,
+            content: ((raw as string) || '').trim(),
+            example: true,
+          };
+
+          addContractFile(contract);
+        }
+      }
+    }
+
+    async function resetStorage(): Promise<void> {
+      // TODO: Re-implement a proper reset
+      contracts.value = [];
+      setCurrentContractId('');
+      await loadExampleContracts();
+    }
+
+    // Getters
+
+    const currentContract = computed(() => {
+      return contracts.value.find((c) => c.id === currentContractId.value);
+    });
+
+    const contractsOrderedByName = computed(() => {
+      return contracts.value
+        .slice()
+        .sort((a, b) => a.name.localeCompare(b.name));
+    });
+
+    const openedFiles = computed(() => {
+      return contracts.value.filter((c) => c.isOpened);
+    });
+
+    const deployedContracts = computed(() => {
+      return contracts.value.filter((c) => c.address);
+    });
+
+    return {
+      // state
+      contracts,
+      currentContractId,
+
+      // getters
+      currentContract,
+      openedFiles,
+      deployedContracts,
+      contractsOrderedByName,
+
+      // actions
+      addContractFile,
+      removeContractFile,
+      updateContractFile,
+      openFile,
+      closeFile,
+      setContractAsDeployed,
+      setCurrentContractId,
+      resetStorage,
+    };
+  },
+  {
+    persist: {
+      paths: ['currentContractId'],
+    },
+  },
+);

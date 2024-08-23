@@ -1,4 +1,4 @@
-import type { ContractFile, DeployedContract } from '@/types';
+import type { ContractFile } from '@/types';
 import { type PiniaPluginContext } from 'pinia';
 import { useDb, useFileName } from '@/hooks';
 
@@ -6,29 +6,7 @@ const ENABLE_LOGS = false;
 const db = useDb();
 const { cleanupFileName } = useFileName();
 
-/**
- * Upserts a deployed contract into the database.
- *
- * @param {DeployedContract} contract - The contract to upsert.
- * @return {Promise<void>} A Promise that resolves once the contract is upserted.
- */
-const upsertDeployedContract = async (
-  contract: DeployedContract,
-): Promise<void> => {
-  const existingContract = await db.deployedContracts
-    .where('contractId')
-    .equals(contract.contractId)
-    .first();
-  if (existingContract) {
-    await db.deployedContracts
-      .where('contractId')
-      .equals(contract.contractId)
-      .modify(contract);
-  } else {
-    await db.deployedContracts.add(contract);
-  }
-};
-
+// TODO: either update and test or find another solution for persisting the store
 /**
  * A plugin for persisting the state of a Pinia store.
  *
@@ -59,50 +37,11 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
             break;
           case 'removeContractFile':
             await db.contractFiles.delete(args[0]);
-            await db.deployedContracts
-              .where('contractId')
-              .equals(args[0] as string)
-              .delete();
-            localStorage.setItem(
-              'contractsStore.openedFiles',
-              store.openedFiles.join(','),
-            );
             break;
           case 'openFile':
-            localStorage.setItem(
-              'contractsStore.currentContractId',
-              args[0] as string,
-            );
-            localStorage.setItem(
-              'contractsStore.openedFiles',
-              store.openedFiles.join(','),
-            );
-            break;
-          case 'closeFile':
-            localStorage.setItem(
-              'contractsStore.currentContractId',
-              store.currentContractId,
-            );
-            localStorage.setItem(
-              'contractsStore.openedFiles',
-              store.openedFiles.join(','),
-            );
-            break;
-          case 'addDeployedContract':
-            await upsertDeployedContract(args[0] as DeployedContract);
-            break;
-          case 'setCurrentContractId':
-            localStorage.setItem(
-              'contractsStore.currentContractId',
-              args[0] as string,
-            );
-            break;
-
-          case 'removeDeployedContract':
-            await db.deployedContracts
-              .where('contractId')
-              .equals(args[0] as string)
-              .delete();
+            await db.contractFiles.update(args[0].id, {
+              ...(args[0] as ContractFile),
+            });
             break;
           default:
             break;

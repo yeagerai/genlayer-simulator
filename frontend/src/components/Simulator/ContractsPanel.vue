@@ -18,20 +18,6 @@ const handleRunDebug = () => {
   router.push({ name: 'run-debug' });
 };
 
-const setCurrentContractTab = (id?: string) => {
-  store.setCurrentContractId(id);
-};
-
-const handleCloseContract = (id?: string) => {
-  store.closeFile(id || '');
-};
-
-const contracts = computed(() => {
-  return store.contracts.filter((contract) =>
-    store.openedFiles.includes(contract.id || ''),
-  );
-});
-
 const showHome = computed(() => store.currentContractId === '');
 
 const handleHorizontalScroll = (event: WheelEvent) => {
@@ -55,18 +41,18 @@ const handleHorizontalScroll = (event: WheelEvent) => {
           id="tutorial-welcome"
           :isHomeTab="true"
           :isActive="showHome"
-          @selectContract="setCurrentContractTab('')"
+          @selectContract="store.setCurrentContractId('')"
         />
 
         <ContractTab
-          v-for="contract in contracts"
+          v-for="contract in store.openedFiles"
           :key="contract.id"
           :contract="contract"
           class="contract-item"
           :id="`contract-item-${contract.id}`"
           :isActive="contract.id === store.currentContractId"
-          @closeContract="handleCloseContract(contract.id)"
-          @selectContract="setCurrentContractTab(contract.id)"
+          @closeContract="store.closeFile(contract.id)"
+          @selectContract="store.openFile(contract.id)"
         />
       </div>
 
@@ -92,7 +78,7 @@ const handleHorizontalScroll = (event: WheelEvent) => {
     </div>
 
     <div
-      v-for="contract in contracts"
+      v-for="contract in store.contracts"
       :key="contract.id"
       class="relative flex h-full w-full"
       v-show="contract.id === store.currentContractId"
