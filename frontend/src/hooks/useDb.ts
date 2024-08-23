@@ -8,14 +8,9 @@ class GenLayerSimulatorDB extends Dexie {
 
   constructor() {
     super('genLayerSimulatorDB');
-    this.version(2).stores({
-      contractFiles: 'id, name, content, example, updatedAt',
-      deployedContracts: '[contractId+address]',
-      defaultContractStates: '[contractId+address]',
-    });
 
     this.version(2).stores({
-      contractFiles: 'id', // Primary key and indexed props
+      contractFiles: 'id',
       deployedContracts: '[contractId+address]',
       transactions:
         '++id, type, status, contractAddress, localContractId, txId',
