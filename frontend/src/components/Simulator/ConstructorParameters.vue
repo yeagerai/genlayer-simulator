@@ -8,28 +8,23 @@ import GhostBtn from '../global/GhostBtn.vue';
 import { notify } from '@kyvg/vue3-notification';
 import TextAreaInput from '@/components/global/inputs/TextAreaInput.vue';
 import FieldError from '@/components/global/fields/FieldError.vue';
+import { type ContractMethod } from '@/types';
 
 const { contractSchemaQuery, deployContract, isDeploying } =
   useContractQueries();
 const inputMap = useInputMap();
 
-const { data, error, isPending, isRefetching, isError } = contractSchemaQuery;
+const { data, isPending, isRefetching, isError } = contractSchemaQuery;
 const inputParams = ref<{ [k: string]: any }>({});
-const constructorInputs = computed<{ [k: string]: string }>(
-  () => data.value?.methods['__init__']?.inputs,
+
+const constructorInputs = computed(
+  () =>
+    data.value?.abi.find(
+      (method: ContractMethod) => method.type === 'constructor',
+    )?.inputs,
 );
 
 const emit = defineEmits(['deployed-contract']);
-
-watch(
-  () => constructorInputs.value,
-  () => {
-    inputParams.value = {
-      ...inputParams.value,
-      ...constructorInputs.value,
-    };
-  },
-);
 
 const isValidDefaultState = computed(() => {
   if (mode.value === 'json') {
@@ -72,24 +67,22 @@ const handleDeployContract = async () => {
   emit('deployed-contract');
 };
 
-const setInputParams = (inputs: { [k: string]: string }) => {
-  inputParams.value = Object.keys(inputs)
-    .map((key) => ({ name: key, value: inputs[key] }))
-    .reduce((prev, curr) => {
-      switch (curr.value) {
+const setInputParams = (inputs: { [k: string]: any }) => {
+  inputParams.value = inputs
+    .map((input: any) => ({ name: input.name, type: input.type }))
+    .reduce((prev: any, curr: any) => {
+      switch (curr.type) {
         case 'bool':
           prev = { ...prev, [curr.name]: false };
           break;
-        case 'str':
+        case 'string':
           prev = { ...prev, [curr.name]: '' };
           break;
-        case 'int':
+        case 'uint256':
           prev = { ...prev, [curr.name]: 0 };
-
           break;
         case 'float':
           prev = { ...prev, [curr.name]: 0.0 };
-
           break;
         default:
           prev = { ...prev, [curr.name]: '' };
@@ -184,13 +177,13 @@ const hasConstructorInputs = computed(
         :class="isDeploying && 'pointer-events-none opacity-60'"
       >
         <template v-if="mode === 'form'">
-          <div v-for="(inputType, input) in constructorInputs" :key="input">
+          <div v-for="input in constructorInputs" :key="input">
             <component
-              :is="inputMap.getComponent(inputType)"
-              v-model="inputParams[input]"
-              :name="input"
-              :placeholder="input"
-              :label="input"
+              :is="inputMap.getComponent(input.type)"
+              v-model="inputParams[input.name]"
+              :name="input.name"
+              :placeholder="input.name"
+              :label="input.name"
             />
           </div>
         </template>

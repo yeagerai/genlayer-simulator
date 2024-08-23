@@ -15,7 +15,6 @@ log_indexer_contract_schema = {
                     "output": str,
                 },
             },
-            "variables": {},
         },
         "message": str,
         "status": str,

@@ -119,3 +119,4 @@ async def get_webpage_with_principle(url, eq_principle, comparative=True):
     ) as eq:
         result = await eq.get_webpage(url)
         eq.set(result)
+    return final_result

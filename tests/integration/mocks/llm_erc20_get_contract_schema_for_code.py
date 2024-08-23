@@ -13,7 +13,6 @@ llm_erc20_contract_schema = {
                     "output": str,
                 },
             },
-            "variables": {},
         },
         "message": str,
         "status": str,

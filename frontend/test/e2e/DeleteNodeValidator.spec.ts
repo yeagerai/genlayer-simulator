@@ -37,21 +37,25 @@ describe('Settings - Delete Node Validator', () => {
       'number of validators should be greather than 0',
     ).be.greaterThan(0);
 
+    const firstValidator = existingValidators[0];
+
     // Trigger hover to display delete btn
-    await driver.actions().move({ origin: existingValidators[0] }).perform();
+    // !!! Tester should not move the mouse during this test
+    await driver.actions().move({ origin: firstValidator }).perform();
     await driver.sleep(1000);
 
-    const deleteBtn = await existingValidators[0].findElement(
+    const deleteValidatorBtn = await firstValidator.findElement(
       By.xpath("//button[@data-testid='validator-item-delete']"),
     );
 
-    await deleteBtn.click();
+    await deleteValidatorBtn.click();
+    await driver.sleep(1000);
 
-    const deleteValidatorBtn = await driver.findElement(
-      By.xpath("//button[@data-testid='btn-delete-validator']"),
+    const confirmDeleteValidatorBtn = await firstValidator.findElement(
+      By.xpath("//button[@data-testid='validator-item-confirm-delete']"),
     );
     // call delete validator button
-    await deleteValidatorBtn.click();
+    await confirmDeleteValidatorBtn.click();
 
     await driver.navigate().refresh();
     const validators = await driver.findElements(

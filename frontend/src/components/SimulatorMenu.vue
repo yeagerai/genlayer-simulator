@@ -50,14 +50,14 @@ import SimulatorMenuLink from './SimulatorMenuLink.vue';
 
       <SimulatorMenuLink
         :href="LINKS.discord"
-        v-tooltip="{ content: 'Feedback Form', placement: 'right' }"
+        v-tooltip="{ content: 'Discord', placement: 'right' }"
       >
         <DiscordIcon />
       </SimulatorMenuLink>
 
       <SimulatorMenuLink
         :href="LINKS.feedbackForm"
-        v-tooltip="{ content: 'Discord', placement: 'right' }"
+        v-tooltip="{ content: 'Feedback Form', placement: 'right' }"
       >
         <HandThumbUpIcon />
       </SimulatorMenuLink>

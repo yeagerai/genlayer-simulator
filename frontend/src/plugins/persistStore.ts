@@ -63,6 +63,10 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
               .where('contractId')
               .equals(args[0] as string)
               .delete();
+            localStorage.setItem(
+              'contractsStore.openedFiles',
+              store.openedFiles.join(','),
+            );
             break;
           case 'openFile':
             localStorage.setItem(
