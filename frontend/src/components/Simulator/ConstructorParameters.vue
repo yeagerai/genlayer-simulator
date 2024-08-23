@@ -114,7 +114,7 @@ const mapInputs = (inputs: { [k: string]: string }) =>
   Object.keys(inputs || {})
     .map((key) => ({
       name: key,
-      type: inputMap.getComponent(key),
+      type: inputs[key],
       value: inputs[key],
     }))
     .reduce((prev, curr) => {
