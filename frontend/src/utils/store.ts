@@ -4,7 +4,7 @@ import {
   useTransactionsStore,
   useNodeStore,
 } from '@/stores';
-import { db } from './db';
+import { useDb } from '@/hooks';
 import { v4 as uuidv4 } from 'uuid';
 import type { Address } from '@/types';
 
@@ -22,6 +22,7 @@ export const setupStores = async () => {
   const accountsStore = useAccountsStore();
   const transactionsStore = useTransactionsStore();
   const nodeStore = useNodeStore();
+  const db = useDb();
   const contractFiles = await db.contractFiles.toArray();
   const filteredFiles = contractFiles.filter(
     (c) => (c.example && !c.updatedAt) || (!c.example && !c.updatedAt),

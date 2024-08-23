@@ -1,8 +1,10 @@
 import type { ContractFile, DeployedContract } from '@/types';
-import { db, getContractFileName } from '@/utils';
+import { getContractFileName } from '@/utils';
 import { type PiniaPluginContext } from 'pinia';
+import { useDb } from '@/hooks';
 
 const ENABLE_LOGS = false;
+const db = useDb();
 
 /**
  * Upserts a deployed contract into the database.

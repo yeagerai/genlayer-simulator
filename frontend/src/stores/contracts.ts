@@ -1,8 +1,9 @@
 import type { ContractFile, DeployedContract } from '@/types';
-import { db, getContractFileName, setupStores } from '@/utils';
+import { getContractFileName, setupStores } from '@/utils';
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { notify } from '@kyvg/vue3-notification';
+import { useDb } from '@/hooks';
 
 const getInitialOPenedFiles = (): string[] => {
   const storage = localStorage.getItem('contractsStore.openedFiles');
@@ -13,6 +14,7 @@ const getInitialOPenedFiles = (): string[] => {
 export const useContractsStore = defineStore('contractsStore', () => {
   const contracts = ref<ContractFile[]>([]);
   const openedFiles = ref<string[]>(getInitialOPenedFiles());
+  const db = useDb();
 
   const currentContractId = ref<string | undefined>(
     localStorage.getItem('contractsStore.currentContractId') || '',

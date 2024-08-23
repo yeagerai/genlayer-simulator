@@ -1,7 +1,7 @@
 import type { ContractFile, DeployedContract, TransactionItem } from '@/types';
 import Dexie, { type Table } from 'dexie';
 
-export class GenLayerSimulatorDB extends Dexie {
+class GenLayerSimulatorDB extends Dexie {
   contractFiles!: Table<ContractFile>;
   deployedContracts!: Table<DeployedContract>;
   transactions!: Table<TransactionItem>;
@@ -17,11 +17,12 @@ export class GenLayerSimulatorDB extends Dexie {
     this.version(2).stores({
       contractFiles: 'id', // Primary key and indexed props
       deployedContracts: '[contractId+address]',
-      defaultContractStates: null,
       transactions:
         '++id, type, status, contractAddress, localContractId, txId',
     });
   }
 }
 
-export const db = new GenLayerSimulatorDB();
+export const useDb = () => {
+  return new GenLayerSimulatorDB();
+};
