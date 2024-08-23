@@ -1,9 +1,9 @@
 import type { ContractFile, DeployedContract } from '@/types';
-import { getContractFileName, setupStores } from '@/utils';
+import { setupStores } from '@/utils';
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { notify } from '@kyvg/vue3-notification';
-import { useDb } from '@/hooks';
+import { useDb, useFileName } from '@/hooks';
 
 const getInitialOPenedFiles = (): string[] => {
   const storage = localStorage.getItem('contractsStore.openedFiles');
@@ -15,6 +15,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
   const contracts = ref<ContractFile[]>([]);
   const openedFiles = ref<string[]>(getInitialOPenedFiles());
   const db = useDb();
+  const { cleanupFileName } = useFileName();
 
   const currentContractId = ref<string | undefined>(
     localStorage.getItem('contractsStore.currentContractId') || '',
@@ -22,7 +23,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
   const deployedContracts = ref<DeployedContract[]>([]);
 
   function addContractFile(contract: ContractFile): void {
-    const name = getContractFileName(contract.name);
+    const name = cleanupFileName(contract.name);
     contracts.value.push({ ...contract, name });
   }
 
@@ -48,7 +49,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
     contracts.value = [
       ...contracts.value.map((c) => {
         if (c.id === id) {
-          const _name = getContractFileName(name || c.name);
+          const _name = cleanupFileName(name || c.name);
           const _content = content || c.content;
           return { ...c, name: _name, content: _content, updatedAt };
         }

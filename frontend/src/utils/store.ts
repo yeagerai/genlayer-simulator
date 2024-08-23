@@ -67,11 +67,3 @@ export const setupStores = async () => {
       : [];
   }
 };
-
-export const getContractFileName = (name: string) => {
-  const tokens = name.split('.');
-  if (tokens.length > 0) {
-    return `${tokens[0]}.gpy`;
-  }
-  return `${name}.gpy`;
-};

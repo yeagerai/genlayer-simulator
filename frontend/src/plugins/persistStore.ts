@@ -1,10 +1,10 @@
 import type { ContractFile, DeployedContract } from '@/types';
-import { getContractFileName } from '@/utils';
 import { type PiniaPluginContext } from 'pinia';
-import { useDb } from '@/hooks';
+import { useDb, useFileName } from '@/hooks';
 
 const ENABLE_LOGS = false;
 const db = useDb();
+const { cleanupFileName } = useFileName();
 
 /**
  * Upserts a deployed contract into the database.
@@ -49,7 +49,7 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
           case 'addContractFile':
             await db.contractFiles.add({
               ...(args[0] as ContractFile),
-              name: getContractFileName(args[0].name),
+              name: cleanupFileName(args[0].name),
             });
             break;
           case 'updateContractFile':
