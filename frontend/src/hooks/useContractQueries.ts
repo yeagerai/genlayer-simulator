@@ -27,14 +27,8 @@ export function useContractQueries() {
 
   const isMock = computed(() => contract.value?.id === mockContractId);
 
-  const deployedContract = computed(() =>
-    contractsStore.deployedContracts.find(
-      ({ contractId }) => contractId === contract.value?.id,
-    ),
-  );
-
-  const isDeployed = computed(() => !!deployedContract.value);
-  const address = computed(() => deployedContract.value?.address);
+  const address = computed(() => contract.value?.address);
+  const isDeployed = computed(() => !!address.value);
 
   const fetchContractSchemaDebounced = useDebounceFn(() => {
     return fetchContractSchema();
@@ -144,11 +138,7 @@ export function useContractQueries() {
   );
 
   const contractAbiQuery = useQuery({
-    queryKey: [
-      'abi',
-      () => contract.value?.id,
-      () => deployedContract.value?.address,
-    ],
+    queryKey: ['abi', () => contract.value?.id, () => address.value],
     queryFn: fetchContractAbi,
     enabled: abiQueryEnabled,
     refetchOnWindowFocus: false,
@@ -161,7 +151,7 @@ export function useContractQueries() {
     }
 
     const result = await rpcClient.getDeployedContractSchema({
-      address: deployedContract.value?.address ?? '',
+      address: address.value || '',
     });
 
     if (result?.status === 'error') {

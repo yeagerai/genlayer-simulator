@@ -29,3 +29,16 @@ export interface ContractMethod {
 }
 
 export type Address = `0x${string}`;
+
+export interface ContractFile {
+  id: string;
+  name: string;
+  content: string;
+
+  example?: boolean;
+  updatedAt?: string;
+
+  address?: Address;
+  isOpened?: boolean;
+  defaultState?: string; // TODO: Really still needed?
+}

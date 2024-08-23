@@ -1,22 +1,3 @@
-export interface ContractFile {
-  id: string;
-  name: string;
-  content: string;
-  example?: boolean;
-  updatedAt?: string;
-}
-
-export interface OpenedFile {
-  id: string;
-  name: string;
-}
-
-export interface DeployedContract {
-  contractId: string;
-  address: string;
-  defaultState: string;
-}
-
 export interface NodeLog {
   date: string;
   message: {

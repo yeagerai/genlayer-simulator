@@ -4,8 +4,12 @@ import { useNodeStore } from './node';
 import { useTransactionsStore } from './transactions';
 import { useMockContractData } from '@/hooks/useMockContractData';
 
-const { mockContractId, mockDeployedContract, mockDeploymentTx } =
-  useMockContractData();
+const {
+  mockContractId,
+  mockContractFile,
+  mockDeploymentTx,
+  mockContractAddress,
+} = useMockContractData();
 
 const contractFunctionLogs = [
   {
@@ -109,7 +113,6 @@ export const useTutorialStore = defineStore('tutorialStore', () => {
 
   const resetTutorialState = () => {
     contractsStore.removeContractFile(mockContractId);
-    contractsStore.removeDeployedContract(mockContractId);
     transactionsStore.transactions.forEach((t) => {
       if (t.localContractId === mockContractId) {
         transactionsStore.removeTransaction(t);
@@ -135,14 +138,12 @@ export const useTutorialStore = defineStore('tutorialStore', () => {
     );
 
     const contractFile = {
-      id: mockContractId,
-      name: 'tutorial_storage.py',
+      ...mockContractFile,
       content: ((contractBlob.default as string) || '').trim(),
-      example: true,
     };
 
     contractsStore.addContractFile(contractFile);
-    contractsStore.openFile(mockContractId);
+    contractsStore.openFile(contractFile.id);
   }
 
   async function deployMockContract() {
@@ -150,7 +151,10 @@ export const useTutorialStore = defineStore('tutorialStore', () => {
     // In the future, we can improve this by properly mocking through the single contract store like for the schema
     // and thus preserve the appearance of async delays / loading times
 
-    contractsStore.addDeployedContract(mockDeployedContract);
+    contractsStore.setContractAsDeployed(mockContractId, {
+      address: mockContractAddress,
+      defaultState: '{}',
+    });
 
     nodeStore.logs.push({
       date: new Date().toISOString(),
@@ -177,8 +181,6 @@ export const useTutorialStore = defineStore('tutorialStore', () => {
     });
 
     transactionsStore.addTransaction(mockDeploymentTx);
-
-    return mockDeployedContract;
   }
 
   async function callContractMethod() {
@@ -188,8 +190,8 @@ export const useTutorialStore = defineStore('tutorialStore', () => {
     return new Promise((resolve) => {
       setTimeout(() => {
         transactionsStore.addTransaction({
-          contractAddress: mockDeployedContract.address || '',
-          localContractId: mockDeployedContract.contractId || '',
+          contractAddress: mockContractAddress || '',
+          localContractId: mockContractId || '',
           txId: 100000,
           type: 'method',
           status: 'PENDING',

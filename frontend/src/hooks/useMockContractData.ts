@@ -1,13 +1,15 @@
-import { type DeployedContract, type TransactionItem } from '@/types';
+import { type TransactionItem, type ContractFile, type Address } from '@/types';
 
 export function useMockContractData() {
   const mockContractId = '1a621cad-1cfd-4dbd-892a-f6bbde7a2fab';
-  const mockContractAddress = '0x3F9Fb6C6aBaBD0Ae6cB27c513E7b0fE4C0B3E9C8';
+  const mockContractAddress: Address =
+    '0x3F9Fb6C6aBaBD0Ae6cB27c513E7b0fE4C0B3E9C8';
 
-  const mockDeployedContract: DeployedContract = {
-    address: mockContractAddress,
-    contractId: mockContractId,
-    defaultState: '{}',
+  const mockContractFile: ContractFile = {
+    id: mockContractId,
+    name: 'tutorial_storage.py',
+    content: '',
+    example: true,
   };
 
   const mockContractSchema = {
@@ -43,7 +45,8 @@ export function useMockContractData() {
 
   return {
     mockContractId,
-    mockDeployedContract,
+    mockContractFile,
+    mockContractAddress,
     mockContractSchema,
     mockDeploymentTx,
   };

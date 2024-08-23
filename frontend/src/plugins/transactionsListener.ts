@@ -47,7 +47,7 @@ export const TransactionsListenerPlugin = {
                 console.log('New deployed contract', currentTx);
               }
 
-              contractsStore.addDeployedContract({
+              contractsStore.setContractAsDeployed({
                 contractId: currentTx.localContractId,
                 address: currentTx.contractAddress,
                 defaultState: '{}',
