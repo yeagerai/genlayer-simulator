@@ -2,14 +2,15 @@
 import type { ContractMethod } from '@/types';
 import { ref } from 'vue';
 import { Collapse } from 'vue-collapsed';
-import { InputTypesMap } from '@/utils';
-import { useContractQueries } from '@/hooks/useContractQueries';
+import { useInputMap } from '@/hooks';
 import { notify } from '@kyvg/vue3-notification';
 import { ChevronDownIcon } from '@heroicons/vue/16/solid';
-import { useEventTracking } from '@/hooks';
+import { useEventTracking, useContractQueries } from '@/hooks';
 
 const { callWriteMethod, callReadMethod, contract } = useContractQueries();
 const { trackEvent } = useEventTracking();
+
+const inputMap = useInputMap();
 
 const props = defineProps<{
   methodName: string;
@@ -93,7 +94,7 @@ const clearInputs = () => {
         <component
           v-for="(inputType, inputKey) in method.inputs"
           :key="inputKey"
-          :is="InputTypesMap[inputType]"
+          :is="inputMap.getComponent(inputType)"
           v-model="inputs[inputKey]"
           :name="String(inputKey)"
           :label="String(inputKey)"

@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { useContractQueries } from '@/hooks/useContractQueries';
+import { useContractQueries, useInputMap } from '@/hooks';
 import { ref, computed, watch, onMounted } from 'vue';
 import PageSection from '@/components/Simulator/PageSection.vue';
 import { ArrowUpTrayIcon } from '@heroicons/vue/16/solid';
-import { InputTypesMap } from '@/utils';
 import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
 import GhostBtn from '../global/GhostBtn.vue';
 import { notify } from '@kyvg/vue3-notification';
@@ -12,10 +11,10 @@ import FieldError from '@/components/global/fields/FieldError.vue';
 
 const { contractSchemaQuery, deployContract, isDeploying } =
   useContractQueries();
+const inputMap = useInputMap();
 
 const { data, error, isPending, isRefetching, isError } = contractSchemaQuery;
 const inputParams = ref<{ [k: string]: any }>({});
-
 const constructorInputs = computed<{ [k: string]: string }>(
   () => data.value?.methods['__init__']?.inputs,
 );
@@ -113,7 +112,11 @@ const toggleMode = () => {
 
 const mapInputs = (inputs: { [k: string]: string }) =>
   Object.keys(inputs || {})
-    .map((key) => ({ name: key, type: InputTypesMap[key], value: inputs[key] }))
+    .map((key) => ({
+      name: key,
+      type: inputMap.getComponent(key),
+      value: inputs[key],
+    }))
     .reduce((prev, curr) => {
       if (typeof curr.value === 'boolean') {
         prev = { ...prev, [curr.name]: curr.value ? 'True' : 'False' };
@@ -183,7 +186,7 @@ const hasConstructorInputs = computed(
         <template v-if="mode === 'form'">
           <div v-for="(inputType, input) in constructorInputs" :key="input">
             <component
-              :is="InputTypesMap[inputType]"
+              :is="inputMap.getComponent(inputType)"
               v-model="inputParams[input]"
               :name="input"
               :placeholder="input"

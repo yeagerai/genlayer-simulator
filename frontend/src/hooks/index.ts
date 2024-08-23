@@ -5,3 +5,5 @@ export * from './useEth';
 export * from './useShortAddress';
 export * from './useDb';
 export * from './useWebSocketClient';
+export * from './useInputMap';
+export * from './useContractQueries';
