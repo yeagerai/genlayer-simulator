@@ -4,7 +4,7 @@ import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import type { Address } from '@/types';
 
 // Abstract 1+ level to automatically sign with current wallet? what about unit test?
-export function useEth() {
+export function useWallet() {
   const getAccountFromPrivatekey = (privateKey: Address) => {
     return privateKeyToAccount(privateKey);
   };
