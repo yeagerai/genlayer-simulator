@@ -11,7 +11,6 @@ football_prediction_market_contract_schema = {
                 },
                 "resolve": {"output": str},
             },
-            "variables": {},
         },
         "message": str,
         "status": str,

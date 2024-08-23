@@ -255,23 +255,10 @@ class GenVM:
 
                 methods[name] = result
 
-            # Find all class variables
-            variables = {}
-            tree = ast.parse(contract_code)
-            for node in tree.body:
-                if isinstance(node, ast.ClassDef):
-                    for stmt in node.body:
-                        if isinstance(stmt, ast.AnnAssign):
-                            if hasattr(stmt.annotation, "id") and hasattr(
-                                stmt.target, "id"
-                            ):
-                                variables[stmt.target.id] = stmt.annotation.id
-
             abi = GenVM.generate_abi_from_schema_methods(methods)
 
             contract_schema = {
                 "class": class_name,
-                "variables": variables,
                 "abi": abi,
             }
 
