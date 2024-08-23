@@ -29,7 +29,7 @@ const llmERC20Contract = computed(() => {
 
 const startingContractId = computed(() => {
   return (
-    contractStore.openedFiles[0] ||
+    contractStore.openedFiles[0]?.id ||
     storageContract.value?.id ||
     wizardOfCoinContract.value?.id ||
     llmERC20Contract.value?.id ||
