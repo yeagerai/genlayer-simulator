@@ -1,13 +1,13 @@
 import type { NodeLog, NewValidatorDataModel, ValidatorModel } from '@/types';
-import { webSocketClient } from '@/utils';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { useContractsStore } from './contracts';
 import { notify } from '@kyvg/vue3-notification';
-import { useRpcClient } from '@/hooks';
+import { useRpcClient, useWebSocketClient } from '@/hooks';
 
 export const useNodeStore = defineStore('nodeStore', () => {
   const rpcClient = useRpcClient();
+  const webSocketClient = useWebSocketClient();
   const logs = ref<NodeLog[]>([]);
   const listenWebsocket = ref<boolean>(true);
   const contractsStore = useContractsStore();
