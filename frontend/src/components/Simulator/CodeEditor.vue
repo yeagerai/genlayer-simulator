@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { ref, shallowRef, watch, computed } from 'vue';
-import { pythonSyntaxDefinition } from '@/utils';
 import { useContractsStore, useUIStore } from '@/stores';
 import { type ContractFile } from '@/types';
+import { usePythonSyntax } from '@/hooks';
 
 const uiStore = useUIStore();
 const contractStore = useContractsStore();
 const props = defineProps<{
   contract: ContractFile;
 }>();
+const pythonSyntax = usePythonSyntax();
 
 const editorElement = ref<HTMLDivElement | null>(null);
 const containerElement = ref<HTMLElement | null | undefined>(null);
@@ -22,10 +23,7 @@ watch(
     if (!editorRef.value && newValue) {
       containerElement.value = editorElement.value?.parentNode?.parentElement;
       monaco.languages.register({ id: 'python' });
-      monaco.languages.setMonarchTokensProvider(
-        'python',
-        pythonSyntaxDefinition,
-      );
+      monaco.languages.setMonarchTokensProvider('python', pythonSyntax);
       editorRef.value = monaco.editor.create(editorElement.value!, {
         value: props.contract.content || '',
         language: 'python',

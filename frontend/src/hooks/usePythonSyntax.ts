@@ -1,7 +1,7 @@
 /* eslint-disable no-useless-escape */
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
-export const pythonSyntaxDefinition: monaco.languages.IMonarchLanguage = {
+const pythonSyntaxDefinition: monaco.languages.IMonarchLanguage = {
   defaultToken: '',
   tokenPostfix: '.python',
 
@@ -212,4 +212,8 @@ export const pythonSyntaxDefinition: monaco.languages.IMonarchLanguage = {
       [/\\$/, 'string'],
     ],
   },
+};
+
+export const usePythonSyntax = () => {
+  return pythonSyntaxDefinition;
 };
