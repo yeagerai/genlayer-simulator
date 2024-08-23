@@ -1,4 +1,4 @@
-import { RpcClient } from '@/utils';
+import { RpcClient } from '@/clients/rpc';
 import { JsonRpcService } from '@/services/JsonRpcService';
 
 export function useRpcClient() {
