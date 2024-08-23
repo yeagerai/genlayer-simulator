@@ -4,8 +4,8 @@ import FloatField from '@/components/global/fields/FloatField.vue';
 import BooleanField from '@/components/global/fields/BooleanField.vue';
 
 export const InputTypesMap: { [k: string]: any } = {
-  str: StringField,
-  int: IntegerField,
+  string: StringField,
+  uint256: IntegerField,
   float: FloatField,
   bool: BooleanField,
 };

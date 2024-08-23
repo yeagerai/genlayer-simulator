@@ -30,7 +30,6 @@ export function useMockContractData() {
         output: '',
       },
     },
-    variables: {},
   };
 
   const mockDeploymentTx: TransactionItem = {
