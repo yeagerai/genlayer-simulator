@@ -24,7 +24,7 @@ withDefaults(
 
 <template>
   <div
-    class="rounded-md bg-opacity-30 p-2"
+    class="rounded-md bg-opacity-20 p-2"
     :class="[
       info && 'bg-blue-500',
       success && 'bg-green-500',
@@ -60,7 +60,7 @@ withDefaults(
         <p
           class="text-sm"
           :class="[
-            info && 'text-blue-700 dark:text-blue-300',
+            info && 'text-gray-600 dark:text-blue-300',
             success && 'text-green-700 dark:text-green-300',
             warning && 'text-yellow-700 dark:text-yellow-300',
             error && 'text-red-700 dark:text-red-300',
