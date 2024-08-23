@@ -5,10 +5,14 @@ import Notification from '@/components/Notification.vue';
 import TutorialContainer from '@/components/Tutorial/TutorialContainer.vue';
 import { useUIStore } from '@/stores/ui';
 import { onBeforeMount } from 'vue';
+import { useSetupStores } from '@/hooks';
 
 const uiStore = useUIStore();
+const { setupStores } = useSetupStores();
+
 onBeforeMount(() => {
   uiStore.initialize();
+  setupStores();
 });
 </script>
 

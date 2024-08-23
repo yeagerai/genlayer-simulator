@@ -5,7 +5,6 @@ import Notifications from '@kyvg/vue3-notification';
 import App from './App.vue';
 import router from './router';
 import { persistStorePlugin, TransactionsListenerPlugin } from '@/plugins';
-import { setupStores } from '@/utils';
 import { VueSpinnersPlugin } from 'vue3-spinners';
 import registerGlobalComponents from '@/components/global/registerGlobalComponents';
 import { VueQueryPlugin } from '@tanstack/vue-query';
@@ -51,4 +50,3 @@ app.use(plausible);
 registerGlobalComponents(app);
 
 app.mount('#app');
-setupStores();
