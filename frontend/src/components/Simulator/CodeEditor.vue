@@ -33,9 +33,8 @@ watch(
         formatOnType: true,
       });
       editorRef.value.onDidChangeModelContent(() => {
-        contractStore.updateContractFile(props.contract.id!, {
-          content: editorRef.value?.getValue() || '',
-          updatedAt: new Date().toISOString(),
+        contractStore.updateContractFile(props.contract.id, {
+          content: editorRef.value?.getValue(),
         });
       });
     }
