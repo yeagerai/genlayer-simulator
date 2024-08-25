@@ -62,9 +62,7 @@ services:
     restart: always
 
   postgres:
-    build:
-      context: ./
-      dockerfile: ./docker/Dockerfile.database
+    image: postgres:12.19-alpine
     ports:
       - "${DBPORT}:5432"
     environment:
