@@ -1,18 +1,23 @@
 football_prediction_market_contract_schema = {
-    "id": int,
-    "jsonrpc": str,
+    "id": 1,
+    "jsonrpc": "2.0",
     "result": {
         "data": {
-            "class": str,
-            "methods": {
-                "__init__": {
-                    "inputs": {"game_date": str, "team1": str, "team2": str},
-                    "output": str,
+            "abi": [
+                {
+                    "inputs": [
+                        {"name": "game_date", "type": "string"},
+                        {"name": "team1", "type": "string"},
+                        {"name": "team2", "type": "string"},
+                    ],
+                    "type": "constructor",
                 },
-                "resolve": {"output": str},
-            },
+                {"inputs": [], "name": "resolve", "outputs": [], "type": "function"},
+            ],
+            "class": "PredictionMarket",
         },
-        "message": str,
-        "status": str,
+        "exception": None,
+        "message": "Endpoint get_contract_schema_for_code successfully executed",
+        "status": "success",
     },
 }

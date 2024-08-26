@@ -1,20 +1,39 @@
 llm_erc20_contract_schema = {
-    "id": int,
-    "jsonrpc": str,
+    "id": 1,
+    "jsonrpc": "2.0",
     "result": {
         "data": {
-            "class": str,
-            "methods": {
-                "__init__": {"inputs": {"total_supply": int}},
-                "get_balance_of": {"inputs": {"address": str}, "output": int},
-                "get_balances": {"output": dict},
-                "transfer": {
-                    "inputs": {"amount": int, "to_address": str},
-                    "output": str,
+            "abi": [
+                {
+                    "inputs": [{"name": "total_supply", "type": "uint256"}],
+                    "type": "constructor",
                 },
-            },
+                {
+                    "inputs": [{"name": "address", "type": "string"}],
+                    "name": "get_balance_of",
+                    "outputs": [{"name": "", "type": "uint256"}],
+                    "type": "function",
+                },
+                {
+                    "inputs": [],
+                    "name": "get_balances",
+                    "outputs": [{"name": "", "type": ", in"}],
+                    "type": "function",
+                },
+                {
+                    "inputs": [
+                        {"name": "amount", "type": "uint256"},
+                        {"name": "to_address", "type": "string"},
+                    ],
+                    "name": "transfer",
+                    "outputs": [],
+                    "type": "function",
+                },
+            ],
+            "class": "LlmErc20",
         },
-        "message": str,
-        "status": str,
+        "exception": None,
+        "message": "Endpoint get_contract_schema_for_code successfully executed",
+        "status": "success",
     },
 }

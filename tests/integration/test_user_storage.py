@@ -16,6 +16,7 @@ from tests.integration.mocks.call_contract_function import (
 
 from tests.common.response import (
     assert_dict_struct,
+    assert_dict_exact,
     has_success_status,
 )
 
@@ -43,8 +44,9 @@ def test_user_storage():
     result_schema = post_request_localhost(
         payload("get_contract_schema_for_code", contract_code)
     ).json()
+    print("result_schema", result_schema)
     assert has_success_status(result_schema)
-    assert_dict_struct(result_schema, user_storage_contract_schema)
+    assert_dict_exact(result_schema, user_storage_contract_schema)
 
     # Deploy Contract
     # Deploy Contract

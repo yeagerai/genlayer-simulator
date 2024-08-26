@@ -15,6 +15,7 @@ from tests.integration.mocks.call_contract_function import (
 
 from tests.common.response import (
     assert_dict_struct,
+    assert_dict_exact,
     has_success_status,
 )
 
@@ -37,7 +38,7 @@ def test_football_prediction_market():
         payload("get_contract_schema_for_code", contract_code)
     ).json()
     assert has_success_status(result_schema)
-    assert_dict_struct(result_schema, football_prediction_market_contract_schema)
+    assert_dict_exact(result_schema, football_prediction_market_contract_schema)
 
     # Deploy Contract
     call_method_response_deploy, transaction_response_deploy = (
