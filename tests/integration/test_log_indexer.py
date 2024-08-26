@@ -40,7 +40,6 @@ def test_log_indexer():
     result_schema = post_request_localhost(
         payload("get_contract_schema_for_code", contract_code)
     ).json()
-    print("result_schema", result_schema)
     assert has_success_status(result_schema)
     assert_dict_exact(result_schema, log_indexer_contract_schema)
 
