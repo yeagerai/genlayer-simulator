@@ -1,19 +1,33 @@
 user_storage_contract_schema = {
-    "id": int,
-    "jsonrpc": str,
+    "id": 1,
+    "jsonrpc": "2.0",
     "result": {
         "data": {
-            "class": str,
-            "methods": {
-                "__init__": {"output": str},
-                "get_complete_storage": {"output": str},
-                "get_account_storage": {
-                    "inputs": {"account_address": str},
-                    "output": str,
+            "abi": [
+                {"inputs": [], "type": "constructor"},
+                {
+                    "inputs": [{"name": "account_address", "type": "string"}],
+                    "name": "get_account_storage",
+                    "outputs": [{"name": "", "type": "string"}],
+                    "type": "function",
                 },
-                "update_storage": {"inputs": {"new_storage": str}, "output": str},
-            },
+                {
+                    "inputs": [],
+                    "name": "get_complete_storage",
+                    "outputs": [{"name": "", "type": "bytes"}],
+                    "type": "function",
+                },
+                {
+                    "inputs": [{"name": "new_storage", "type": "string"}],
+                    "name": "update_storage",
+                    "outputs": [],
+                    "type": "function",
+                },
+            ],
+            "class": "UserStorage",
         },
-        "status": str,
+        "exception": None,
+        "message": "Endpoint get_contract_schema_for_code successfully executed",
+        "status": "success",
     },
 }

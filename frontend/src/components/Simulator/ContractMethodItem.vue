@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ContractMethod } from '@/types';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { Collapse } from 'vue-collapsed';
 import { InputTypesMap } from '@/utils';
 import { useContractQueries } from '@/hooks/useContractQueries';
@@ -12,7 +12,6 @@ const { callWriteMethod, callReadMethod, contract } = useContractQueries();
 const { trackEvent } = useEventTracking();
 
 const props = defineProps<{
-  methodName: string;
   method: ContractMethod;
   methodType: 'read' | 'write';
 }>();
@@ -26,7 +25,7 @@ const handleCallReadMethod = async () => {
 
   try {
     const result = await callReadMethod(
-      props.methodName,
+      props.method.name,
       Object.values(inputs.value),
     );
 
@@ -34,7 +33,7 @@ const handleCallReadMethod = async () => {
 
     trackEvent('called_read_method', {
       contract_name: contract.value?.name || '',
-      method_name: props.methodName,
+      method_name: props.method.name,
     });
   } catch (error) {
     notify({
@@ -47,11 +46,11 @@ const handleCallReadMethod = async () => {
 
 const handleCallWriteMethod = async () => {
   await callWriteMethod({
-    method: props.methodName,
+    method: props.method.name,
     params: Object.values(inputs.value),
   });
 
-  clearInputs();
+  resetInputs();
 
   notify({
     text: 'Write method called',
@@ -60,13 +59,37 @@ const handleCallWriteMethod = async () => {
 
   trackEvent('called_write_method', {
     contract_name: contract.value?.name || '',
-    method_name: props.methodName,
+    method_name: props.method.name,
   });
 };
 
-const clearInputs = () => {
-  inputs.value = {};
+const resetInputs = () => {
+  props.method.inputs.forEach((input: any) => {
+    let defaultValue;
+
+    switch (input.type) {
+      case 'uint256':
+      case 'float':
+        defaultValue = 0;
+        break;
+      case 'bool':
+        defaultValue = false;
+        break;
+      case 'string':
+        defaultValue = '';
+        break;
+      default:
+        defaultValue = '';
+        break;
+    }
+
+    inputs.value[input.name] = defaultValue;
+  });
 };
+
+onMounted(() => {
+  resetInputs();
+});
 </script>
 
 <template>
@@ -76,10 +99,10 @@ const clearInputs = () => {
     <button
       class="flex grow flex-row items-center justify-between bg-slate-200 p-2 text-xs hover:bg-slate-300 dark:bg-slate-600 dark:hover:bg-slate-500"
       @click="isExpanded = !isExpanded"
-      :data-testid="`expand-method-btn-${methodName}`"
+      :data-testid="`expand-method-btn-${method.name}`"
     >
       <div class="truncate">
-        {{ methodName }}
+        {{ method.name }}
       </div>
 
       <ChevronDownIcon
@@ -91,13 +114,13 @@ const clearInputs = () => {
     <Collapse :when="isExpanded">
       <div class="flex flex-col items-start gap-2 p-2">
         <component
-          v-for="(inputType, inputKey) in method.inputs"
-          :key="inputKey"
-          :is="InputTypesMap[inputType]"
-          v-model="inputs[inputKey]"
-          :name="String(inputKey)"
-          :label="String(inputKey)"
-          :placeholder="String(inputKey)"
+          v-for="input in method.inputs"
+          :key="input.name"
+          :is="InputTypesMap[input.type]"
+          v-model="inputs[input.name]"
+          :name="String(input.name)"
+          :label="String(input.name)"
+          :placeholder="String(input.name)"
         />
 
         <div>
@@ -105,7 +128,7 @@ const clearInputs = () => {
             v-if="methodType === 'read'"
             @click="handleCallReadMethod"
             tiny
-            :data-testid="`read-method-btn-${methodName}`"
+            :data-testid="`read-method-btn-${method.name}`"
             >Call Contract</Btn
           >
 
@@ -113,7 +136,7 @@ const clearInputs = () => {
             v-if="methodType === 'write'"
             @click="handleCallWriteMethod"
             tiny
-            :data-testid="`write-method-btn-${methodName}`"
+            :data-testid="`write-method-btn-${method.name}`"
             >Send Transaction</Btn
           >
         </div>
@@ -121,7 +144,7 @@ const clearInputs = () => {
         <div v-if="responseMessage" class="w-full break-all text-sm">
           <div class="mb-1 text-xs font-medium">Response:</div>
           <div
-            :data-testid="`method-response-${methodName}`"
+            :data-testid="`method-response-${method.name}`"
             class="w-full rounded bg-white p-1 font-mono text-xs dark:bg-slate-600"
           >
             {{ responseMessage }}

@@ -12,25 +12,34 @@ export function useMockContractData() {
 
   const mockContractSchema = {
     class: 'Storage',
-    methods: {
-      __init__: {
-        inputs: {
-          initial_storage: 'str',
-        },
-        output: 'None',
+    abi: [
+      {
+        inputs: [
+          {
+            name: 'initial_storage',
+            type: 'string',
+          },
+        ],
+        type: 'constructor',
       },
-      get_storage: {
-        inputs: {},
-        output: 'str',
+      {
+        inputs: [],
+        name: 'get_storage',
+        outputs: 'string',
+        type: 'function',
       },
-      update_storage: {
-        inputs: {
-          new_storage: 'str',
-        },
-        output: '',
+      {
+        inputs: [
+          {
+            name: 'update',
+            type: 'string',
+          },
+        ],
+        name: 'new_storage',
+        outputs: '',
+        type: 'function',
       },
-    },
-    variables: {},
+    ],
   };
 
   const mockDeploymentTx: TransactionItem = {

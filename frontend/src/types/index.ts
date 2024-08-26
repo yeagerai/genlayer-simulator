@@ -22,8 +22,10 @@ export interface NewValidatorDataModel {
 }
 
 export interface ContractMethod {
+  type: string;
   name: string;
-  inputs: { [k: string]: string };
+  inputs: [{ name: string; type: string }];
+  outputs: [{ name: string; type: string }];
 }
 
 export type Address = `0x${string}`;

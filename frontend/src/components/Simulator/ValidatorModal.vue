@@ -9,6 +9,7 @@ import TextAreaInput from '@/components/global/inputs/TextAreaInput.vue';
 import FieldError from '@/components/global/fields/FieldError.vue';
 import FieldLabel from '@/components/global/fields/FieldLabel.vue';
 import { useEventTracking } from '@/hooks';
+import CopyTextButton from '../global/CopyTextButton.vue';
 
 const nodeStore = useNodeStore();
 const { trackEvent } = useEventTracking();
@@ -50,7 +51,7 @@ async function handleUpdateValidator(validator: ValidatorModel) {
   try {
     await nodeStore.updateValidator(validator, newValidatorData.value);
     notify({
-      title: 'Validator updated',
+      title: `Updated validator #${validator.id}`,
       type: 'success',
     });
     emit('close');
@@ -126,16 +127,18 @@ const tryInitValues = () => {
 <template>
   <Modal @close="emit('close')" @onOpen="tryInitValues">
     <template #title v-if="isCreateMode">Create New Validator</template>
-    <template #title v-else>Update Validator</template>
+    <template #title v-else>Validator #{{ validator?.id }}</template>
 
     <Alert warning v-if="providerOptions.length === 0">
       No node providers available. Please configure a provider first.
     </Alert>
 
     <template #info v-if="!isCreateMode">
-      <div class="text-xs">
-        <div>ID: {{ props.validator?.id }}</div>
-        <div>Address: {{ props.validator?.address }}</div>
+      <div
+        class="flex flex-row items-center gap-1 font-mono text-xs font-normal"
+      >
+        {{ validator?.address }}
+        <CopyTextButton :text="validator?.address || ''" />
       </div>
     </template>
 

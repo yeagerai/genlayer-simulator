@@ -1,15 +1,30 @@
 storage_contract_schema = {
-    "id": int,
-    "jsonrpc": str,
+    "id": 1,
+    "jsonrpc": "2.0",
     "result": {
         "data": {
-            "class": str,
-            "methods": {
-                "__init__": {"inputs": {"initial_storage": str}, "output": str},
-                "get_storage": {"output": str},
-                "update_storage": {"inputs": {"new_storage": str}, "output": str},
-            },
+            "abi": [
+                {
+                    "inputs": [{"name": "initial_storage", "type": "string"}],
+                    "type": "constructor",
+                },
+                {
+                    "inputs": [],
+                    "name": "get_storage",
+                    "outputs": [{"name": "", "type": "string"}],
+                    "type": "function",
+                },
+                {
+                    "inputs": [{"name": "new_storage", "type": "string"}],
+                    "name": "update_storage",
+                    "outputs": [],
+                    "type": "function",
+                },
+            ],
+            "class": "Storage",
         },
-        "status": str,
+        "exception": None,
+        "message": "Endpoint get_contract_schema_for_code successfully executed",
+        "status": "success",
     },
 }

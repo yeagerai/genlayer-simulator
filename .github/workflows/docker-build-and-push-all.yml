@@ -39,16 +39,6 @@ jobs:
     secrets:
       dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
 
-  database:
-    uses: ./.github/workflows/docker-build-and-push-image.yml
-    with:
-      docker_build_context: .
-      dockerfile: docker/Dockerfile.database
-      dockerhub_repo: yeagerai/simulator-database
-      dockerhub_username: ${{ vars.DOCKERHUB_USERNAME }}
-    secrets:
-      dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
-
   database-migration:
     uses: ./.github/workflows/docker-build-and-push-image.yml
     with:

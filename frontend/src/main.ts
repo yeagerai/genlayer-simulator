@@ -5,7 +5,7 @@ import Notifications from '@kyvg/vue3-notification';
 import App from './App.vue';
 import router from './router';
 import { persistStorePlugin, TransactionsListenerPlugin } from '@/plugins';
-import { RpcClient, setupStores } from '@/utils';
+import { RpcClient } from '@/utils';
 import { JsonRpcService } from './services/JsonRpcService';
 import { VueSpinnersPlugin } from 'vue3-spinners';
 import registerGlobalComponents from '@/components/global/registerGlobalComponents';
@@ -53,4 +53,3 @@ app.use(plausible);
 registerGlobalComponents(app);
 
 app.mount('#app');
-setupStores();

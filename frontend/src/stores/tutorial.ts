@@ -138,7 +138,7 @@ export const useTutorialStore = defineStore('tutorialStore', () => {
       example: true,
     };
 
-    contractsStore.addContractFile(contractFile);
+    contractsStore.addContractFile(contractFile, true);
     contractsStore.openFile(mockContractId);
   }
 
