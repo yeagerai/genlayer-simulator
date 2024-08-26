@@ -18,7 +18,7 @@ def base_node_json(provider: str, model: str) -> dict:
 
 
 def get_random_provider_using_weights(
-    defaults: dict[str], get_ollama_url: Callable[[str], str]
+    defaults: dict[str], get_ollama_url: Callable[[str], str | None]
 ) -> str:
     # remove providers if no api key
     provider_weights: dict[str, float] = defaults["provider_weights"]
@@ -53,10 +53,14 @@ def get_random_provider_using_weights(
 
 
 def get_provider_models(
-    defaults: dict, provider: str, get_ollama_url: Callable[[str], str]
+    defaults: dict, provider: str, get_ollama_url: Callable[[str], str | None]
 ) -> list:
 
     if provider == "ollama":
+        ollama_url = get_ollama_url("tags")
+        if not ollama_url:
+            return []
+
         ollama_models_result = requests.get(get_ollama_url("tags")).json()
         ollama_models = []
         for ollama_model in ollama_models_result["models"]:
@@ -121,7 +125,7 @@ def num_decimal_places(number: float) -> int:
 
 
 def random_validator_config(
-    get_ollama_url: Callable[[str], str], providers: list = None
+    get_ollama_url: Callable[[str], str | None], providers: list = None
 ):
     providers = providers or []
 
