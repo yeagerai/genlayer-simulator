@@ -143,7 +143,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
   }
 
   async function cloneValidator(validator: ValidatorModel) {
-    const result = await $jsonRpc.createValidator(validator);
+    const result = await rpcClient.createValidator(validator);
     if (result?.status === 'success') {
       validators.value.push(result.data);
     } else {
