@@ -39,7 +39,11 @@
       "request": "attach",
       "pathMappings": [
         {
-          "localRoot": "${workspaceFolder}",
+          "localRoot": "${workspaceFolder}/backend",
+          "remoteRoot": "/app/backend"
+        },
+        {
+          "localRoot": "${workspaceFolder}/tests/db-sqlalchemy",
           "remoteRoot": "/app"
         }
       ],
