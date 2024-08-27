@@ -37,21 +37,23 @@ const leaderReceipt = computed(() => {
 
 <template>
   <div
-    class="flex cursor-pointer items-center justify-between rounded p-0.5 pl-1 hover:bg-gray-100 dark:hover:bg-zinc-700"
+    class="flex cursor-pointer flex-row items-center justify-between gap-2 rounded p-0.5 pl-1 hover:bg-gray-100 dark:hover:bg-zinc-700"
     @click="isDetailsModalOpen = true"
   >
-    <div class="text-xs font-medium">#{{ transaction.txId }}</div>
+    <div class="text-xs text-gray-500 dark:text-gray-400">
+      #{{ transaction.txId }}
+    </div>
+
+    <div class="grow truncate text-left text-xs font-medium">
+      {{
+        transaction.type === 'method'
+          ? transaction.data.data?.function_name
+          : 'Deploy'
+      }}
+    </div>
 
     <div class="flex items-center justify-between gap-2 p-1">
       <Loader :size="15" v-if="transaction.status !== 'FINALIZED'" />
-
-      <div class="text-xs">
-        {{
-          transaction.type === 'method'
-            ? transaction.data.data?.function_name
-            : 'Deploy'
-        }}
-      </div>
 
       <TransactionStatusBadge>
         {{ transaction.status }}
