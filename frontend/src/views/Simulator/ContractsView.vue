@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useContractsStore } from '@/stores';
-import { ArrowUpTrayIcon, PlusIcon } from '@heroicons/vue/20/solid';
 import { FilePlus2, Upload } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
