@@ -11,7 +11,7 @@ export const useAccountsStore = defineStore('accountsStore', () => {
 
   const currentUserAddress = computed(() => {
     return currentPrivateKey.value
-      ? wallet.getAccountFromPrivatekey(currentPrivateKey.value).address
+      ? wallet.privateKeyToAccount(currentPrivateKey.value).address
       : '';
   });
 
@@ -24,14 +24,14 @@ export const useAccountsStore = defineStore('accountsStore', () => {
   );
 
   function generateNewAccount(): Address {
-    const privateKey = wallet.getPrivateKey();
+    const privateKey = wallet.generatePrivateKey();
     privateKeys.value = [...privateKeys.value, privateKey];
     setCurrentAccount(privateKey);
     return privateKey;
   }
 
   function accountFromPrivateKey(privateKey: Address) {
-    return wallet.getAccountFromPrivatekey(privateKey);
+    return wallet.privateKeyToAccount(privateKey);
   }
 
   function removeAccount(privateKey: Address) {

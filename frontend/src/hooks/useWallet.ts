@@ -1,16 +1,18 @@
 import { recoverTransactionAddress, toHex, toRlp } from 'viem';
+import {
+  generatePrivateKey as _generatePrivateKey,
+  privateKeyToAccount as _privateKeyToAccount,
+} from 'viem/accounts';
 import type { TransactionSerializedLegacy } from 'viem';
-import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import type { Address } from '@/types';
 
-// Abstract 1+ level to automatically sign with current wallet? what about unit test?
 export function useWallet() {
-  const getAccountFromPrivatekey = (privateKey: Address) => {
-    return privateKeyToAccount(privateKey);
+  const privateKeyToAccount = (privateKey: Address) => {
+    return _privateKeyToAccount(privateKey);
   };
 
-  const getPrivateKey = () => {
-    return generatePrivateKey();
+  const generatePrivateKey = () => {
+    return _generatePrivateKey();
   };
 
   // Better typing here?
@@ -23,14 +25,14 @@ export function useWallet() {
     data: Array<unknown>,
     to?: Address,
   ): Promise<TransactionSerializedLegacy> {
-    const account = getAccountFromPrivatekey(privateKey);
+    const account = privateKeyToAccount(privateKey);
     const encodedData = encodeTransactionData(data);
     return account.signTransaction({ data: encodedData, to, type: 'legacy' });
   }
 
   return {
-    getAccountFromPrivatekey,
-    getPrivateKey,
+    privateKeyToAccount,
+    generatePrivateKey,
     signTransaction,
     recoverTransactionAddress,
   };
