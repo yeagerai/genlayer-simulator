@@ -33,22 +33,28 @@ def test_contract_snapshot_with_contract(session: Session):
 
 
 def test_contract_snapshot_without_contract(session: Session):
+    contract_address = "0x123456"
+    contract_code = "code"
+    contract_state = "state"
+    contract = CurrentState(
+        id=contract_address, data={"code": contract_code, "state": contract_state}
+    )
+    session.add(contract)
+
     contract_snapshot = ContractSnapshot(None, lambda: session)
 
     assert "contract_address" not in contract_snapshot.__dict__
     assert "contract_data" not in contract_snapshot.__dict__
     assert "contract_code" not in contract_snapshot.__dict__
 
-    contract = {
-        "id": "0x123456",
-        "data": {"code": "code", "state": "state"},
+    updated_data = {
+        "code": "new_code",
+        "state": "new_state",
     }
+    updated_contract = {"id": contract_address, "data": updated_data}
+    contract_snapshot.register_contract(updated_contract)
 
-    contract_snapshot.register_contract(contract)
+    actual_contract = session.query(CurrentState).filter_by(id=contract.id).one()
 
-    actual_contract = session.query(CurrentState).filter_by(id=contract["id"]).one()
-
-    assert actual_contract.data == contract["data"]
-    assert actual_contract.id == contract["id"]
-    assert actual_contract.data["code"] == contract["data"]["code"]
-    assert actual_contract.data["state"] == contract["data"]["state"]
+    assert actual_contract.data == updated_data
+    assert actual_contract.id == contract_address

@@ -57,8 +57,11 @@ class ContractSnapshot:
     def register_contract(self, contract: dict):
         """Register a new contract in the database."""
         with self.get_session() as session:
-            new_contract = CurrentState(id=contract["id"], data=contract["data"])
-            session.add(new_contract)
+            current_contract = (
+                session.query(CurrentState).filter_by(id=contract["id"]).one()
+            )
+
+            current_contract.data = contract["data"]
             session.commit()
 
     def update_contract_state(self, new_state: str):

@@ -64,6 +64,7 @@ class ValidatorsRegistry:
         )
 
         self.session.add(new_validator)
+        self.session.commit()
 
         return self._get_validator_or_fail(validator_address)
 

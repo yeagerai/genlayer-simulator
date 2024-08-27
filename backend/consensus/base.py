@@ -13,9 +13,7 @@ from backend.database_handler.contract_snapshot import ContractSnapshot
 from backend.database_handler.db_client import DBClient
 from backend.database_handler.transactions_processor import (
     TransactionsProcessor,
-   
     TransactionStatus,
-,
 )
 from backend.database_handler.types import ConsensusData
 from backend.node.base import Node
@@ -86,17 +84,18 @@ class ConsensusAlgorithm:
         transaction: dict,
         snapshot: ChainSnapshot,
     ):
-        if (
-            self.transactions_processor.get_transaction_by_id(transaction["id"])[
-                "status"
-            ]
-            != TransactionStatus.PENDING.value
-        ):
-            # This is a patch for a TOCTOU problem we have https://github.com/yeagerai/genlayer-simulator/issues/387
-            # Problem: Pending transactions are checked by `_crawl_snapshot`, which appends them to queues. These queues are consumed by `_run_consensus`, which processes the transactions. This means that a transaction can be processed multiple times, since `_crawl_snapshot` can append the same transaction to the queue multiple times.
-            # Partial solution: This patch checks if the transaction is still pending before processing it. This is not the best solution, but we'll probably refactor the whole consensus algorithm in the short term.
-            print(" ~ ~ ~ ~ ~ TRANSACTION ALREADY IN PROCESS: ", transaction)
-            return
+        with self.dbclient.get_session() as session:
+            if (
+                self.transactions_processor.get_transaction_by_id(
+                    transaction["id"], session
+                )["status"]
+                != TransactionStatus.PENDING.value
+            ):
+                # This is a patch for a TOCTOU problem we have https://github.com/yeagerai/genlayer-simulator/issues/387
+                # Problem: Pending transactions are checked by `_crawl_snapshot`, which appends them to queues. These queues are consumed by `_run_consensus`, which processes the transactions. This means that a transaction can be processed multiple times, since `_crawl_snapshot` can append the same transaction to the queue multiple times.
+                # Partial solution: This patch checks if the transaction is still pending before processing it. This is not the best solution, but we'll probably refactor the whole consensus algorithm in the short term.
+                print(" ~ ~ ~ ~ ~ TRANSACTION ALREADY IN PROCESS: ", transaction)
+                return
 
         print(" ~ ~ ~ ~ ~ EXECUTING TRANSACTION: ", transaction)
         # Update transaction status

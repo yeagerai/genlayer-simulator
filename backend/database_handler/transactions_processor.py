@@ -71,9 +71,10 @@ class TransactionsProcessor:
 
         return new_transaction.id
 
-    def get_transaction_by_id(self, transaction_id: int) -> dict:
+    def get_transaction_by_id(self, transaction_id: int, session=None) -> dict:
+        session = session or self.session
         transaction = (
-            self.session.query(Transactions).filter_by(id=transaction_id).one_or_none()
+            session.query(Transactions).filter_by(id=transaction_id).one_or_none()
         )
 
         return (
@@ -107,5 +108,4 @@ class TransactionsProcessor:
             transaction_id,
             TransactionStatus.FINALIZED.value,
         )
-        self.session.commit()
         session.commit()
