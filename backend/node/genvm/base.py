@@ -74,7 +74,7 @@ class GenVM:
         class_name: str,
         encoded_object: str,
         method_name: str,
-        args: str,
+        args: list[str],
         execution_result: ExecutionResultStatus,
         error: Exception,
     ) -> Receipt:
@@ -116,16 +116,29 @@ class GenVM:
             module = sys.modules[__name__]
             setattr(module, class_name, contract_class)
 
+            encoded_pickled_object = None  # Default value in order to have something to return in case of error
             try:
                 current_contract = contract_class(**constructor_args)
+                pickled_object = pickle.dumps(current_contract)
+                encoded_pickled_object = base64.b64encode(pickled_object).decode(
+                    "utf-8"
+                )
+
             except Exception as e:
                 print("Error deploying contract", e)
-                print(traceback.format_exc())
+                trace = traceback.format_exc()
+                print(trace)
                 error = e
                 execution_result = ExecutionResultStatus.ERROR
-
-            pickled_object = pickle.dumps(current_contract)
-            encoded_pickled_object = base64.b64encode(pickled_object).decode("utf-8")
+                self.msg_handler.socket_emit(
+                    {
+                        "function": "intelligent_contract_execution",
+                        "response": {
+                            "status": "error",
+                            "message": f"{str(e)} ;; {trace}",
+                        },
+                    }
+                )
 
             ## Clean up
             delattr(module, class_name)
@@ -255,24 +268,10 @@ class GenVM:
 
                 methods[name] = result
 
-            # Find all class variables
-            variables = {}
-            tree = ast.parse(contract_code)
-            for node in tree.body:
-                if isinstance(node, ast.ClassDef):
-                    for stmt in node.body:
-                        if isinstance(stmt, ast.AnnAssign):
-                            if hasattr(stmt.annotation, "id") and hasattr(
-                                stmt.target, "id"
-                            ):
-                                variables[stmt.target.id] = stmt.annotation.id
-
             abi = GenVM.generate_abi_from_schema_methods(methods)
 
             contract_schema = {
                 "class": class_name,
-                "methods": methods,
-                "variables": variables,
                 "abi": abi,
             }
 
