@@ -56,11 +56,6 @@ class ContractSnapshot:
 
     def register_contract(self, contract: dict):
         """Register a new contract in the database."""
-        self.dbclient.update(
-            self.db_state_table,
-            {"data": json.dumps(contract["data"])},
-            f"id = '{contract["id"]}'",
-        )
         with self.get_session() as session:
             new_contract = CurrentState(id=contract["id"], data=contract["data"])
             session.add(new_contract)

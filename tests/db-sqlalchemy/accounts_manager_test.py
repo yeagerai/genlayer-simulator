@@ -16,7 +16,7 @@ def accounts_manager(
 
 
 def test_accounts_manager(accounts_manager: AccountsManager):
-    address = "0x123456789abcdef"
+    address = "0x9F0e84243496AcFB3Cd99D02eA59673c05901501"
     balance = 100
     accounts_manager.fund_account(address, balance)
 

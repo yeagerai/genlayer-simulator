@@ -1,11 +1,8 @@
 # consensus/services/transactions_db_service.py
 
-import json
-from enum import Enum
 from eth_account import Account
 from eth_account._utils.validation import is_valid_address
 
-from backend.database_handler.db_client import DBClient
 from .models import CurrentState
 from backend.database_handler.errors import AccountNotFoundError
 from backend.database_handler.transactions_processor import TransactionsProcessor
@@ -27,12 +24,22 @@ class AccountsManager:
 
     def create_new_account(self, balance: int = 0) -> Account:
         """
-        Used when generating intelligent contract's accounts or dending funds to a new account.
+        Used when generating intelligent contract's accounts or sending funds to a new account.
         Users should create their accounts client-side
         """
         account = Account.create()
-        self.register_new_account(account.address, balance)
+        self._create_new_account_with_address(account.address, balance)
         return account
+
+    def _create_new_account_with_address(self, address: str, balance: int = 0):
+        if not self.is_valid_address(address):
+            raise ValueError(f"Invalid address: {address}")
+        account_state = CurrentState(
+            id=address,
+            data={"balance": balance},
+        )
+        self.session.add(account_state)
+        self.session.commit()
 
     def is_valid_address(self, address: str) -> bool:
         return is_valid_address(address)
@@ -55,14 +62,6 @@ class AccountsManager:
             )
         return self._parse_account_data(account_data)
 
-    def register_new_account(self, address: str, balance: int) -> None:
-        account_state = CurrentState(
-            id=address,
-            data={"balance": balance},
-        )
-        self.session.add(account_state)
-        self.session.commit()
-
     def fund_account(self, account_address: str, amount: int):
         # account creation or balance update
         account_data = self._get_account(account_address)
@@ -78,7 +77,7 @@ class AccountsManager:
             print(account_data)
         else:
             # Account doesn't exist, create it
-            self.create_new_account(account_address, amount)
+            self._create_new_account_with_address(account_address, amount)
 
         # Record transaction
         transaction_data = {
