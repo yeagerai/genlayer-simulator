@@ -259,7 +259,7 @@ def get_contract_state(
     method_name: str,
     method_args: list,
 ) -> dict:
-    if not address_is_in_correct_format(contract_address):
+    if not accounts_manager.is_valid_address(contract_address):
         raise InvalidAddressError(contract_address)
 
     contract_account = accounts_manager.get_account_or_fail(contract_address)
@@ -343,16 +343,6 @@ def send_raw_transaction(
     result["transaction_id"] = transaction_id
 
     return result
-    validator_address = create_new_address()
-    details = random_validator_config(config.get_ollama_url)
-    response = validators_registry.create_validator(
-        validator_address,
-        stake,
-        details["provider"],
-        details["model"],
-        details["config"],
-    )
-    return response
 
 
 def count_validators(validators_registry: ValidatorsRegistry) -> dict:
@@ -414,7 +404,7 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint_for_partial(get_validator, validators_registry)
 
     register_rpc_endpoint_for_partial(get_transaction_by_id, transactions_processor)
-    register_rpc_endpoint_for_partial(get_contract_state, accounts_manager, msg_handler)
+    register_rpc_endpoint_for_partial(get_contract_state, accounts_manager)
     register_rpc_endpoint_for_partial(
         send_raw_transaction, transactions_processor, accounts_manager
     )
