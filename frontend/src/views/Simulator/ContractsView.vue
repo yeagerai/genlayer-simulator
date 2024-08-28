@@ -50,13 +50,13 @@ const handleSaveNewFile = (name: string) => {
     const id = uuidv4();
     store.addContractFile({ id, name, content: '' });
     store.openFile(id);
+
+    trackEvent('created_contract', {
+      contract_name: name,
+    });
   }
 
   showNewFileInput.value = false;
-
-  trackEvent('created_contract', {
-    contract_name: name,
-  });
 };
 </script>
 
