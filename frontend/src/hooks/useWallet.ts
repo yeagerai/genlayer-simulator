@@ -1,4 +1,4 @@
-import { recoverTransactionAddress, toHex, toRlp } from 'viem';
+import { toHex, toRlp } from 'viem';
 import {
   generatePrivateKey as _generatePrivateKey,
   privateKeyToAccount as _privateKeyToAccount,
@@ -33,6 +33,5 @@ export function useWallet() {
     privateKeyToAccount,
     generatePrivateKey,
     signTransaction,
-    recoverTransactionAddress,
   };
 }
