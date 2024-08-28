@@ -22,8 +22,12 @@ jobs:
           set -eo pipefail
           commit_msg=$(git log -1 --pretty=%B)
           echo $commit_msg
+          echo
+          echo
           semver=$(echo $commit_msg | head -n -1 | awk '{print $2}')
           echo $semver
+          echo
+          echo
           echo $commit_msg | tail -n +3 > body.txt
           cat body.txt
           gh release create $semver --title $semver -F body.txt --prerelease
