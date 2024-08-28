@@ -1,4 +1,4 @@
-import { useWallet } from '../../../src/hooks/useWallet';
+import { useWallet } from '@/hooks/useWallet';
 import { describe, expect, it, vi, afterEach, beforeEach } from 'vitest';
 
 describe('SignTransaction', () => {

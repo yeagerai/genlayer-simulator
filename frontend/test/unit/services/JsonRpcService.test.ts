@@ -1,11 +1,11 @@
-import { JsonRpcService } from '../../../src/services/JsonRpcService';
-import { IJsonRpcService } from '../../../src/services/IJsonRpcService';
-import { IRpcClient } from '../../../src/clients/rpc';
+import { JsonRpcService } from '@/services/JsonRpcService';
+import { IJsonRpcService } from '@/services/IJsonRpcService';
+import { IRpcClient } from '@/clients/rpc';
 import {
   CallContractFunctionResult,
   GetContractStateResult,
   JsonRPCResponse,
-} from '../../../src/types';
+} from '@/types';
 import { describe, expect, it, vi, afterEach, beforeEach } from 'vitest';
 
 describe('JsonRprService', () => {
