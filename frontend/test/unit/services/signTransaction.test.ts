@@ -22,7 +22,7 @@ describe('SignTransaction', () => {
 
     it('it should sign a transaction and verify', async () => {
       const signedTransaction = await wallet.signTransaction(privateKey, data);
-      const account = wallet.getAccountFromPrivatekey(privateKey);
+      const account = wallet.privateKeyToAccount(privateKey);
       const txAddress = await wallet.recoverTransactionAddress({
         serializedTransaction: signedTransaction,
       });
