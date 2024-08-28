@@ -118,7 +118,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
   async function resetStorage(): Promise<void> {
     try {
       const idsToDelete = contracts.value
-        .filter((c) => c.example || (!c.example && !c.updatedAt))
+        .filter((c) => c.example)
         .map((c) => c.id);
 
       await db.deployedContracts

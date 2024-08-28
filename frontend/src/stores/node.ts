@@ -152,9 +152,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
   }
 
   const contractsToDelete = computed(() =>
-    contractsStore.contracts.filter(
-      (c) => (c.example && !c.updatedAt) || (!c.example && !c.updatedAt),
-    ),
+    contractsStore.contracts.filter((c) => c.example),
   );
 
   const validatorsOrderedById = computed(() =>
