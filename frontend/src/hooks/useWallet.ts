@@ -15,7 +15,6 @@ export function useWallet() {
     return _generatePrivateKey();
   };
 
-  // Better typing here?
   const encodeTransactionData = (params: any[]) => {
     return toRlp(params.map((param) => toHex(param)));
   };
