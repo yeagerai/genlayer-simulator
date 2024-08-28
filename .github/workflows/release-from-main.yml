@@ -24,7 +24,7 @@ jobs:
           echo "$commit_msg"
           echo NEWLINE
           echo NEWLINE
-          semver=$(echo "$commit_msg" | head -n -1 | awk '{print $2}')
+          semver=`echo "$commit_msg" | head -n -1 | awk '{print $2}'`
           echo "$semver"
           echo NEWLINE
           echo NEWLINE
