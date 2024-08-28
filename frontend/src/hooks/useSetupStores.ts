@@ -16,11 +16,9 @@ export const useSetupStores = () => {
     const nodeStore = useNodeStore();
     const db = useDb();
     const contractFiles = await db.contractFiles.toArray();
-    const filteredFiles = contractFiles.filter(
-      (c) => (c.example && !c.updatedAt) || (!c.example && !c.updatedAt),
-    );
+    const exampleFiles = contractFiles.filter((c) => c.example);
 
-    if (filteredFiles.length === 0) {
+    if (exampleFiles.length === 0) {
       const contractsBlob = import.meta.glob(
         '@/assets/examples/contracts/*.py',
         {
