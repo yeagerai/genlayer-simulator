@@ -1,4 +1,5 @@
-import { By, Locator, WebElement, until, Select } from 'selenium-webdriver';
+import { By, type Locator, WebElement, until } from 'selenium-webdriver';
+import { Select } from 'selenium-webdriver/lib/select';
 import { BasePage } from './BasePage';
 import { expect } from 'chai';
 
