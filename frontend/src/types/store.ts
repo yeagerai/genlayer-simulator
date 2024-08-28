@@ -32,7 +32,7 @@ export interface NodeLog {
 }
 
 export interface TransactionItem {
-  id?: string;
+  id?: number;
   type: 'deploy' | 'method';
   status: string;
   contractAddress: string;

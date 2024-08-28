@@ -1,7 +1,7 @@
 import { JsonRpcService } from '@/services/JsonRpcService';
-import { IJsonRpcService } from '@/services/IJsonRpcService';
-import { IRpcClient } from '@/clients/rpc';
-import {
+import type { IJsonRpcService } from '@/services/IJsonRpcService';
+import type { IRpcClient } from '@/clients/rpc';
+import type {
   CallContractFunctionResult,
   GetContractStateResult,
   JsonRPCResponse,
