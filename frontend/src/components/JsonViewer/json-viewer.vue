@@ -28,7 +28,7 @@
 <script>
 import JsonBox from './json-box.vue';
 import Clipboard from 'clipboard';
-import { debounce } from 'vue-debounce';
+import { debounce } from 'lodash-es';
 
 export default {
   name: 'JsonViewer',
