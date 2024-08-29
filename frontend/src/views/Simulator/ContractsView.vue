@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useContractsStore } from '@/stores';
-import { ArrowUpTrayIcon, PlusIcon } from '@heroicons/vue/20/solid';
+import { FilePlus2, Upload } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
 import ContractItem from '@/components/Simulator/ContractItem.vue';
@@ -67,7 +67,7 @@ const handleSaveNewFile = (name: string) => {
 
       <template #actions>
         <GhostBtn @click="handleAddNewFile" v-tooltip="'New Contract'">
-          <PlusIcon class="h-5 w-5" />
+          <FilePlus2 :size="16" />
         </GhostBtn>
 
         <GhostBtn class="!p-0" v-tooltip="'Add From File'">
@@ -77,7 +77,7 @@ const handleSaveNewFile = (name: string) => {
               @change="loadContentFromFile"
               accept=".gpy,.py"
             />
-            <ArrowUpTrayIcon class="h-5 w-5 fill-primary dark:fill-white" />
+            <Upload :size="16" />
           </label>
         </GhostBtn>
       </template>

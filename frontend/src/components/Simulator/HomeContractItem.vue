@@ -22,8 +22,12 @@ defineProps<{
       <slot />
     </p>
 
-    <Btn secondary tiny @click="contractStore.openFile(contract.id)">
-      <FolderOpenIcon class="h-3 w-3" />
+    <Btn
+      secondary
+      tiny
+      :icon="FolderOpenIcon"
+      @click="contractStore.openFile(contract.id)"
+    >
       Open Contract
     </Btn>
   </div>

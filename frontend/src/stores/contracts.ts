@@ -26,9 +26,17 @@ export const useContractsStore = defineStore('contractsStore', () => {
     }
   }
 
-  function addContractFile(contract: ContractFile): void {
+  function addContractFile(
+    contract: ContractFile,
+    atBeginning?: boolean,
+  ): void {
     const name = getContractFileName(contract.name);
-    contracts.value.push({ ...contract, name });
+
+    if (atBeginning) {
+      contracts.value.unshift({ ...contract, name });
+    } else {
+      contracts.value.push({ ...contract, name });
+    }
   }
 
   function removeContractFile(id: string): void {

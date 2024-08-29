@@ -55,8 +55,11 @@ const handleCreateNewAccount = async () => {
             </div>
           </div>
 
-          <Btn @click="handleCreateNewAccount" class="mt-2 w-full">
-            <PlusIcon class="h-5 w-5" />
+          <Btn
+            :icon="PlusIcon"
+            @click="handleCreateNewAccount"
+            class="mt-2 w-full"
+          >
             Generate New Address</Btn
           >
         </div>

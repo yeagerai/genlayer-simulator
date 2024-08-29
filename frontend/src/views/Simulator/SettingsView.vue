@@ -72,6 +72,18 @@ const handleResetStorage = async () => {
       </EmptyListPlaceholder>
 
       <div
+        v-if="nodeStore.isLoadingValidatorData"
+        class="flex flex-row items-center justify-center gap-2 p-1"
+      >
+        <Loader />
+        Loading...
+      </div>
+
+      <EmptyListPlaceholder v-else-if="nodeStore.validators.length < 1">
+        No validators.
+      </EmptyListPlaceholder>
+
+      <div
         class="overflow-hidden rounded-md border border-gray-300 dark:border-gray-800"
         v-if="nodeStore.validators.length > 0"
       >
@@ -87,8 +99,8 @@ const handleResetStorage = async () => {
       <Btn
         v-if="!nodeStore.hasAtLeastOneValidator"
         @click="isNewValidatorModalOpen = true"
+        :icon="PlusIcon"
       >
-        <PlusIcon class="h-5 w-5" />
         New Validator
       </Btn>
 
@@ -103,6 +115,7 @@ const handleResetStorage = async () => {
 
       <Btn
         @click="isResetStorageModalOpen = true"
+        :icon="ArchiveBoxXMarkIcon"
         :disabled="nodeStore.contractsToDelete.length < 1"
         secondary
         v-tooltip="
@@ -110,7 +123,6 @@ const handleResetStorage = async () => {
           'No contracts files to delete'
         "
       >
-        <ArchiveBoxXMarkIcon class="h-4 w-4" />
         Reset Storage
       </Btn>
 

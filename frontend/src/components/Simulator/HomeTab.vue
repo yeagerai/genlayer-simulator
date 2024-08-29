@@ -114,19 +114,16 @@ const hasAnySampleContract = computed(() => {
 
             <div class="mt-4 flex flex-row items-center gap-2">
               <a :href="LINKS.docs" target="_blank">
-                <Btn secondary>
-                  <DocumentTextIcon class="h-4 w-4" />
-                  View Docs</Btn
-                >
+                <Btn secondary :icon="DocumentTextIcon">View Docs</Btn>
               </a>
               <Btn
                 primary
                 v-if="startingContractId"
+                :icon="CodeXml"
                 @click="contractStore.openFile(startingContractId)"
               >
-                <CodeXml class="h-4 w-4" />
-                Start coding</Btn
-              >
+                Start coding
+              </Btn>
             </div>
           </div>
         </div>

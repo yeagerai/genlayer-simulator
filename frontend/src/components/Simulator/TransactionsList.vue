@@ -44,11 +44,13 @@ const handleClearTransactions = () => {
         <TrashIcon class="h-4 w-4" /></GhostBtn
     ></template>
 
-    <TransactionItem
-      v-for="transaction in transactions"
-      :key="transaction.txId"
-      :transaction="transaction"
-    />
+    <div class="flex flex-col">
+      <TransactionItem
+        v-for="transaction in transactions"
+        :key="transaction.txId"
+        :transaction="transaction"
+      />
+    </div>
 
     <EmptyListPlaceholder v-if="transactions.length === 0">
       No transactions yet.

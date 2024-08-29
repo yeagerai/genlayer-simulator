@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, type Component } from 'vue';
 
 const emit = defineEmits(['click']);
 
@@ -11,6 +11,7 @@ const props = withDefaults(
     secondary?: boolean;
     dangerous?: boolean;
     tiny?: boolean;
+    icon?: Component;
   }>(),
   {
     testId: undefined,
@@ -19,6 +20,7 @@ const props = withDefaults(
     secondary: false,
     dangerous: false,
     tiny: false,
+    icon: undefined,
   },
 );
 
@@ -27,7 +29,7 @@ const primary = computed(() => !props.secondary && !props.dangerous);
 
 <template>
   <button
-    class="flex items-center justify-center gap-2 font-semibold transition-all active:scale-95"
+    class="flex flex-row items-center justify-center gap-2 font-semibold transition-all active:scale-95"
     :class="[
       primary &&
         'bg-primary text-white hover:bg-opacity-90 hover:text-white dark:bg-accent',
@@ -36,13 +38,23 @@ const primary = computed(() => !props.secondary && !props.dangerous);
       dangerous && 'bg-red-600 text-white hover:bg-red-500 hover:text-white',
       disabled && 'cursor-not-allowed opacity-50 active:scale-100',
       tiny && 'rounded px-2 py-1 text-xs',
-      !tiny && 'rounded-md px-4 py-2',
+      !tiny && 'rounded-md px-3 py-2',
     ]"
     :disabled="disabled || loading"
     @click="emit('click')"
     :data-testid="testId"
   >
-    <Loader v-if="loading" forceLightColor />
-    <slot />
+    <Loader v-if="loading" forceLightColor class="shrink-0" />
+
+    <component
+      v-if="!!icon && !loading"
+      :is="icon"
+      class="shrink-0"
+      :class="[!tiny && 'h-4 w-4', tiny && 'h-3 w-3']"
+    />
+
+    <div v-if="$slots.default" class="truncate">
+      <slot />
+    </div>
   </button>
 </template>
