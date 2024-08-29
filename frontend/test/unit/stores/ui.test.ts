@@ -1,6 +1,6 @@
 import { setActivePinia, createPinia } from 'pinia';
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
-import { useUIStore } from '@/stores'; // Adjust the path as per your project structure
+import { useUIStore } from '@/stores';
 
 describe('UI Store', () => {
   let uiStore: ReturnType<typeof useUIStore>;
@@ -9,13 +9,11 @@ describe('UI Store', () => {
     setActivePinia(createPinia());
     uiStore = useUIStore();
 
-    // Mock localStorage
     vi.stubGlobal('localStorage', {
       getItem: vi.fn(),
       setItem: vi.fn(),
     });
 
-    // Mock document element
     vi.spyOn(document.documentElement, 'setAttribute');
   });
 
