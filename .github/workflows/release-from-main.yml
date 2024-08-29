@@ -2,7 +2,7 @@ name: Create Release from main
 on:
   push:
     branches:
-      - agustin/hotfix/gh-action-release
+      - main
 
 jobs:
   release-main:
