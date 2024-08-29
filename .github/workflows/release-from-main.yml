@@ -20,15 +20,15 @@ jobs:
       - name: Create release
         run: |
           set -eo pipefail
-          commit_msg=$(git log -1 --pretty=%B)
-          echo "$commit_msg"
+          git log -1 --pretty=%B > commit_msg.txt
+          cat commit_msg.txt
           echo NEWLINE
           echo NEWLINE
-          semver=`echo "$commit_msg" | head -n -1 | awk '{print $2}'`
+          semver=$(cat commit_msg.txt | head -n 1 | awk '{print $2}') # Problem here
           echo "$semver"
           echo NEWLINE
           echo NEWLINE
-          echo $commit_msg | tail -n +3 > body.txt
+          cat commit_msg.txt | tail -n +3 > body.txt
           cat body.txt
           gh release create $semver --title $semver -F body.txt --prerelease
         # TODO: remove prerelease flag after testing            ^^^^^^^^^^^^
