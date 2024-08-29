@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { type ValidatorModel } from '@/types';
 import {
-  CheckIcon,
+  CheckCircleIcon,
   DocumentDuplicateIcon,
   PencilSquareIcon,
   TrashIcon,
@@ -109,7 +109,7 @@ async function handleDeleteValidator() {
           @click.stop="handleDeleteValidator"
           v-tooltip="'Confirm deletion'"
         >
-          <CheckIcon
+          <CheckCircleIcon
             class="h-5 w-5 p-[2px] text-red-500 transition-colors hover:text-red-400 active:scale-90"
           />
         </button>
@@ -127,12 +127,14 @@ async function handleDeleteValidator() {
 <style scoped>
 .v-enter-active,
 .v-leave-active {
-  transition: all 0.15s ease;
+  transition: all 0.08s ease;
 }
-
-.v-enter-from,
+.v-enter-from {
+  opacity: 0;
+  transform: scale(0.8) rotate(45deg);
+}
 .v-leave-to {
   opacity: 0;
-  transform: rotate(45deg);
+  transform: scale(0.8) rotate(-45deg);
 }
 </style>

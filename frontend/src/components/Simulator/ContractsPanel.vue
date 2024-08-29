@@ -76,28 +76,29 @@ const handleHorizontalScroll = (event: WheelEvent) => {
           class="m-1 flex items-center !p-1"
           @click="handleRunDebug"
           v-tooltip="'Run and Debug'"
-        >
-          <PlayIcon class="h-5 w-5" />
-        </Btn>
+          :icon="PlayIcon"
+        />
       </div>
     </nav>
 
     <HomeTab v-show="showHome" />
 
     <div
-      v-if="!!error"
-      class="left-O right-O absolute bottom-0 z-10 w-full bg-red-500 px-2 py-1 text-sm text-white"
-    >
-      {{ error }}
-    </div>
-
-    <div
       v-for="contract in contracts"
       :key="contract.id"
-      class="relative flex h-full w-full"
+      class="relative flex h-full w-full flex-col overflow-hidden"
       v-show="contract.id === store.currentContractId"
     >
-      <CodeEditor :contract="contract" @run-debug="handleRunDebug" />
+      <div class="flex h-full w-full grow overflow-hidden">
+        <CodeEditor :contract="contract" @run-debug="handleRunDebug" />
+      </div>
+
+      <div
+        v-if="!!error"
+        class="w-full shrink-0 bg-red-500 px-2 py-1 text-sm text-white"
+      >
+        {{ error }}
+      </div>
     </div>
   </div>
 </template>

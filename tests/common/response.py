@@ -12,6 +12,10 @@ def assert_dict_struct(data, structure):
         isinstance(data, structure)
 
 
+def assert_dict_exact(data, expected):
+    assert data == expected, f"Expected {expected}, but got {data}"
+
+
 def has_error_status(result: dict) -> bool:
     return result["result"]["status"] == "error"
 

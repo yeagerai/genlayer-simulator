@@ -64,8 +64,8 @@ const { isDeployed, address, contract } = useContractQueries();
       class="inline-flex w-auto shrink grow-0"
       v-else-if="showNewDeploymentButton"
       @click="emit('openDeployment')"
+      :icon="PlusIcon"
     >
-      <PlusIcon class="h-4 w-4 shrink-0" />
       New Deployment
     </Btn>
   </PageSection>
