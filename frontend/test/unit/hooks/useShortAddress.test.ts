@@ -7,13 +7,13 @@ describe('useShortAddress', () => {
   it('should shorten an Ethereum address correctly', () => {
     const address = '0x1234567890abcdef1234567890abcdef12345678';
     const result = shortenAddress(address);
-    expect(result).toBe('0x1234...5678');
+    expect(result).toBe('0x12...5678');
   });
 
   it('should shorten a non-Ethereum address correctly', () => {
     const address = 'abcdef1234567890abcdef1234567890abcdef12';
     const result = shortenAddress(address);
-    expect(result).toBe('abcdef...ef12');
+    expect(result).toBe('abcd...ef12');
   });
 
   it('should return empty string for undefined input', () => {
@@ -26,9 +26,9 @@ describe('useShortAddress', () => {
     expect(result).toBe('');
   });
 
-  it('should handle short addresses correctly', () => {
+  it('should handle short addresses with prefix correctly', () => {
     const address = '0x1234';
     const result = shortenAddress(address);
-    expect(result).toBe('0x1234...1234');
+    expect(result).toBe('0x...34');
   });
 });

@@ -4,11 +4,10 @@ export const useShortAddress = () => {
       return '';
     }
 
-    const prefix = address?.startsWith('0x') ? '0x' : '';
+    const displayedChars = Math.min(Math.floor(address.length / 3), 4);
+
     return (
-      `${prefix}${address?.replace('0x', '').substring(0, prefix ? 4 : 6)}...${address?.substring(
-        (address?.length || 4) - 4,
-      )}` || ''
+      address.slice(0, displayedChars) + '...' + address.slice(-displayedChars)
     );
   }
 
