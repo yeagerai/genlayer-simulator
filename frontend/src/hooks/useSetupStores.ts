@@ -3,6 +3,7 @@ import {
   useContractsStore,
   useTransactionsStore,
   useNodeStore,
+  useTutorialStore,
 } from '@/stores';
 import { useDb } from '@/hooks';
 import { v4 as uuidv4 } from 'uuid';
@@ -14,6 +15,7 @@ export const useSetupStores = () => {
     const accountsStore = useAccountsStore();
     const transactionsStore = useTransactionsStore();
     const nodeStore = useNodeStore();
+    const tutorialStore = useTutorialStore();
     const db = useDb();
     const contractFiles = await db.contractFiles.toArray();
     const exampleFiles = contractFiles.filter((c) => c.example);
@@ -46,6 +48,8 @@ export const useSetupStores = () => {
     contractsStore.deployedContracts = await db.deployedContracts.toArray();
     transactionsStore.transactions = await db.transactions.toArray();
 
+    contractsStore.getInitialOpenedFiles();
+    tutorialStore.resetTutorialState();
     nodeStore.getValidatorsData();
 
     if (accountsStore.privateKeys.length < 1) {

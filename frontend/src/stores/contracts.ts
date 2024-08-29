@@ -39,9 +39,9 @@ export const useContractsStore = defineStore('contractsStore', () => {
     deployedContracts.value = [
       ...deployedContracts.value.filter((c) => c.contractId !== id),
     ];
-    openedFiles.value = [
-      ...openedFiles.value.filter((contractId) => contractId !== id),
-    ];
+    openedFiles.value = openedFiles.value.filter(
+      (contractId) => contractId !== id,
+    );
 
     if (currentContractId.value === id) {
       setCurrentContractId('');
@@ -144,15 +144,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
       ) {
         currentContractId.value = '';
       }
-
-      localStorage.setItem(
-        'mainStore.currentContractId',
-        currentContractId.value || '',
-      );
-      localStorage.setItem(
-        'mainStore.openedFiles',
-        openedFiles.value.join(','),
-      );
 
       await setupStores();
     } catch (error) {
