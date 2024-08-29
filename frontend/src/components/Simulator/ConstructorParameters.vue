@@ -119,7 +119,7 @@ const mapInputs = (inputs: { [k: string]: string }) =>
 watch(
   () => constructorInputs.value,
   (newValue) => {
-    setInputParams(newValue || {});
+    setInputParams(newValue || []);
   },
 );
 
