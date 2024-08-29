@@ -9,26 +9,23 @@ jobs:
     runs-on: ubuntu-latest
     permissions: # As per https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#create-a-release
       contents: write
+      pull-requests: read
 
     steps:
       - uses: actions/checkout@v4
+      # We retrieve the original PR since the commit message is line wrapped
       # Depends on the following format from the commit message:
-      # Release vX.Y.Z ...
-      #
-      # Release notes here
-      # ...
+      # Release vX.Y.Z (#PR_NUMBER)
+      # ... body of the PR ...
       - name: Create release
         run: |
-          set -eo pipefail
-          git log -1 --pretty=%B > commit_msg.txt
-          cat commit_msg.txt
-          echo NEWLINE
-          echo NEWLINE
-          semver=$(cat commit_msg.txt | head -n 1 | awk '{print $2}') # Problem here
-          echo "$semver"
-          echo NEWLINE
-          echo NEWLINE
-          cat commit_msg.txt | tail -n +3 > body.txt
+          commit_msg_head=$(git log -1 --pretty=%B | head -n 1)
+          echo $commit_msg_head
+          release_pr_number=$(echo $commit_msg_head | awk '{print $3}' | grep -oP '\(\#\K[0-9]+')
+          echo $release_pr_number
+          semver=$(echo $commit_msg_head | awk '{print $2}')
+          echo $semver
+          gh pr view $release_pr_number --json body --jq .body > body.txt
           cat body.txt
           gh release create $semver --title $semver -F body.txt --prerelease
         # TODO: remove prerelease flag after testing            ^^^^^^^^^^^^
