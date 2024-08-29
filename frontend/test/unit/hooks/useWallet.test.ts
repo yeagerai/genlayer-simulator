@@ -3,7 +3,7 @@ import { useWallet } from '@/hooks/useWallet';
 import { recoverTransactionAddress } from 'viem';
 
 const testPrivateKey =
-  '0x90efb1e7b1cedc8b4c9c6be652b93a1549e4cfa94d43f5918e60a9cd5f8cf479'; // NEVER USE THIS PRIVATE KEY
+  '0x90efb1e7b1cedc8b4c9c6be652b93a1549e4cfa94d43f5918e60a9cd5f8cf479'; // ! NEVER USE THIS PRIVATE KEY
 const testAddress = '0x779769CEFAEEBF0f388F9Bc7072B08139084B8b0';
 const testData = [
   '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',

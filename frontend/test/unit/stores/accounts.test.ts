@@ -4,10 +4,10 @@ import { useAccountsStore } from '@/stores';
 import { useWallet, useShortAddress } from '@/hooks';
 
 const testKey1 =
-  '0x4104e41989791c1e1f3a889710d8c5509b98ee62e5fabced8a3f538f5afd392b';
+  '0x4104e41989791c1e1f3a889710d8c5509b98ee62e5fabced8a3f538f5afd392b'; // ! NEVER USE THIS PRIVATE KEY
 const testAddress1 = '0x858744E989D688C5f02ec2388342cc34Edf88a97';
 const testKey2 =
-  '0x90efb1e7b1cedc8b4c9c6be652b93a1549e4cfa94d43f5918e60a9cd5f8cf479';
+  '0x90efb1e7b1cedc8b4c9c6be652b93a1549e4cfa94d43f5918e60a9cd5f8cf479'; // ! NEVER USE THIS PRIVATE KEY
 
 vi.mock('@/hooks', () => ({
   useWallet: vi.fn(),
