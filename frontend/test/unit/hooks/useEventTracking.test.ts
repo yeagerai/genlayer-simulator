@@ -62,7 +62,6 @@ describe('useEventTracking composable', () => {
       .spyOn(console, 'debug')
       .mockImplementation(() => {}); // Mock to avoid console output
 
-    // Simulate an error in trackPlausibleEvent
     trackPlausibleEventMock.mockImplementationOnce(() => {
       throw new Error('Mock error');
     });

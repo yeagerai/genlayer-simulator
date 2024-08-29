@@ -1,4 +1,3 @@
-// useInputMap.spec.ts
 import { describe, it, expect } from 'vitest';
 import { useInputMap } from '@/hooks';
 import StringField from '@/components/global/fields/StringField.vue';

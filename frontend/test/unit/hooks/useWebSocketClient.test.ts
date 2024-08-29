@@ -4,10 +4,9 @@ import { io, type Socket } from 'socket.io-client';
 
 const mockSocket: Partial<Socket> = {
   id: 'mocked-socket-id',
-  on: vi.fn(), // Mock the 'on' method
+  on: vi.fn(),
 };
 
-// Mock socket.io-client
 vi.mock('socket.io-client', () => ({
   io: vi.fn(() => mockSocket),
 }));
@@ -33,7 +32,6 @@ describe('useWebSocketClient', () => {
       expect.any(Function),
     );
 
-    // Simulate the 'connect' event
     const connectCallback = (mockSocket.on as any).mock.calls.find(
       (call: any) => call[0] === 'connect',
     )[1];
@@ -43,7 +41,6 @@ describe('useWebSocketClient', () => {
       mockSocket.id,
     );
 
-    // Simulate the 'disconnect' event
     const disconnectCallback = (mockSocket.on as any).mock.calls.find(
       (call: any) => call[0] === 'disconnect',
     )[1];

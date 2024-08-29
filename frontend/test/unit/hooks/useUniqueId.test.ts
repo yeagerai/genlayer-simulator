@@ -10,15 +10,15 @@ describe('useUniqueId function', () => {
   it('should generate a unique ID without prefix', () => {
     const result = useUniqueId();
 
-    expect(uuidv4).toHaveBeenCalled(); // Ensure that uuidv4 is called
-    expect(result).toBe('mocked-uuid'); // Check that the result is only the UUID without prefix
+    expect(uuidv4).toHaveBeenCalled();
+    expect(result).toBe('mocked-uuid');
   });
 
   it('should generate a unique ID with the correct prefix', () => {
     const prefix = 'testPrefix';
     const result = useUniqueId(prefix);
 
-    expect(uuidv4).toHaveBeenCalled(); // Ensure that uuidv4 is called
-    expect(result).toBe(`${prefix}-mocked-uuid`); // Check the format of the returned ID
+    expect(uuidv4).toHaveBeenCalled();
+    expect(result).toBe(`${prefix}-mocked-uuid`);
   });
 });

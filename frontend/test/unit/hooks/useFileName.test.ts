@@ -1,4 +1,3 @@
-// useFileName.spec.ts
 import { describe, it, expect } from 'vitest';
 import { useFileName } from '@/hooks';
 
