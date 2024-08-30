@@ -16,20 +16,15 @@ vi.mock('@/hooks', () => ({
 
 describe('useAccountsStore', () => {
   let accountsStore: ReturnType<typeof useAccountsStore>;
-  const mockWeb3 = {
+  const mockWallet = {
     privateKeyToAccount: vi.fn(),
     generatePrivateKey: vi.fn(),
-  };
-  const mockShortAddress = {
     shortenAddress: vi.fn(),
   };
 
   beforeEach(() => {
     setActivePinia(createPinia());
-    (useWallet as Mock).mockReturnValue({
-      web3: mockWeb3,
-      shortenAddress: mockShortAddress.shortenAddress,
-    });
+    (useWallet as Mock).mockReturnValue(mockWallet);
 
     // Mock localStorage
     vi.stubGlobal('localStorage', {
@@ -40,9 +35,9 @@ describe('useAccountsStore', () => {
 
     accountsStore = useAccountsStore();
 
-    mockWeb3.privateKeyToAccount.mockClear();
-    mockWeb3.generatePrivateKey.mockClear();
-    mockShortAddress.shortenAddress.mockClear();
+    mockWallet.privateKeyToAccount.mockClear();
+    mockWallet.generatePrivateKey.mockClear();
+    mockWallet.shortenAddress.mockClear();
     (localStorage.getItem as Mock).mockClear();
     (localStorage.getItem as Mock).mockClear();
     (localStorage.removeItem as Mock).mockClear();
@@ -50,7 +45,7 @@ describe('useAccountsStore', () => {
 
   it('should generate a new account', () => {
     const newPrivateKey = '0xnewkey';
-    mockWeb3.generatePrivateKey.mockReturnValue(newPrivateKey);
+    mockWallet.generatePrivateKey.mockReturnValue(newPrivateKey);
     const generatedKey = accountsStore.generateNewAccount();
 
     expect(generatedKey).toBe(newPrivateKey);
@@ -79,7 +74,7 @@ describe('useAccountsStore', () => {
   it('should handle errors in displayAddress computation', () => {
     accountsStore.currentPrivateKey = '0xinvalidkey';
 
-    mockWeb3.privateKeyToAccount.mockImplementation(() => {
+    mockWallet.privateKeyToAccount.mockImplementation(() => {
       throw new Error('Invalid private key');
     });
 
@@ -102,10 +97,10 @@ describe('useAccountsStore', () => {
     const privateKey = testKey1;
     const account = { address: testAddress1 };
     accountsStore.currentPrivateKey = privateKey;
-    mockWeb3.privateKeyToAccount.mockReturnValue(account);
+    mockWallet.privateKeyToAccount.mockReturnValue(account);
 
     expect(accountsStore.currentUserAddress).toBe(testAddress1);
-    expect(mockWeb3.privateKeyToAccount).toHaveBeenCalledWith(privateKey);
+    expect(mockWallet.privateKeyToAccount).toHaveBeenCalledWith(privateKey);
   });
 
   it('should return an empty string for currentUserAddress when no private key is set', () => {
