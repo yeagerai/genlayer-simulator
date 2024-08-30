@@ -20,7 +20,7 @@ export function useContractQueries() {
   const contractsStore = useContractsStore();
   const queryClient = useQueryClient();
   const { trackEvent } = useEventTracking();
-  const { web3 } = useWallet();
+  const wallet = useWallet();
   const contract = computed(() => contractsStore.currentContract);
 
   const { mockContractId, mockContractSchema } = useMockContractData();
@@ -90,7 +90,7 @@ export function useContractQueries() {
       }
       const constructorParamsAsString = JSON.stringify(constructorParams);
       const data = [contract.value?.content ?? '', constructorParamsAsString];
-      const signed = await web3.signTransaction(
+      const signed = await wallet.signTransaction(
         accountsStore.currentPrivateKey,
         data,
       );
@@ -207,7 +207,7 @@ export function useContractQueries() {
       const data = [method, methodParamsAsString];
       const to = (address.value as Address) || null;
 
-      const signed = await web3.signTransaction(
+      const signed = await wallet.signTransaction(
         accountsStore.currentPrivateKey,
         data,
         to,
