@@ -2,7 +2,6 @@ export * from './useUniqueId';
 export * from './useEventTracking';
 export * from './useRpcClient';
 export * from './useWallet';
-export * from './useShortAddress';
 export * from './useDb';
 export * from './useWebSocketClient';
 export * from './useInputMap';

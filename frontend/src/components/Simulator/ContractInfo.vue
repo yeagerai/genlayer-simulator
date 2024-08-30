@@ -4,10 +4,10 @@ import { CheckCircleIcon } from '@heroicons/vue/24/outline';
 import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
 import { PlusIcon } from '@heroicons/vue/16/solid';
 import { useNodeStore } from '@/stores';
-import { useShortAddress, useContractQueries } from '@/hooks';
+import { useWallet, useContractQueries } from '@/hooks';
 
 const nodeStore = useNodeStore();
-const { shortenAddress } = useShortAddress();
+const { shortenAddress } = useWallet();
 
 defineProps<{
   showNewDeploymentButton: boolean;
