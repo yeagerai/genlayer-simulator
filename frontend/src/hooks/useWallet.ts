@@ -17,7 +17,11 @@ export function useWallet() {
   }
 
   return {
-    web3,
+    privateKeyToAccount: web3.privateKeyToAccount,
+    generatePrivateKey: web3.generatePrivateKey,
+    encodeTransactionData: web3.encodeTransactionData,
+    recoverTransactionAddress: web3.recoverTransactionAddress,
+    signTransaction: web3.signTransaction,
     shortenAddress,
   };
 }
