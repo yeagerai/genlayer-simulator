@@ -6,11 +6,11 @@ import { useWallet } from '@/hooks';
 export const useAccountsStore = defineStore('accountsStore', () => {
   const key = localStorage.getItem('accountsStore.currentPrivateKey');
   const currentPrivateKey = ref<Address | null>(key ? (key as Address) : null);
-  const wallet = useWallet();
+  const { web3, shortenAddress } = useWallet();
 
   const currentUserAddress = computed(() => {
     return currentPrivateKey.value
-      ? wallet.privateKeyToAccount(currentPrivateKey.value).address
+      ? web3.privateKeyToAccount(currentPrivateKey.value).address
       : '';
   });
 
@@ -23,14 +23,14 @@ export const useAccountsStore = defineStore('accountsStore', () => {
   );
 
   function generateNewAccount(): Address {
-    const privateKey = wallet.generatePrivateKey();
+    const privateKey = web3.generatePrivateKey();
     privateKeys.value = [...privateKeys.value, privateKey];
     setCurrentAccount(privateKey);
     return privateKey;
   }
 
   function accountFromPrivateKey(privateKey: Address) {
-    return wallet.privateKeyToAccount(privateKey);
+    return web3.privateKeyToAccount(privateKey);
   }
 
   function removeAccount(privateKey: Address) {
@@ -54,7 +54,7 @@ export const useAccountsStore = defineStore('accountsStore', () => {
       if (!currentPrivateKey.value) {
         return '';
       } else {
-        return wallet.shortenAddress(
+        return shortenAddress(
           accountFromPrivateKey(currentPrivateKey.value).address,
         );
       }

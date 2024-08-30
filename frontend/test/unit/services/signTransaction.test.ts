@@ -2,7 +2,7 @@ import { useWallet } from '../../../src/hooks/useWallet';
 import { describe, expect, it, vi, afterEach, beforeEach } from 'vitest';
 
 describe('SignTransaction', () => {
-  const wallet = useWallet();
+  const { web3 } = useWallet();
 
   beforeEach(() => {
     //
@@ -21,9 +21,9 @@ describe('SignTransaction', () => {
     ];
 
     it('it should sign a transaction and verify', async () => {
-      const signedTransaction = await wallet.signTransaction(privateKey, data);
-      const account = wallet.privateKeyToAccount(privateKey);
-      const txAddress = await wallet.recoverTransactionAddress({
+      const signedTransaction = await web3.signTransaction(privateKey, data);
+      const account = web3.privateKeyToAccount(privateKey);
+      const txAddress = await web3.recoverTransactionAddress({
         serializedTransaction: signedTransaction,
       });
       expect(txAddress).to.deep.equal(account.address);
