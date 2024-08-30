@@ -3,14 +3,13 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { ref, shallowRef, watch, computed, onMounted } from 'vue';
 import { useContractsStore, useUIStore } from '@/stores';
 import { type ContractFile } from '@/types';
-import { usePythonSyntax } from '@/hooks';
+import pythonSyntax from '@/constants/pythonSyntax';
 
 const uiStore = useUIStore();
 const contractStore = useContractsStore();
 const props = defineProps<{
   contract: ContractFile;
 }>();
-const pythonSyntax = usePythonSyntax();
 
 const editorElement = ref<HTMLDivElement | null>(null);
 const containerElement = ref<HTMLElement | null | undefined>(null);

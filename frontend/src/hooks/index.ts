@@ -6,6 +6,5 @@ export * from './useDb';
 export * from './useWebSocketClient';
 export * from './useInputMap';
 export * from './useContractQueries';
-export * from './usePythonSyntax';
 export * from './useFileName';
 export * from './useSetupStores';
