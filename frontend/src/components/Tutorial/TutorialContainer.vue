@@ -10,8 +10,6 @@ const tutorialStore = useTutorialStore();
 const uiStore = useUIStore();
 const router = useRouter();
 
-tutorialStore.resetTutorialState();
-
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const steps = ref([

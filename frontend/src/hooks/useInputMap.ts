@@ -9,3 +9,17 @@ export const InputTypesMap: { [k: string]: any } = {
   float: FloatField,
   bool: BooleanField,
 };
+
+export const useInputMap = () => {
+  const getComponent = (type: string) => {
+    const component = InputTypesMap[type];
+
+    if (!component) {
+      throw new Error(`Component not found for input type: ${type}`);
+    }
+
+    return component;
+  };
+
+  return { getComponent };
+};

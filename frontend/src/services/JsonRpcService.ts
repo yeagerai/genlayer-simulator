@@ -1,4 +1,4 @@
-import type { IRpcClient } from '@/utils';
+import type { IRpcClient } from '@/clients/rpc';
 import type { IJsonRpcService } from './IJsonRpcService';
 import type {
   JsonRpcResult,

@@ -1,9 +1,10 @@
 import { defineStore } from 'pinia';
-import { computed, inject, ref } from 'vue';
-import type { IJsonRpcService } from '@/services';
+import { computed, ref } from 'vue';
 import type { TransactionItem } from '@/types';
+import { useRpcClient } from '@/hooks';
+
 export const useTransactionsStore = defineStore('transactionsStore', () => {
-  const $jsonRpc = inject<IJsonRpcService>('$jsonRpc');
+  const rpcClient = useRpcClient();
   const pendingTransactions = computed<TransactionItem[]>(() =>
     transactions.value.filter((t) => t.status === 'PENDING'),
   );
@@ -31,7 +32,7 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
   }
 
   async function getTransaction(txId: number) {
-    return $jsonRpc?.getTransactionById(txId);
+    return rpcClient.getTransactionById(txId);
   }
 
   function clearTransactionsForContract(contractId: string) {

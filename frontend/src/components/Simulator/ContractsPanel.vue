@@ -6,7 +6,7 @@ import { useContractsStore } from '@/stores';
 import { computed } from 'vue';
 import HomeTab from './HomeTab.vue';
 import { useRouter, useRoute } from 'vue-router';
-import { useContractQueries } from '@/hooks/useContractQueries';
+import { useContractQueries } from '@/hooks';
 
 const store = useContractsStore();
 const router = useRouter();

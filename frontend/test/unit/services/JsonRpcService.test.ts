@@ -1,6 +1,6 @@
 import { JsonRpcService } from '../../../src/services/JsonRpcService';
 import { IJsonRpcService } from '../../../src/services/IJsonRpcService';
-import { IRpcClient } from '../../../src/utils/rpc';
+import { IRpcClient } from '../../../src/clients/rpc';
 import {
   CallContractFunctionResult,
   GetContractStateResult,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useContractQueries } from '@/hooks/useContractQueries';
+import { useContractQueries } from '@/hooks';
 import { computed } from 'vue';
 import PageSection from '@/components/Simulator/PageSection.vue';
 import { type ContractMethod } from '@/types';

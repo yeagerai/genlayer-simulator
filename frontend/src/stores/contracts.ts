@@ -1,12 +1,15 @@
 import type { ContractFile, DeployedContract } from '@/types';
-import { db, getContractFileName, setupStores } from '@/utils';
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { notify } from '@kyvg/vue3-notification';
+import { useDb, useFileName, useSetupStores } from '@/hooks';
 
 export const useContractsStore = defineStore('contractsStore', () => {
   const contracts = ref<ContractFile[]>([]);
   const openedFiles = ref<string[]>([]);
+  const db = useDb();
+  const { setupStores } = useSetupStores();
+  const { cleanupFileName } = useFileName();
 
   const currentContractId = ref<string | undefined>(
     localStorage.getItem('contractsStore.currentContractId') || '',
@@ -30,7 +33,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
     contract: ContractFile,
     atBeginning?: boolean,
   ): void {
-    const name = getContractFileName(contract.name);
+    const name = cleanupFileName(contract.name);
 
     if (atBeginning) {
       contracts.value.unshift({ ...contract, name });
@@ -44,9 +47,9 @@ export const useContractsStore = defineStore('contractsStore', () => {
     deployedContracts.value = [
       ...deployedContracts.value.filter((c) => c.contractId !== id),
     ];
-    openedFiles.value = [
-      ...openedFiles.value.filter((contractId) => contractId !== id),
-    ];
+    openedFiles.value = openedFiles.value.filter(
+      (contractId) => contractId !== id,
+    );
 
     if (currentContractId.value === id) {
       setCurrentContractId('');
@@ -64,7 +67,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
     contracts.value = [
       ...contracts.value.map((c) => {
         if (c.id === id) {
-          const _name = getContractFileName(name || c.name);
+          const _name = cleanupFileName(name || c.name);
           const _content = content || c.content;
           return { ...c, name: _name, content: _content, updatedAt };
         }
@@ -123,7 +126,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
   async function resetStorage(): Promise<void> {
     try {
       const idsToDelete = contracts.value
-        .filter((c) => c.example || (!c.example && !c.updatedAt))
+        .filter((c) => c.example)
         .map((c) => c.id);
 
       await db.deployedContracts
@@ -149,15 +152,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
       ) {
         currentContractId.value = '';
       }
-
-      localStorage.setItem(
-        'mainStore.currentContractId',
-        currentContractId.value || '',
-      );
-      localStorage.setItem(
-        'mainStore.openedFiles',
-        openedFiles.value.join(','),
-      );
 
       await setupStores();
     } catch (error) {
