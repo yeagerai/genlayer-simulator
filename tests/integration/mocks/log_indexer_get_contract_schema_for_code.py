@@ -1,22 +1,52 @@
 log_indexer_contract_schema = {
-    "id": int,
-    "jsonrpc": str,
+    "id": 1,
+    "jsonrpc": "2.0",
     "result": {
         "data": {
-            "class": str,
-            "methods": {
-                "__init__": {"inputs": {}, "output": str},
-                "add_log": {"inputs": {"log": str, "log_id": int}, "output": str},
-                "get_closest_vector": {"inputs": {"text": str}, "output": dict},
-                "get_vector_metadata": {"inputs": {"id": int}, "output": str},
-                "remove_log": {"inputs": {"id": int}, "output": str},
-                "update_log": {
-                    "inputs": {"id": int, "log": str, "log_id": int},
-                    "output": str,
+            "abi": [
+                {"inputs": [], "type": "constructor"},
+                {
+                    "inputs": [
+                        {"name": "log", "type": "string"},
+                        {"name": "log_id", "type": "uint256"},
+                    ],
+                    "name": "add_log",
+                    "outputs": [],
+                    "type": "function",
                 },
-            },
+                {
+                    "inputs": [{"name": "text", "type": "string"}],
+                    "name": "get_closest_vector",
+                    "outputs": [{"name": "", "type": "bytes"}],
+                    "type": "function",
+                },
+                {
+                    "inputs": [{"name": "id", "type": "uint256"}],
+                    "name": "get_vector_metadata",
+                    "outputs": [],
+                    "type": "function",
+                },
+                {
+                    "inputs": [{"name": "id", "type": "uint256"}],
+                    "name": "remove_log",
+                    "outputs": [],
+                    "type": "function",
+                },
+                {
+                    "inputs": [
+                        {"name": "id", "type": "uint256"},
+                        {"name": "log", "type": "string"},
+                        {"name": "log_id", "type": "uint256"},
+                    ],
+                    "name": "update_log",
+                    "outputs": [],
+                    "type": "function",
+                },
+            ],
+            "class": "LogIndexer",
         },
-        "message": str,
-        "status": str,
+        "exception": None,
+        "message": "Endpoint get_contract_schema_for_code successfully executed",
+        "status": "success",
     },
 }

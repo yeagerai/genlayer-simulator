@@ -10,7 +10,7 @@ import TextAreaInput from '@/components/global/inputs/TextAreaInput.vue';
 import FieldError from '@/components/global/fields/FieldError.vue';
 import { type ContractMethod } from '@/types';
 
-const { contractSchemaQuery, deployContract, isDeploying } =
+const { contract, contractSchemaQuery, deployContract, isDeploying } =
   useContractQueries();
 const inputMap = useInputMap();
 
@@ -123,7 +123,7 @@ const mapInputs = (inputs: { [k: string]: string }) =>
 watch(
   () => constructorInputs.value,
   (newValue) => {
-    setInputParams(newValue || {});
+    setInputParams(newValue || []);
   },
 );
 
@@ -206,13 +206,11 @@ const hasConstructorInputs = computed(
         @click="handleDeployContract"
         :loading="isDeploying"
         :disabled="!isValidDefaultState"
+        :icon="ArrowUpTrayIcon"
         v-tooltip="!isValidDefaultState && 'Provide default state'"
       >
-        <template v-if="isDeploying"> Deploying... </template>
-        <template v-else>
-          <ArrowUpTrayIcon class="h-4 w-4" />
-          Deploy
-        </template>
+        <template v-if="isDeploying">Deploying...</template>
+        <template v-else>Deploy {{ contract?.name }}</template>
       </Btn>
     </template>
   </PageSection>

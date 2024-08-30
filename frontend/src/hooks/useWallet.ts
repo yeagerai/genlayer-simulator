@@ -1,37 +1,23 @@
-import { toHex, toRlp } from 'viem';
-import {
-  generatePrivateKey as _generatePrivateKey,
-  privateKeyToAccount as _privateKeyToAccount,
-} from 'viem/accounts';
-import type { TransactionSerializedLegacy } from 'viem';
-import type { Address } from '@/types';
+import { Web3Client } from '@/clients/web3';
 
 export function useWallet() {
-  const privateKeyToAccount = (privateKey: Address) => {
-    return _privateKeyToAccount(privateKey);
-  };
+  const web3 = new Web3Client();
 
-  const generatePrivateKey = () => {
-    return _generatePrivateKey();
-  };
+  function shortenAddress(address?: string) {
+    if (!address) {
+      return '';
+    }
 
-  const encodeTransactionData = (params: any[]) => {
-    return toRlp(params.map((param) => toHex(param)));
-  };
+    const maxChars = 4;
+    const displayedChars = Math.min(Math.floor(address.length / 3), maxChars);
 
-  async function signTransaction(
-    privateKey: Address,
-    data: Array<unknown>,
-    to?: Address,
-  ): Promise<TransactionSerializedLegacy> {
-    const account = privateKeyToAccount(privateKey);
-    const encodedData = encodeTransactionData(data);
-    return account.signTransaction({ data: encodedData, to, type: 'legacy' });
+    return (
+      address.slice(0, displayedChars) + '...' + address.slice(-displayedChars)
+    );
   }
 
   return {
-    privateKeyToAccount,
-    generatePrivateKey,
-    signTransaction,
+    web3,
+    shortenAddress,
   };
 }
