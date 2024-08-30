@@ -266,7 +266,7 @@ def get_contract_state(
     node = Node(
         contract_snapshot=None,
         address="",
-        validator_mode="leader",
+        validator_mode=ExecutionMode.LEADER,
         stake=0,
         provider="",
         model="",
