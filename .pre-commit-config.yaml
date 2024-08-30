@@ -39,12 +39,6 @@ repos:
         entry: sh -c "cd frontend && npm run format"
         language: system
         files: frontend
-  - repo: https://github.com/compilerla/conventional-pre-commit
-    rev: v3.4.0
-    hooks:
-      - id: conventional-pre-commit
-        stages: [commit-msg]
-        args: []
 
 default_install_hook_types:
   - pre-commit
