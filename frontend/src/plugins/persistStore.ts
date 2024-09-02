@@ -88,6 +88,12 @@ export function persistStorePlugin(context: PiniaPluginContext): void {
               store.openedFiles.join(','),
             );
             break;
+          case 'moveOpenedFile':
+            localStorage.setItem(
+              'contractsStore.openedFiles',
+              store.openedFiles.join(','),
+            );
+            break;
           case 'addDeployedContract':
             await upsertDeployedContract(args[0] as DeployedContract);
             break;

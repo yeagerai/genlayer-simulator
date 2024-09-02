@@ -7,6 +7,11 @@ import { computed } from 'vue';
 import HomeTab from './HomeTab.vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useContractQueries } from '@/hooks';
+import {
+  useSortable,
+  type CustomEvent,
+} from '@vueuse/integrations/useSortable';
+import { ref, nextTick } from 'vue';
 
 const store = useContractsStore();
 const router = useRouter();
@@ -30,6 +35,17 @@ const contracts = computed(() => {
   return store.contracts.filter((contract) =>
     store.openedFiles.includes(contract.id || ''),
   );
+});
+
+const sortableContainer = ref<HTMLElement | null>(null);
+
+useSortable(sortableContainer, contracts.value, {
+  animation: 150,
+  onUpdate: (e: CustomEvent) => {
+    nextTick(() => {
+      store.moveOpenFile(e.oldIndex, e.newIndex);
+    });
+  },
 });
 
 const showHome = computed(() => store.currentContractId === '');
@@ -58,16 +74,18 @@ const handleHorizontalScroll = (event: WheelEvent) => {
           @selectContract="setCurrentContractTab('')"
         />
 
-        <ContractTab
-          v-for="contract in contracts"
-          :key="contract.id"
-          :contract="contract"
-          class="contract-item"
-          :id="`contract-item-${contract.id}`"
-          :isActive="contract.id === store.currentContractId"
-          @closeContract="handleCloseContract(contract.id)"
-          @selectContract="setCurrentContractTab(contract.id)"
-        />
+        <div ref="sortableContainer" class="flex flex-row">
+          <ContractTab
+            v-for="contract in contracts"
+            :key="contract.id"
+            :contract="contract"
+            class="contract-item"
+            :id="`contract-item-${contract.id}`"
+            :isActive="contract.id === store.currentContractId"
+            @closeContract="handleCloseContract(contract.id)"
+            @selectContract="setCurrentContractTab(contract.id)"
+          />
+        </div>
       </div>
 
       <div>

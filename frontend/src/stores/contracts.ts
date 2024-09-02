@@ -95,6 +95,14 @@ export const useContractsStore = defineStore('contractsStore', () => {
     }
   }
 
+  function moveOpenFile(oldIndex: number, newIndex: number) {
+    const files = openedFiles.value;
+    const file = files[oldIndex];
+    files.splice(oldIndex, 1);
+    files.splice(newIndex, 0, file);
+    openedFiles.value = [...files];
+  }
+
   function addDeployedContract({
     contractId,
     address,
@@ -189,5 +197,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
     setCurrentContractId,
     resetStorage,
     getInitialOpenedFiles,
+    moveOpenFile,
   };
 });
