@@ -6,6 +6,7 @@ DEFAULT_CONSENSUS_SLEEP_TIME = 5
 
 import asyncio
 import traceback
+from sqlalchemy.orm import Session
 
 from backend.consensus.vrf import get_validators_for_transaction
 from backend.database_handler.chain_snapshot import ChainSnapshot
@@ -75,6 +76,7 @@ class ConsensusAlgorithm:
                                     transaction,
                                     TransactionsProcessor(session),
                                     ChainSnapshot(session),
+                                    session,
                                 )
                             )
 
@@ -88,6 +90,7 @@ class ConsensusAlgorithm:
         transaction: dict,
         transactions_processor: TransactionsProcessor,
         snapshot: ChainSnapshot,
+        session: Session,
     ):
         if (
             transactions_processor.get_transaction_by_id(transaction["id"])["status"]
@@ -112,9 +115,7 @@ class ConsensusAlgorithm:
         num_validators = len(remaining_validators) + 1
 
         contract_address = transaction.get("to_address", None)
-        contract_snapshot = ContractSnapshot(
-            contract_address, self.dbclient.get_session
-        )
+        contract_snapshot = ContractSnapshot(contract_address, session)
 
         # Create Leader
         leader_node = Node(

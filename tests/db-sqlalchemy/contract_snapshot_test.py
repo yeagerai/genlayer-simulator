@@ -17,7 +17,7 @@ def test_contract_snapshot_with_contract(session: Session):
     session.commit()
 
     # Test ContractSnapshot
-    contract_snapshot = ContractSnapshot(contract_address, lambda: session)
+    contract_snapshot = ContractSnapshot(contract_address, session)
 
     assert contract_snapshot.contract_address == contract_address
     assert contract_snapshot.contract_data["code"] == contract_code
@@ -41,7 +41,7 @@ def test_contract_snapshot_without_contract(session: Session):
     )
     session.add(contract)
 
-    contract_snapshot = ContractSnapshot(None, lambda: session)
+    contract_snapshot = ContractSnapshot(None, session)
 
     assert "contract_address" not in contract_snapshot.__dict__
     assert "contract_data" not in contract_snapshot.__dict__
