@@ -12,24 +12,21 @@ from backend.database_handler.validators_registry import ValidatorsRegistry
 
 
 class ChainSnapshot:
-    def __init__(self, get_session: Callable[[], Session]):
-        self.get_session = get_session
-        self.validators_registry = ValidatorsRegistry(get_session())
-
-        with get_session() as session:
-            self.all_validators = ValidatorsRegistry(session).get_all_validators()
+    def __init__(self, session: Session):
+        self.session = session
+        self.validators_registry = ValidatorsRegistry(session)
+        self.all_validators = self.validators_registry.get_all_validators()
         self.pending_transactions = self._load_pending_transactions()
         self.num_validators = len(self.all_validators)
 
     def _load_pending_transactions(self) -> List[dict]:
         """Load and return the list of pending transactions from the database."""
 
-        with self.get_session() as session:
-            pending_transactions = (
-                session.query(Transactions)
-                .filter(Transactions.status == TransactionStatus.PENDING)
-                .all()
-            )
+        pending_transactions = (
+            self.session.query(Transactions)
+            .filter(Transactions.status == TransactionStatus.PENDING)
+            .all()
+        )
         return [
             TransactionsProcessor._parse_transaction_data(transaction)
             for transaction in pending_transactions

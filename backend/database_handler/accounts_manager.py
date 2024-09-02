@@ -64,17 +64,17 @@ class AccountsManager:
 
     def fund_account(self, account_address: str, amount: int):
         # account creation or balance update
-        account_data = self._get_account(account_address)
-        if account_data is not None:
+        account = self._get_account(account_address)
+        if account is not None:
             # Account exists, update it
             # Dicts are mutable objects, we need to do something in order for SQLAlchemy to track their changes https://docs.sqlalchemy.org/en/20/orm/extensions/mutable.html
             # In this case we are copying the dict, updating it and assigning it back to the object, which will trigger the change tracking
             # I (Agustín Díaz) like this approach better than using `MutableDict` because it's more explicit than using the MutableDict class, and also doesn't leak the object to the rest of the code (which can be dangerous given that it's mutable)
-            new_data = account_data.data.copy()
+            new_data = account.data.copy()
             new_data["balance"] += amount
-            account_data.data = new_data
+            account.data = new_data
             self.session.commit()
-            print(account_data)
+            print(account)
         else:
             # Account doesn't exist, create it
             self._create_new_account_with_address(account_address, amount)

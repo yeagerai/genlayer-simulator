@@ -25,11 +25,9 @@ class ConsensusAlgorithm:
     def __init__(
         self,
         dbclient: DBClient,
-        transactions_processor: TransactionsProcessor,
         msg_handler: MessageHandler,
     ):
         self.dbclient = dbclient
-        self.transactions_processor = transactions_processor
         self.msg_handler = msg_handler
         self.queues: dict[str, asyncio.Queue] = {}
 
@@ -41,16 +39,17 @@ class ConsensusAlgorithm:
 
     async def _crawl_snapshot(self):
         while True:
-            chain_snapshot = ChainSnapshot(self.dbclient.get_session)
-            pending_transactions = chain_snapshot.get_pending_transactions()
-            for transaction in pending_transactions:
-                contract_address = (
-                    transaction["to_address"] or DEPLOY_CONTRACTS_QUEUE_KEY
-                )
+            with self.dbclient.get_session() as session:
+                chain_snapshot = ChainSnapshot(session)
+                pending_transactions = chain_snapshot.get_pending_transactions()
+                for transaction in pending_transactions:
+                    contract_address = (
+                        transaction["to_address"] or DEPLOY_CONTRACTS_QUEUE_KEY
+                    )
 
-                if contract_address not in self.queues:
-                    self.queues[contract_address] = asyncio.Queue()
-                await self.queues[contract_address].put(transaction)
+                    if contract_address not in self.queues:
+                        self.queues[contract_address] = asyncio.Queue()
+                    await self.queues[contract_address].put(transaction)
             await asyncio.sleep(DEFAULT_CONSENSUS_SLEEP_TIME)
 
     def run_consensus_loop(self):
@@ -62,47 +61,56 @@ class ConsensusAlgorithm:
     async def _run_consensus(self):
         asyncio.set_event_loop(asyncio.new_event_loop())
         # watch out! as ollama uses GPU resources and webrequest aka selenium uses RAM
+        # maybe task groups are a good idea
+        # TODO: async sessions would be a good idea to not block the current thread
         while True:
             if self.queues:
-                chain_snapshot = ChainSnapshot(self.dbclient.get_session)
                 tasks = []
 
                 for queue in self.queues.values():
-                    if not queue.empty():
-                        transaction = await queue.get()
-                        tasks.append(self.exec_transaction(transaction, chain_snapshot))
+                    # sessions cannot be shared between coroutines, we need to create a new session for each coroutine
+                    # https://docs.sqlalchemy.org/en/20/orm/session_basics.html#is-the-session-thread-safe-is-asyncsession-safe-to-share-in-concurrent-tasks
+                    with self.dbclient.get_session() as session:
+                        if not queue.empty():
+                            transaction = await queue.get()
+                            chain_snapshot = ChainSnapshot(session)
 
-                try:
-                    await asyncio.gather(*tasks)
-                except Exception as e:
-                    print("Error running consensus", e)
-                    print(traceback.format_exc())
+                            tasks.append(
+                                self.exec_transaction(
+                                    transaction,
+                                    TransactionsProcessor(session),
+                                    chain_snapshot,
+                                )
+                            )
+
+                    try:
+                        await asyncio.gather(*tasks)
+                    except Exception as e:
+                        print("Error running consensus", e)
+                        print(traceback.format_exc())
             await asyncio.sleep(DEFAULT_CONSENSUS_SLEEP_TIME)
 
     async def exec_transaction(
         self,
         transaction: dict,
+        transactions_processor: TransactionsProcessor,
         snapshot: ChainSnapshot,
     ):
-        with self.dbclient.get_session() as session:
-            if (
-                self.transactions_processor.get_transaction_by_id(
-                    transaction["id"], session
-                )["status"]
-                != TransactionStatus.PENDING.value
-            ):
-                # This is a patch for a TOCTOU problem we have https://github.com/yeagerai/genlayer-simulator/issues/387
-                # Problem: Pending transactions are checked by `_crawl_snapshot`, which appends them to queues. These queues are consumed by `_run_consensus`, which processes the transactions. This means that a transaction can be processed multiple times, since `_crawl_snapshot` can append the same transaction to the queue multiple times.
-                # Partial solution: This patch checks if the transaction is still pending before processing it. This is not the best solution, but we'll probably refactor the whole consensus algorithm in the short term.
-                print(" ~ ~ ~ ~ ~ TRANSACTION ALREADY IN PROCESS: ", transaction)
-                return
+        if (
+            transactions_processor.get_transaction_by_id(transaction["id"])["status"]
+            != TransactionStatus.PENDING.value
+        ):
+            # This is a patch for a TOCTOU problem we have https://github.com/yeagerai/genlayer-simulator/issues/387
+            # Problem: Pending transactions are checked by `_crawl_snapshot`, which appends them to queues. These queues are consumed by `_run_consensus`, which processes the transactions. This means that a transaction can be processed multiple times, since `_crawl_snapshot` can append the same transaction to the queue multiple times.
+            # Partial solution: This patch checks if the transaction is still pending before processing it. This is not the best solution, but we'll probably refactor the whole consensus algorithm in the short term.
+            print(" ~ ~ ~ ~ ~ TRANSACTION ALREADY IN PROCESS: ", transaction)
+            return
 
         print(" ~ ~ ~ ~ ~ EXECUTING TRANSACTION: ", transaction)
         # Update transaction status
-        with self.dbclient.get_session() as session:
-            self.transactions_processor.update_transaction_status(
-                transaction["id"], TransactionStatus.PROPOSING, session
-            )
+        transactions_processor.update_transaction_status(
+            transaction["id"], TransactionStatus.PROPOSING
+        )
         # Select Leader and validators
         all_validators = snapshot.get_all_validators()
         leader, remaining_validators = get_validators_for_transaction(
@@ -131,10 +139,9 @@ class ConsensusAlgorithm:
         leader_receipt = await leader_node.exec_transaction(transaction)
         votes = {leader["address"]: leader_receipt.vote.value}
         # Update transaction status
-        with self.dbclient.get_session() as session:
-            self.transactions_processor.update_transaction_status(
-                transaction["id"], TransactionStatus.COMMITTING, session
-            )
+        transactions_processor.update_transaction_status(
+            transaction["id"], TransactionStatus.COMMITTING
+        )
 
         # Create Validators
         validator_nodes = [
@@ -164,10 +171,10 @@ class ConsensusAlgorithm:
 
         for i in range(len(validation_results)):
             votes[f"{validator_nodes[i].address}"] = validation_results[i].vote.value
-        with self.dbclient.get_session() as session:
-            self.transactions_processor.update_transaction_status(
-                transaction["id"], TransactionStatus.REVEALING, session
-            )
+        transactions_processor.update_transaction_status(
+            transaction["id"],
+            TransactionStatus.REVEALING,
+        )
 
         if (
             len([vote for vote in votes.values() if vote == Vote.AGREE.value])
@@ -175,10 +182,9 @@ class ConsensusAlgorithm:
         ):
             raise Exception("Consensus not reached")
 
-        with self.dbclient.get_session() as session:
-            self.transactions_processor.update_transaction_status(
-                transaction["id"], TransactionStatus.ACCEPTED, session
-            )
+        transactions_processor.update_transaction_status(
+            transaction["id"], TransactionStatus.ACCEPTED
+        )
 
         final = False
         consensus_data = ConsensusData(
@@ -204,7 +210,7 @@ class ConsensusAlgorithm:
             contract_snapshot.update_contract_state(leader_receipt.contract_state)
 
         # Finalize transaction
-        with self.dbclient.get_session() as session:
-            self.transactions_processor.set_transaction_result(
-                transaction["id"], consensus_data, session
-            )
+        transactions_processor.set_transaction_result(
+            transaction["id"],
+            consensus_data,
+        )
