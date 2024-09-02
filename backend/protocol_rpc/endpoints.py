@@ -3,6 +3,7 @@ import random
 import json
 from functools import partial
 from flask_jsonrpc import JSONRPC
+from sqlalchemy import Table
 
 from backend.database_handler.db_client import DBClient
 from backend.database_handler.models import Base
@@ -41,7 +42,13 @@ def ping() -> dict:
 
 
 def clear_db_tables(db_client: DBClient, tables: list) -> dict:
-    db_client.clear_tables(tables)
+    with db_client.get_session() as session:
+        for table_name in tables:
+            table = Table(
+                table_name, Base.metadata, autoload=True, autoload_with=session.bind
+            )
+            session.execute(table.delete())
+        session.commit()
 
 
 ####### ACCOUNTS ENDPOINTS #######
@@ -347,10 +354,6 @@ def send_raw_transaction(
 
 def count_validators(validators_registry: ValidatorsRegistry) -> dict:
     return validators_registry.count_validators()
-
-
-def clear_db_tables(db_client: DBClient, tables: list) -> dict:
-    Base.metadata.drop_all(db_client.engine)
 
 
 def register_all_rpc_endpoints(
