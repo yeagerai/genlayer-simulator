@@ -1,6 +1,6 @@
 # database_handler/chain_snapshot.py
 
-from typing import Callable, List
+from typing import List
 from sqlalchemy.orm import Session
 
 from backend.database_handler.transactions_processor import (

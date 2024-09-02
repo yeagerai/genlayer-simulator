@@ -10,8 +10,8 @@ services:
     #   - 5432:5432
     healthcheck:
       test: pg_isready -U postgres -d postgres
-      interval: 10s
-      timeout: 3s
+      interval: 1s
+      timeout: 1s
       retries: 3
     container_name: genlayer_simulator_postgres_db_tests
 

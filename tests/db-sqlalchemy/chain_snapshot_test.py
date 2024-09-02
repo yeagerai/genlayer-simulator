@@ -60,9 +60,8 @@ def test_chain_snapshot(session: Session):
     session.add(finalized_transaction)
     session.commit()
 
-    contract_snapshot = ChainSnapshot(lambda: session)
-
-    pending_transactions = contract_snapshot.get_pending_transactions()
+    chain_snapshot = ChainSnapshot(session)
+    pending_transactions = chain_snapshot.get_pending_transactions()
 
     assert len(pending_transactions) == 2
     pending_transactions.sort(key=lambda x: x["id"])

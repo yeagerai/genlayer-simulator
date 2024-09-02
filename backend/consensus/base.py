@@ -61,7 +61,6 @@ class ConsensusAlgorithm:
     async def _run_consensus(self):
         asyncio.set_event_loop(asyncio.new_event_loop())
         # watch out! as ollama uses GPU resources and webrequest aka selenium uses RAM
-        # maybe task groups are a good idea
         # TODO: async sessions would be a good idea to not block the current thread
         while True:
             try:
