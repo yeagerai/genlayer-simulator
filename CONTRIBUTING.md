@@ -27,7 +27,7 @@ Have ideas for new features or use cases? We're eager to hear them! But first:
 
 ### Bug fixing and Feature development
 
-#### 1. Setup yourself to start coding
+#### 1. Set yourself up to start coding
 
 - **1.1. Pick an issue**: Select one from the project GitHub repository [issue list](https://github.com/yeagerai/genlayer-simulator/issues) and assign it to yourself.
 
