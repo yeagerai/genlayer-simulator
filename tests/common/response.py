@@ -9,7 +9,7 @@ def assert_dict_struct(data, structure):
         for item in data:
             assert_dict_struct(item, structure[0])
     else:
-        isinstance(data, structure)
+        assert_is_instance(data, structure)
 
 
 def assert_is_instance(data, structure):
