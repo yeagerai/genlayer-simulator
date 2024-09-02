@@ -95,7 +95,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
     }
   }
 
-  function moveOpenFile(oldIndex: number, newIndex: number) {
+  function moveOpenedFile(oldIndex: number, newIndex: number) {
     const files = openedFiles.value;
     const file = files[oldIndex];
     files.splice(oldIndex, 1);
@@ -175,6 +175,19 @@ export const useContractsStore = defineStore('contractsStore', () => {
     return contracts.value.slice().sort((a, b) => a.name.localeCompare(b.name));
   });
 
+  const openedContracts = computed(() => {
+    return openedFiles.value.flatMap((contractId) => {
+      const contract = contracts.value.find(
+        (contract) => contract.id === contractId,
+      );
+      if (contract) {
+        return [contract];
+      } else {
+        return [];
+      }
+    });
+  });
+
   return {
     // state
     contracts,
@@ -185,6 +198,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
     //getters
     currentContract,
     contractsOrderedByName,
+    openedContracts,
 
     //actions
     addContractFile,
@@ -197,6 +211,6 @@ export const useContractsStore = defineStore('contractsStore', () => {
     setCurrentContractId,
     resetStorage,
     getInitialOpenedFiles,
-    moveOpenFile,
+    moveOpenedFile,
   };
 });
