@@ -64,29 +64,25 @@ class ConsensusAlgorithm:
         # maybe task groups are a good idea
         # TODO: async sessions would be a good idea to not block the current thread
         while True:
-            tasks = []
+            try:
+                async with asyncio.TaskGroup() as tg:
+                    for queue in self.queues.values():
+                        if not queue.empty():
+                            # sessions cannot be shared between coroutines, we need to create a new session for each coroutine
+                            # https://docs.sqlalchemy.org/en/20/orm/session_basics.html#is-the-session-thread-safe-is-asyncsession-safe-to-share-in-concurrent-tasks
+                            transaction = await queue.get()
+                            with self.dbclient.get_session() as session:
+                                tg.create_task(
+                                    self.exec_transaction(
+                                        transaction,
+                                        TransactionsProcessor(session),
+                                        ChainSnapshot(session),
+                                    )
+                                )
 
-            for queue in self.queues.values():
-                # sessions cannot be shared between coroutines, we need to create a new session for each coroutine
-                # https://docs.sqlalchemy.org/en/20/orm/session_basics.html#is-the-session-thread-safe-is-asyncsession-safe-to-share-in-concurrent-tasks
-                with self.dbclient.get_session() as session:
-                    if not queue.empty():
-                        transaction = await queue.get()
-                        chain_snapshot = ChainSnapshot(session)
-
-                        tasks.append(
-                            self.exec_transaction(
-                                transaction,
-                                TransactionsProcessor(session),
-                                chain_snapshot,
-                            )
-                        )
-
-                try:
-                    await asyncio.gather(*tasks)
-                except Exception as e:
-                    print("Error running consensus", e)
-                    print(traceback.format_exc())
+            except Exception as e:
+                print("Error running consensus", e)
+                print(traceback.format_exc())
             await asyncio.sleep(DEFAULT_CONSENSUS_SLEEP_TIME)
 
     async def exec_transaction(
