@@ -3,18 +3,31 @@ import { DocumentCheckIcon } from '@heroicons/vue/16/solid';
 import { type ContractFile } from '@/types';
 import { HomeIcon } from '@heroicons/vue/24/solid';
 import { X } from 'lucide-vue-next';
+import { onMounted, ref, watch } from 'vue';
 
-defineProps<{
+const props = defineProps<{
   contract?: ContractFile;
   isHomeTab?: Boolean;
   isActive: Boolean;
 }>();
 
 const emit = defineEmits(['closeContract', 'selectContract']);
+
+const tab = ref<HTMLElement | null>(null);
+
+const tryScrollToTab = () => {
+  if (props.isActive) {
+    tab.value?.scrollIntoView();
+  }
+};
+
+onMounted(tryScrollToTab);
+watch(() => props.isActive, tryScrollToTab);
 </script>
 
 <template>
   <div
+    ref="tab"
     :class="[
       'group relative flex items-center border-r border-r-gray-200 font-semibold dark:border-r-zinc-900',
       !isActive &&
