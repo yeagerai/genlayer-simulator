@@ -66,19 +66,18 @@ class ConsensusAlgorithm:
         while True:
             try:
                 async with asyncio.TaskGroup() as tg:
-                    for queue in self.queues.values():
-                        if not queue.empty():
-                            # sessions cannot be shared between coroutines, we need to create a new session for each coroutine
-                            # https://docs.sqlalchemy.org/en/20/orm/session_basics.html#is-the-session-thread-safe-is-asyncsession-safe-to-share-in-concurrent-tasks
-                            transaction = await queue.get()
-                            with self.dbclient.get_session() as session:
-                                tg.create_task(
-                                    self.exec_transaction(
-                                        transaction,
-                                        TransactionsProcessor(session),
-                                        ChainSnapshot(session),
-                                    )
+                    for queue in [q for q in self.queues.values() if not q.empty()]:
+                        # sessions cannot be shared between coroutines, we need to create a new session for each coroutine
+                        # https://docs.sqlalchemy.org/en/20/orm/session_basics.html#is-the-session-thread-safe-is-asyncsession-safe-to-share-in-concurrent-tasks
+                        transaction = await queue.get()
+                        with self.dbclient.get_session() as session:
+                            tg.create_task(
+                                self.exec_transaction(
+                                    transaction,
+                                    TransactionsProcessor(session),
+                                    ChainSnapshot(session),
                                 )
+                            )
 
             except Exception as e:
                 print("Error running consensus", e)
