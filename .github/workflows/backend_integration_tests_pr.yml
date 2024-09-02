@@ -97,7 +97,7 @@ jobs:
           pip install -r requirements.test.txt
 
       - name: Run tests
-        run: pytest tests/integration/
+        run: pytest tests/integration/ -vv
 
       - name: Dump Docker Compose logs
         run: docker compose logs

@@ -185,7 +185,7 @@ class ConsensusAlgorithm:
             votes=votes,
             leader_receipt=leader_receipt,
             validators=validators_results,
-        ).to_json()
+        ).to_dict()
 
         # Register contract if it is a new contract
         if transaction["type"] == 1:

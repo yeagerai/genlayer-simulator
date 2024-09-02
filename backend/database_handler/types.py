@@ -1,6 +1,6 @@
 import json
 from typing import Dict, List, Optional
-from dataclasses import dataclass, asdict, is_dataclass
+from dataclasses import dataclass
 from backend.node.genvm.types import Receipt
 
 
@@ -10,9 +10,6 @@ class ConsensusData:
     votes: Dict[str, str]
     leader_receipt: Receipt
     validators: Optional[List] = None
-
-    def to_json(self):
-        return json.dumps(self.to_dict())
 
     def to_dict(self):
         return {

@@ -71,16 +71,15 @@ class TransactionsProcessor:
 
         return new_transaction.id
 
-    def get_transaction_by_id(self, transaction_id: int) -> dict:
+    def get_transaction_by_id(self, transaction_id: int) -> dict | None:
         transaction = (
             self.session.query(Transactions).filter_by(id=transaction_id).one_or_none()
         )
 
-        return (
-            transaction
-            if transaction is None
-            else self._parse_transaction_data(transaction)
-        )
+        if transaction is None:
+            return None
+
+        return self._parse_transaction_data(transaction)
 
     def update_transaction_status(
         self, transaction_id: int, new_status: TransactionStatus
