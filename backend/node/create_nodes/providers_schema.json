@@ -2,91 +2,83 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Provider",
   "type": "object",
+
   "properties": {
-    "provider": {
-      "enum": ["heuristai", "openai", "ollama"]
-    },
-    "model": {
-      "type": "string"
-    },
-
-    "config": {
-      "oneOf": [
-        {
-          "type": "object",
-          "properties": {
-            "type": { "const": "string" },
-            "pattern": { "type": "string" }
-          },
-          "required": ["type", "pattern"],
-          "additionalProperties": false
-        },
-        {
-          "type": "number",
-          "properties": {
-            "type": { "const": "number" },
-            "minimum": { "type": "number" },
-            "maximum": { "type": "number" }
-          },
-          "required": ["type", "minimum", "maximum"],
-          "additionalProperties": false
-        }
-      ]
-    }
+    "provider": { "type": "string" },
+    "model": { "type": "string" }
   },
-  "allOf": [
-    {
-      "if": {
-        "properties": {
-          "provider": { "const": "ollama" }
-        },
-        "required": ["provider"]
-      },
 
-      "then": {
-        "properties": {
-          "model": {
-            "enum": ["llama3", "mistral", "gemma"]
-          }
-        }
+  "oneOf": [
+    {
+      "properties": {
+        "provider": { "const": "ollama" },
+        "model": { "const": "llama3" }
+      },
+      "required": ["provider", "model"]
+    },
+    {
+      "properties": {
+        "provider": { "const": "ollama" },
+        "model": { "const": "mistral" }
       }
     },
     {
-      "if": {
-        "properties": {
-          "provider": { "const": "heuristai" }
-        },
-        "required": ["provider"]
-      },
-      "then": {
-        "properties": {
-          "model": {
-            "enum": [
-              "mistralai/mixtral-8x7b-instruct",
-              "meta-llama/llama-2-70b-chat",
-              "openhermes-2-yi-34b-gptq",
-              "dolphin-2.9-llama3-8b"
-            ]
-          }
-        }
+      "properties": {
+        "provider": { "const": "ollama" },
+        "model": { "const": "gemma" }
       }
     },
     {
-      "if": {
-        "properties": {
-          "provider": { "const": "openai" }
-        },
-        "required": ["provider"]
-      },
-      "then": {
-        "properties": {
-          "model": {
-            "enum": ["gpt-3.5-turbo", "gpt-4", "gpt-4o", "gpt-4o-mini"]
-          }
-        }
+      "properties": {
+        "provider": { "const": "heuristai" },
+        "model": { "const": "mistralai/mixtral-8x7b-instruct" }
+      }
+    },
+    {
+      "properties": {
+        "provider": { "const": "heuristai" },
+        "model": { "const": "meta-llama/llama-2-70b-chat" }
+      }
+    },
+    {
+      "properties": {
+        "provider": { "const": "heuristai" },
+        "model": { "const": "openhermes-2-yi-34b-gptq" }
+      }
+    },
+    {
+      "properties": {
+        "provider": { "const": "heuristai" },
+        "model": { "const": "dolphin-2.9-llama3-8b" }
+      }
+    },
+    {
+      "properties": {
+        "provider": { "const": "openai" },
+        "model": { "const": "gpt-3.5-turbo" }
+      }
+    },
+    {
+      "properties": {
+        "provider": { "const": "openai" },
+        "model": { "const": "gpt-4" }
+      }
+    },
+    {
+      "properties": {
+        "provider": { "const": "openai" },
+        "model": { "const": "gpt-4o" }
+      }
+    },
+    {
+      "properties": {
+        "provider": { "const": "openai" },
+        "model": { "const": "gpt-4o-mini" }
       }
     }
   ],
-  "required": ["provider", "config", "model"],
+
+  "required": ["provider", "model"],
+
   "additionalProperties": false
 }
