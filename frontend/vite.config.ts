@@ -1,33 +1,35 @@
-import { fileURLToPath, URL } from 'node:url'
-import svgLoader from 'vite-svg-loader'
+import { fileURLToPath, URL } from 'node:url';
+import svgLoader from 'vite-svg-loader';
 
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import vueJsx from '@vitejs/plugin-vue-jsx'
-import VueDevTools from 'vite-plugin-vue-devtools'
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import vueJsx from '@vitejs/plugin-vue-jsx';
+import VueDevTools from 'vite-plugin-vue-devtools';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: "/",
-  plugins: [
-    vue(),
-    svgLoader(),
-    vueJsx(),
-    VueDevTools(),
-  ],
+  base: '/',
+  plugins: [vue(), svgLoader(), vueJsx(), VueDevTools()],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
-    }
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
   },
   preview: {
     port: 8080,
     strictPort: true,
-   },
-   server: {
+  },
+  server: {
     port: 8080,
     strictPort: true,
     host: true,
-    origin: "http://0.0.0.0:8080",
-   },
-})
+    origin: 'http://0.0.0.0:8080',
+    proxy: {
+      '/api': {
+        target: 'http://jsonrpc:4000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
+  },
+});
