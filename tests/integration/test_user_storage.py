@@ -60,7 +60,7 @@ def test_user_storage():
     ######### GET Initial State ############
     ########################################
     contract_state_1 = post_request_localhost(
-        payload("get_contract_state", contract_address, "get_complete_storage", [])
+        payload("call", contract_address, "get_complete_storage", [])
     ).json()
     assert has_success_status(contract_state_1)
     assert len(contract_state_1["result"]["data"]) == 0
@@ -78,7 +78,7 @@ def test_user_storage():
 
     # Get Updated State
     contract_state_2_1 = post_request_localhost(
-        payload("get_contract_state", contract_address, "get_complete_storage", [])
+        payload("call", contract_address, "get_complete_storage", [])
     ).json()
     assert has_success_status(contract_state_2_1)
     assert (
@@ -89,7 +89,7 @@ def test_user_storage():
     # Get Updated State
     contract_state_2_2 = post_request_localhost(
         payload(
-            "get_contract_state",
+            "call",
             contract_address,
             "get_account_storage",
             [from_account_a.address],
@@ -111,7 +111,7 @@ def test_user_storage():
 
     # Get Updated State
     contract_state_3 = post_request_localhost(
-        payload("get_contract_state", contract_address, "get_complete_storage", [])
+        payload("call", contract_address, "get_complete_storage", [])
     ).json()
     assert has_success_status(contract_state_3)
     assert (
@@ -136,7 +136,7 @@ def test_user_storage():
 
     # Get Updated State
     contract_state_4_1 = post_request_localhost(
-        payload("get_contract_state", contract_address, "get_complete_storage", [])
+        payload("call", contract_address, "get_complete_storage", [])
     ).json()
     assert has_success_status(contract_state_4_1)
     assert (
@@ -151,7 +151,7 @@ def test_user_storage():
     # Get Updated State
     contract_state_4_2 = post_request_localhost(
         payload(
-            "get_contract_state",
+            "call",
             contract_address,
             "get_account_storage",
             [from_account_b.address],

@@ -33,7 +33,7 @@ export class JsonRpcService implements IJsonRpcService {
     methodArguments,
   }: GetContractStateRequest): Promise<JsonRpcResult<GetContractStateResult>> {
     const { result } = await this.rpcClient.call<GetContractStateResult>({
-      method: 'get_contract_state',
+      method: 'call',
       params: [contractAddress, method, methodArguments],
     });
     return result;

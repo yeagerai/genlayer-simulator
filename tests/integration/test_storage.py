@@ -55,7 +55,7 @@ def test_storage():
 
     # Get Initial State
     contract_state_1 = post_request_localhost(
-        payload("get_contract_state", contract_address, "get_storage", [])
+        payload("call", contract_address, "get_storage", [])
     ).json()
     assert has_success_status(contract_state_1)
     assert contract_state_1["result"]["data"] == INITIAL_STATE
@@ -72,7 +72,7 @@ def test_storage():
 
     # Get Updated State
     contract_state_2 = post_request_localhost(
-        payload("get_contract_state", contract_address, "get_storage", [])
+        payload("call", contract_address, "get_storage", [])
     ).json()
     assert has_success_status(contract_state_2)
     assert contract_state_2["result"]["data"] == UPDATED_STATE

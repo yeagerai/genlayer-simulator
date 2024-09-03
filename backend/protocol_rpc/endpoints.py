@@ -253,7 +253,7 @@ def get_transaction_by_id(
     return transactions_processor.get_transaction_by_id(transaction_id)
 
 
-def get_contract_state(
+def call(
     accounts_manager: AccountsManager,
     msg_handler: MessageHandler,
     contract_address: str,
@@ -398,7 +398,7 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint_for_partial(get_validator, validators_registry)
 
     register_rpc_endpoint_for_partial(get_transaction_by_id, transactions_processor)
-    register_rpc_endpoint_for_partial(get_contract_state, accounts_manager, msg_handler)
+    register_rpc_endpoint_for_partial(call, accounts_manager, msg_handler)
     register_rpc_endpoint_for_partial(
         send_raw_transaction, transactions_processor, accounts_manager
     )

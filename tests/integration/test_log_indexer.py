@@ -55,7 +55,7 @@ def test_log_indexer():
     # ##########################################
     closest_vector_log_0 = post_request_localhost(
         payload(
-            "get_contract_state",
+            "call",
             contract_address,
             "get_closest_vector",
             ["I like mango"],
@@ -81,7 +81,7 @@ def test_log_indexer():
     # ########################################
     closest_vector_log_0 = post_request_localhost(
         payload(
-            "get_contract_state",
+            "call",
             contract_address,
             "get_closest_vector",
             ["I like mango"],
@@ -96,7 +96,7 @@ def test_log_indexer():
     # ########################################
     metadata_log_0 = post_request_localhost(
         payload(
-            "get_contract_state",
+            "call",
             contract_address,
             "get_vector_metadata",
             [0],
@@ -121,7 +121,7 @@ def test_log_indexer():
     # ########################################
     closest_vector_log_1 = post_request_localhost(
         payload(
-            "get_contract_state",
+            "call",
             contract_address,
             "get_closest_vector",
             ["I like carrots"],
@@ -146,7 +146,7 @@ def test_log_indexer():
     # ########################################
     closest_vector_log_0_2 = post_request_localhost(
         payload(
-            "get_contract_state",
+            "call",
             contract_address,
             "get_closest_vector",
             ["I like mango a lot"],
@@ -172,7 +172,7 @@ def test_log_indexer():
     # ########################################
     closest_vector_log_0_3 = post_request_localhost(
         payload(
-            "get_contract_state",
+            "call",
             contract_address,
             "get_closest_vector",
             ["I like to eat mango"],
@@ -198,7 +198,7 @@ def test_log_indexer():
     # Check if new item got id 2
     closest_vector_log_2 = post_request_localhost(
         payload(
-            "get_contract_state",
+            "call",
             contract_address,
             "get_closest_vector",
             ["This is the third log"],

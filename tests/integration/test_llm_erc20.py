@@ -58,7 +58,7 @@ def test_llm_erc20():
     ######### GET Initial State ############
     ########################################
     contract_state_1 = post_request_localhost(
-        payload("get_contract_state", contract_address, "get_balances", [])
+        payload("call", contract_address, "get_balances", [])
     ).json()
     assert has_success_status(contract_state_1)
     assert contract_state_1["result"]["data"][from_account_a.address] == str(
@@ -81,7 +81,7 @@ def test_llm_erc20():
 
     # Get Updated State
     contract_state_2_1 = post_request_localhost(
-        payload("get_contract_state", contract_address, "get_balances", [])
+        payload("call", contract_address, "get_balances", [])
     ).json()
     assert has_success_status(contract_state_2_1)
     assert (
@@ -96,7 +96,7 @@ def test_llm_erc20():
     # Get Updated State
     contract_state_2_2 = post_request_localhost(
         payload(
-            "get_contract_state",
+            "call",
             contract_address,
             "get_balance_of",
             [from_account_a.address],
@@ -108,7 +108,7 @@ def test_llm_erc20():
     # Get Updated State
     contract_state_2_3 = post_request_localhost(
         payload(
-            "get_contract_state",
+            "call",
             contract_address,
             "get_balance_of",
             [from_account_b.address],
