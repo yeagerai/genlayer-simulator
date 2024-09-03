@@ -21,5 +21,6 @@ def test():
     faker = JSF.from_json(schema_file)
 
     fake_json = faker.generate()
+    from pprint import pprint
 
-    print(fake_json)
+    pprint(fake_json)

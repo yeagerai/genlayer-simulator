@@ -1,19 +1,92 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "providers",
+  "title": "Provider",
   "type": "object",
-  "enum": [
-    {
-      "type": "admin",
-      "permissions": ["read", "write", "delete"]
+  "properties": {
+    "provider": {
+      "enum": ["heuristai", "openai", "ollama"]
     },
-    {
-      "type": "user",
-      "permissions": ["read", "write"]
+    "model": {
+      "type": "string"
     },
-    {
-      "type": "guest",
-      "permissions": ["read"]
+
+    "config": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": { "const": "string" },
+            "pattern": { "type": "string" }
+          },
+          "required": ["type", "pattern"],
+          "additionalProperties": false
+        },
+        {
+          "type": "number",
+          "properties": {
+            "type": { "const": "number" },
+            "minimum": { "type": "number" },
+            "maximum": { "type": "number" }
+          },
+          "required": ["type", "minimum", "maximum"],
+          "additionalProperties": false
+        }
+      ]
     }
-  ]
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "provider": { "const": "ollama" }
+        },
+        "required": ["provider"]
+      },
+
+      "then": {
+        "properties": {
+          "model": {
+            "enum": ["llama3", "mistral", "gemma"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "provider": { "const": "heuristai" }
+        },
+        "required": ["provider"]
+      },
+      "then": {
+        "properties": {
+          "model": {
+            "enum": [
+              "mistralai/mixtral-8x7b-instruct",
+              "meta-llama/llama-2-70b-chat",
+              "openhermes-2-yi-34b-gptq",
+              "dolphin-2.9-llama3-8b"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "provider": { "const": "openai" }
+        },
+        "required": ["provider"]
+      },
+      "then": {
+        "properties": {
+          "model": {
+            "enum": ["gpt-3.5-turbo", "gpt-4", "gpt-4o", "gpt-4o-mini"]
+          }
+        }
+      }
+    }
+  ],
+  "required": ["provider", "config", "model"],
+  "additionalProperties": false
 }
