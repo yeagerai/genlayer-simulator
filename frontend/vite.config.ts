@@ -33,7 +33,11 @@ export default defineConfig(({ mode }) => {
               '/api': {
                 target: env.VITE_PROXY_JSON_RPC_SERVER_URL,
                 changeOrigin: true,
-                rewrite: (path) => path.replace(/^\/api/, ''),
+              },
+              '/socket.io': {
+                target: env.VITE_WS_SERVER_URL,
+                ws: true,
+                rewriteWsOrigin: true,
               },
             },
     },
