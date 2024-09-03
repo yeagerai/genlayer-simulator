@@ -262,6 +262,7 @@ def get_transaction_by_id(
 
 def get_contract_state(
     accounts_manager: AccountsManager,
+    msg_handler: MessageHandler,
     contract_address: str,
     method_name: str,
     method_args: list,
@@ -279,6 +280,7 @@ def get_contract_state(
         model="",
         config=None,
         leader_receipt=None,
+        msg_handler=msg_handler,
     )
     return node.get_contract_data(
         code=contract_account["data"]["code"],
@@ -407,7 +409,7 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint_for_partial(get_validator, validators_registry)
 
     register_rpc_endpoint_for_partial(get_transaction_by_id, transactions_processor)
-    register_rpc_endpoint_for_partial(get_contract_state, accounts_manager)
+    register_rpc_endpoint_for_partial(get_contract_state, accounts_manager, msg_handler)
     register_rpc_endpoint_for_partial(
         send_raw_transaction, transactions_processor, accounts_manager
     )
