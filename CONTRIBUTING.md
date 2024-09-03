@@ -33,8 +33,8 @@ Have ideas for new features or use cases? We're eager to hear them! But first:
 
 - **1.2. Create a branch**: create the branch that you will work on by using the link provided in the issue details page (right panel at the bottom - section "Development")
 
-- **1.3. Setup the Simulator locally**: launch the simulator's frontend and backend by running the docker compose command (Please note that you must have docker, node, and npm installed) 
-   
+- **1.3. Setup the Simulator locally**: launch the simulator's frontend and backend by running the docker compose command (Please note that you must have docker, node, and npm installed)
+
    ```sh
    $ cp .env.example .env
    $ docker compose up
@@ -68,7 +68,7 @@ Have ideas for new features or use cases? We're eager to hear them! But first:
 #### 3. Other considerations
 - **3.1. Small fixes don't require creating an issue**: significantly small issues can be submitted through a valid Pull Request without needing to create an issue.
 - **3.2. Run the frontend in dev mode**: to run the frontend separately from the backend and with hot reload enabled, first launch the backend without the frontend:
-   
+
    ```sh
    $ docker compose upjsonrpc webrequest ollama database-migration postgres
    ```
