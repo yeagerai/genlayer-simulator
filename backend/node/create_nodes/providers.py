@@ -35,10 +35,14 @@ def get_default_providers() -> List[Provider]:
     providers = []
     for file in files:
         with open(file, "r") as f:
-            providers.append(json.loads(f.read()))
+            provider = json.loads(f.read())
+            providers.append((provider, file))
 
-    for provider in providers:
-        validate(instance=provider, schema=schema)
+    for provider, file in providers:
+        try:
+            validate(instance=provider, schema=schema)
+        except Exception as e:
+            raise ValueError(f"Error validating file {file}, provider {provider}: {e}")
 
     return providers
 

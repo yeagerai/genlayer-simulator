@@ -15,24 +15,141 @@
       "if": {
         "properties": {
           "provider": { "const": "ollama" }
-        },
-        "required": ["provider"]
+        }
       },
 
       "then": {
         "properties": {
           "model": {
             "enum": ["llama3", "mistral", "gemma"]
+          },
+          "config": {
+            "type": "object",
+            "properties": {
+              "mirostat": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2,
+                "default": 0
+              },
+
+              "mirostat_eta": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "multipleOf": 0.01,
+                "default": 0.1
+              },
+              "microstat_tau": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 10,
+                "multipleOf": 0.1,
+                "default": 5
+              },
+              "num_ctx": {
+                "enum": [512, 1028, 2048, 4096],
+                "default": 2048,
+                "$comment": "this needs to be a per model value"
+              },
+              "num_qga": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20,
+                "default": 8
+              },
+              "num_gpu": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 16,
+                "default": 0
+              },
+              "num_thread": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 16,
+                "default": 2
+              },
+              "repeat_last_n": {
+                "enum": [8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096],
+                "default": 64
+              },
+              "repeat_penalty": {
+                "type": "number",
+                "minimum": 1.0,
+                "maximum": 2.0,
+                "multipleOf": 0.1,
+                "default": 1.1
+              },
+              "temprature": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1.5,
+                "multipleOf": 0.1,
+                "default": 0.8
+              },
+              "seed": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000,
+                "default": 0
+              },
+              "stop": {
+                "const": ""
+              },
+              "tfs_z": {
+                "type": "number",
+                "minimum": 1.0,
+                "maximum": 2.0,
+                "multipleOf": 0.1,
+                "default": 1.0
+              },
+              "num_predict": {
+                "enum": [-2, -1, 32, 64, 128, 256, 512],
+                "default": 128
+              },
+              "top_k": {
+                "type": "integer",
+                "minimum": 2,
+                "maximum": 100,
+                "default": 40
+              },
+              "top_p": {
+                "type": "number",
+                "minimum": 0.5,
+                "maximum": 0.99,
+                "multipleOf": 0.01,
+                "default": 0.9
+              }
+            },
+            "required": [
+              "mirostat",
+              "mirostat_eta",
+              "microstat_tau",
+              "num_ctx",
+              "num_qga",
+              "num_gpu",
+              "num_thread",
+              "repeat_last_n",
+              "repeat_penalty",
+              "temprature",
+              "seed",
+              "stop",
+              "tfs_z",
+              "num_predict",
+              "top_k",
+              "top_p"
+            ]
           }
-        }
+        },
+        "required": ["config"]
       }
     },
     {
       "if": {
         "properties": {
           "provider": { "const": "heuristai" }
-        },
-        "required": ["provider"]
+        }
       },
       "then": {
         "properties": {
@@ -51,8 +168,7 @@
       "if": {
         "properties": {
           "provider": { "const": "openai" }
-        },
-        "required": ["provider"]
+        }
       },
       "then": {
         "properties": {
