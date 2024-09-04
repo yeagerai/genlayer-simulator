@@ -180,5 +180,5 @@
     }
   ],
   "required": ["provider", "model"],
-  "additionalProperties": false
+  "additionalProperties": true
 }

@@ -1,4 +1,22 @@
 {
   "provider": "ollama",
-  "model": "mistral"
+  "model": "mistral",
+  "config": {
+    "mirostat": 0,
+    "mirostat_eta": 0.1,
+    "microstat_tau": 5,
+    "num_ctx": 2048,
+    "num_qga": 8,
+    "num_gpu": 0,
+    "num_thread": 2,
+    "repeat_last_n": 64,
+    "repeat_penalty": 1.1,
+    "temprature": 0.8,
+    "seed": 0,
+    "stop": "",
+    "tfs_z": 1.0,
+    "num_predict": 128,
+    "top_k": 40,
+    "top_p": 0.9
+  }
 }
