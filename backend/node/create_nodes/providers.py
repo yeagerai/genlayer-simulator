@@ -1,21 +1,30 @@
+import json
 import os
-from typing import List
+import warnings
+from typing import List, TypeAlias
+
+from hypothesis.errors import NonInteractiveExampleWarning
+from hypothesis_jsonschema import from_schema
 from jsonschema import validate
 
+current_directory = os.path.dirname(os.path.abspath(__file__))
+schema_file = os.path.join(current_directory, "providers_schema.json")
+default_providers_folder = os.path.join(current_directory, "default_providers")
 
-# TODO: cast providers into some kind of class. We know that all providers have `provider` and `model` keys
-def get_default_providers() -> List[dict]:
-    current_directory = os.path.dirname(os.path.abspath(__file__))
-    schema_file = os.path.join(current_directory, "providers_schema.json")
+Provider: TypeAlias = dict
 
-    import json
 
-    from pprint import pprint
+def get_schema() -> dict:
 
     with open(schema_file, "r") as f:
         schema = json.loads(f.read())
 
-    default_providers_folder = os.path.join(current_directory, "default_providers")
+    return schema
+
+
+# TODO: cast providers into some kind of class. We know that all providers have `provider` and `model` keys
+def get_default_providers() -> List[Provider]:
+    schema = get_schema()
 
     files = [
         os.path.join(default_providers_folder, filename)
@@ -32,3 +41,15 @@ def get_default_providers() -> List[dict]:
         validate(instance=provider, schema=schema)
 
     return providers
+
+
+def get_random_provider() -> Provider:
+    schema = get_schema()
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", NonInteractiveExampleWarning)
+        value = from_schema(schema).example()
+
+    validate(instance=value, schema=schema)
+
+    return value
