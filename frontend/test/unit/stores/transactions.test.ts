@@ -58,6 +58,7 @@ describe('useTransactionsStore', () => {
   });
 
   it('should get a transaction by id using rpcClient', async () => {
+    // TODO: fix this
     const transactionId = 123;
     const transactionData = { id: transactionId, status: 'PENDING' };
     mockRpcClient.getTransactionById.mockResolvedValue(transactionData);

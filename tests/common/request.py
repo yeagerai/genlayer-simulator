@@ -37,8 +37,8 @@ def post_request_localhost(payload: dict):
     return post_request(payload, "http", "localhost")
 
 
-def get_transaction_by_id(transaction_id: str):
-    payload_data = payload("get_transaction_by_id", transaction_id)
+def get_transaction_by_hash(transaction_hash: str):
+    payload_data = payload("get_transaction_by_hash", transaction_hash)
     raw_response = post_request_localhost(payload_data)
     return raw_response.json()
 
@@ -69,11 +69,11 @@ def send_raw_transaction(
     call_method_response = raw_response.json()
     if not call_method_response["result"]:
         raise ValueError("No result found in the call_method_response")
-    transaction_id = call_method_response["result"]["data"]["transaction_id"]
+    transaction_hash = call_method_response["result"]["data"]["transaction_hash"]
 
     attempts = 0
     while attempts < retries:
-        transaction_response = get_transaction_by_id(str(transaction_id))
+        transaction_response = get_transaction_by_hash(str(transaction_hash))
         status = transaction_response["result"]["data"]["status"]
         if status == "FINALIZED":
             return (call_method_response, transaction_response)
@@ -81,5 +81,5 @@ def send_raw_transaction(
         attempts += 1
 
     raise TimeoutError(
-        f"Transaction {transaction_id} not finalized after {retries} retries"
+        f"Transaction {transaction_hash} not finalized after {retries} retries"
     )

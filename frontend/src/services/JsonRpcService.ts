@@ -229,7 +229,7 @@ export class JsonRpcService implements IJsonRpcService {
     txId: number,
   ): Promise<JsonRpcResult<TransactionItem>> {
     const { result } = await this.rpcClient.call<TransactionItem>({
-      method: 'get_transaction_by_id',
+      method: 'get_transaction_by_hash',
       params: [`${txId}`],
     });
     return result;

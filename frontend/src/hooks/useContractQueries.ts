@@ -100,7 +100,7 @@ export function useContractQueries() {
         const tx: TransactionItem = {
           contractAddress: result?.data.contract_address,
           localContractId: contract.value?.id ?? '',
-          txId: result?.data.transaction_id,
+          txId: result?.data.transaction_hash,
           type: 'deploy',
           status: 'PENDING',
           data: {},
@@ -218,7 +218,7 @@ export function useContractQueries() {
         transactionsStore.addTransaction({
           contractAddress: address.value || '',
           localContractId: contract.value?.id || '',
-          txId: (result?.data as any).transaction_id,
+          hash: (result?.data as any).transaction_hash,
           type: 'method',
           status: 'PENDING',
           data: {},

@@ -56,7 +56,7 @@ class Transactions(Base):
         PrimaryKeyConstraint("id", name="transactions_pkey"),
     )
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, init=False)
+    hash: Mapped[str] = mapped_column(String, primary_key=True, init=False)
     status: Mapped[TransactionStatus] = mapped_column(
         Enum(
             TransactionStatus,
@@ -87,7 +87,9 @@ class TransactionsAudit(Base):
     __table_args__ = (PrimaryKeyConstraint("id", name="transactions_audit_pkey"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, init=False)
-    transaction_id: Mapped[Optional[int]] = mapped_column(Integer)
+    transaction_hash: Mapped[Optional[str]] = mapped_column(
+        String
+    )  ## TODO: update format
     data: Mapped[Optional[dict]] = mapped_column(JSONB)
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(
         DateTime(True), server_default=func.current_timestamp(), init=False

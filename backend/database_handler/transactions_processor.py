@@ -1,4 +1,5 @@
 # consensus/services/transactions_db_service.py
+import hashlib
 
 from .models import Transactions, TransactionsAudit
 from sqlalchemy.orm import Session
@@ -13,7 +14,7 @@ class TransactionsProcessor:
     @staticmethod
     def _parse_transaction_data(transaction_data: Transactions) -> dict:
         return {
-            "id": transaction_data.id,
+            "hash": transaction_data.hash,
             "from_address": transaction_data.from_address,
             "to_address": transaction_data.to_address,
             "data": transaction_data.data,
@@ -39,6 +40,7 @@ class TransactionsProcessor:
     ) -> int:
         # Insert transaction into the transactions table
         new_transaction = Transactions(
+            hash=hashlib.sha256(data.encode()).hexdigest(),
             from_address=from_address,
             to_address=to_address,
             data=data,
@@ -61,7 +63,7 @@ class TransactionsProcessor:
 
         # Insert transaction audit record into the transactions_audit table
         transaction_audit_record = TransactionsAudit(
-            transaction_id=new_transaction.id,
+            transaction_hash=new_transaction.hash,
             data=self._parse_transaction_data(new_transaction),
         )
 
@@ -69,11 +71,13 @@ class TransactionsProcessor:
 
         self.session.commit()
 
-        return new_transaction.id
+        return new_transaction.hash
 
-    def get_transaction_by_id(self, transaction_id: int) -> dict | None:
+    def get_transaction_by_hash(self, transaction_hash: str) -> dict | None:
         transaction = (
-            self.session.query(Transactions).filter_by(id=transaction_id).one_or_none()
+            self.session.query(Transactions)
+            .filter_by(hash=transaction_hash)
+            .one_or_none()
         )
 
         if transaction is None:
@@ -82,19 +86,19 @@ class TransactionsProcessor:
         return self._parse_transaction_data(transaction)
 
     def update_transaction_status(
-        self, transaction_id: int, new_status: TransactionStatus
+        self, transaction_hash: str, new_status: TransactionStatus
     ):
 
         transaction = (
-            self.session.query(Transactions).filter_by(id=transaction_id).one()
+            self.session.query(Transactions).filter_by(id=transaction_hash).one()
         )
 
         transaction.status = new_status
         self.session.commit()
 
-    def set_transaction_result(self, transaction_id: int, consensus_data: dict):
+    def set_transaction_result(self, transaction_hash: str, consensus_data: dict):
         transaction = (
-            self.session.query(Transactions).filter_by(id=transaction_id).one()
+            self.session.query(Transactions).filter_by(hash=transaction_hash).one()
         )
 
         transaction.status = TransactionStatus.FINALIZED
@@ -102,7 +106,7 @@ class TransactionsProcessor:
 
         print(
             "Updating transaction status",
-            transaction_id,
+            transaction_hash,
             TransactionStatus.FINALIZED.value,
         )
         self.session.commit()

@@ -11,14 +11,14 @@ def encode_transaction_data(data: list) -> str:
 
 
 def construct_signed_transaction(account: Account, data: list, to: str = None) -> dict:
-    enconded_data = encode_transaction_data(data)
+    encoded_data = encode_transaction_data(data)
     transaction = {
         "nonce": 0,
         "gasPrice": 0,
         "gas": 0,
         "to": to,
         "value": 0,
-        "data": enconded_data,
+        "data": encoded_data,
     }
     signed_transaction = Account.sign_transaction(transaction, account.key)
     return to_hex(signed_transaction.raw_transaction)

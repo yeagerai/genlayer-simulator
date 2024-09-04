@@ -31,13 +31,15 @@ export interface NodeLog {
   mock?: boolean;
 }
 
+// TODO: review this
 export interface TransactionItem {
   id?: number;
+  hash: string;
   type: 'deploy' | 'method';
   status: string;
   contractAddress: string;
   localContractId: string;
-  txId: number;
+  // txId: number;
   data?: any;
 }
 
