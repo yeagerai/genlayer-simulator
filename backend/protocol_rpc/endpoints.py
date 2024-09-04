@@ -6,6 +6,7 @@ from flask_jsonrpc import JSONRPC
 from sqlalchemy import Table
 
 from backend.database_handler.db_client import DBClient
+from backend.database_handler.llm_providers import LLMProviderRegistry
 from backend.database_handler.models import Base
 from backend.protocol_rpc.configuration import GlobalConfiguration
 from backend.protocol_rpc.message_handler.base import MessageHandler
@@ -118,6 +119,11 @@ def get_contract_schema_for_code(
         msg_handler=msg_handler,
     )
     return node.get_contract_schema(contract_code)
+
+
+# TODO: this shouldn't return a `dict`, but I'm getting `TypeError: return type of dict must be a type; got NoneType instead`
+def reset_defaults_llm_providers(llm_provider_registry: LLMProviderRegistry) -> dict:
+    llm_provider_registry.reset_defaults()
 
 
 def get_providers_and_models(config: GlobalConfiguration) -> dict:
@@ -380,6 +386,7 @@ def register_all_rpc_endpoints(
     accounts_manager: AccountsManager,
     transactions_processor: TransactionsProcessor,
     validators_registry: ValidatorsRegistry,
+    llm_provider_registry: LLMProviderRegistry,
     config: GlobalConfiguration,
 ):
     register_rpc_endpoint = partial(generate_rpc_endpoint, jsonrpc, msg_handler, config)
@@ -403,6 +410,9 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint_for_partial(get_contract_schema_for_code, msg_handler)
 
     register_rpc_endpoint_for_partial(get_providers_and_models, config)
+    register_rpc_endpoint_for_partial(
+        reset_defaults_llm_providers, llm_provider_registry
+    )
     register_rpc_endpoint_for_partial(
         create_validator, validators_registry, accounts_manager
     )

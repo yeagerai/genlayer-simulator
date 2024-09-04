@@ -55,14 +55,15 @@ def get_random_provider_using_weights(
 def get_provider_models(
     defaults: dict, provider: str, get_ollama_url: Callable[[str], str]
 ) -> list:
+    get_default_providers
 
     if provider == "ollama":
         ollama_models_result = requests.get(get_ollama_url("tags")).json()
-        ollama_models = []
+        installed_ollama_models = []
         for ollama_model in ollama_models_result["models"]:
             # "llama3:latest" => "llama3"
-            ollama_models.append(ollama_model["name"].split(":")[0])
-        return ollama_models
+            installed_ollama_models.append(ollama_model["name"].split(":")[0])
+        return installed_ollama_models
 
     elif provider == "openai":
         return defaults["openai_models"].split(",")
