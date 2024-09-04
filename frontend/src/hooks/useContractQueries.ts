@@ -1,6 +1,4 @@
-import { watch, ref, inject, computed } from 'vue';
-import { toHex, toRlp } from 'viem';
-import type { IJsonRpcService } from '@/services';
+import { watch, ref, computed } from 'vue';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import type { Address, TransactionItem } from '@/types';
 import {
@@ -8,21 +6,21 @@ import {
   useTransactionsStore,
   useAccountsStore,
 } from '@/stores';
-import { signTransaction } from '@/utils';
 import { useDebounceFn } from '@vueuse/core';
 import { notify } from '@kyvg/vue3-notification';
 import { useMockContractData } from './useMockContractData';
-import { useEventTracking } from '@/hooks';
+import { useEventTracking, useRpcClient, useWallet } from '@/hooks';
 
 const schema = ref<any>();
 
 export function useContractQueries() {
-  const $jsonRpc = inject<IJsonRpcService>('$jsonRpc'); // This could be done without inject/provide
+  const rpcClient = useRpcClient();
   const accountsStore = useAccountsStore();
   const transactionsStore = useTransactionsStore();
   const contractsStore = useContractsStore();
   const queryClient = useQueryClient();
   const { trackEvent } = useEventTracking();
+  const wallet = useWallet();
   const contract = computed(() => contractsStore.currentContract);
 
   const { mockContractId, mockContractSchema } = useMockContractData();
@@ -64,7 +62,7 @@ export function useContractQueries() {
       return mockContractSchema;
     }
 
-    const result = await $jsonRpc?.getContractSchema({
+    const result = await rpcClient.getContractSchema({
       code: contract.value?.content ?? '',
     });
 
@@ -91,16 +89,12 @@ export function useContractQueries() {
         throw new Error('Error Deploying the contract');
       }
       const constructorParamsAsString = JSON.stringify(constructorParams);
-      const data = toRlp([
-        toHex(contract.value?.content ?? ''),
-        toHex(constructorParamsAsString),
-      ]);
-
-      const signed = await signTransaction(
+      const data = [contract.value?.content ?? '', constructorParamsAsString];
+      const signed = await wallet.signTransaction(
         accountsStore.currentPrivateKey,
         data,
       );
-      const result = await $jsonRpc?.sendTransaction(signed);
+      const result = await rpcClient.sendTransaction(signed);
 
       if (result?.status === 'success') {
         const tx: TransactionItem = {
@@ -166,7 +160,7 @@ export function useContractQueries() {
       return mockContractSchema;
     }
 
-    const result = await $jsonRpc?.getDeployedContractSchema({
+    const result = await rpcClient.getDeployedContractSchema({
       address: deployedContract.value?.address ?? '',
     });
 
@@ -180,7 +174,7 @@ export function useContractQueries() {
 
   async function callReadMethod(method: string, methodArguments: string[]) {
     try {
-      const result = await $jsonRpc?.getContractState({
+      const result = await rpcClient.getContractState({
         contractAddress: address.value || '',
         method,
         methodArguments,
@@ -210,15 +204,15 @@ export function useContractQueries() {
         throw new Error('Error Deploying the contract');
       }
       const methodParamsAsString = JSON.stringify(params);
-      const data = toRlp([toHex(method), toHex(methodParamsAsString)]);
-
+      const data = [method, methodParamsAsString];
       const to = (address.value as Address) || null;
-      const signed = await signTransaction(
+
+      const signed = await wallet.signTransaction(
         accountsStore.currentPrivateKey,
         data,
         to,
       );
-      const result = await $jsonRpc?.sendTransaction(signed);
+      const result = await rpcClient.sendTransaction(signed);
 
       if (result?.status === 'success') {
         transactionsStore.addTransaction({

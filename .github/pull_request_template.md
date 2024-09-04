@@ -32,7 +32,7 @@ Fixes #issue-number-here
 - [ ] I have tested this code
 - [ ] I have reviewed my own PR
 - [ ] I have created an issue for this PR
-- [ ] I have set the PR name to the issue name
+- [ ] I have set a descriptive PR title compliant with [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/)
 
 # Reviewing tips
 

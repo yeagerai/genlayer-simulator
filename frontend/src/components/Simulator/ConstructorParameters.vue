@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { useContractQueries } from '@/hooks/useContractQueries';
+import { useContractQueries, useInputMap } from '@/hooks';
 import { ref, computed, watch, onMounted } from 'vue';
 import PageSection from '@/components/Simulator/PageSection.vue';
 import { ArrowUpTrayIcon } from '@heroicons/vue/16/solid';
-import { InputTypesMap } from '@/utils';
 import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
 import GhostBtn from '../global/GhostBtn.vue';
 import { notify } from '@kyvg/vue3-notification';
@@ -13,6 +12,7 @@ import { type ContractMethod } from '@/types';
 
 const { contract, contractSchemaQuery, deployContract, isDeploying } =
   useContractQueries();
+const inputMap = useInputMap();
 
 const { data, isPending, isRefetching, isError } = contractSchemaQuery;
 const inputParams = ref<{ [k: string]: any }>({});
@@ -105,7 +105,11 @@ const toggleMode = () => {
 
 const mapInputs = (inputs: { [k: string]: string }) =>
   Object.keys(inputs || {})
-    .map((key) => ({ name: key, type: InputTypesMap[key], value: inputs[key] }))
+    .map((key) => ({
+      name: key,
+      type: inputs[key],
+      value: inputs[key],
+    }))
     .reduce((prev, curr) => {
       if (typeof curr.value === 'boolean') {
         prev = { ...prev, [curr.name]: curr.value ? 'True' : 'False' };
@@ -119,7 +123,7 @@ const mapInputs = (inputs: { [k: string]: string }) =>
 watch(
   () => constructorInputs.value,
   (newValue) => {
-    setInputParams(newValue || {});
+    setInputParams(newValue || []);
   },
 );
 
@@ -175,7 +179,7 @@ const hasConstructorInputs = computed(
         <template v-if="mode === 'form'">
           <div v-for="input in constructorInputs" :key="input">
             <component
-              :is="InputTypesMap[input.type]"
+              :is="inputMap.getComponent(input.type)"
               v-model="inputParams[input.name]"
               :name="input.name"
               :placeholder="input.name"

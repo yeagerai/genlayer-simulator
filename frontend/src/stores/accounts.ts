@@ -1,16 +1,16 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
-import { getAccountFromPrivatekey, getPrivateKey } from '@/utils';
 import type { Address } from '@/types';
-import { shortenAddress } from '@/utils';
+import { useWallet } from '@/hooks';
 
 export const useAccountsStore = defineStore('accountsStore', () => {
   const key = localStorage.getItem('accountsStore.currentPrivateKey');
   const currentPrivateKey = ref<Address | null>(key ? (key as Address) : null);
+  const wallet = useWallet();
 
   const currentUserAddress = computed(() => {
     return currentPrivateKey.value
-      ? getAccountFromPrivatekey(currentPrivateKey.value).address
+      ? wallet.privateKeyToAccount(currentPrivateKey.value).address
       : '';
   });
 
@@ -23,14 +23,14 @@ export const useAccountsStore = defineStore('accountsStore', () => {
   );
 
   function generateNewAccount(): Address {
-    const privateKey = getPrivateKey();
+    const privateKey = wallet.generatePrivateKey();
     privateKeys.value = [...privateKeys.value, privateKey];
     setCurrentAccount(privateKey);
     return privateKey;
   }
 
   function accountFromPrivateKey(privateKey: Address) {
-    return getAccountFromPrivatekey(privateKey);
+    return wallet.privateKeyToAccount(privateKey);
   }
 
   function removeAccount(privateKey: Address) {
@@ -54,7 +54,7 @@ export const useAccountsStore = defineStore('accountsStore', () => {
       if (!currentPrivateKey.value) {
         return '';
       } else {
-        return shortenAddress(
+        return wallet.shortenAddress(
           accountFromPrivateKey(currentPrivateKey.value).address,
         );
       }

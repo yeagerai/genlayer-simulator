@@ -3,7 +3,7 @@ import ConstructorParameters from '@/components/Simulator/ConstructorParameters.
 import ContractReadMethods from '@/components/Simulator/ContractReadMethods.vue';
 import ContractWriteMethods from '@/components/Simulator/ContractWriteMethods.vue';
 import TransactionsList from '@/components/Simulator/TransactionsList.vue';
-import { useContractQueries } from '@/hooks/useContractQueries';
+import { useContractQueries } from '@/hooks';
 import MainTitle from '@/components/Simulator/MainTitle.vue';
 import { ref, watch } from 'vue';
 import { useContractsStore, useNodeStore } from '@/stores';

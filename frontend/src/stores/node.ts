@@ -1,18 +1,18 @@
-import type { IJsonRpcService } from '@/services';
 import type { NodeLog, NewValidatorDataModel, ValidatorModel } from '@/types';
-import { webSocketClient } from '@/utils';
 import { defineStore } from 'pinia';
-import { computed, inject, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useContractsStore } from './contracts';
 import { notify } from '@kyvg/vue3-notification';
+import { useRpcClient, useWebSocketClient } from '@/hooks';
 
 export const useNodeStore = defineStore('nodeStore', () => {
+  const rpcClient = useRpcClient();
+  const webSocketClient = useWebSocketClient();
   const logs = ref<NodeLog[]>([]);
   const listenWebsocket = ref<boolean>(true);
   const contractsStore = useContractsStore();
   const nodeProviders = ref<Record<string, string[]>>({});
   // state
-  const $jsonRpc = inject<IJsonRpcService>('$jsonRpc')!;
   const validators = ref<ValidatorModel[]>([]);
   const isLoadingValidatorData = ref<boolean>(true);
 
@@ -53,8 +53,8 @@ export const useNodeStore = defineStore('nodeStore', () => {
 
     try {
       const [validatorsResult, modelsResult] = await Promise.all([
-        $jsonRpc.getValidators(),
-        $jsonRpc.getProvidersAndModels(),
+        rpcClient.getValidators(),
+        rpcClient.getProvidersAndModels(),
       ]);
 
       if (validatorsResult?.status === 'success') {
@@ -90,7 +90,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
       throw new Error('Please fill all the required fields');
     }
     const validatorConfig = JSON.parse(config || '{}');
-    const result = await $jsonRpc.updateValidator({
+    const result = await rpcClient.updateValidator({
       address: validator.address || '',
       stake,
       provider,
@@ -114,7 +114,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
     if (validators.value.length === 1) {
       throw new Error('You must have at least one validator');
     }
-    const result = await $jsonRpc.deleteValidator({
+    const result = await rpcClient.deleteValidator({
       address: validator.address || '',
     });
     if (result?.status === 'success') {
@@ -129,7 +129,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
   async function createNewValidator(newValidatorData: NewValidatorDataModel) {
     const { stake, provider, model, config } = newValidatorData;
     const validatorConfig = JSON.parse(config || '{}');
-    const result = await $jsonRpc.createValidator({
+    const result = await rpcClient.createValidator({
       stake,
       provider,
       model,
@@ -143,7 +143,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
   }
 
   async function cloneValidator(validator: ValidatorModel) {
-    const result = await $jsonRpc.createValidator(validator);
+    const result = await rpcClient.createValidator(validator);
     if (result?.status === 'success') {
       validators.value.push(result.data);
     } else {
@@ -152,9 +152,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
   }
 
   const contractsToDelete = computed(() =>
-    contractsStore.contracts.filter(
-      (c) => (c.example && !c.updatedAt) || (!c.example && !c.updatedAt),
-    ),
+    contractsStore.contracts.filter((c) => c.example),
   );
 
   const validatorsOrderedById = computed(() =>

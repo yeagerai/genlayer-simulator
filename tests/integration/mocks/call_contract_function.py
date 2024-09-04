@@ -10,7 +10,7 @@ call_contract_function_response = {
                     "class_name": str,
                     "contract_state": str,
                     "eq_outputs": {"leader": dict},
-                    "error": str,
+                    "error": str | None,
                     "execution_result": str,
                     "gas_used": int,
                     "method": str,
@@ -19,7 +19,7 @@ call_contract_function_response = {
                         "config": dict,
                         "model": str,
                         "provider": str,
-                        "stake": float,
+                        "stake": int,
                     },
                     "vote": str,
                 },
@@ -28,7 +28,7 @@ call_contract_function_response = {
             },
             "created_at": str,
             "data": {
-                "function_args": list,
+                "function_args": str,  # TODO: can we make this a list?
                 "function_name": str,
             },
             "from_address": str,

@@ -3,8 +3,10 @@ import random
 import json
 from functools import partial
 from flask_jsonrpc import JSONRPC
+from sqlalchemy import Table
 
 from backend.database_handler.db_client import DBClient
+from backend.database_handler.models import Base
 from backend.protocol_rpc.configuration import GlobalConfiguration
 from backend.protocol_rpc.message_handler.base import MessageHandler
 from backend.database_handler.accounts_manager import AccountsManager
@@ -40,7 +42,13 @@ def ping() -> dict:
 
 
 def clear_db_tables(db_client: DBClient, tables: list) -> dict:
-    db_client.clear_tables(tables)
+    with db_client.get_session() as session:
+        for table_name in tables:
+            table = Table(
+                table_name, Base.metadata, autoload=True, autoload_with=session.bind
+            )
+            session.execute(table.delete())
+        session.commit()
 
 
 ####### ACCOUNTS ENDPOINTS #######
@@ -123,7 +131,6 @@ def get_contract_schema_for_code(
     return node.get_contract_schema(contract_code)
 
 
-####### VALIDATORS ENDPOINTS #######
 def get_providers_and_models(config: GlobalConfiguration) -> dict:
     default_config = get_default_config_for_providers_and_nodes()
     providers = get_providers()
@@ -263,7 +270,7 @@ def get_contract_state(
     if not accounts_manager.is_valid_address(contract_address):
         raise InvalidAddressError(contract_address)
 
-    contract_account = accounts_manager.get_account(contract_address)
+    contract_account = accounts_manager.get_account_or_fail(contract_address)
     node = Node(
         contract_snapshot=None,
         address="",
@@ -345,6 +352,10 @@ def send_raw_transaction(
     result["transaction_id"] = transaction_id
 
     return result
+
+
+def count_validators(validators_registry: ValidatorsRegistry) -> dict:
+    return validators_registry.count_validators()
 
 
 def register_all_rpc_endpoints(

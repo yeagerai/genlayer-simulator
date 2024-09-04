@@ -1,4 +1,4 @@
-import { By, until, WebDriver, Locator } from 'selenium-webdriver';
+import { By, until, WebDriver, type Locator } from 'selenium-webdriver';
 
 export class BasePage {
   protected readonly driver: WebDriver;

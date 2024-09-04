@@ -3,18 +3,22 @@
 .git
 .dockerignore
 .gitignore
-.github/*
+.github/
 README.md
-Dockerfile
+
+docker/
+.venv/
+.vscode/
+.ollama/
 
 # Artifacts that will be built during image creation.
 # This should contain all files created during `yarn build`.
-dist
-node_modules
-npm-debug.log
-.DS_Store
+frontend/dist
+frontend/node_modules
+frontend/npm-debug.log
+frontend/.DS_Store
 
-src/assets/examples
-.nyc_output
-coverage
-vite.config.ts.timestamp-*
+frontend/src/assets/examples
+frontend/.nyc_output
+frontend/coverage
+frontend/vite.config.ts.timestamp-*
