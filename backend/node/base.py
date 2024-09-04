@@ -77,7 +77,7 @@ class Node:
         return self.parse_transaction_execution_receipt(receipt)
 
     async def run_contract(
-        self, from_address: str, function_name: str, args: list
+        self, from_address: str, function_name: str, args: str
     ) -> dict:
         parsed_args = json.loads(args)
         receipt = await self.genvm.run_contract(

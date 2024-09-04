@@ -13,8 +13,9 @@ colorama==0.4.6
 debugpy==1.8.1
 aiohttp==3.9.3
 openai==1.16.1
-SQLAlchemy==2.0.31
+SQLAlchemy[asyncio]==2.0.31
 alembic==1.13.2
 eth-account==0.13.1
 eth-utils==4.1.1
 sentence-transformers==3.0.1
+Flask-SQLAlchemy==3.1.1
