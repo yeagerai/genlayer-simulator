@@ -24,25 +24,34 @@ with open(schema_file, "r") as f:
     schema = json.loads(f.read())
 
 
-from hypothesis import given
+from hypothesis.errors import NonInteractiveExampleWarning
 from hypothesis_jsonschema import from_schema
+from jsonschema import validate
 
 
-@given(from_schema(schema))
-def test1(value):
+# @given(from_schema(schema))
+def test1():
+    import warnings
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", NonInteractiveExampleWarning)
+        value = from_schema(schema).example()
     pprint(value)
+    validate(instance=value, schema=schema)
+    print()
+    print("Finished validating")
+    print()
 
 
 def fadstest():
     # TODO: https://github.com/json-schema-faker/json-schema-faker/tree/master/docs is better at generating fake data. Can we run JavaScript in Python?
     # TODO: test https://github.com/python-jsonschema/hypothesis-jsonschema
+    pass
+    # from jsf import JSF
 
-    from jsf import JSF
-    from jsonschema import validate
+    # faker = JSF.from_json(schema_file)
 
-    faker = JSF.from_json(schema_file)
+    # pprint(fake_json)
 
-    pprint(fake_json)
-
-    pprint(from_schema(schema).example())
+    # pprint(from_schema(schema).example())
     # validate(instance=fake_json, schema=schema)
