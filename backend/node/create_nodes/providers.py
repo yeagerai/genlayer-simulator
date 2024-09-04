@@ -5,7 +5,8 @@ from typing import List, TypeAlias
 
 from hypothesis.errors import NonInteractiveExampleWarning
 from hypothesis_jsonschema import from_schema
-from jsonschema import validate
+from jsonschema import validate, Draft202012Validator
+from jsonschema.protocols import Validator
 
 current_directory = os.path.dirname(os.path.abspath(__file__))
 schema_file = os.path.join(current_directory, "providers_schema.json")
@@ -19,6 +20,7 @@ def get_schema() -> dict:
     with open(schema_file, "r") as f:
         schema = json.loads(f.read())
 
+    Draft202012Validator.check_schema(schema)
     return schema
 
 

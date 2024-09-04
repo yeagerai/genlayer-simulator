@@ -10,7 +10,14 @@
       "type": "string"
     },
     "config": {
-      "type": "object"
+      "oneOf": [
+        {
+          "type": "object"
+        },
+        {
+          "const": "<empty>"
+        }
+      ]
     }
   },
   "allOf": [
@@ -144,8 +151,7 @@
               "top_p"
             ]
           }
-        },
-        "required": ["config"]
+        }
       }
     },
     {
@@ -184,8 +190,7 @@
             },
             "required": ["temperature", "max_tokens"]
           }
-        },
-        "required": ["config"]
+        }
       }
     },
     {
@@ -198,11 +203,14 @@
         "properties": {
           "model": {
             "enum": ["gpt-3.5-turbo", "gpt-4", "gpt-4o", "gpt-4o-mini"]
+          },
+          "config": {
+            "const": "<empty>"
           }
         }
       }
     }
   ],
-  "required": ["provider", "model"],
+  "required": ["provider", "model", "config"],
   "additionalProperties": false
 }

@@ -1,4 +1,5 @@
 {
   "provider": "openai",
-  "model": "gpt-4o"
+  "model": "gpt-4o",
+  "config": "<empty>"
 }
