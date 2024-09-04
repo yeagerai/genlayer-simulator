@@ -1,4 +1,8 @@
 {
   "provider": "heuristai",
-  "model": "openhermes-2-yi-34b-gptq"
+  "model": "openhermes-2-yi-34b-gptq",
+  "config": {
+    "temperature": 0.75,
+    "max_tokens": 500
+  }
 }

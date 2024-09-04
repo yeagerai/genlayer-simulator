@@ -1,4 +1,8 @@
 {
   "provider": "heuristai",
-  "model": "dolphin-2.9-llama3-8b"
+  "model": "dolphin-2.9-llama3-8b",
+  "config": {
+    "temperature": 0.75,
+    "max_tokens": 500
+  }
 }

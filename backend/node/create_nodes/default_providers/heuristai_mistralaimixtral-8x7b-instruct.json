@@ -1,4 +1,8 @@
 {
   "provider": "heuristai",
-  "model": "mistralai/mixtral-8x7b-instruct"
+  "model": "mistralai/mixtral-8x7b-instruct",
+  "config": {
+    "temperature": 0.75,
+    "max_tokens": 500
+  }
 }

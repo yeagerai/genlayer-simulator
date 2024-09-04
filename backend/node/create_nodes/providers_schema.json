@@ -163,8 +163,29 @@
               "openhermes-2-yi-34b-gptq",
               "dolphin-2.9-llama3-8b"
             ]
+          },
+          "config": {
+            "type": "object",
+            "properties": {
+              "temperature": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "multipleOf": 0.05,
+                "default": 0.75
+              },
+              "max_tokens": {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 2000,
+                "multipleOf": 10,
+                "default": 500
+              }
+            },
+            "required": ["temperature", "max_tokens"]
           }
-        }
+        },
+        "required": ["config"]
       }
     },
     {

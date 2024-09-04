@@ -1,4 +1,8 @@
 {
   "provider": "heuristai",
-  "model": "meta-llama/llama-2-70b-chat"
+  "model": "meta-llama/llama-2-70b-chat",
+  "config": {
+    "temperature": 0.75,
+    "max_tokens": 500
+  }
 }
