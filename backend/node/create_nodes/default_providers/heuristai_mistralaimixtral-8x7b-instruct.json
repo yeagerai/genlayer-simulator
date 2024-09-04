@@ -1,0 +1,4 @@
+{
+  "provider": "heuristai",
+  "model": "mistralai/mixtral-8x7b-instruct"
+}

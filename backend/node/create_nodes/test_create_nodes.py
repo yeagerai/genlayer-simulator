@@ -43,6 +43,24 @@ def test1():
     print()
 
 
+def test_default_providers_valid():
+    default_providers_folder = os.path.join(current_directory, "default_providers")
+
+    files = [
+        os.path.join(default_providers_folder, filename)
+        for filename in os.listdir(default_providers_folder)
+        if filename.endswith(".json")
+    ]
+
+    assert len(files) > 0
+
+    for file in files:
+        with open(file, "r") as f:
+            provider = json.loads(f.read())
+            pprint(provider)
+            validate(instance=provider, schema=schema)
+
+
 def fadstest():
     # TODO: https://github.com/json-schema-faker/json-schema-faker/tree/master/docs is better at generating fake data. Can we run JavaScript in Python?
     # TODO: test https://github.com/python-jsonschema/hypothesis-jsonschema

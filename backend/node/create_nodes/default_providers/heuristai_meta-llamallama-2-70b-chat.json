@@ -1,0 +1,4 @@
+{
+  "provider": "heuristai",
+  "model": "meta-llama/llama-2-70b-chat"
+}
