@@ -36,17 +36,6 @@ def create_tables_logic() -> dict:
     return response
 
 
-def create_account_logic() -> dict:
-    payload = {
-        "jsonrpc": "2.0",
-        "method": "create_account",
-        "params": [],
-        "id": 1,
-    }
-    response = requests.post(json_rpc_url, json=payload).json()
-    return response
-
-
 def fund_account_logic(address: str, balance: float) -> dict:
     payload = {
         "jsonrpc": "2.0",

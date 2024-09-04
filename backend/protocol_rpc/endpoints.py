@@ -52,11 +52,6 @@ def clear_db_tables(db_client: DBClient, tables: list) -> dict:
 
 
 ####### ACCOUNTS ENDPOINTS #######
-def create_account(accounts_manager: AccountsManager) -> dict:
-    new_account = accounts_manager.create_new_account(0)
-    return {"account_address": new_account.address}
-
-
 def fund_account(
     accounts_manager: AccountsManager, account_address: str, amount: int
 ) -> dict:
@@ -357,7 +352,6 @@ def register_all_rpc_endpoints(
         clear_db_tables, genlayer_db_client, ["current_state", "transactions"]
     )
 
-    register_rpc_endpoint_for_partial(create_account, accounts_manager)
     register_rpc_endpoint_for_partial(fund_account, accounts_manager)
 
     register_rpc_endpoint_for_partial(
