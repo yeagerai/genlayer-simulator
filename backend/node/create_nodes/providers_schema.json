@@ -8,6 +8,9 @@
     },
     "model": {
       "type": "string"
+    },
+    "config": {
+      "type": "object"
     }
   },
   "allOf": [
@@ -180,5 +183,5 @@
     }
   ],
   "required": ["provider", "model"],
-  "additionalProperties": true
+  "additionalProperties": false
 }
