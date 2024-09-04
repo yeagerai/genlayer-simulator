@@ -8,6 +8,8 @@ from sqlalchemy import Table
 from backend.database_handler.db_client import DBClient
 from backend.database_handler.llm_providers import LLMProviderRegistry
 from backend.database_handler.models import Base
+from backend.domain.types import LLMProvider
+from backend.node.create_nodes.providers import validate_provider
 from backend.protocol_rpc.configuration import GlobalConfiguration
 from backend.protocol_rpc.message_handler.base import MessageHandler
 from backend.database_handler.accounts_manager import AccountsManager
@@ -121,20 +123,41 @@ def get_contract_schema_for_code(
     return node.get_contract_schema(contract_code)
 
 
-# TODO: this shouldn't return a `dict`, but I'm getting `TypeError: return type of dict must be a type; got NoneType instead`
+# TODO: these endpoints shouldn't return a `dict`, but I'm getting `TypeError: return type of dict must be a type; got NoneType instead`
 def reset_defaults_llm_providers(llm_provider_registry: LLMProviderRegistry) -> dict:
     llm_provider_registry.reset_defaults()
 
 
-def get_providers_and_models(config: GlobalConfiguration) -> dict:
-    default_config = get_default_config_for_providers_and_nodes()
-    providers = get_providers()
-    providers_and_models = {}
-    for provider in providers:
-        providers_and_models[provider] = get_provider_models(
-            default_config["providers"], provider, config.get_ollama_url
-        )
-    return providers_and_models
+def get_providers_and_models(llm_provider_registry: LLMProviderRegistry) -> dict:
+    return llm_provider_registry.get_all()
+
+
+def add_provider(llm_provider_registry: LLMProviderRegistry, params: dict) -> dict:
+    provider = LLMProvider(
+        provider=params["provider"],
+        model=params["model"],
+        config=params["config"],
+    )
+    validate_provider(provider)
+
+    return llm_provider_registry.add(provider)
+
+
+def edit_provider(
+    llm_provider_registry: LLMProviderRegistry, id: int, params: dict
+) -> dict:
+    provider = LLMProvider(
+        provider=params["provider"],
+        model=params["model"],
+        config=params["config"],
+    )
+    validate_provider(provider)
+
+    llm_provider_registry.edit(id, provider)
+
+
+def delete_provider(llm_provider_registry: LLMProviderRegistry, id: int) -> dict:
+    llm_provider_registry.delete(id)
 
 
 def create_validator(
@@ -409,10 +432,13 @@ def register_all_rpc_endpoints(
     )
     register_rpc_endpoint_for_partial(get_contract_schema_for_code, msg_handler)
 
-    register_rpc_endpoint_for_partial(get_providers_and_models, config)
+    register_rpc_endpoint_for_partial(get_providers_and_models, llm_provider_registry)
     register_rpc_endpoint_for_partial(
         reset_defaults_llm_providers, llm_provider_registry
     )
+    register_rpc_endpoint_for_partial(add_provider, llm_provider_registry)
+    register_rpc_endpoint_for_partial(edit_provider, llm_provider_registry)
+    register_rpc_endpoint_for_partial(delete_provider, llm_provider_registry)
     register_rpc_endpoint_for_partial(
         create_validator, validators_registry, accounts_manager
     )

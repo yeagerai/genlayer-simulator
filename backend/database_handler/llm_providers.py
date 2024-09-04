@@ -24,6 +24,24 @@ class LLMProviderRegistry:
             for provider in self.session.query(LLMProviderDBModel).all()
         ]
 
+    def add(self, provider: LLMProvider) -> int:
+        model = _to_db_model(provider)
+        self.session.add(model)
+        self.session.commit()
+        return model.id
+
+    def edit(self, id: int, provider: LLMProvider):
+        self.session.query(LLMProviderDBModel).filter(
+            LLMProviderDBModel.id == id
+        ).update(_to_db_model(provider))
+        self.session.commit()
+
+    def delete(self, id: int):
+        self.session.query(LLMProviderDBModel).filter(
+            LLMProviderDBModel.id == id
+        ).delete()
+        self.session.commit()
+
 
 def _to_domain(db_model: LLMProvider) -> LLMProvider:
     return LLMProvider(

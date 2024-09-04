@@ -22,6 +22,11 @@ def get_schema() -> dict:
     return schema
 
 
+def validate_provider(provider: LLMProvider):
+    schema = get_schema()
+    validate(instance=provider.__dict__, schema=schema)
+
+
 def get_default_providers() -> List[LLMProvider]:
     schema = get_schema()
 
