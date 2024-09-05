@@ -3,12 +3,11 @@ import json
 import re
 from typing import Callable, List
 import requests
-import numpy as np
-from random import random, choice, uniform
 
 from dotenv import load_dotenv
 
 from backend.domain.types import LLMProvider
+from backend.node.create_nodes.providers import create_random_providers
 
 load_dotenv()
 
@@ -17,41 +16,6 @@ default_provider_key_regex = r"^(<add_your_.*_api_key_here>|)$"
 
 def base_node_json(provider: str, model: str) -> dict:
     return {"provider": provider, "model": model, "config": {}}
-
-
-def get_random_provider_using_weights(
-    defaults: dict[str], get_ollama_url: Callable[[str], str]
-) -> str:
-    # remove providers if no api key
-    provider_weights: dict[str, float] = defaults["provider_weights"]
-
-    if "openai" in provider_weights and (
-        "OPENAIKEY" not in os.environ
-        or re.match(default_provider_key_regex, os.environ["OPENAIKEY"])
-    ):
-        provider_weights.pop("openai")
-    if "heuristai" in provider_weights and (
-        "HEURISTAIAPIKEY" not in os.environ.get()
-        or re.match(os.environ["HEURISTAIAPIKEY"])
-    ):
-        provider_weights.pop("heuristai")
-    if (
-        "ollama" in provider_weights
-        and get_provider_models({}, "ollama", get_ollama_url) == []
-    ):
-        provider_weights.pop("ollama")
-
-    if len(provider_weights) == 0:
-        raise Exception("No providers avaliable")
-
-    total_weight = sum(provider_weights.values())
-    random_num = uniform(0, total_weight)
-
-    cumulative_weight = 0
-    for key, weight in provider_weights.items():
-        cumulative_weight += weight
-        if random_num <= cumulative_weight:
-            return key
 
 
 def get_provider_models(
@@ -123,12 +87,14 @@ def num_decimal_places(number: float) -> int:
 
 def random_validator_config(
     get_ollama_url: Callable[[str], str],
-    get_stored_providers: Callable[[], List[LLMProvider]],
+    # get_stored_providers: Callable[[], List[LLMProvider]],
     provider_names: List[str] = None,
-) -> dict:
+    amount: int = 1,
+) -> List[LLMProvider]:
     provider_names = provider_names or []
 
-    stored_providers = get_stored_providers()
+    # stored_providers = get_stored_providers()
+    stored_providers = []
     providers_to_use = stored_providers
 
     if len(provider_names) > 0:
@@ -161,70 +127,9 @@ def random_validator_config(
     # for entry in heuristic_models_result:
     #    heuristic_models.append(entry['name'])
 
-    provider = get_random_provider_using_weights(config["providers"], get_ollama_url)
-    options = get_options(provider, config)
+    # provider = get_random_provider_using_weights(config["providers"], get_ollama_url)
+    # options = get_options(provider, config)
 
-    if provider == "openai":
-        openai_model = choice(
-            get_provider_models(config["providers"], "openai", get_ollama_url)
-        )
-        node_config = base_node_json("openai", openai_model)
+    # raise Exception("Provider " + provider + " is not specified in defaults")
 
-    elif provider == "ollama":
-        node_config = base_node_json("ollama", choice(ollama_models))
-
-        for option, option_config in options.items():
-            # Just pass the string (for "stop")
-            if isinstance(option_config, str):
-                node_config["config"][option] = option_config
-            # Create a random value
-            elif isinstance(option_config, dict):
-                if random() > config["providers"]["chance_of_default_value"]:
-                    random_value = None
-                    if isinstance(option_config["step"], str):
-                        random_value = choice(option_config["step"].split(","))
-                        node_config["config"][option] = int(random_value)
-                    else:
-                        random_value = choice(
-                            np.arange(
-                                option_config["min"],
-                                option_config["max"],
-                                option_config["step"],
-                            )
-                        )
-                        if isinstance(random_value, np.int64):
-                            random_value = int(random_value)
-                        if isinstance(random_value, np.float64):
-                            random_value = float(random_value)
-                        node_config["config"][option] = round(
-                            random_value, num_decimal_places(option_config["step"])
-                        )
-            else:
-                raise Exception("Option is not a dict or str (" + option + ")")
-
-    elif provider == "heuristai":
-        heuristic_model = choice(
-            get_provider_models(config["providers"], "heuristai", get_ollama_url)
-        )
-        node_config = base_node_json("heuristai", heuristic_model)
-        for option, option_config in options.items():
-            if random() > config["providers"]["chance_of_default_value"]:
-                random_value = choice(
-                    np.arange(
-                        option_config["min"],
-                        option_config["max"],
-                        option_config["step"],
-                    )
-                )
-                if isinstance(random_value, np.int64):
-                    random_value = int(random_value)
-                if isinstance(random_value, np.float64):
-                    random_value = float(random_value)
-                node_config["config"][option] = round(
-                    random_value, num_decimal_places(option_config["step"])
-                )
-
-    else:
-        raise Exception("Provider " + provider + " is not specified in defaults")
-
-    return node_config
+    return create_random_providers(amount)  # TODO: filter by provider and availability

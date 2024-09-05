@@ -12,4 +12,4 @@ def test_default_providers_valid():
 
 def test_create_random_providers():
     # Note: testing this is very slow, so we only test it once
-    create_random_providers(1)
+    print(create_random_providers(1))

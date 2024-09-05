@@ -1,11 +1,9 @@
 import json
 import os
-import warnings
 from typing import List
 
 from hypothesis import HealthCheck, given, settings
-from hypothesis.errors import (HypothesisDeprecationWarning,
-                               NonInteractiveExampleWarning)
+from hypothesis.errors import HypothesisDeprecationWarning
 from hypothesis_jsonschema import from_schema
 from jsonschema import Draft202012Validator, validate
 
@@ -60,19 +58,11 @@ def _to_domain(provider: dict) -> LLMProvider:
     )
 
 
-def get_random_provider() -> LLMProvider:
-    schema = get_schema()
-
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", NonInteractiveExampleWarning)
-        value = from_schema(schema).example()
-
-    validate(instance=value, schema=schema)
-
-    return _to_domain(value)
-
-
 def create_random_providers(amount: int) -> list[LLMProvider]:
+    """
+    Creates random providers deriving them from the json schema.
+    Internally uses hypothesis to generate the data, which is hacky since it's meant to be a testing library.
+    """
     import warnings
 
     return_value = []
@@ -84,7 +74,9 @@ def create_random_providers(amount: int) -> list[LLMProvider]:
             max_examples=amount, suppress_health_check=(HealthCheck.return_value,)
         )
         @given(
-            from_schema(get_schema()),
+            from_schema(
+                get_schema(),
+            ),
         )
         def inner(value):
             nonlocal return_value

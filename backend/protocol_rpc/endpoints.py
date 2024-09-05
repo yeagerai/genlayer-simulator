@@ -181,13 +181,13 @@ def create_random_validator(
     stake: int,
 ) -> dict:
     validator_address = accounts_manager.create_new_account().address
-    details = random_validator_config(config.get_ollama_url)
+    details = random_validator_config(config.get_ollama_url)[0]
     response = validators_registry.create_validator(
         validator_address,
         stake,
-        details["provider"],
-        details["model"],
-        details["config"],
+        details.provider,
+        details.model,
+        details.config,
     )
     return response
 
@@ -212,13 +212,13 @@ def create_random_validators(
         validator_address = accounts_manager.create_new_account().address
         details = random_validator_config(
             config.get_ollama_url, provider_names=providers
-        )
+        )[0]
         new_validator = validators_registry.create_validator(
             validator_address,
             stake,
-            fixed_provider or details["provider"],
-            fixed_model or details["model"],
-            details["config"],
+            fixed_provider or details.provider,
+            fixed_model or details.model,
+            details.config,
         )
         if not "id" in new_validator:
             raise SystemError("Failed to create Validator")
