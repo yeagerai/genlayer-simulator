@@ -56,7 +56,7 @@ class Transactions(Base):
         PrimaryKeyConstraint("hash", name="transactions_pkey"),
     )
 
-    hash: Mapped[str] = mapped_column(String(255), primary_key=True)
+    hash: Mapped[str] = mapped_column(String(255), primary_key=True, unique=True)
     status: Mapped[TransactionStatus] = mapped_column(
         Enum(
             TransactionStatus,
