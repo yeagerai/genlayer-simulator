@@ -3,10 +3,11 @@ import os
 import warnings
 from typing import List
 
-from hypothesis import strategies as st
-from hypothesis.errors import NonInteractiveExampleWarning
+from hypothesis import HealthCheck, given, settings
+from hypothesis.errors import (HypothesisDeprecationWarning,
+                               NonInteractiveExampleWarning)
 from hypothesis_jsonschema import from_schema
-from jsonschema import validate, Draft202012Validator
+from jsonschema import Draft202012Validator, validate
 
 from backend.domain.types import LLMProvider
 
@@ -69,3 +70,27 @@ def get_random_provider() -> LLMProvider:
     validate(instance=value, schema=schema)
 
     return _to_domain(value)
+
+
+def create_random_providers(amount: int) -> list[LLMProvider]:
+    import warnings
+
+    return_value = []
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", HypothesisDeprecationWarning)
+
+        @settings(
+            max_examples=amount, suppress_health_check=(HealthCheck.return_value,)
+        )
+        @given(
+            from_schema(get_schema()),
+        )
+        def inner(value):
+            nonlocal return_value
+            provider = _to_domain(value)
+            validate_provider(provider)
+            return_value.append(provider)
+
+    inner()
+    return return_value
