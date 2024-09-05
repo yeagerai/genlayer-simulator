@@ -1,10 +1,13 @@
 # consensus/services/transactions_db_service.py
-import hashlib
+import rlp
 
 from .models import Transactions, TransactionsAudit
 from sqlalchemy.orm import Session
 
 from .models import TransactionStatus
+from hashlib import sha3_256
+from eth_utils import to_bytes, keccak, is_address
+import json
 
 
 class TransactionsProcessor:
@@ -38,9 +41,42 @@ class TransactionsProcessor:
         value: float,
         type: int,
     ) -> int:
+        print("Inserting transaction", from_address, to_address, data, value, type)
         # Insert transaction into the transactions table
+        # Create a list of transaction elements in the order Ethereum uses
+
+        from_address_bytes = (
+            to_bytes(hexstr=from_address) if is_address(from_address) else None
+        )
+        to_address_bytes = (
+            to_bytes(hexstr=to_address) if is_address(to_address) else None
+        )
+        data_bytes = to_bytes(text=json.dumps(data))
+
+        tx_elements = [
+            from_address_bytes,
+            to_address_bytes,
+            to_bytes(hexstr=hex(int(value))),
+            data_bytes,
+            to_bytes(hexstr=hex(type)),
+            to_bytes(hexstr=hex(0)),  # nonce (placeholder)
+            to_bytes(hexstr=hex(0)),  # gas price (placeholder)
+            to_bytes(hexstr=hex(0)),  # gas limit (placeholder)
+        ]
+
+        # Filter out None values
+        tx_elements = [elem for elem in tx_elements if elem is not None]
+
+        # RLP encode the transaction elements
+        rlp_encoded = rlp.encode(tx_elements)
+
+        # Generate the hash
+        tx_hash = "0x" + keccak(rlp_encoded).hex()
+
+        print("Generated transaction hash:", tx_hash)
+
         new_transaction = Transactions(
-            hash=hashlib.sha256(data.encode()).hexdigest(),
+            hash=tx_hash,
             from_address=from_address,
             to_address=to_address,
             data=data,

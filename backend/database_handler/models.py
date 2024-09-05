@@ -53,10 +53,10 @@ class Transactions(Base):
     __tablename__ = "transactions"
     __table_args__ = (
         CheckConstraint("type = ANY (ARRAY[0, 1, 2])", name="transactions_type_check"),
-        PrimaryKeyConstraint("id", name="transactions_pkey"),
+        PrimaryKeyConstraint("hash", name="transactions_pkey"),
     )
 
-    hash: Mapped[str] = mapped_column(String, primary_key=True, init=False)
+    hash: Mapped[str] = mapped_column(String(255), primary_key=True)
     status: Mapped[TransactionStatus] = mapped_column(
         Enum(
             TransactionStatus,
@@ -88,7 +88,7 @@ class TransactionsAudit(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, init=False)
     transaction_hash: Mapped[Optional[str]] = mapped_column(
-        String
+        String(255)
     )  ## TODO: update format
     data: Mapped[Optional[dict]] = mapped_column(JSONB)
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(
