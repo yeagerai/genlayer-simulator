@@ -12,7 +12,7 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
   const transactions = ref<TransactionItem[]>([]);
 
   function addTransaction(tx: TransactionItem) {
-    transactions.value.push(tx);
+    transactions.value.unshift(tx); // Push on top in case there's no date property yet
   }
 
   function removeTransaction(tx: TransactionItem) {
