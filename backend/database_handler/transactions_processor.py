@@ -41,7 +41,15 @@ class TransactionsProcessor:
         value: float,
         type: int,
     ) -> int:
-        print("Inserting transaction", from_address, to_address, data, value, type)
+
+        print(
+            "Inserting transaction",
+            from_address,
+            to_address,
+            data,
+            value,
+            type,
+        )
         # Insert transaction into the transactions table
         # Create a list of transaction elements in the order Ethereum uses
 
@@ -53,13 +61,22 @@ class TransactionsProcessor:
         )
         data_bytes = to_bytes(text=json.dumps(data))
 
+        # TODO: Generate a unique nonce properly
+        nonce = (
+            self.session.query(Transactions)
+            .filter(Transactions.from_address == from_address)
+            .count()
+        )
+
+        print("Generated nonce:", nonce)
+
         tx_elements = [
             from_address_bytes,
             to_address_bytes,
             to_bytes(hexstr=hex(int(value))),
             data_bytes,
             to_bytes(hexstr=hex(type)),
-            to_bytes(hexstr=hex(0)),  # nonce (placeholder)
+            to_bytes(hexstr=hex(nonce)),  # nonce (placeholder)
             to_bytes(hexstr=hex(0)),  # gas price (placeholder)
             to_bytes(hexstr=hex(0)),  # gas limit (placeholder)
         ]
@@ -126,7 +143,7 @@ class TransactionsProcessor:
     ):
 
         transaction = (
-            self.session.query(Transactions).filter_by(id=transaction_hash).one()
+            self.session.query(Transactions).filter_by(hash=transaction_hash).one()
         )
 
         transaction.status = new_status

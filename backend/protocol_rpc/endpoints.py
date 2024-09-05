@@ -80,11 +80,11 @@ def send_transaction(
     if not accounts_manager.is_valid_address(to_account):
         raise InvalidAddressError(to_account)
 
-    transaction_id = transactions_processor.insert_transaction(
+    transaction_hash = transactions_processor.insert_transaction(
         from_account, to_account, None, amount, 0
     )
 
-    return {"transaction_id": transaction_id}
+    return {"transaction_hash": transaction_hash}
 
 
 ####### CONTRACT CODE SCHEMA ENDPOINTS #######
