@@ -35,6 +35,7 @@
           },
           "config": {
             "type": "object",
+            "additionalProperties": false,
             "properties": {
               "mirostat": {
                 "type": "integer",
@@ -172,6 +173,7 @@
           },
           "config": {
             "type": "object",
+            "additionalProperties": false,
             "properties": {
               "temperature": {
                 "type": "number",

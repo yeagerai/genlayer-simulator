@@ -1,16 +1,18 @@
 import os
 import json
 import re
-from typing import Callable
+from typing import Callable, List
 import requests
 import numpy as np
 from random import random, choice, uniform
 
 from dotenv import load_dotenv
 
+from backend.domain.types import LLMProvider
+
 load_dotenv()
 
-default_provider_key_regex = r"<add_your_.*_api_key_here>"
+default_provider_key_regex = r"^(<add_your_.*_api_key_here>|)$"
 
 
 def base_node_json(provider: str, model: str) -> dict:
@@ -55,8 +57,6 @@ def get_random_provider_using_weights(
 def get_provider_models(
     defaults: dict, provider: str, get_ollama_url: Callable[[str], str]
 ) -> list:
-    get_default_providers
-
     if provider == "ollama":
         ollama_models_result = requests.get(get_ollama_url("tags")).json()
         installed_ollama_models = []
@@ -122,24 +122,39 @@ def num_decimal_places(number: float) -> int:
 
 
 def random_validator_config(
-    get_ollama_url: Callable[[str], str], providers: list = None
-):
-    providers = providers or []
+    get_ollama_url: Callable[[str], str],
+    get_stored_providers: Callable[[], List[LLMProvider]],
+    provider_names: List[str] = None,
+) -> dict:
+    provider_names = provider_names or []
 
-    if len(providers) == 0:
-        providers = get_providers()
-    default_config = get_default_config_for_providers_and_nodes()
-    config = get_config_with_specific_providers(default_config, providers)
-    ollama_models = get_provider_models({}, "ollama", get_ollama_url)
+    stored_providers = get_stored_providers()
+    providers_to_use = stored_providers
 
+    if len(provider_names) > 0:
+        providers_to_use = [
+            provider
+            for provider in stored_providers
+            if provider.provider in provider_names
+        ]
+
+    # default_config = get_default_config_for_providers_and_nodes()
+    # config = get_config_with_specific_providers(default_config, providers)
+    # ollama_models = get_provider_models({}, "ollama", get_ollama_url)
+
+    # See if they have an the provider's keys.
+
+    # TODO: when should we check which models are available? Maybe when filling up the database? Should we check every time?
+    # TODO: this methods for checking the providers are decoupled from the actual configuration and schema of the providers. This means that modifications need to be done in two places.
+    ollama_models = [
+        provider.model for provider in provider_names if provider.provider == "ollama"
+    ]
     if (
         not len(ollama_models)
-        and os.environ["OPENAIKEY"] == default_provider_key_regex
-        and os.environ["HEURISTAIAPIKEY"] == default_provider_key_regex
+        and re.match(default_provider_key_regex, os.environ.get("OPENAIKEY", ""))
+        and re.match(default_provider_key_regex, os.environ.get("HEURISTAIAPIKEY", ""))
     ):
         raise Exception("No providers avaliable.")
-
-    # See if they have an OpenAPI key
 
     # heuristic_models_result = requests.get(os.environ['HEURISTAIMODELSURL']).json()
     # heuristic_models = []

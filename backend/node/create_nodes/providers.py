@@ -3,8 +3,9 @@ import os
 import warnings
 from typing import List
 
-# from hypothesis.errors import NonInteractiveExampleWarning
-# from hypothesis_jsonschema import from_schema
+from hypothesis import strategies as st
+from hypothesis.errors import NonInteractiveExampleWarning
+from hypothesis_jsonschema import from_schema
 from jsonschema import validate, Draft202012Validator
 
 from backend.domain.types import LLMProvider
@@ -58,13 +59,13 @@ def _to_domain(provider: dict) -> LLMProvider:
     )
 
 
-# def get_random_provider() -> LLMProvider:
-#     schema = get_schema()
+def get_random_provider() -> LLMProvider:
+    schema = get_schema()
 
-#     with warnings.catch_warnings():
-#         warnings.simplefilter("ignore", NonInteractiveExampleWarning)
-#         value = from_schema(schema).example()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", NonInteractiveExampleWarning)
+        value = from_schema(schema).example()
 
-#     validate(instance=value, schema=schema)
+    validate(instance=value, schema=schema)
 
-#     return _to_domain(value)
+    return _to_domain(value)

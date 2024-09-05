@@ -210,7 +210,9 @@ def create_random_validators(
     for _ in range(count):
         stake = random.uniform(min_stake, max_stake)
         validator_address = accounts_manager.create_new_account().address
-        details = random_validator_config(config.get_ollama_url, providers=providers)
+        details = random_validator_config(
+            config.get_ollama_url, provider_names=providers
+        )
         new_validator = validators_registry.create_validator(
             validator_address,
             stake,
