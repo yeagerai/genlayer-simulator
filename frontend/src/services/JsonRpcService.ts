@@ -226,11 +226,11 @@ export class JsonRpcService implements IJsonRpcService {
   }
 
   async getTransactionById(
-    txId: number,
+    hash: string,
   ): Promise<JsonRpcResult<TransactionItem>> {
     const { result } = await this.rpcClient.call<TransactionItem>({
       method: 'get_transaction_by_hash',
-      params: [`${txId}`],
+      params: [`${hash}`],
     });
     return result;
   }

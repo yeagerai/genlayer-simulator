@@ -187,7 +187,7 @@ export const useTutorialStore = defineStore('tutorialStore', () => {
         transactionsStore.addTransaction({
           contractAddress: mockDeployedContract.address || '',
           localContractId: mockDeployedContract.contractId || '',
-          txId: 100000,
+          hash: '0x1234567890123456789012345678901234567890',
           type: 'method',
           status: 'PENDING',
           data: {},

@@ -9,19 +9,16 @@ vi.mock('@/hooks', () => ({
 }));
 
 const testTransaction: TransactionItem = {
+  hash: '0x1234567890123456789012345678901234567890',
   type: 'deploy',
   status: 'PENDING',
   contractAddress: '0xAf4ec2548dBBdc43ab6dCFbD4EdcEedde3FEAFB5',
   localContractId: '47490604-6ee9-4c0e-bf31-05d33197eedd',
-  txId: 140,
 };
 
 const updatedTransactionPayload = {
-  id: 140,
-  type: 'deploy',
+  ...testTransaction,
   status: 'FINALIZED',
-  contractAddress: '0xAf4ec2548dBBdc43ab6dCFbD4EdcEedde3FEAFB5',
-  localContractId: '47490604-6ee9-4c0e-bf31-05d33197eedd',
 };
 
 describe('useTransactionsStore', () => {
@@ -72,8 +69,16 @@ describe('useTransactionsStore', () => {
   });
 
   it('should clear transactions for a specific contract', () => {
-    const tx1 = { ...testTransaction, txId: 1, localContractId: 'contract-1' };
-    const tx2 = { ...testTransaction, txId: 2, localContractId: 'contract-2' };
+    const tx1 = {
+      ...testTransaction,
+      hash: '0x1234567890123456789012345678901234567891',
+      localContractId: 'contract-1',
+    };
+    const tx2 = {
+      ...testTransaction,
+      hash: '0x1234567890123456789012345678901234567892',
+      localContractId: 'contract-2',
+    };
 
     transactionsStore.addTransaction(tx1);
     transactionsStore.addTransaction(tx2);
@@ -87,8 +92,16 @@ describe('useTransactionsStore', () => {
   });
 
   it('should compute pending transactions', () => {
-    const tx1 = { ...testTransaction, txId: 1, status: 'FINALIZED' };
-    const tx2 = { ...testTransaction, txId: 2, status: 'PENDING' };
+    const tx1 = {
+      ...testTransaction,
+      hash: '0x1234567890123456789012345678901234567891',
+      status: 'FINALIZED',
+    };
+    const tx2 = {
+      ...testTransaction,
+      hash: '0x1234567890123456789012345678901234567892',
+      status: 'PENDING',
+    };
 
     transactionsStore.transactions = [tx1, tx2];
 

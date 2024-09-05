@@ -16,11 +16,11 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
   }
 
   function removeTransaction(tx: TransactionItem) {
-    transactions.value = transactions.value.filter((t) => t.txId !== tx.txId);
+    transactions.value = transactions.value.filter((t) => t.hash !== tx.hash);
   }
 
   function updateTransaction(tx: any) {
-    const index = transactions.value.findIndex((t) => t.txId === tx.id);
+    const index = transactions.value.findIndex((t) => t.hash === tx.hash); // TODO: Inconsistent mapping
     if (index !== -1) {
       const current = transactions.value[index];
       transactions.value.splice(index, 1, {
@@ -31,8 +31,8 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
     }
   }
 
-  async function getTransaction(txId: number) {
-    return rpcClient.getTransactionById(txId);
+  async function getTransaction(hash: string) {
+    return rpcClient.getTransactionById(hash);
   }
 
   function clearTransactionsForContract(contractId: string) {

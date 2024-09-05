@@ -39,7 +39,6 @@ export interface TransactionItem {
   status: string;
   contractAddress: string;
   localContractId: string;
-  // txId: number;
   data?: any;
 }
 

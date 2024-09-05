@@ -14,29 +14,29 @@ export const TransactionsListenerPlugin = {
         (tx: TransactionItem) =>
           tx.status !== 'FINALIZED' &&
           transactionsStore.processingQueue.findIndex(
-            (q) => q.txId !== tx.txId,
+            (q) => q.hash !== tx.hash,
           ) === -1,
       ) as TransactionItem[];
 
       transactionsStore.processingQueue.push(...pendingTxs);
       if (transactionsStore.processingQueue.length > 0) {
         for (const item of transactionsStore.processingQueue) {
-          const tx = await transactionsStore.getTransaction(item.txId);
+          const tx = await transactionsStore.getTransaction(item.hash);
           if (!tx?.data) {
             // Remove the transaction from the processing queue and storage if not found
             transactionsStore.processingQueue =
               transactionsStore.processingQueue.filter(
-                (t) => t.txId !== item.txId,
+                (t) => t.hash !== item.hash,
               );
             transactionsStore.removeTransaction(item);
           } else {
             const currentTx = transactionsStore.processingQueue.find(
-              (t) => t.txId === tx?.data?.id,
+              (t) => t.hash === tx?.data?.hash, // TODO: Inconsistent mapping
             );
             transactionsStore.updateTransaction(tx?.data);
             transactionsStore.processingQueue =
               transactionsStore.processingQueue.filter(
-                (t) => t.txId !== tx?.data?.id,
+                (t) => t.hash !== tx?.data?.hash, // TODO: Inconsistent mapping
               );
             // if finalized and is contract add to the contract store dpeloyed
             if (
