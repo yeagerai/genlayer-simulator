@@ -15,6 +15,7 @@ from backend.database_handler.transactions_processor import (
     TransactionsProcessor,
     TransactionStatus,
 )
+from backend.database_handler.accounts_manager import AccountsManager
 from backend.database_handler.types import ConsensusData
 from backend.node.base import Node
 from backend.node.genvm.types import ExecutionMode, Vote
@@ -26,9 +27,11 @@ class ConsensusAlgorithm:
         self,
         dbclient: DBClient,
         msg_handler: MessageHandler,
+        accounts_manager: AccountsManager,
     ):
         self.dbclient = dbclient
         self.msg_handler = msg_handler
+        self.accounts_manager = accounts_manager
         self.queues: dict[str, asyncio.Queue] = {}
 
     def run_crawl_snapshot_loop(self):
@@ -106,6 +109,12 @@ class ConsensusAlgorithm:
         transactions_processor.update_transaction_status(
             transaction["id"], TransactionStatus.PROPOSING
         )
+
+        # If transaction is a transfer, execute it
+        # TODO: consider when the transfer involves a contract account, bridging, etc.
+        if transaction["type"] == 0:
+            return self.execute_transfer(transaction, transactions_processor)
+
         # Select Leader and validators
         all_validators = snapshot.get_all_validators()
         leader, remaining_validators = get_validators_for_transaction(
@@ -206,4 +215,38 @@ class ConsensusAlgorithm:
         transactions_processor.set_transaction_result(
             transaction["id"],
             consensus_data,
+        )
+
+    def execute_transfer(
+        self,
+        transaction: dict,
+        transactions_processor: TransactionsProcessor,
+    ):
+
+        if not transaction["from_address"] is None:
+            from_balance = self.accounts_manager.get_account_balance(
+                transaction["from_address"]
+            )
+
+            if from_balance < transaction["value"]:
+                transactions_processor.update_transaction_status(
+                    transaction["id"], TransactionStatus.UNDETERMINED
+                )
+                return
+
+            self.accounts_manager.update_account_balance(
+                transaction["from_address"], max(from_balance - transaction["value"], 0)
+            )
+
+        if not transaction["to_address"] is None:
+            to_balance = self.accounts_manager.get_account_balance(
+                transaction["to_address"]
+            )
+
+            self.accounts_manager.update_account_balance(
+                transaction["to_address"], to_balance + transaction["value"]
+            )
+
+        transactions_processor.update_transaction_status(
+            transaction["id"], TransactionStatus.FINALIZED
         )

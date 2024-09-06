@@ -63,5 +63,10 @@ class AccountsManager:
         account = self.get_account_or_fail(account_address)
         return account.balance
 
+    def update_account_balance(self, account_address: str, new_balance: int):
+        to_account = self.get_account_or_fail(account_address)
+        to_account.balance = new_balance
+        self.session.commit()
+
     def is_contract(self, account: dict) -> bool:
         return account.get("data", {}).get("code", False)
