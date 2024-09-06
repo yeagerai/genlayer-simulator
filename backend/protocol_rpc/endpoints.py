@@ -178,24 +178,17 @@ def create_random_validator(
     config: GlobalConfiguration,
     stake: int,
 ) -> dict:
-    validator_address = accounts_manager.create_new_account().address
-    details = random_validator_config(
-        config.get_available_ollama_models,
-        llm_provider_registry.get_all,
+    return create_random_validators(
+        validators_registry,
+        accounts_manager,
+        llm_provider_registry,
+        config,
         1,
-    )[0]
-    response = validators_registry.create_validator(
-        validator_address,
         stake,
-        details.provider,
-        details.model,
-        details.config,
-    )
-    return response
+        stake,
+    )[0]
 
 
-# TODO: Refactor this function to put the random config generator inside the domain
-# and reuse the generate single random validator function
 def create_random_validators(
     validators_registry: ValidatorsRegistry,
     accounts_manager: AccountsManager,
@@ -206,7 +199,7 @@ def create_random_validators(
     max_stake: int,
     limit_providers: list[str] = None,
     limit_models: list[str] = None,
-) -> dict:
+) -> dict:  # TODO: should return list
     limit_providers = limit_providers or []
     limit_models = limit_models or []
 
@@ -218,18 +211,20 @@ def create_random_validators(
         amount=count,
     )
 
+    response = []
     for detail in details:
         stake = random.randint(min_stake, max_stake)
         validator_address = accounts_manager.create_new_account().address
 
-        validators_registry.create_validator(
+        validator = validators_registry.create_validator(
             validator_address,
             stake,
             detail.provider,
             detail.model,
             detail.config,
         )
-    response = validators_registry.get_all_validators()
+        response.append(validator)
+
     return response
 
 
@@ -452,10 +447,18 @@ def register_all_rpc_endpoints(
         create_validator, validators_registry, accounts_manager
     )
     register_rpc_endpoint_for_partial(
-        create_random_validator, validators_registry, accounts_manager, config
+        create_random_validator,
+        validators_registry,
+        accounts_manager,
+        llm_provider_registry,
+        config,
     )
     register_rpc_endpoint_for_partial(
-        create_random_validators, validators_registry, accounts_manager, config
+        create_random_validators,
+        validators_registry,
+        accounts_manager,
+        llm_provider_registry,
+        config,
     )
     register_rpc_endpoint_for_partial(
         update_validator, validators_registry, accounts_manager

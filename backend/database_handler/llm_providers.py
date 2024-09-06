@@ -33,7 +33,13 @@ class LLMProviderRegistry:
     def edit(self, id: int, provider: LLMProvider):
         self.session.query(LLMProviderDBModel).filter(
             LLMProviderDBModel.id == id
-        ).update(_to_db_model(provider))
+        ).update(
+            {
+                LLMProviderDBModel.provider: provider.provider,
+                LLMProviderDBModel.model: provider.model,
+                LLMProviderDBModel.config: provider.config,
+            }
+        )
         self.session.commit()
 
     def delete(self, id: int):
