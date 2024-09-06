@@ -41,6 +41,7 @@ class CurrentState(Base):
 
     id: Mapped[str] = mapped_column(String(255), primary_key=True)
     data: Mapped[dict] = mapped_column(JSONB)
+    balance: Mapped[int] = mapped_column(Integer, default=0)
     updated_at: Mapped[Optional[datetime.datetime]] = mapped_column(
         DateTime(True),
         init=False,

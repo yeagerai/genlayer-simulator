@@ -57,6 +57,11 @@ def create_account(accounts_manager: AccountsManager) -> dict:
     return {"account_address": new_account.address}
 
 
+def get_balance(accounts_manager: AccountsManager, account_address: str) -> int:
+    account_balance = accounts_manager.get_account_balance(account_address)
+    return account_balance
+
+
 def fund_account(
     accounts_manager: AccountsManager, account_address: str, amount: int
 ) -> dict:
@@ -233,6 +238,10 @@ def get_validator(
     return validators_registry.get_validator(validator_address)
 
 
+def count_validators(validators_registry: ValidatorsRegistry) -> dict:
+    return validators_registry.count_validators()
+
+
 ####### TRANSACTIONS ENDPOINTS #######
 def get_transaction_by_id(
     transactions_processor: TransactionsProcessor, transaction_id: str
@@ -340,10 +349,6 @@ def send_raw_transaction(
     result["transaction_id"] = transaction_id
 
     return result
-
-
-def count_validators(validators_registry: ValidatorsRegistry) -> dict:
-    return validators_registry.count_validators()
 
 
 def register_all_rpc_endpoints(

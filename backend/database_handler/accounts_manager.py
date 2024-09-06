@@ -36,7 +36,7 @@ class AccountsManager:
             raise ValueError(f"Invalid address: {address}")
         account_state = CurrentState(
             id=address,
-            data={"balance": balance},
+            balance=balance,
         )
         self.session.add(account_state)
         self.session.commit()
@@ -67,12 +67,7 @@ class AccountsManager:
         account = self._get_account(account_address)
         if account is not None:
             # Account exists, update it
-            # Dicts are mutable objects, we need to do something in order for SQLAlchemy to track their changes https://docs.sqlalchemy.org/en/20/orm/extensions/mutable.html
-            # In this case we are copying the dict, updating it and assigning it back to the object, which will trigger the change tracking
-            # I (Agustín Díaz) like this approach better than using `MutableDict` because it's more explicit than using the MutableDict class, and also doesn't leak the object to the rest of the code (which can be dangerous given that it's mutable)
-            new_data = account.data.copy()
-            new_data["balance"] += amount
-            account.data = new_data
+            account.balance += amount
             self.session.commit()
             print(account)
         else:
@@ -88,3 +83,7 @@ class AccountsManager:
             "type": 0,
         }
         self.transactions_processor.insert_transaction(**transaction_data)
+
+    def get_account_balance(self, account_address: str) -> int:
+        account = self.get_account_or_fail(account_address)
+        return account.balance

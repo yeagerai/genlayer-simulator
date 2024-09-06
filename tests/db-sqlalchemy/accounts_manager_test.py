@@ -23,7 +23,7 @@ def test_accounts_manager(accounts_manager: AccountsManager):
     account_data = accounts_manager.get_account_or_fail(address)
 
     assert account_data["id"] == address
-    assert account_data["data"]["balance"] == balance
+    assert account_data["balance"] == balance
     first_updated_at = account_data["updated_at"]
     assert datetime.fromisoformat(first_updated_at)
 
@@ -34,7 +34,7 @@ def test_accounts_manager(accounts_manager: AccountsManager):
     account_data = accounts_manager.get_account_or_fail(address)
 
     assert account_data["id"] == address
-    assert account_data["data"]["balance"] == balance + extra_balance
+    assert account_data["balance"] == balance + extra_balance
     second_updated_at = account_data["updated_at"]
     assert datetime.fromisoformat(second_updated_at)
     assert first_updated_at < second_updated_at
