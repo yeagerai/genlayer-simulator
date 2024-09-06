@@ -30,7 +30,7 @@ def random_validator_config(
     get_stored_providers: Callable[[], List[LLMProvider]],
     provider_names: set[str] = None,
     amount: int = 1,
-    environ: dict = os.environ,
+    environ: dict[str, str] = os.environ,
 ) -> List[LLMProvider]:
     providers_to_use = get_stored_providers()
 
