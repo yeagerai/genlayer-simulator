@@ -16,9 +16,6 @@ from backend.database_handler.accounts_manager import AccountsManager
 from backend.database_handler.validators_registry import ValidatorsRegistry
 
 from backend.node.create_nodes.create_nodes import (
-    get_default_config_for_providers_and_nodes,
-    get_providers,
-    get_provider_models,
     random_validator_config,
 )
 
