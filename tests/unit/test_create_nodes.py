@@ -88,16 +88,55 @@ from backend.node.create_nodes.create_nodes import random_validator_config
 def test_random_validator_config(
     available_ollama_models, stored_providers, provider_names, amount, environ, expected
 ):
-    get_stored_providers = lambda: stored_providers
-
-    get_available_ollama_models = lambda: available_ollama_models
-
     result = random_validator_config(
-        get_available_ollama_models,
-        get_stored_providers,
+        lambda: available_ollama_models,
+        lambda: stored_providers,
         provider_names,
         amount,
         environ,
     )
 
     assert set(result).issubset(set(expected))
+
+
+@pytest.mark.parametrize(
+    "available_ollama_models,stored_providers,provider_names,amount,environ,exception",
+    [
+        pytest.param(
+            [],
+            [LLMProvider(provider="ollama", model="llama3", config={})],
+            ["heuristai", "openai"],
+            10,
+            {},
+            ValueError,
+            id="no match",
+        ),
+        pytest.param(
+            [],
+            [LLMProvider(provider="ollama", model="llama3", config={})],
+            ["ollama"],
+            10,
+            {"OPENAI_API_KEY": "filled", "HEURISTAI_API_KEY": "filled"},
+            Exception,
+            id="no intersection",
+        ),
+    ],
+)
+def test_random_validator_config_fail(
+    available_ollama_models,
+    stored_providers,
+    provider_names,
+    amount,
+    environ,
+    exception,
+):
+    with pytest.raises(exception):
+        random_validator_config(
+            result=random_validator_config(
+                lambda: available_ollama_models,
+                lambda: stored_providers,
+                provider_names,
+                amount,
+                environ,
+            )
+        )
