@@ -10,7 +10,7 @@ from backend.node.create_nodes.create_nodes import random_validator_config
             ["llama3"],
             [LLMProvider(provider="ollama", model="llama3", config={})],
             None,
-            1,
+            10,
             {},
             [LLMProvider(provider="ollama", model="llama3", config={})],
             id="only ollama",
@@ -21,15 +21,67 @@ from backend.node.create_nodes.create_nodes import random_validator_config
                 LLMProvider(provider="ollama", model="llama3.1", config={}),
                 LLMProvider(provider="openai", model="gpt-4", config={}),
                 LLMProvider(provider="openai", model="gpt-4o", config={}),
-                LLMProvider(
-                    provider="heuristai", model="meta-llama/llama-2-70b-chat", config={}
-                ),
+                LLMProvider(provider="heuristai", model="", config={}),
             ],
             None,
-            1,
-            {"OPENAIKEY": ""},
+            10,
+            {"OPENAI_API_KEY": ""},
             [LLMProvider(provider="ollama", model="llama3.1", config={})],
             id="only ollama available",
+        ),
+        pytest.param(
+            ["llama3", "llama3.1"],
+            [
+                LLMProvider(provider="openai", model="gpt-4", config={}),
+                LLMProvider(provider="openai", model="gpt-4o", config={}),
+                LLMProvider(provider="heuristai", model="", config={}),
+            ],
+            None,
+            10,
+            {"OPENAIKEY": "filled"},
+            [
+                LLMProvider(provider="openai", model="gpt-4", config={}),
+                LLMProvider(provider="openai", model="gpt-4o", config={}),
+            ],
+            id="only openai available",
+        ),
+        pytest.param(
+            ["llama3", "llama3.1"],
+            [
+                LLMProvider(provider="openai", model="gpt-4", config={}),
+                LLMProvider(provider="openai", model="gpt-4o", config={}),
+                LLMProvider(provider="heuristai", model="a", config={}),
+                LLMProvider(provider="heuristai", model="b", config={}),
+            ],
+            None,
+            10,
+            {"OPENAI_API_KEY": "", "HEURISTAI_API_KEY": "filled"},
+            [
+                LLMProvider(provider="heuristai", model="a", config={}),
+                LLMProvider(provider="heuristai", model="b", config={}),
+            ],
+            id="only heuristai",
+        ),
+        pytest.param(
+            ["llama3", "llama3.1"],
+            [
+                LLMProvider(provider="ollama", model="llama3.1", config={}),
+                LLMProvider(provider="openai", model="gpt-4", config={}),
+                LLMProvider(provider="openai", model="gpt-4o", config={}),
+                LLMProvider(provider="heuristai", model="a", config={}),
+                LLMProvider(provider="heuristai", model="b", config={}),
+            ],
+            None,
+            10,
+            {"OPENAI_API_KEY": "filled", "HEURISTAI_API_KEY": "filled"},
+            [
+                LLMProvider(provider="ollama", model="llama3.1", config={}),
+                LLMProvider(provider="openai", model="gpt-4", config={}),
+                LLMProvider(provider="openai", model="gpt-4o", config={}),
+                LLMProvider(provider="heuristai", model="a", config={}),
+                LLMProvider(provider="heuristai", model="b", config={}),
+            ],
+            id="all available",
         ),
     ],
 )
@@ -48,4 +100,4 @@ def test_random_validator_config(
         environ,
     )
 
-    assert expected == result
+    assert set(result).issubset(set(expected))

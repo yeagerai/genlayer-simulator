@@ -54,7 +54,7 @@ def random_validator_config(
     providers_to_use = [
         provider
         for provider in providers_to_use
-        if provider.model in available_ollama_models
+        if provider.provider != "ollama" or provider.model in available_ollama_models
     ]
 
     def filter_by_available_key(provider: LLMProvider) -> bool:
