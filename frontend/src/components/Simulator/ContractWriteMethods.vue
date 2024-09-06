@@ -28,13 +28,7 @@ const writeMethods = computed(() => {
       <Loader v-if="isRefetching" :size="14" />
     </template>
 
-    <div
-      v-if="isPending"
-      class="flex flex-row items-center justify-center gap-2 p-1"
-    >
-      <Loader />
-      Loading...
-    </div>
+    <ContentLoader v-if="isPending" />
 
     <Alert v-else-if="isError" error>
       {{ error?.message }}
