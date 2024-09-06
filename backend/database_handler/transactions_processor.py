@@ -1,95 +1,108 @@
 # consensus/services/transactions_db_service.py
 
-import json
-from enum import Enum
+from .models import Transactions, TransactionsAudit
+from sqlalchemy.orm import Session
 
-from backend.database_handler.db_client import DBClient
-
-
-class TransactionStatus(Enum):
-    PENDING = "PENDING"
-    CANCELED = "CANCELED"
-    PROPOSING = "PROPOSING"
-    COMMITTING = "COMMITTING"
-    REVEALING = "REVEALING"
-    ACCEPTED = "ACCEPTED"
-    FINALIZED = "FINALIZED"
-    UNDETERMINED = "UNDETERMINED"
+from .models import TransactionStatus
 
 
 class TransactionsProcessor:
-    def __init__(self, db_client: DBClient):
-        self.db_client = db_client
-        self.db_transactions_table = "transactions"
-        self.db_audits_table = "transactions_audit"
+    def __init__(self, session: Session):
+        self.session = session
 
-    def _parse_transaction_data(self, transaction_data: dict) -> dict:
+    @staticmethod
+    def _parse_transaction_data(transaction_data: Transactions) -> dict:
         return {
-            "id": transaction_data["id"],
-            "from_address": transaction_data["from_address"],
-            "to_address": transaction_data["to_address"],
-            "data": transaction_data["data"],
-            "value": float(transaction_data["value"]),
-            "type": transaction_data["type"],
-            "status": transaction_data["status"],
-            "consensus_data": transaction_data["consensus_data"],
-            "gaslimit": transaction_data["nonce"],
-            "nonce": transaction_data["nonce"],
-            "r": transaction_data["r"],
-            "s": transaction_data["s"],
-            "v": transaction_data["v"],
-            "created_at": transaction_data["created_at"].isoformat(),
+            "id": transaction_data.id,
+            "from_address": transaction_data.from_address,
+            "to_address": transaction_data.to_address,
+            "data": transaction_data.data,
+            "value": float(transaction_data.value),
+            "type": transaction_data.type,
+            "status": transaction_data.status.value,
+            "consensus_data": transaction_data.consensus_data,
+            "gaslimit": transaction_data.nonce,
+            "nonce": transaction_data.nonce,
+            "r": transaction_data.r,
+            "s": transaction_data.s,
+            "v": transaction_data.v,
+            "created_at": transaction_data.created_at.isoformat(),
         }
 
     def insert_transaction(
-        self, from_address: str, to_address: str, data: dict, value: float, type: int
+        self,
+        from_address: str,
+        to_address: str,
+        data: dict,
+        value: float,
+        type: int,
     ) -> int:
         # Insert transaction into the transactions table
-        new_transaction = {
-            "from_address": from_address,
-            "to_address": to_address,
-            "data": json.dumps(data),
-            "value": value,
-            "type": type,
-            "status": TransactionStatus.PENDING.value,
-        }
-        transaction_id = self.db_client.insert(
-            self.db_transactions_table, new_transaction, return_column="id"
+        new_transaction = Transactions(
+            from_address=from_address,
+            to_address=to_address,
+            data=data,
+            value=value,
+            type=type,
+            status=TransactionStatus.PENDING,
+            consensus_data=None,  # Will be set when the transaction is finalized
+            # Future fields, unused for now
+            gaslimit=None,
+            input_data=None,
+            nonce=None,
+            r=None,
+            s=None,
+            v=None,
         )
 
+        self.session.add(new_transaction)
+
+        self.session.flush()  # SQLAlchemy will populate all the fields that are set by the database, like the id and created_at fields
+
         # Insert transaction audit record into the transactions_audit table
-        transaction_audit_record = {
-            "transaction_id": transaction_id,
-            "data": json.dumps(new_transaction),
-        }
-        self.db_client.insert(self.db_audits_table, transaction_audit_record)
+        transaction_audit_record = TransactionsAudit(
+            transaction_id=new_transaction.id,
+            data=self._parse_transaction_data(new_transaction),
+        )
 
-        return transaction_id
+        self.session.add(transaction_audit_record)
 
-    def get_transaction_by_id(self, transaction_id: int) -> dict:
-        condition = f"id = {transaction_id}"
-        transaction_data = self.db_client.get(self.db_transactions_table, condition)
-        if len(transaction_data) == 0:
+        self.session.commit()
+
+        return new_transaction.id
+
+    def get_transaction_by_id(self, transaction_id: int) -> dict | None:
+        transaction = (
+            self.session.query(Transactions).filter_by(id=transaction_id).one_or_none()
+        )
+
+        if transaction is None:
             return None
-        return self._parse_transaction_data(transaction_data[0])
+
+        return self._parse_transaction_data(transaction)
 
     def update_transaction_status(
         self, transaction_id: int, new_status: TransactionStatus
     ):
-        update_condition = f"id = {transaction_id}"
-        update_data = {"status": new_status}
-        print("Updating transaction status", transaction_id, new_status)
-        self.db_client.update(self.db_transactions_table, update_data, update_condition)
+
+        transaction = (
+            self.session.query(Transactions).filter_by(id=transaction_id).one()
+        )
+
+        transaction.status = new_status
+        self.session.commit()
 
     def set_transaction_result(self, transaction_id: int, consensus_data: dict):
-        update_condition = f"id = {transaction_id}"
-        update_data = {
-            "status": TransactionStatus.FINALIZED.value,
-            "consensus_data": consensus_data,
-        }
+        transaction = (
+            self.session.query(Transactions).filter_by(id=transaction_id).one()
+        )
+
+        transaction.status = TransactionStatus.FINALIZED
+        transaction.consensus_data = consensus_data
+
         print(
             "Updating transaction status",
             transaction_id,
             TransactionStatus.FINALIZED.value,
         )
-        self.db_client.update(self.db_transactions_table, update_data, update_condition)
+        self.session.commit()

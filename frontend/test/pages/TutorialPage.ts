@@ -1,4 +1,4 @@
-import { By, Locator, WebElement } from 'selenium-webdriver';
+import { By, type Locator, WebElement } from 'selenium-webdriver';
 import { BasePage } from './BasePage';
 
 export class TutorialPage extends BasePage {
