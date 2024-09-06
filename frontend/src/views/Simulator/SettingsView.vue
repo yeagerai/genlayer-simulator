@@ -59,25 +59,7 @@ const handleResetStorage = async () => {
         </GhostBtn>
       </template>
 
-      <div
-        v-if="nodeStore.isLoadingValidatorData"
-        class="flex flex-row items-center justify-center gap-2 p-1"
-      >
-        <Loader />
-        Loading...
-      </div>
-
-      <EmptyListPlaceholder v-else-if="nodeStore.validators.length < 1">
-        No validators.
-      </EmptyListPlaceholder>
-
-      <div
-        v-if="nodeStore.isLoadingValidatorData"
-        class="flex flex-row items-center justify-center gap-2 p-1"
-      >
-        <Loader />
-        Loading...
-      </div>
+      <ContentLoader v-if="nodeStore.isLoadingValidatorData" />
 
       <EmptyListPlaceholder v-else-if="nodeStore.validators.length < 1">
         No validators.
@@ -97,7 +79,9 @@ const handleResetStorage = async () => {
       </div>
 
       <Btn
-        v-if="!nodeStore.hasAtLeastOneValidator"
+        v-if="
+          !nodeStore.hasAtLeastOneValidator && !nodeStore.isLoadingValidatorData
+        "
         @click="isNewValidatorModalOpen = true"
         :icon="PlusIcon"
       >
