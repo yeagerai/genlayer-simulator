@@ -63,13 +63,22 @@ def get_balance(accounts_manager: AccountsManager, account_address: str) -> int:
 
 
 def fund_account(
-    accounts_manager: AccountsManager, account_address: str, amount: int
+    accounts_manager: AccountsManager,
+    transactions_processor: TransactionsProcessor,
+    account_address: str,
+    amount: int,
 ) -> dict:
     if not accounts_manager.is_valid_address(account_address):
         raise InvalidAddressError(account_address)
 
-    accounts_manager.fund_account(account_address, amount)
-    return {"account_address": account_address, "amount": amount}
+    account = accounts_manager.get_account(account_address)
+    if not account:
+        accounts_manager.create_new_account_with_address(account_address, amount)
+
+    transaction_id = transactions_processor.insert_transaction(
+        None, account_address, None, amount, 0
+    )
+    return {"transaction_id": transaction_id}
 
 
 ####### CONTRACT CODE SCHEMA ENDPOINTS #######
@@ -371,7 +380,9 @@ def register_all_rpc_endpoints(
     )
 
     register_rpc_endpoint_for_partial(create_account, accounts_manager)
-    register_rpc_endpoint_for_partial(fund_account, accounts_manager)
+    register_rpc_endpoint_for_partial(
+        fund_account, accounts_manager, transactions_processor
+    )
 
     register_rpc_endpoint_for_partial(
         get_contract_schema, accounts_manager, msg_handler
