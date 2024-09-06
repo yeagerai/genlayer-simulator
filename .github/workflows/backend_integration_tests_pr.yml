@@ -42,6 +42,8 @@ jobs:
       - name: Copy .env file
         run: cp .env.example .env
 
+      # TODO: we should also add a heuristai key to the e2e tests
+
       - name: Set OPENAIKEY in the .env file so it can be loaded from the environment
         env:
           OPENAIKEY: ${{ secrets.OPENAIKEY }}

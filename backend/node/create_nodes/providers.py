@@ -2,9 +2,6 @@ import json
 import os
 from typing import List
 
-from hypothesis import HealthCheck, given, settings
-from hypothesis.errors import HypothesisDeprecationWarning
-from hypothesis_jsonschema import from_schema
 from jsonschema import Draft202012Validator, validate
 
 from backend.domain.types import LLMProvider
@@ -60,9 +57,13 @@ def _to_domain(provider: dict) -> LLMProvider:
 
 def create_random_providers(amount: int) -> list[LLMProvider]:
     """
+    Not being used at the moment, left here for future reference.
     Creates random providers deriving them from the json schema.
     Internally uses hypothesis to generate the data, which is hacky since it's meant to be a testing library.
     """
+    from hypothesis import HealthCheck, given, settings
+    from hypothesis.errors import HypothesisDeprecationWarning
+    from hypothesis_jsonschema import from_schema
     import warnings
 
     return_value = []

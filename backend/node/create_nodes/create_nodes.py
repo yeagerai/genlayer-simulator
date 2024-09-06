@@ -1,21 +1,19 @@
 import os
-import json
 import re
+import secrets
 from typing import Callable, List
 import requests
+from numpy.random import default_rng
 
 from dotenv import load_dotenv
 
 from backend.domain.types import LLMProvider
-from backend.node.create_nodes.providers import create_random_providers
 
 load_dotenv()
+rng = default_rng(secrets.randbits(128))
 
-default_provider_key_regex = r"^(<add_your_.*_api_key_here>|)$"
-
-
-def base_node_json(provider: str, model: str) -> dict:
-    return {"provider": provider, "model": model, "config": {}}
+empty_provider_key_regex = r"^(<add_your_.*_api_key_here>|)$"
+provider_key_names_suffix = ["_API_KEY", "KEY", "APIKEY"]
 
 
 def get_available_ollama_models(get_ollama_url: Callable[[str], str]) -> List[str]:
@@ -28,37 +26,54 @@ def get_available_ollama_models(get_ollama_url: Callable[[str], str]) -> List[st
 
 
 def random_validator_config(
-    get_ollama_url: Callable[[str], str],
-    # get_stored_providers: Callable[[], List[LLMProvider]],
-    provider_names: List[str] = None,
+    get_available_ollama_models: Callable[[], str],
+    get_stored_providers: Callable[[], List[LLMProvider]],
+    provider_names: set[str] = None,
     amount: int = 1,
+    environ: dict = os.environ,
 ) -> List[LLMProvider]:
-    provider_names = provider_names or []
+    providers_to_use = get_stored_providers()
 
-    # stored_providers = get_stored_providers()
-    stored_providers = []
-    providers_to_use = stored_providers
-
-    if len(provider_names) > 0:
+    if provider_names:
         providers_to_use = [
             provider
-            for provider in stored_providers
+            for provider in providers_to_use
             if provider.provider in provider_names
         ]
-    # TODO: this methods for checking the providers are decoupled from the actual configuration and schema of the providers. This means that modifications need to be done in two places.
+        # stored_providers_to_use
 
-    # TODO: when should we check which models are available? Maybe when filling up the database? Should we check every time since the user can download more models?
-    available_ollama_models = get_available_ollama_models(get_ollama_url)
+    if not providers_to_use:
+        raise ValueError(
+            f"Requested providers '{provider_names}' do not match any stored providers. Please review your stored providers."
+        )
 
-    is_openai_available = not re.match(
-        default_provider_key_regex, os.environ.get("OPENAIKEY", "")
-    )
-    is_heuristai_available = not re.match(
-        default_provider_key_regex, os.environ.get("HEURISTAIAPIKEY", "")
-    )
+    # Ollama is the only provider which is not OpenAI compliant, thus it gets its custom logic
+    # To add more non-OpenAI compliant providers, we'll need to add more custom logic here or refactor the provider's schema to allow general configurations
+    available_ollama_models = get_available_ollama_models()
 
-    # Check for providers' keys.
-    if not (available_ollama_models or is_openai_available or is_heuristai_available):
+    providers_to_use = [
+        provider
+        for provider in providers_to_use
+        if provider.model in available_ollama_models
+    ]
+
+    def filter_by_available_key(provider: LLMProvider) -> bool:
+        if provider.provider == "ollama":
+            return True
+        provider_key_names = [
+            provider.provider.upper() + suffix for suffix in provider_key_names_suffix
+        ]
+        for provider_key_name in provider_key_names:
+            if not re.match(
+                empty_provider_key_regex, environ.get(provider_key_name, "")
+            ):
+                return True
+
+        return False
+
+    providers_to_use = list(filter(filter_by_available_key, providers_to_use))
+
+    if not providers_to_use:
         raise Exception("No providers avaliable.")
 
     # heuristic_models_result = requests.get(os.environ['HEURISTAIMODELSURL']).json()
@@ -66,11 +81,4 @@ def random_validator_config(
     # for entry in heuristic_models_result:
     #    heuristic_models.append(entry['name'])
 
-    # provider = get_random_provider_using_weights(config["providers"], get_ollama_url)
-    # options = get_options(provider, config)
-
-    # raise Exception("Provider " + provider + " is not specified in defaults")
-
-    # provider = create_random_providers(amount)
-
-    return create_random_providers(amount)  # TODO: filter by provider and availability
+    return list(rng.choice(providers_to_use, amount))

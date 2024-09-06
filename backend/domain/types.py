@@ -10,3 +10,6 @@ class LLMProvider:
     provider: str
     model: str
     config: dict
+
+    def __hash__(self):
+        return hash((self.provider, self.model, frozenset(self.config.items())))
