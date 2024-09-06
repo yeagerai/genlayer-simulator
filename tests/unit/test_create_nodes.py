@@ -4,11 +4,12 @@ from backend.node.create_nodes.create_nodes import random_validator_config
 
 
 @pytest.mark.parametrize(
-    "available_ollama_models,stored_providers,provider_names,amount,environ,expected",
+    "available_ollama_models,stored_providers,limit_providers,limit_models,amount,environ,expected",
     [
         pytest.param(
             ["llama3"],
             [LLMProvider(provider="ollama", model="llama3", config={})],
+            None,
             None,
             10,
             {},
@@ -24,6 +25,7 @@ from backend.node.create_nodes.create_nodes import random_validator_config
                 LLMProvider(provider="heuristai", model="", config={}),
             ],
             None,
+            None,
             10,
             {"OPENAI_API_KEY": ""},
             [LLMProvider(provider="ollama", model="llama3.1", config={})],
@@ -32,10 +34,14 @@ from backend.node.create_nodes.create_nodes import random_validator_config
         pytest.param(
             ["llama3", "llama3.1"],
             [
+                LLMProvider(provider="ollama", model="llama3", config={}),
                 LLMProvider(provider="openai", model="gpt-4", config={}),
                 LLMProvider(provider="openai", model="gpt-4o", config={}),
                 LLMProvider(provider="heuristai", model="", config={}),
+                LLMProvider(provider="heuristai", model="a", config={}),
+                LLMProvider(provider="heuristai", model="b", config={}),
             ],
+            ["openai"],
             None,
             10,
             {"OPENAIKEY": "filled"},
@@ -43,7 +49,7 @@ from backend.node.create_nodes.create_nodes import random_validator_config
                 LLMProvider(provider="openai", model="gpt-4", config={}),
                 LLMProvider(provider="openai", model="gpt-4o", config={}),
             ],
-            id="only openai available",
+            id="only openai",
         ),
         pytest.param(
             ["llama3", "llama3.1"],
@@ -53,12 +59,12 @@ from backend.node.create_nodes.create_nodes import random_validator_config
                 LLMProvider(provider="heuristai", model="a", config={}),
                 LLMProvider(provider="heuristai", model="b", config={}),
             ],
-            None,
+            ["heuristai"],
+            ["a"],
             10,
-            {"OPENAI_API_KEY": "", "HEURISTAI_API_KEY": "filled"},
+            {"OPENAI_API_KEY": "filled", "HEURISTAI_API_KEY": "filled"},
             [
                 LLMProvider(provider="heuristai", model="a", config={}),
-                LLMProvider(provider="heuristai", model="b", config={}),
             ],
             id="only heuristai",
         ),
@@ -71,6 +77,7 @@ from backend.node.create_nodes.create_nodes import random_validator_config
                 LLMProvider(provider="heuristai", model="a", config={}),
                 LLMProvider(provider="heuristai", model="b", config={}),
             ],
+            None,
             None,
             10,
             {"OPENAI_API_KEY": "filled", "HEURISTAI_API_KEY": "filled"},
@@ -86,12 +93,19 @@ from backend.node.create_nodes.create_nodes import random_validator_config
     ],
 )
 def test_random_validator_config(
-    available_ollama_models, stored_providers, provider_names, amount, environ, expected
+    available_ollama_models,
+    stored_providers,
+    limit_providers,
+    limit_models,
+    amount,
+    environ,
+    expected,
 ):
     result = random_validator_config(
         lambda: available_ollama_models,
         lambda: stored_providers,
-        provider_names,
+        limit_providers,
+        limit_models,
         amount,
         environ,
     )
@@ -100,12 +114,13 @@ def test_random_validator_config(
 
 
 @pytest.mark.parametrize(
-    "available_ollama_models,stored_providers,provider_names,amount,environ,exception",
+    "available_ollama_models,stored_providers,limit_providers,limit_models,amount,environ,exception",
     [
         pytest.param(
             [],
             [LLMProvider(provider="ollama", model="llama3", config={})],
             ["heuristai", "openai"],
+            None,
             10,
             {},
             ValueError,
@@ -115,6 +130,7 @@ def test_random_validator_config(
             [],
             [LLMProvider(provider="ollama", model="llama3", config={})],
             ["ollama"],
+            None,
             10,
             {"OPENAI_API_KEY": "filled", "HEURISTAI_API_KEY": "filled"},
             Exception,
@@ -125,7 +141,8 @@ def test_random_validator_config(
 def test_random_validator_config_fail(
     available_ollama_models,
     stored_providers,
-    provider_names,
+    limit_providers,
+    limit_models,
     amount,
     environ,
     exception,
@@ -135,7 +152,8 @@ def test_random_validator_config_fail(
             result=random_validator_config(
                 lambda: available_ollama_models,
                 lambda: stored_providers,
-                provider_names,
+                limit_providers,
+                limit_models,
                 amount,
                 environ,
             )

@@ -174,11 +174,16 @@ def create_validator(
 def create_random_validator(
     validators_registry: ValidatorsRegistry,
     accounts_manager: AccountsManager,
+    llm_provider_registry: LLMProviderRegistry,
     config: GlobalConfiguration,
     stake: int,
 ) -> dict:
     validator_address = accounts_manager.create_new_account().address
-    details = random_validator_config(config.get_ollama_url)[0]
+    details = random_validator_config(
+        config.get_available_ollama_models,
+        llm_provider_registry.get_all,
+        1,
+    )[0]
     response = validators_registry.create_validator(
         validator_address,
         stake,
@@ -194,31 +199,36 @@ def create_random_validator(
 def create_random_validators(
     validators_registry: ValidatorsRegistry,
     accounts_manager: AccountsManager,
+    llm_provider_registry: LLMProviderRegistry,
     config: GlobalConfiguration,
     count: int,
     min_stake: int,
     max_stake: int,
-    providers: list = None,
-    fixed_provider: str = None,
-    fixed_model: str = None,
+    limit_providers: list[str] = None,
+    limit_models: list[str] = None,
 ) -> dict:
-    providers = providers or []
+    limit_providers = limit_providers or []
+    limit_models = limit_models or []
 
-    for _ in range(count):
-        stake = random.uniform(min_stake, max_stake)
+    details = random_validator_config(
+        config.get_available_ollama_models,
+        llm_provider_registry.get_all,
+        limit_providers=set(limit_providers),
+        limit_models=set(limit_models),
+        amount=count,
+    )
+
+    for detail in details:
+        stake = random.randint(min_stake, max_stake)
         validator_address = accounts_manager.create_new_account().address
-        details = random_validator_config(
-            config.get_ollama_url, provider_names=providers
-        )[0]
-        new_validator = validators_registry.create_validator(
+
+        validators_registry.create_validator(
             validator_address,
             stake,
-            fixed_provider or details.provider,
-            fixed_model or details.model,
-            details.config,
+            detail.provider,
+            detail.model,
+            detail.config,
         )
-        if not "id" in new_validator:
-            raise SystemError("Failed to create Validator")
     response = validators_registry.get_all_validators()
     return response
 

@@ -28,23 +28,28 @@ def get_available_ollama_models(get_ollama_url: Callable[[str], str]) -> List[st
 def random_validator_config(
     get_available_ollama_models: Callable[[], str],
     get_stored_providers: Callable[[], List[LLMProvider]],
-    provider_names: set[str] = None,
+    limit_providers: set[str] = None,
+    limit_models: set[str] = None,
     amount: int = 1,
     environ: dict[str, str] = os.environ,
 ) -> List[LLMProvider]:
     providers_to_use = get_stored_providers()
 
-    if provider_names:
+    if limit_providers:
         providers_to_use = [
             provider
             for provider in providers_to_use
-            if provider.provider in provider_names
+            if provider.provider in limit_providers
         ]
-        # stored_providers_to_use
+
+    if limit_models:
+        providers_to_use = [
+            provider for provider in providers_to_use if provider.model in limit_models
+        ]
 
     if not providers_to_use:
         raise ValueError(
-            f"Requested providers '{provider_names}' do not match any stored providers. Please review your stored providers."
+            f"Requested providers '{limit_providers}' do not match any stored providers. Please review your stored providers."
         )
 
     # Ollama is the only provider which is not OpenAI compliant, thus it gets its custom logic
