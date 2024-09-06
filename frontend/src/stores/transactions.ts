@@ -20,7 +20,7 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
   }
 
   function updateTransaction(tx: any) {
-    const index = transactions.value.findIndex((t) => t.hash === tx.hash); // TODO: Inconsistent mapping
+    const index = transactions.value.findIndex((t) => t.hash === tx.hash)
     if (index !== -1) {
       const current = transactions.value[index];
       transactions.value.splice(index, 1, {

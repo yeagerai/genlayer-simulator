@@ -76,11 +76,9 @@ class TransactionsProcessor:
         data: dict,
         value: float,
         type: int,
-        # nonce: int,
-        # gaslimit: int,
-        # gasprice: int,
     ) -> int:
-        # TODO: Generate a unique nonce properly
+        # TODO: Get nonce from the client, and create necessary endpoints
+        # This might be enough for now ?
         nonce = (
             self.session.query(Transactions)
             .filter(Transactions.from_address == from_address)
@@ -90,6 +88,7 @@ class TransactionsProcessor:
         hash = self._generate_transaction_hash(
             from_address, to_address, data, value, type, nonce
         )
+        
         print("Generated transaction hash:", hash)
 
         new_transaction = Transactions(

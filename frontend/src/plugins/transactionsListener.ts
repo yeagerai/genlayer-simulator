@@ -31,12 +31,12 @@ export const TransactionsListenerPlugin = {
             transactionsStore.removeTransaction(item);
           } else {
             const currentTx = transactionsStore.processingQueue.find(
-              (t) => t.hash === tx?.data?.hash, // TODO: Inconsistent mapping
+              (t) => t.hash === tx?.data?.hash,
             );
             transactionsStore.updateTransaction(tx?.data);
             transactionsStore.processingQueue =
               transactionsStore.processingQueue.filter(
-                (t) => t.hash !== tx?.data?.hash, // TODO: Inconsistent mapping
+                (t) => t.hash !== tx?.data?.hash,
               );
             // if finalized and is contract add to the contract store dpeloyed
             if (
