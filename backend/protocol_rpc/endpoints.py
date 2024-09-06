@@ -67,26 +67,6 @@ def fund_account(
     return {"account_address": account_address, "amount": amount}
 
 
-def send_transaction(
-    transactions_processor: TransactionsProcessor,
-    accounts_manager: AccountsManager,
-    from_account: str,
-    to_account: str,
-    amount: int,
-) -> dict:
-    if not accounts_manager.is_valid_address(from_account):
-        raise InvalidAddressError(from_account)
-
-    if not accounts_manager.is_valid_address(to_account):
-        raise InvalidAddressError(to_account)
-
-    transaction_id = transactions_processor.insert_transaction(
-        from_account, to_account, None, amount, 0
-    )
-
-    return {"transaction_id": transaction_id}
-
-
 ####### CONTRACT CODE SCHEMA ENDPOINTS #######
 def get_contract_schema(
     accounts_manager: AccountsManager,
@@ -303,6 +283,8 @@ def send_raw_transaction(
         raise InvalidTransactionError("Invalid transaction data")
 
     from_address = decoded_transaction.from_address
+    value = decoded_transaction.value
+
     if not accounts_manager.is_valid_address(from_address):
         raise InvalidAddressError(
             from_address, f"Invalid address from_address: {from_address}"
@@ -319,20 +301,11 @@ def send_raw_transaction(
     transaction_data = {}
     result = {}
     transaction_type = -1
-    if to_address and to_address != "0x":
-        # Contract Call
-        if not accounts_manager.is_valid_address(to_address):
-            raise InvalidAddressError(
-                to_address, f"Invalid address to_address: {to_address}"
-            )
-        decoded_data = decode_method_call_data(decoded_transaction.data)
-        transaction_data = {
-            "function_name": decoded_data.function_name,
-            "function_args": decoded_data.function_args,
-        }
-        transaction_type = 2
-    else:
+    if not to_address or to_address == "0x":
         # Contract deployment
+        if value > 0:
+            raise InvalidTransactionError("Deploy Transaction can't send value")
+
         decoded_data = decode_deployment_data(decoded_transaction.data)
         new_contract_address = accounts_manager.create_new_account().address
 
@@ -344,10 +317,25 @@ def send_raw_transaction(
         result["contract_address"] = new_contract_address
         to_address = None
         transaction_type = 1
+    elif not decoded_transaction.data:
+        # Sending value transaction
+        transaction_type = 0
+    else:
+        # Contract Call
+        if not accounts_manager.is_valid_address(to_address):
+            raise InvalidAddressError(
+                to_address, f"Invalid address to_address: {to_address}"
+            )
+        decoded_data = decode_method_call_data(decoded_transaction.data)
+        transaction_data = {
+            "function_name": decoded_data.function_name,
+            "function_args": decoded_data.function_args,
+        }
+        transaction_type = 2
 
     # Insert transaction into the database
     transaction_id = transactions_processor.insert_transaction(
-        from_address, to_address, transaction_data, 0, transaction_type
+        from_address, to_address, transaction_data, value, transaction_type
     )
     result["transaction_id"] = transaction_id
 
@@ -379,9 +367,6 @@ def register_all_rpc_endpoints(
 
     register_rpc_endpoint_for_partial(create_account, accounts_manager)
     register_rpc_endpoint_for_partial(fund_account, accounts_manager)
-    register_rpc_endpoint_for_partial(
-        send_transaction, transactions_processor, accounts_manager
-    )
 
     register_rpc_endpoint_for_partial(
         get_contract_schema, accounts_manager, msg_handler

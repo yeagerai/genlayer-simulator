@@ -30,10 +30,10 @@ describe('useWallet', () => {
   });
 
   it('it should sign a transaction and verify the signature and deduce the address', async () => {
-    const signedTransaction = await wallet.signTransaction(
-      testPrivateKey,
-      testData,
-    );
+    const signedTransaction = await wallet.signTransaction({
+      privateKey: testPrivateKey,
+      data: testData,
+    });
     expect(signedTransaction).toBe(testSignedTransaction);
 
     const account = wallet.privateKeyToAccount(testPrivateKey);
