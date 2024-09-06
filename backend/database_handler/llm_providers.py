@@ -8,7 +8,6 @@ class LLMProviderRegistry:
     def __init__(self, session: Session):
         self.session = session
 
-    # TODO: we should call this to fill up the database with the default providers
     def reset_defaults(self):
         """Reset all providers to their default values."""
         self.session.query(LLMProviderDBModel).delete()

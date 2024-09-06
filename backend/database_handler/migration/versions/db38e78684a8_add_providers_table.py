@@ -10,7 +10,10 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.dialects import postgresql
+
+from backend.database_handler.llm_providers import LLMProviderRegistry
 
 # revision identifiers, used by Alembic.
 revision: str = "db38e78684a8"
@@ -42,6 +45,12 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id", name="llm_provider_pkey"),
     )
     # ### end Alembic commands ###
+    # Get the connection from Alembic
+    bind = op.get_bind()
+
+    # Create a new SQLAlchemy session using the connection
+    with sessionmaker(bind=bind)() as session:
+        LLMProviderRegistry(session).reset_defaults()
 
 
 def downgrade() -> None:
