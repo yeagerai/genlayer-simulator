@@ -32,7 +32,7 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
   }
 
   async function getTransaction(hash: string) {
-    return rpcClient.getTransactionById(hash);
+    return rpcClient.getTransactionByHash(hash);
   }
 
   function clearTransactionsForContract(contractId: string) {

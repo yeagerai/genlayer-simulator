@@ -24,7 +24,7 @@ const updatedTransactionPayload = {
 describe('useTransactionsStore', () => {
   let transactionsStore: ReturnType<typeof useTransactionsStore>;
   const mockRpcClient = {
-    getTransactionById: vi.fn(),
+    getTransactionByHash: vi.fn(),
   };
 
   beforeEach(() => {
@@ -33,7 +33,7 @@ describe('useTransactionsStore', () => {
     transactionsStore = useTransactionsStore();
     transactionsStore.transactions = [];
     transactionsStore.processingQueue = [];
-    mockRpcClient.getTransactionById.mockClear();
+    mockRpcClient.getTransactionByHash.mockClear();
   });
 
   it('should add a transaction', () => {
@@ -58,11 +58,11 @@ describe('useTransactionsStore', () => {
     // TODO: fix this
     const transactionId = 123;
     const transactionData = { id: transactionId, status: 'PENDING' };
-    mockRpcClient.getTransactionById.mockResolvedValue(transactionData);
+    mockRpcClient.getTransactionByHash.mockResolvedValue(transactionData);
 
     const result = await transactionsStore.getTransaction(transactionId);
 
-    expect(mockRpcClient.getTransactionById).toHaveBeenCalledWith(
+    expect(mockRpcClient.getTransactionByHash).toHaveBeenCalledWith(
       transactionId,
     );
     expect(result).toEqual(transactionData);
