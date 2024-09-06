@@ -126,7 +126,7 @@ def reset_defaults_llm_providers(llm_provider_registry: LLMProviderRegistry) -> 
 
 
 def get_providers_and_models(llm_provider_registry: LLMProviderRegistry) -> dict:
-    return llm_provider_registry.get_all()
+    return llm_provider_registry.get_all_dict()
 
 
 def add_provider(llm_provider_registry: LLMProviderRegistry, params: dict) -> dict:
@@ -140,7 +140,7 @@ def add_provider(llm_provider_registry: LLMProviderRegistry, params: dict) -> di
     return llm_provider_registry.add(provider)
 
 
-def edit_provider(
+def update_provider(
     llm_provider_registry: LLMProviderRegistry, id: int, params: dict
 ) -> dict:
     provider = LLMProvider(
@@ -150,7 +150,7 @@ def edit_provider(
     )
     validate_provider(provider)
 
-    llm_provider_registry.edit(id, provider)
+    llm_provider_registry.update(id, provider)
 
 
 def delete_provider(llm_provider_registry: LLMProviderRegistry, id: int) -> dict:
@@ -165,6 +165,15 @@ def create_validator(
     model: str,
     config: json,
 ) -> dict:
+
+    validate_provider(
+        LLMProvider(
+            provider=provider,
+            model=model,
+            config=config,
+        )
+    )
+
     new_address = accounts_manager.create_new_account().address
     return validators_registry.create_validator(
         new_address, stake, provider, model, config
@@ -240,6 +249,13 @@ def update_validator(
     # Remove validation while adding migration to update the db address
     # if not accounts_manager.is_valid_address(validator_address):
     #     raise InvalidAddressError(validator_address)
+    validate_provider(
+        LLMProvider(
+            provider=provider,
+            model=model,
+            config=config,
+        )
+    )
     return validators_registry.update_validator(
         validator_address, stake, provider, model, config
     )
@@ -441,7 +457,7 @@ def register_all_rpc_endpoints(
         reset_defaults_llm_providers, llm_provider_registry
     )
     register_rpc_endpoint_for_partial(add_provider, llm_provider_registry)
-    register_rpc_endpoint_for_partial(edit_provider, llm_provider_registry)
+    register_rpc_endpoint_for_partial(update_provider, llm_provider_registry)
     register_rpc_endpoint_for_partial(delete_provider, llm_provider_registry)
     register_rpc_endpoint_for_partial(
         create_validator, validators_registry, accounts_manager

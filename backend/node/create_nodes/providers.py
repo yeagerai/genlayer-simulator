@@ -21,7 +21,10 @@ def get_schema() -> dict:
 
 def validate_provider(provider: LLMProvider):
     schema = get_schema()
-    validate(instance=provider.__dict__, schema=schema)
+    try:
+        validate(instance=provider.__dict__, schema=schema)
+    except Exception as e:
+        raise ValueError(f"Error validating provider: {e}")
 
 
 def get_default_providers() -> List[LLMProvider]:
