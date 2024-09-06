@@ -33,26 +33,15 @@ class TransactionsProcessor:
             "created_at": transaction_data.created_at.isoformat(),
         }
 
-    def insert_transaction(
-        self,
+    @staticmethod
+    def _generate_transaction_hash(
         from_address: str,
         to_address: str,
         data: dict,
         value: float,
         type: int,
-    ) -> int:
-
-        print(
-            "Inserting transaction",
-            from_address,
-            to_address,
-            data,
-            value,
-            type,
-        )
-        # Insert transaction into the transactions table
-        # Create a list of transaction elements in the order Ethereum uses
-
+        nonce: int,
+    ) -> str:
         from_address_bytes = (
             to_bytes(hexstr=from_address) if is_address(from_address) else None
         )
@@ -61,6 +50,36 @@ class TransactionsProcessor:
         )
         data_bytes = to_bytes(text=json.dumps(data))
 
+        tx_elements = [
+            from_address_bytes,
+            to_address_bytes,
+            to_bytes(hexstr=hex(int(value))),
+            data_bytes,
+            to_bytes(hexstr=hex(type)),
+            to_bytes(hexstr=hex(nonce)),
+            to_bytes(hexstr=hex(0)),  # gas price (placeholder)
+            to_bytes(hexstr=hex(0)),  # gas limit (placeholder)
+        ]
+
+        tx_elements = [
+            elem for elem in tx_elements if elem is not None
+        ]  # Filter out None values
+        print(tx_elements)
+        rlp_encoded = rlp.encode(tx_elements)
+        hash = "0x" + keccak(rlp_encoded).hex()
+        return hash
+
+    def insert_transaction(
+        self,
+        from_address: str,
+        to_address: str,
+        data: dict,
+        value: float,
+        type: int,
+        # nonce: int,
+        # gaslimit: int,
+        # gasprice: int,
+    ) -> int:
         # TODO: Generate a unique nonce properly
         nonce = (
             self.session.query(Transactions)
@@ -68,32 +87,13 @@ class TransactionsProcessor:
             .count()
         )
 
-        print("Generated nonce:", nonce)
-
-        tx_elements = [
-            from_address_bytes,
-            to_address_bytes,
-            to_bytes(hexstr=hex(int(value))),
-            data_bytes,
-            to_bytes(hexstr=hex(type)),
-            to_bytes(hexstr=hex(nonce)),  # nonce (placeholder)
-            to_bytes(hexstr=hex(0)),  # gas price (placeholder)
-            to_bytes(hexstr=hex(0)),  # gas limit (placeholder)
-        ]
-
-        # Filter out None values
-        tx_elements = [elem for elem in tx_elements if elem is not None]
-
-        # RLP encode the transaction elements
-        rlp_encoded = rlp.encode(tx_elements)
-
-        # Generate the hash
-        tx_hash = "0x" + keccak(rlp_encoded).hex()
-
-        print("Generated transaction hash:", tx_hash)
+        hash = self._generate_transaction_hash(
+            from_address, to_address, data, value, type, nonce
+        )
+        print("Generated transaction hash:", hash)
 
         new_transaction = Transactions(
-            hash=tx_hash,
+            hash=hash,
             from_address=from_address,
             to_address=to_address,
             data=data,
@@ -101,10 +101,10 @@ class TransactionsProcessor:
             type=type,
             status=TransactionStatus.PENDING,
             consensus_data=None,  # Will be set when the transaction is finalized
+            nonce=nonce,
             # Future fields, unused for now
             gaslimit=None,
             input_data=None,
-            nonce=None,
             r=None,
             s=None,
             v=None,
