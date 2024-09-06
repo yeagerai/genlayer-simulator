@@ -1,6 +1,5 @@
 # backend/consensus/base.py
 
-DEPLOY_CONTRACTS_QUEUE_KEY = "deploy_contracts"
 DEFAULT_VALIDATORS_COUNT = 5
 DEFAULT_CONSENSUS_SLEEP_TIME = 5
 
@@ -45,7 +44,7 @@ class ConsensusAlgorithm:
                 pending_transactions = chain_snapshot.get_pending_transactions()
                 for transaction in pending_transactions:
                     contract_address = (
-                        transaction["to_address"] or DEPLOY_CONTRACTS_QUEUE_KEY
+                        transaction["to_address"] or transaction["from_address"]
                     )
 
                     if contract_address not in self.queues:
