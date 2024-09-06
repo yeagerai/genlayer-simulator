@@ -22,22 +22,19 @@ class AccountsManager:
             "updated_at": account_data.updated_at.isoformat(),
         }
 
-    def create_new_account(self, balance: int = 0) -> Account:
+    def create_new_account(self) -> Account:
         """
         Used when generating intelligent contract's accounts or sending funds to a new account.
         Users should create their accounts client-side
         """
         account = Account.create()
-        self.create_new_account_with_address(account.address, balance)
+        self.create_new_account_with_address(account.address)
         return account
 
-    def create_new_account_with_address(self, address: str, balance: int = 0):
+    def create_new_account_with_address(self, address: str):
         if not self.is_valid_address(address):
             raise ValueError(f"Invalid address: {address}")
-        account_state = CurrentState(
-            id=address,
-            balance=balance,
-        )
+        account_state = CurrentState(id=address)
         self.session.add(account_state)
         self.session.commit()
 

@@ -17,13 +17,11 @@ def accounts_manager(
 
 def test_accounts_manager(accounts_manager: AccountsManager):
     address = "0x9F0e84243496AcFB3Cd99D02eA59673c05901501"
-    balance = 100
-    accounts_manager.create_new_account_with_address(address, balance)
+    accounts_manager.create_new_account_with_address(address)
 
     account_data = accounts_manager.get_account_or_fail(address)
 
     assert account_data["id"] == address
-    assert account_data["balance"] == balance
     first_updated_at = account_data["updated_at"]
     assert datetime.fromisoformat(first_updated_at)
 
