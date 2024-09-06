@@ -88,7 +88,7 @@ class TransactionsProcessor:
         hash = self._generate_transaction_hash(
             from_address, to_address, data, value, type, nonce
         )
-        
+
         print("Generated transaction hash:", hash)
 
         new_transaction = Transactions(
