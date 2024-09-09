@@ -1,5 +1,6 @@
 {
   "provider": "ollama",
+  "plugin": "ollama",
   "model": "gemma",
   "config": {
     "mirostat": 0,

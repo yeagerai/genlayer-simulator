@@ -1,5 +1,6 @@
 {
   "provider": "heuristai",
+  "plugin": "heuristai",
   "model": "mistralai/mixtral-8x7b-instruct",
   "config": {
     "temperature": 0.75,

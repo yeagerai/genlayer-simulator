@@ -1,5 +1,6 @@
 {
   "provider": "ollama",
+  "plugin": "ollama",
   "model": "llama3",
   "config": {
     "mirostat": 0,

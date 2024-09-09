@@ -93,9 +93,7 @@ class EquivalencePrinciple:
         self.contract_runner.eq_num += 1
 
     def __get_llm_function(self):
-        function_name = "call_" + self.contract_runner.node_config["provider"]
-        llm_function = getattr(llms, function_name)
-        return llm_function
+        return llms.get_llm_function(self.contract_runner.node_config["plugin"])
 
 
 async def call_llm_with_principle(prompt, eq_principle, comparative=True):

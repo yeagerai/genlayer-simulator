@@ -1,5 +1,6 @@
 {
   "provider": "openai",
+  "plugin": "openai",
   "model": "gpt-4o-mini",
   "config": "<empty>"
 }

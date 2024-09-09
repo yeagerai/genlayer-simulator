@@ -1,5 +1,6 @@
 {
   "provider": "heuristai",
+  "plugin": "heuristai",
   "model": "meta-llama/llama-2-70b-chat",
   "config": {
     "temperature": 0.75,

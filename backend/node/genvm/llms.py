@@ -1,4 +1,11 @@
-# backend/node/genvm/llms.py
+"""
+This file contains the plugins (functions) that are used to interact with the different LLMs (Language Model Models) that are used in the system. The plugins are registered in the `get_llm_function` function, which returns the function that corresponds to the plugin name. The plugins are called with the following parameters:
+
+- `model_config`: A dictionary containing the model and configuration to be used.
+- `prompt`: The prompt to be sent to the LLM.
+- `regex`: A regular expression to be used to stop the LLM.
+- `return_streaming_channel`: An optional asyncio.Queue to stream the response.
+"""
 
 import os
 import re
@@ -152,3 +159,19 @@ async def get_openai_output(
 
 def get_ollama_url(endpoint: str) -> str:
     return f"{os.environ['OLAMAPROTOCOL']}://{os.environ['OLAMAHOST']}:{os.environ['OLAMAPORT']}/api/{endpoint}"
+
+
+def get_llm_function(plugin: str):
+    """
+    Function to register new providers
+    """
+    plugin_to_function = {
+        "ollama": call_ollama,
+        "openai": call_openai,
+        "heuristai": call_heuristai,
+    }
+
+    if plugin not in plugin_to_function:
+        raise ValueError(f"Plugin {plugin} not registered.")
+
+    return plugin_to_function[plugin]

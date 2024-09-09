@@ -18,6 +18,10 @@
           "const": "<empty>"
         }
       ]
+    },
+    "plugin": {
+      "$comment": "plugin to be loaded by the simulator to interact with the provider",
+      "enum": ["heuristai", "openai", "ollama"]
     }
   },
   "allOf": [
@@ -30,6 +34,9 @@
 
       "then": {
         "properties": {
+          "plugin": {
+            "const": "ollama"
+          },
           "model": {
             "enum": ["llama3", "mistral", "gemma"]
           },
@@ -163,6 +170,9 @@
       },
       "then": {
         "properties": {
+          "plugin": {
+            "const": "heuristai"
+          },
           "model": {
             "enum": [
               "mistralai/mixtral-8x7b-instruct",
@@ -203,6 +213,9 @@
       },
       "then": {
         "properties": {
+          "plugin": {
+            "const": "openai"
+          },
           "model": {
             "enum": ["gpt-3.5-turbo", "gpt-4", "gpt-4o", "gpt-4o-mini"]
           },
@@ -213,6 +226,6 @@
       }
     }
   ],
-  "required": ["provider", "model", "config"],
+  "required": ["provider", "model", "config", "plugin"],
   "additionalProperties": false
 }
