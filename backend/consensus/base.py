@@ -254,7 +254,7 @@ class ConsensusAlgorithm:
 
             # Update the balance of the sender account
             accounts_manager.update_account_balance(
-                transaction["from_address"], max(from_balance - transaction["value"], 0)
+                transaction["from_address"], from_balance - transaction["value"]
             )
 
         # If to_address is None, it is a burn call
