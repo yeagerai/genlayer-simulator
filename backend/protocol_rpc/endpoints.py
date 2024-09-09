@@ -52,14 +52,13 @@ def clear_db_tables(db_client: DBClient, tables: list) -> dict:
 
 
 ####### ACCOUNTS ENDPOINTS #######
-def create_account(accounts_manager: AccountsManager) -> dict:
-    new_account = accounts_manager.create_new_account(0)
-    return {"account_address": new_account.address}
-
-
-def get_balance(accounts_manager: AccountsManager, account_address: str) -> int:
+def get_balance(accounts_manager: AccountsManager, account_address: str) -> dict:
+    if not accounts_manager.is_valid_address(account_address):
+        raise InvalidAddressError(
+            account_address, f"Invalid address from_address: {account_address}"
+        )
     account_balance = accounts_manager.get_account_balance(account_address)
-    return account_balance
+    return {"account_balance": account_balance}
 
 
 def fund_account(
@@ -73,7 +72,7 @@ def fund_account(
 
     account = accounts_manager.get_account(account_address)
     if not account:
-        accounts_manager.create_new_account_with_address(account_address, amount)
+        accounts_manager.create_new_account_with_address(account_address)
 
     transaction_id = transactions_processor.insert_transaction(
         None, account_address, None, amount, 0
@@ -295,6 +294,7 @@ def send_raw_transaction(
 ) -> dict:
     # Decode transaction
     decoded_transaction = decode_signed_transaction(signed_transaction)
+    print("decoded_transaction", decoded_transaction)
 
     # Validate transaction
     if decoded_transaction is None:
@@ -319,7 +319,10 @@ def send_raw_transaction(
     transaction_data = {}
     result = {}
     transaction_type = -1
-    if not to_address or to_address == "0x":
+    if not decoded_transaction.data:
+        # Sending value transaction
+        transaction_type = 0
+    elif not to_address or to_address == "0x":
         # Contract deployment
         if value > 0:
             raise InvalidTransactionError("Deploy Transaction can't send value")
@@ -335,9 +338,6 @@ def send_raw_transaction(
         result["contract_address"] = new_contract_address
         to_address = None
         transaction_type = 1
-    elif not decoded_transaction.data:
-        # Sending value transaction
-        transaction_type = 0
     else:
         # Contract Call
         if not accounts_manager.is_valid_address(to_address):
@@ -379,7 +379,7 @@ def register_all_rpc_endpoints(
         clear_db_tables, genlayer_db_client, ["current_state", "transactions"]
     )
 
-    register_rpc_endpoint_for_partial(create_account, accounts_manager)
+    register_rpc_endpoint_for_partial(get_balance, accounts_manager)
     register_rpc_endpoint_for_partial(
         fund_account, accounts_manager, transactions_processor
     )

@@ -27,11 +27,9 @@ class ConsensusAlgorithm:
         self,
         dbclient: DBClient,
         msg_handler: MessageHandler,
-        accounts_manager: AccountsManager,
     ):
         self.dbclient = dbclient
         self.msg_handler = msg_handler
-        self.accounts_manager = accounts_manager
         self.queues: dict[str, asyncio.Queue] = {}
 
     def run_crawl_snapshot_loop(self):
@@ -78,6 +76,7 @@ class ConsensusAlgorithm:
                                     transaction,
                                     TransactionsProcessor(session),
                                     ChainSnapshot(session),
+                                    AccountsManager(session),
                                     session,
                                 )
                             )
@@ -92,6 +91,7 @@ class ConsensusAlgorithm:
         transaction: dict,
         transactions_processor: TransactionsProcessor,
         snapshot: ChainSnapshot,
+        accounts_manager: AccountsManager,
         session: Session,
     ):
         if (
@@ -113,7 +113,9 @@ class ConsensusAlgorithm:
         # If transaction is a transfer, execute it
         # TODO: consider when the transfer involves a contract account, bridging, etc.
         if transaction["type"] == 0:
-            return self.execute_transfer(transaction, transactions_processor)
+            return self.execute_transfer(
+                transaction, transactions_processor, accounts_manager
+            )
 
         # Select Leader and validators
         all_validators = snapshot.get_all_validators()
@@ -221,10 +223,11 @@ class ConsensusAlgorithm:
         self,
         transaction: dict,
         transactions_processor: TransactionsProcessor,
+        accounts_manager: AccountsManager,
     ):
 
         if not transaction["from_address"] is None:
-            from_balance = self.accounts_manager.get_account_balance(
+            from_balance = accounts_manager.get_account_balance(
                 transaction["from_address"]
             )
 
@@ -234,16 +237,14 @@ class ConsensusAlgorithm:
                 )
                 return
 
-            self.accounts_manager.update_account_balance(
+            accounts_manager.update_account_balance(
                 transaction["from_address"], max(from_balance - transaction["value"], 0)
             )
 
         if not transaction["to_address"] is None:
-            to_balance = self.accounts_manager.get_account_balance(
-                transaction["to_address"]
-            )
+            to_balance = accounts_manager.get_account_balance(transaction["to_address"])
 
-            self.accounts_manager.update_account_balance(
+            accounts_manager.update_account_balance(
                 transaction["to_address"], to_balance + transaction["value"]
             )
 
