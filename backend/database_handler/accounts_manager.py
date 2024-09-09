@@ -70,7 +70,6 @@ class AccountsManager:
             self.create_new_account_with_address(account_address)
             to_account = self.get_account(account_address)
         to_account.balance = new_balance
-        self.session.commit()
 
     def is_contract(self, account: dict) -> bool:
         return account.get("data", {}).get("code", False)
