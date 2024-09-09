@@ -6,7 +6,8 @@ import json
 import aiohttp
 import asyncio
 from typing import Optional
-from openai import OpenAI
+from openai import OpenAI, Stream
+from openai.types.chat import ChatCompletionChunk
 
 from dotenv import load_dotenv
 
@@ -99,7 +100,7 @@ async def call_heuristai(
     return output
 
 
-def get_openai_client(api_key: str, url: str = None):
+def get_openai_client(api_key: str, url: str = None) -> OpenAI:
     openai_client = None
     if url:
         openai_client = OpenAI(api_key=api_key, base_url=url)
@@ -108,7 +109,7 @@ def get_openai_client(api_key: str, url: str = None):
     return openai_client
 
 
-def get_openai_stream(client, prompt, model_config):
+def get_openai_stream(client: OpenAI, prompt, model_config):
     config = model_config["config"]
     if "temperature" in config and "max_tokens" in config:
         return client.chat.completions.create(
@@ -126,7 +127,9 @@ def get_openai_stream(client, prompt, model_config):
         )
 
 
-async def get_openai_output(stream, regex, return_streaming_channel):
+async def get_openai_output(
+    stream: Stream[ChatCompletionChunk], regex, return_streaming_channel
+):
     buffer = ""
     for chunk in stream:
         chunk_str = chunk.choices[0].delta.content
