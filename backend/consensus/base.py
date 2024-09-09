@@ -225,25 +225,43 @@ class ConsensusAlgorithm:
         transactions_processor: TransactionsProcessor,
         accounts_manager: AccountsManager,
     ):
+        """
+        Executes a native token transfer between Externally Owned Accounts (EOAs).
 
+        This function handles the transfer of native tokens from one EOA to another.
+        It updates the balances of both the sender and recipient accounts, and
+        manages the transaction status throughout the process.
+
+        Args:
+            transaction (dict): The transaction details including from_address, to_address, and value.
+            transactions_processor (TransactionsProcessor): Processor to update transaction status.
+            accounts_manager (AccountsManager): Manager to handle account balance updates.
+        """
+
+        # If from_address is None, it is a fund_account call
         if not transaction["from_address"] is None:
+            # Get the balance of the sender account
             from_balance = accounts_manager.get_account_balance(
                 transaction["from_address"]
             )
 
+            # If the sender does not have enough balance, set the transaction status to UNDETERMINED
             if from_balance < transaction["value"]:
                 transactions_processor.update_transaction_status(
                     transaction["id"], TransactionStatus.UNDETERMINED
                 )
                 return
 
+            # Update the balance of the sender account
             accounts_manager.update_account_balance(
                 transaction["from_address"], max(from_balance - transaction["value"], 0)
             )
 
+        # If to_address is None, it is a burn call
         if not transaction["to_address"] is None:
             to_balance = accounts_manager.get_account_balance(transaction["to_address"])
 
+            # Update the balance of the recipient account
             accounts_manager.update_account_balance(
                 transaction["to_address"], to_balance + transaction["value"]
             )
