@@ -22,6 +22,9 @@
     "plugin": {
       "$comment": "plugin to be loaded by the simulator to interact with the provider",
       "enum": ["heuristai", "openai", "ollama"]
+    },
+    "plugin_config": {
+      "type": "object"
     }
   },
   "allOf": [
@@ -173,6 +176,21 @@
           "plugin": {
             "const": "heuristai"
           },
+          "plugin_config": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "api_key_env_var": {
+                "type": "string",
+                "$comment": "Environment variable that contains the API key"
+              },
+              "url": {
+                "type": "string",
+                "$comment": "URL of the API endpoint"
+              }
+            },
+            "required": ["api_key_env_var", "url"]
+          },
           "model": {
             "enum": [
               "mistralai/mixtral-8x7b-instruct",
@@ -202,7 +220,8 @@
             },
             "required": ["temperature", "max_tokens"]
           }
-        }
+        },
+        "required": ["plugin_config"]
       }
     },
     {
@@ -216,13 +235,25 @@
           "plugin": {
             "const": "openai"
           },
+          "plugin_config": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "api_key_env_var": {
+                "type": "string",
+                "$comment": "Environment variable that contains the API key"
+              }
+            },
+            "required": ["api_key_env_var"]
+          },
           "model": {
             "enum": ["gpt-3.5-turbo", "gpt-4", "gpt-4o", "gpt-4o-mini"]
           },
           "config": {
             "const": "<empty>"
           }
-        }
+        },
+        "required": ["plugin_config"]
       }
     }
   ],

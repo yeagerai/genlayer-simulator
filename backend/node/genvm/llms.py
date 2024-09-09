@@ -20,6 +20,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+plugin_config_key = "plugin_config"
+
 
 async def process_streaming_buffer(buffer: str, chunk: str, regex: str) -> str:
     updated_buffer = buffer + chunk
@@ -77,7 +79,8 @@ async def call_openai(
     regex: Optional[str],
     return_streaming_channel: Optional[asyncio.Queue],
 ) -> str:
-    client = get_openai_client(os.environ.get("OPENAIKEY"))
+    api_key_env_var = model_config[plugin_config_key]["api_key_env_var"]
+    client = get_openai_client(os.environ.get(api_key_env_var))
     # TODO: OpenAI exceptions need to be caught here
     stream = get_openai_stream(client, prompt, model_config)
 
@@ -90,9 +93,9 @@ async def call_heuristai(
     regex: Optional[str],
     return_streaming_channel: Optional[asyncio.Queue],
 ) -> str:
-    client = get_openai_client(
-        os.environ.get("HEURISTAIAPIKEY"), os.environ.get("HEURISTAIURL")
-    )
+    api_key_env_var = model_config[plugin_config_key]["api_key_env_var"]
+    url = model_config[plugin_config_key]["url"]
+    client = get_openai_client(os.environ.get(api_key_env_var), os.environ.get(url))
     stream = get_openai_stream(client, prompt, model_config)
     # TODO: Get the line below working
     # return await get_openai_output(stream, regex, return_streaming_channel)
