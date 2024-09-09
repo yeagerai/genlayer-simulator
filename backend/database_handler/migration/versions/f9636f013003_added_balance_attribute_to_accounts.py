@@ -24,6 +24,9 @@ def upgrade() -> None:
     op.add_column("current_state", sa.Column("balance", sa.Integer(), nullable=True))
     op.execute("UPDATE current_state SET balance = 0 WHERE balance IS NULL")
     op.alter_column("current_state", "balance", nullable=False)
+    op.create_check_constraint(
+        "check_balance_non_negative", "current_state", "balance >= 0"
+    )
     op.alter_column(
         "transactions",
         "status",
