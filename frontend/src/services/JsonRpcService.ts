@@ -6,8 +6,6 @@ import type {
   JsonRPCResponse,
   GetContractStateRequest,
   GetContractStateResult,
-  CallContractFunctionRequest,
-  CallContractFunctionResult,
   DeployContractRequest,
   GetContractSchemaRequest,
   GetDeployedContractSchemaRequest,
@@ -35,30 +33,6 @@ export class JsonRpcService implements IJsonRpcService {
     const { result } = await this.rpcClient.call<GetContractStateResult>({
       method: 'call',
       params: [contractAddress, userAccount, data],
-    });
-    return result;
-  }
-  /**
-   * Calls a contract function and returns the result.
-   *
-   * @param {CallContractFunctionResult} params - The parameters for the function.
-   * @param {string} params.userAccount - The user account calling the function.
-   * @param {string} params.contractAddress - The address of the contract.
-   * @param {string} params.method - The method of the contract.
-   * @param {any[]} params.params - The parameters for the method.
-   * @return {Promise<JsonRpcResult<any>>} A promise that resolves to the result of the contract function call.
-   */
-  async callContractFunction({
-    userAccount,
-    contractAddress,
-    method,
-    params,
-  }: CallContractFunctionRequest): Promise<
-    JsonRpcResult<CallContractFunctionResult>
-  > {
-    const { result } = await this.rpcClient.call<CallContractFunctionResult>({
-      method: 'call_contract_function',
-      params: [userAccount, contractAddress, method, params],
     });
     return result;
   }
