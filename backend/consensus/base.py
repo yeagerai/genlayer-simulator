@@ -44,13 +44,11 @@ class ConsensusAlgorithm:
                 chain_snapshot = ChainSnapshot(session)
                 pending_transactions = chain_snapshot.get_pending_transactions()
                 for transaction in pending_transactions:
-                    contract_address = (
-                        transaction["to_address"] or transaction["from_address"]
-                    )
+                    address = transaction["to_address"] or transaction["from_address"]
 
-                    if contract_address not in self.queues:
-                        self.queues[contract_address] = asyncio.Queue()
-                    await self.queues[contract_address].put(transaction)
+                    if address not in self.queues:
+                        self.queues[address] = asyncio.Queue()
+                    await self.queues[address].put(transaction)
             await asyncio.sleep(DEFAULT_CONSENSUS_SLEEP_TIME)
 
     def run_consensus_loop(self):
