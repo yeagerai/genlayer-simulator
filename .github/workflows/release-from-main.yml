@@ -27,7 +27,6 @@ jobs:
           echo $semver
           gh pr view $release_pr_number --json body --jq .body > body.txt
           cat body.txt
-          gh release create $semver --title $semver -F body.txt --prerelease
-        # TODO: remove prerelease flag after testing            ^^^^^^^^^^^^
+          gh release create $semver --title $semver -F body.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
