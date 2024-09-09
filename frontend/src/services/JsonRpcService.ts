@@ -28,13 +28,13 @@ export class JsonRpcService implements IJsonRpcService {
    * @return {Promise<JsonRpcResult<GetContractStateResult>>} A promise that resolves to the result of the contract state retrieval.
    */
   async getContractState({
-    userAccount,
     contractAddress,
+    userAccount,
     data,
   }: GetContractStateRequest): Promise<JsonRpcResult<GetContractStateResult>> {
     const { result } = await this.rpcClient.call<GetContractStateResult>({
       method: 'call',
-      params: [userAccount, contractAddress, data],
+      params: [contractAddress, userAccount, data],
     });
     return result;
   }

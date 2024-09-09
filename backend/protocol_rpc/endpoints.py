@@ -238,13 +238,13 @@ def get_transaction_by_id(
 def call(
     accounts_manager: AccountsManager,
     msg_handler: MessageHandler,
-    from_address: str,
     to_address: str,
-    input: str,
+    from_address: str = "",
+    input: str = "",
     # Future parameters:
-    # gas: int,
-    # gas_price: int,
-    # value: int,
+    # gas: int = 0,
+    # gas_price: int = 0,
+    # value: int = 0,
 ) -> dict:
     if not accounts_manager.is_valid_address(from_address):
         raise InvalidAddressError(from_address)
