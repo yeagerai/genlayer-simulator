@@ -70,10 +70,6 @@ def fund_account(
     if not accounts_manager.is_valid_address(account_address):
         raise InvalidAddressError(account_address)
 
-    account = accounts_manager.get_account(account_address)
-    if not account:
-        accounts_manager.create_new_account_with_address(account_address)
-
     transaction_id = transactions_processor.insert_transaction(
         None, account_address, None, amount, 0
     )
