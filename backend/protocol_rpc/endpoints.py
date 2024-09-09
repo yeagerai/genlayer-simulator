@@ -318,7 +318,7 @@ def send_raw_transaction(
 
     transaction_data = {}
     result = {}
-    transaction_type = -1
+    transaction_type = None
     if not decoded_transaction.data:
         # Sending value transaction
         transaction_type = 0
