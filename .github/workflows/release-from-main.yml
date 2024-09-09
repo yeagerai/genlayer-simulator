@@ -6,8 +6,8 @@ on:
     branches:
       - 485-do-trunk-based-development
 
-# permissions:
-#   contents: write
+permissions:
+  contents: write
 # pull-requests: write
 
 concurrency:
