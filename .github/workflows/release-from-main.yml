@@ -1,10 +1,7 @@
 name: Create releases from main every day
 on:
-  # schedule:
-  #   - cron: "00 00 * * *" # Every day at 00:00 UTC
-  push:
-    branches:
-      - 485-do-trunk-based-development
+  schedule:
+    - cron: "00 00 * * *" # Every day at 00:00 UTC
 
 permissions:
   contents: read # for checkout
@@ -29,11 +26,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          # cache: "npm"
           node-version: "lts/*"
       - name: Install dependencies
         run: npm install @semantic-release/github @semantic-release/release-notes-generator @semantic-release/commit-analyzer
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+        run: npx semantic-release # Uses `release.config.js` for configuration

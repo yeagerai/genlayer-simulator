@@ -1,5 +1,5 @@
 module.exports = {
-    branches: ['main', '485-do-trunk-based-development'],
+    branches: ['main'],
     plugins: [
         '@semantic-release/commit-analyzer',
         '@semantic-release/release-notes-generator',
