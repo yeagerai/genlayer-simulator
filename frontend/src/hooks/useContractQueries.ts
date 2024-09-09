@@ -174,10 +174,14 @@ export function useContractQueries() {
 
   async function callReadMethod(method: string, methodArguments: string[]) {
     try {
+      const methodParamsAsString = JSON.stringify(methodArguments);
+      const data = [method, methodParamsAsString];
+      const encodedData = wallet.encodeTransactionData(data);
+
       const result = await rpcClient.getContractState({
+        userAccount: accountsStore.currentUserAddress,
         contractAddress: address.value || '',
-        method,
-        methodArguments,
+        data: encodedData,
       });
 
       if (result?.status === 'error') {

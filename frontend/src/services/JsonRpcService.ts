@@ -22,19 +22,19 @@ export class JsonRpcService implements IJsonRpcService {
    * Retrieves the state of a contract at a specific address and method.
    *
    * @param {GetContractStateRequest} params - The parameters for the function.
+   * @param {string} params.userAccount - The user account calling the function.
    * @param {string} params.contractAddress - The address of the contract.
-   * @param {string} params.method - The method of the contract.
-   * @param {any[]} params.methodArguments - The arguments for the method.
+   * @param {string} params.data - The encoded data including function name and arguments.
    * @return {Promise<JsonRpcResult<GetContractStateResult>>} A promise that resolves to the result of the contract state retrieval.
    */
   async getContractState({
+    userAccount,
     contractAddress,
-    method,
-    methodArguments,
+    data,
   }: GetContractStateRequest): Promise<JsonRpcResult<GetContractStateResult>> {
     const { result } = await this.rpcClient.call<GetContractStateResult>({
       method: 'call',
-      params: [contractAddress, method, methodArguments],
+      params: [userAccount, contractAddress, data],
     });
     return result;
   }

@@ -238,14 +238,23 @@ def get_transaction_by_id(
 def call(
     accounts_manager: AccountsManager,
     msg_handler: MessageHandler,
-    contract_address: str,
-    method_name: str,
-    method_args: list,
+    from_address: str,
+    to_address: str,
+    input: str,
+    # Future parameters:
+    # gas: int,
+    # gas_price: int,
+    # value: int,
 ) -> dict:
-    if not accounts_manager.is_valid_address(contract_address):
-        raise InvalidAddressError(contract_address)
+    if not accounts_manager.is_valid_address(from_address):
+        raise InvalidAddressError(from_address)
 
-    contract_account = accounts_manager.get_account_or_fail(contract_address)
+    if not accounts_manager.is_valid_address(to_address):
+        raise InvalidAddressError(to_address)
+
+    decoded_data = decode_method_call_data(input)
+
+    contract_account = accounts_manager.get_account_or_fail(to_address)
     node = Node(
         contract_snapshot=None,
         address="",
@@ -257,10 +266,18 @@ def call(
         leader_receipt=None,
         msg_handler=msg_handler,
     )
+
+    method_args = decoded_data.function_args
+    if isinstance(method_args, str):
+        try:
+            method_args = json.loads(method_args)
+        except json.JSONDecodeError:
+            method_args = [method_args]
+
     return node.get_contract_data(
         code=contract_account["data"]["code"],
         state=contract_account["data"]["state"],
-        method_name=method_name,
+        method_name=decoded_data.function_name,
         method_args=method_args,
     )
 
