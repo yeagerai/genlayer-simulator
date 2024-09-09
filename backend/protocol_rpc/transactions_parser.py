@@ -30,11 +30,18 @@ def decode_signed_transaction(raw_transaction) -> DecodedTransaction:
             if signed_transaction_as_dict["to"]
             else None
         )
+        value = signed_transaction_as_dict["value"]
+        data = (
+            signed_transaction_as_dict["data"].hex()
+            if signed_transaction_as_dict["data"]
+            else None
+        )
         return DecodedTransaction(
             sender,
             to_address,
-            signed_transaction_as_dict["data"].hex(),
+            data,
             signed_transaction_as_dict.get("type", 0),
+            value,
         )
 
     except Exception as e:

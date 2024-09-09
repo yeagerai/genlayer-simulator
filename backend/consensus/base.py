@@ -1,6 +1,5 @@
 # backend/consensus/base.py
 
-DEPLOY_CONTRACTS_QUEUE_KEY = "deploy_contracts"
 DEFAULT_VALIDATORS_COUNT = 5
 DEFAULT_CONSENSUS_SLEEP_TIME = 5
 
@@ -16,6 +15,7 @@ from backend.database_handler.transactions_processor import (
     TransactionsProcessor,
     TransactionStatus,
 )
+from backend.database_handler.accounts_manager import AccountsManager
 from backend.database_handler.types import ConsensusData
 from backend.node.base import Node
 from backend.node.genvm.types import ExecutionMode, Vote
@@ -44,13 +44,11 @@ class ConsensusAlgorithm:
                 chain_snapshot = ChainSnapshot(session)
                 pending_transactions = chain_snapshot.get_pending_transactions()
                 for transaction in pending_transactions:
-                    contract_address = (
-                        transaction["to_address"] or DEPLOY_CONTRACTS_QUEUE_KEY
-                    )
+                    address = transaction["to_address"] or transaction["from_address"]
 
-                    if contract_address not in self.queues:
-                        self.queues[contract_address] = asyncio.Queue()
-                    await self.queues[contract_address].put(transaction)
+                    if address not in self.queues:
+                        self.queues[address] = asyncio.Queue()
+                    await self.queues[address].put(transaction)
             await asyncio.sleep(DEFAULT_CONSENSUS_SLEEP_TIME)
 
     def run_consensus_loop(self):
@@ -76,6 +74,7 @@ class ConsensusAlgorithm:
                                     transaction,
                                     TransactionsProcessor(session),
                                     ChainSnapshot(session),
+                                    AccountsManager(session),
                                     session,
                                 )
                             )
@@ -90,6 +89,7 @@ class ConsensusAlgorithm:
         transaction: dict,
         transactions_processor: TransactionsProcessor,
         snapshot: ChainSnapshot,
+        accounts_manager: AccountsManager,
         session: Session,
     ):
         if (
@@ -107,6 +107,14 @@ class ConsensusAlgorithm:
         transactions_processor.update_transaction_status(
             transaction["id"], TransactionStatus.PROPOSING
         )
+
+        # If transaction is a transfer, execute it
+        # TODO: consider when the transfer involves a contract account, bridging, etc.
+        if transaction["type"] == 0:
+            return self.execute_transfer(
+                transaction, transactions_processor, accounts_manager
+            )
+
         # Select Leader and validators
         all_validators = snapshot.get_all_validators()
         leader, remaining_validators = get_validators_for_transaction(
@@ -207,4 +215,55 @@ class ConsensusAlgorithm:
         transactions_processor.set_transaction_result(
             transaction["id"],
             consensus_data,
+        )
+
+    def execute_transfer(
+        self,
+        transaction: dict,
+        transactions_processor: TransactionsProcessor,
+        accounts_manager: AccountsManager,
+    ):
+        """
+        Executes a native token transfer between Externally Owned Accounts (EOAs).
+
+        This function handles the transfer of native tokens from one EOA to another.
+        It updates the balances of both the sender and recipient accounts, and
+        manages the transaction status throughout the process.
+
+        Args:
+            transaction (dict): The transaction details including from_address, to_address, and value.
+            transactions_processor (TransactionsProcessor): Processor to update transaction status.
+            accounts_manager (AccountsManager): Manager to handle account balance updates.
+        """
+
+        # If from_address is None, it is a fund_account call
+        if not transaction["from_address"] is None:
+            # Get the balance of the sender account
+            from_balance = accounts_manager.get_account_balance(
+                transaction["from_address"]
+            )
+
+            # If the sender does not have enough balance, set the transaction status to UNDETERMINED
+            if from_balance < transaction["value"]:
+                transactions_processor.update_transaction_status(
+                    transaction["id"], TransactionStatus.UNDETERMINED
+                )
+                return
+
+            # Update the balance of the sender account
+            accounts_manager.update_account_balance(
+                transaction["from_address"], from_balance - transaction["value"]
+            )
+
+        # If to_address is None, it is a burn call
+        if not transaction["to_address"] is None:
+            to_balance = accounts_manager.get_account_balance(transaction["to_address"])
+
+            # Update the balance of the recipient account
+            accounts_manager.update_account_balance(
+                transaction["to_address"], to_balance + transaction["value"]
+            )
+
+        transactions_processor.update_transaction_status(
+            transaction["id"], TransactionStatus.FINALIZED
         )
