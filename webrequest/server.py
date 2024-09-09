@@ -43,20 +43,23 @@ def execution_time(start_time, end_time):
 
 
 @jsonrpc.method("get_webpage")
-def get_webpage(url: str) -> dict:
+def get_webpage(url: str, format: str = "text") -> dict:
     if not is_valid_url(url):
         return return_error("URL not in correct format")
     driver = get_webdriver()
     try:
         start_time = time()
-        webpage_text = get_text(driver, url)
+        if format == "text":
+            webpage_output = get_text(driver, url)
+        elif format == "html":
+            webpage_output = get_html(driver, url)
         end_time = time()
         execution_time(start_time, end_time)
     except Exception as e:
         if "ERR_NAME_NOT_RESOLVED" in str(e):
             return return_error("URL does not exist")
         return return_error(str(e))
-    return return_success(webpage_text)
+    return return_success(webpage_output)
 
 
 @jsonrpc.method("get_webpage_chunks")

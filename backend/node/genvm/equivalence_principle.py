@@ -66,8 +66,8 @@ class EquivalencePrinciple:
             print("validation_response", validation_response)
             # if TRUE => nothing, FALSE => fuera todo y un state de disagree
 
-    async def get_webpage(self, url: str):
-        url_body = get_webpage_content(url)
+    async def get_webpage(self, url: str, format: str = "text"):
+        url_body = get_webpage_content(url, format)
         final_response = url_body["response"]
         return final_response
 
@@ -110,13 +110,15 @@ async def call_llm_with_principle(prompt, eq_principle, comparative=True):
     return final_result["output"]
 
 
-async def get_webpage_with_principle(url, eq_principle, comparative=True):
+async def get_webpage_with_principle(
+    url, eq_principle, comparative=True, format: str = "text"
+):
     final_result = {}
     async with EquivalencePrinciple(
         result=final_result,
         principle=eq_principle,
         comparative=comparative,
     ) as eq:
-        result = await eq.get_webpage(url)
+        result = await eq.get_webpage(url, format)
         eq.set(result)
     return final_result

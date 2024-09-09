@@ -3,12 +3,12 @@ import requests
 import re
 
 
-def get_webpage_content(url: str) -> str:
+def get_webpage_content(url: str, format: str = "text") -> str:
 
     payload = {
         "jsonrpc": "2.0",
         "method": "get_webpage",
-        "params": [url],
+        "params": [url, format],
         "id": 2,
     }
 
