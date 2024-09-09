@@ -3,7 +3,7 @@ name: Run SonarCloud Scan
 on:
   push:
     branches:
-      - staging
+      - main
   workflow_dispatch:
 
 jobs:
