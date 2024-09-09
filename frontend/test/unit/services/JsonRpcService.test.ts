@@ -33,9 +33,9 @@ describe('JsonRprService', () => {
       },
     };
     const input = {
+      userAccount: '0xFEaedeC4c6549236EaF49C1F7c5cf860FD2C3fcB',
       contractAddress: '0x58FaA28cbAA1b52F8Ec8D3c6FFCE6f1AaF8bEEB1',
-      method: 'get_have_coin',
-      methodArguments: [],
+      data: '0x',
     };
     it('should call rpc client', async () => {
       const spy = vi
@@ -47,7 +47,7 @@ describe('JsonRprService', () => {
       expect(rpcClient.call).toHaveBeenCalledTimes(1);
       expect(rpcClient.call).toHaveBeenCalledWith({
         method: 'call',
-        params: [input.contractAddress, input.method, []],
+        params: [input.userAccount, input.contractAddress, input.data],
       });
     });
 
