@@ -71,8 +71,10 @@ def create_random_providers(amount: int) -> list[LLMProvider]:
 
     return_value = []
 
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", HypothesisDeprecationWarning)
+    with warnings.catch_warnings():  # Catch warnings from hypothesis telling us to not use it for this purpose
+        warnings.simplefilter(
+            "ignore", HypothesisDeprecationWarning
+        )  # Disable the warning about using the deprecated `suppress_health_check` argument
 
         @settings(
             max_examples=amount, suppress_health_check=(HealthCheck.return_value,)
@@ -83,10 +85,10 @@ def create_random_providers(amount: int) -> list[LLMProvider]:
             ),
         )
         def inner(value):
-            nonlocal return_value
+            nonlocal return_value  # Hypothesis `@given` wrapper doesn't allow us to return from the "test" function, so I'm using this closure to return the value
             provider = _to_domain(value)
             validate_provider(provider)
             return_value.append(provider)
 
-    inner()
+    inner()  # Calling the function will fill the return_value list
     return return_value
