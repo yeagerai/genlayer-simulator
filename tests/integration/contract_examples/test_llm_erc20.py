@@ -4,7 +4,7 @@ import json
 
 from tests.common.request import (
     deploy_intelligent_contract,
-    call_contract_method,
+    send_transaction,
     payload,
     post_request_localhost,
 )
@@ -73,7 +73,7 @@ def test_llm_erc20():
     ########################################
     #### TRANSFER from User A to User B ####
     ########################################
-    _, transaction_response_call_1 = call_contract_method(
+    _, transaction_response_call_1 = send_transaction(
         from_account_a,
         contract_address,
         "transfer",

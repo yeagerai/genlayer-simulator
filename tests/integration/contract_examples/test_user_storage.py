@@ -3,7 +3,7 @@ import json
 
 from tests.common.request import (
     deploy_intelligent_contract,
-    call_contract_method,
+    send_transaction,
     payload,
     post_request_localhost,
 )
@@ -72,7 +72,7 @@ def test_user_storage():
     ########################################
     ########## ADD User A State ############
     ########################################
-    _, transaction_response_call_1 = call_contract_method(
+    _, transaction_response_call_1 = send_transaction(
         from_account_a, contract_address, "update_storage", [INITIAL_STATE_USER_A]
     )
     assert has_success_status(transaction_response_call_1)
@@ -109,7 +109,7 @@ def test_user_storage():
     ########################################
     ########## ADD User B State ############
     ########################################
-    _, transaction_response_call_2 = call_contract_method(
+    _, transaction_response_call_2 = send_transaction(
         from_account_b, contract_address, "update_storage", [INITIAL_STATE_USER_B]
     )
     assert has_success_status(transaction_response_call_2)
@@ -136,7 +136,7 @@ def test_user_storage():
     #########################################
     ######### UPDATE User A State ###########
     #########################################
-    _, transaction_response_call_3 = call_contract_method(
+    _, transaction_response_call_3 = send_transaction(
         from_account_a, contract_address, "update_storage", [UPDATED_STATE_USER_A]
     )
     assert has_success_status(transaction_response_call_3)

@@ -2,7 +2,7 @@
 
 from tests.common.request import (
     deploy_intelligent_contract,
-    call_contract_method,
+    send_transaction,
     payload,
     post_request_localhost,
 )
@@ -54,7 +54,7 @@ def test_football_prediction_market():
     ########################################
     ############# RESOLVE match ############
     ########################################
-    _, transaction_response_call_1 = call_contract_method(
+    _, transaction_response_call_1 = send_transaction(
         from_account,
         contract_address,
         "resolve",

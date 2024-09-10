@@ -3,7 +3,7 @@ import json
 
 from tests.common.request import (
     deploy_intelligent_contract,
-    call_contract_method,
+    send_transaction,
     payload,
     post_request_localhost,
 )
@@ -65,7 +65,7 @@ def test_storage():
     assert contract_state_1["result"]["data"] == INITIAL_STATE
 
     # Update State
-    _, transaction_response_call_1 = call_contract_method(
+    _, transaction_response_call_1 = send_transaction(
         from_account, contract_address, "update_storage", [UPDATED_STATE]
     )
 

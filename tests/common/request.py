@@ -43,7 +43,7 @@ def get_transaction_by_id(transaction_id: str):
     return raw_response.json()
 
 
-def call_contract_method(
+def send_transaction(
     account: Account,
     contract_address: str,
     method_name: str,

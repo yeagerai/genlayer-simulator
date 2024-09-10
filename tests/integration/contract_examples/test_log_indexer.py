@@ -4,7 +4,7 @@ import json
 
 from tests.common.request import (
     deploy_intelligent_contract,
-    call_contract_method,
+    send_transaction,
     payload,
     post_request_localhost,
 )
@@ -67,7 +67,7 @@ def test_log_indexer():
     # ########################################
     # ############## Add log 0 ###############
     # ########################################
-    _, transaction_response_add_log_0 = call_contract_method(
+    _, transaction_response_add_log_0 = send_transaction(
         from_account,
         contract_address,
         "add_log",
@@ -102,7 +102,7 @@ def test_log_indexer():
     # ########################################
     # ############## Add log 1 ###############
     # ########################################
-    _, transaction_response_add_log_1 = call_contract_method(
+    _, transaction_response_add_log_1 = send_transaction(
         from_account,
         contract_address,
         "add_log",
@@ -124,7 +124,7 @@ def test_log_indexer():
     # ########################################
     # ########### Update log 0 ##############
     # ########################################
-    _, transaction_response_update_log_0 = call_contract_method(
+    _, transaction_response_update_log_0 = send_transaction(
         from_account,
         contract_address,
         "update_log",
@@ -147,7 +147,7 @@ def test_log_indexer():
     # ########################################
     # ########### Remove log 0 ##############
     # ########################################
-    _, transaction_response_remove_log_0 = call_contract_method(
+    _, transaction_response_remove_log_0 = send_transaction(
         from_account,
         contract_address,
         "remove_log",
@@ -172,7 +172,7 @@ def test_log_indexer():
     # ########################################
 
     # Add third log
-    _, transaction_response_add_log_2 = call_contract_method(
+    _, transaction_response_add_log_2 = send_transaction(
         from_account,
         contract_address,
         "add_log",
