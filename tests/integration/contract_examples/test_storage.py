@@ -1,6 +1,4 @@
 # tests/e2e/test_storage.py
-import json
-
 from tests.common.request import (
     deploy_intelligent_contract,
     send_transaction,
@@ -21,7 +19,7 @@ from tests.common.response import (
 )
 
 from tests.common.accounts import create_new_account
-from tests.common.transactions import encode_transaction_data
+from tests.common.request import call_contract_method
 
 INITIAL_STATE = "a"
 UPDATED_STATE = "b"
@@ -56,11 +54,9 @@ def test_storage():
     contract_address = call_method_response_deploy["result"]["data"]["contract_address"]
 
     # Get Initial State
-    params_as_string = json.dumps([])
-    encoded_data = encode_transaction_data(["get_storage", params_as_string])
-    contract_state_1 = post_request_localhost(
-        payload("call", contract_address, from_account.address, encoded_data)
-    ).json()
+    contract_state_1 = call_contract_method(
+        contract_address, from_account, "get_storage", []
+    )
     assert has_success_status(contract_state_1)
     assert contract_state_1["result"]["data"] == INITIAL_STATE
 
@@ -75,11 +71,9 @@ def test_storage():
     assert_dict_struct(transaction_response_call_1, call_contract_function_response)
 
     # Get Updated State
-    params_as_string = json.dumps([])
-    encoded_data = encode_transaction_data(["get_storage", params_as_string])
-    contract_state_2 = post_request_localhost(
-        payload("call", contract_address, from_account.address, encoded_data)
-    ).json()
+    contract_state_2 = call_contract_method(
+        contract_address, from_account, "get_storage", []
+    )
     assert has_success_status(contract_state_2)
     assert contract_state_2["result"]["data"] == UPDATED_STATE
 

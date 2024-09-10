@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 from eth_account import Account
 
 from tests.common.transactions import sign_transaction
+from tests.common.transactions import encode_transaction_data
+
 
 load_dotenv()
 
@@ -41,6 +43,19 @@ def get_transaction_by_id(transaction_id: str):
     payload_data = payload("get_transaction_by_id", transaction_id)
     raw_response = post_request_localhost(payload_data)
     return raw_response.json()
+
+
+def call_contract_method(
+    contract_address: str,
+    from_account: Account,
+    method_name: str,
+    method_args: list,
+):
+    params_as_string = json.dumps(method_args)
+    encoded_data = encode_transaction_data([method_name, params_as_string])
+    return post_request_localhost(
+        payload("call", contract_address, from_account.address, encoded_data)
+    ).json()
 
 
 def send_transaction(

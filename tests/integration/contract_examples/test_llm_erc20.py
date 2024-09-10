@@ -1,7 +1,4 @@
 # tests/e2e/test_storage.py
-
-import json
-
 from tests.common.request import (
     deploy_intelligent_contract,
     send_transaction,
@@ -22,7 +19,7 @@ from tests.common.response import (
 )
 
 from tests.common.accounts import create_new_account
-from tests.common.transactions import encode_transaction_data
+from tests.common.request import call_contract_method
 
 TOKEN_TOTAL_SUPPLY = 1000
 TRANSFER_AMOUNT = 100
@@ -60,11 +57,9 @@ def test_llm_erc20():
     ########################################
     ######### GET Initial State ############
     ########################################
-    params_as_string = json.dumps([])
-    encoded_data = encode_transaction_data(["get_balances", params_as_string])
-    contract_state_1 = post_request_localhost(
-        payload("call", contract_address, from_account_a.address, encoded_data)
-    ).json()
+    contract_state_1 = call_contract_method(
+        contract_address, from_account_a, "get_balances", []
+    )
     assert has_success_status(contract_state_1)
     assert contract_state_1["result"]["data"][from_account_a.address] == str(
         TOKEN_TOTAL_SUPPLY
@@ -85,12 +80,9 @@ def test_llm_erc20():
     assert_dict_struct(transaction_response_call_1, call_contract_function_response)
 
     # Get Updated State
-    params_as_string = json.dumps([])
-    encoded_data = encode_transaction_data(["get_balances", params_as_string])
-
-    contract_state_2_1 = post_request_localhost(
-        payload("call", contract_address, from_account_a.address, encoded_data)
-    ).json()
+    contract_state_2_1 = call_contract_method(
+        contract_address, from_account_a, "get_balances", []
+    )
     assert has_success_status(contract_state_2_1)
     assert (
         contract_state_2_1["result"]["data"][from_account_a.address]
@@ -102,30 +94,16 @@ def test_llm_erc20():
     )
 
     # Get Updated State
-    params_as_string = json.dumps([from_account_a.address])
-    encoded_data = encode_transaction_data(["get_balance_of", params_as_string])
-    contract_state_2_2 = post_request_localhost(
-        payload(
-            "call",
-            contract_address,
-            from_account_a.address,
-            encoded_data,
-        )
-    ).json()
+    contract_state_2_2 = call_contract_method(
+        contract_address, from_account_a, "get_balance_of", [from_account_a.address]
+    )
     assert has_success_status(contract_state_2_2)
     assert contract_state_2_2["result"]["data"] == TOKEN_TOTAL_SUPPLY - TRANSFER_AMOUNT
 
     # Get Updated State
-    params_as_string = json.dumps([from_account_b.address])
-    encoded_data = encode_transaction_data(["get_balance_of", params_as_string])
-    contract_state_2_3 = post_request_localhost(
-        payload(
-            "call",
-            contract_address,
-            from_account_a.address,
-            encoded_data,
-        )
-    ).json()
+    contract_state_2_3 = call_contract_method(
+        contract_address, from_account_a, "get_balance_of", [from_account_b.address]
+    )
     assert has_success_status(contract_state_2_3)
     assert contract_state_2_3["result"]["data"] == TRANSFER_AMOUNT
 

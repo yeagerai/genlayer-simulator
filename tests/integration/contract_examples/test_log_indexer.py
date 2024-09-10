@@ -1,7 +1,4 @@
 # tests/e2e/test_storage.py
-
-import json
-
 from tests.common.request import (
     deploy_intelligent_contract,
     send_transaction,
@@ -22,7 +19,7 @@ from tests.common.response import (
 )
 
 from tests.common.accounts import create_new_account
-from tests.common.transactions import encode_transaction_data
+from tests.common.request import call_contract_method
 
 TOKEN_TOTAL_SUPPLY = 1000
 TRANSFER_AMOUNT = 100
@@ -56,11 +53,9 @@ def test_log_indexer():
     # ##########################################
     # ##### Get closest vector when empty ######
     # ##########################################
-    params_as_string = json.dumps(["I like mango"])
-    encoded_data = encode_transaction_data(["get_closest_vector", params_as_string])
-    closest_vector_log_0 = post_request_localhost(
-        payload("call", contract_address, from_account.address, encoded_data)
-    ).json()
+    closest_vector_log_0 = call_contract_method(
+        contract_address, from_account, "get_closest_vector", ["I like mango"]
+    )
     assert has_success_status(closest_vector_log_0)
     assert closest_vector_log_0["result"]["data"] is None
 
@@ -79,11 +74,9 @@ def test_log_indexer():
     # ########################################
     # ##### Get closest vector to log 0 ######
     # ########################################
-    params_as_string = json.dumps(["I like mango"])
-    encoded_data = encode_transaction_data(["get_closest_vector", params_as_string])
-    closest_vector_log_0 = post_request_localhost(
-        payload("call", contract_address, from_account.address, encoded_data)
-    ).json()
+    closest_vector_log_0 = call_contract_method(
+        contract_address, from_account, "get_closest_vector", ["I like mango"]
+    )
     assert has_success_status(closest_vector_log_0)
     assert float(closest_vector_log_0["result"]["data"]["similarity"]) > 0.86
     assert float(closest_vector_log_0["result"]["data"]["similarity"]) < 0.87
@@ -91,11 +84,9 @@ def test_log_indexer():
     # ########################################
     # ######### Get log 0 metadata ###########
     # ########################################
-    params_as_string = json.dumps([0])
-    encoded_data = encode_transaction_data(["get_vector_metadata", params_as_string])
-    metadata_log_0 = post_request_localhost(
-        payload("call", contract_address, from_account.address, encoded_data)
-    ).json()
+    metadata_log_0 = call_contract_method(
+        contract_address, from_account, "get_vector_metadata", [0]
+    )
     assert has_success_status(metadata_log_0)
     assert metadata_log_0["result"]["data"] == {"log_id": 0}
 
@@ -113,11 +104,9 @@ def test_log_indexer():
     # ########################################
     # ##### Get closest vector to log 1 ######
     # ########################################
-    params_as_string = json.dumps(["I like carrots"])
-    encoded_data = encode_transaction_data(["get_closest_vector", params_as_string])
-    closest_vector_log_1 = post_request_localhost(
-        payload("call", contract_address, from_account.address, encoded_data)
-    ).json()
+    closest_vector_log_1 = call_contract_method(
+        contract_address, from_account, "get_closest_vector", ["I like carrots"]
+    )
     assert has_success_status(closest_vector_log_1)
     assert float(closest_vector_log_1["result"]["data"]["similarity"]) == 1
 
@@ -135,11 +124,9 @@ def test_log_indexer():
     # ########################################
     # ###### Get closest vector to log 0 #####
     # ########################################
-    params_as_string = json.dumps(["I like mango a lot"])
-    encoded_data = encode_transaction_data(["get_closest_vector", params_as_string])
-    closest_vector_log_0_2 = post_request_localhost(
-        payload("call", contract_address, from_account.address, encoded_data)
-    ).json()
+    closest_vector_log_0_2 = call_contract_method(
+        contract_address, from_account, "get_closest_vector", ["I like mango a lot"]
+    )
     assert has_success_status(closest_vector_log_0_2)
     assert float(closest_vector_log_0_2["result"]["data"]["similarity"]) > 0.85
     assert float(closest_vector_log_0_2["result"]["data"]["similarity"]) < 0.86
@@ -158,11 +145,9 @@ def test_log_indexer():
     # ########################################
     # ##### Get closest vector to log 0 ######
     # ########################################
-    params_as_string = json.dumps(["I like to eat mango"])
-    encoded_data = encode_transaction_data(["get_closest_vector", params_as_string])
-    closest_vector_log_0_3 = post_request_localhost(
-        payload("call", contract_address, from_account.address, encoded_data)
-    ).json()
+    closest_vector_log_0_3 = call_contract_method(
+        contract_address, from_account, "get_closest_vector", ["I like to eat mango"]
+    )
     assert has_success_status(closest_vector_log_0_3)
     assert float(closest_vector_log_0_3["result"]["data"]["similarity"]) > 0.50
     assert float(closest_vector_log_0_3["result"]["data"]["similarity"]) < 0.51
@@ -181,11 +166,9 @@ def test_log_indexer():
     assert has_success_status(transaction_response_add_log_2)
 
     # Check if new item got id 2
-    params_as_string = json.dumps(["This is the third log"])
-    encoded_data = encode_transaction_data(["get_closest_vector", params_as_string])
-    closest_vector_log_2 = post_request_localhost(
-        payload("call", contract_address, from_account.address, encoded_data)
-    ).json()
+    closest_vector_log_2 = call_contract_method(
+        contract_address, from_account, "get_closest_vector", ["This is the third log"]
+    )
     assert has_success_status(closest_vector_log_2)
     assert float(closest_vector_log_2["result"]["data"]["similarity"]) > 0.99
     assert closest_vector_log_2["result"]["data"]["id"] == 2
