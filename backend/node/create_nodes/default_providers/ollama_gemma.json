@@ -19,5 +19,8 @@
     "num_predict": 128,
     "top_k": 40,
     "top_p": 0.9
+  },
+  "plugin_config": {
+    "api_url": "http://ollama:11434/api/"
   }
 }

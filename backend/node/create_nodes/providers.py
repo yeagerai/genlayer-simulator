@@ -50,11 +50,26 @@ def get_default_providers() -> List[LLMProvider]:
     return providers
 
 
+def get_default_provider_for(provider: str, model: str) -> LLMProvider:
+    llm_providers = get_default_providers()
+    matches = [
+        llm_provider
+        for llm_provider in llm_providers
+        if llm_provider.provider == provider and llm_provider.model == model
+    ]
+    if not matches:
+        raise ValueError(f"No default provider found for {provider} and {model}")
+    if len(matches) > 1:
+        raise ValueError(f"Multiple default providers found for {provider} and {model}")
+
+
 def _to_domain(provider: dict) -> LLMProvider:
     return LLMProvider(
+        id=None,
         provider=provider["provider"],
         model=provider["model"],
         config=provider["config"],
+        plugin_config=provider["plugin_config"],
     )
 
 

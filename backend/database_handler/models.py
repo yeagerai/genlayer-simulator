@@ -124,6 +124,7 @@ class LLMProviderDBModel(Base):
     provider: Mapped[str] = mapped_column(String(255))
     model: Mapped[str] = mapped_column(String(255))
     config: Mapped[dict | str] = mapped_column(JSONB)
+    plugin_config: Mapped[dict] = mapped_column(JSONB)
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(True), server_default=func.current_timestamp(), init=False
     )

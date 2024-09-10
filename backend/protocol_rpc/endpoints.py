@@ -9,7 +9,11 @@ from backend.database_handler.db_client import DBClient
 from backend.database_handler.llm_providers import LLMProviderRegistry
 from backend.database_handler.models import Base
 from backend.domain.types import LLMProvider
-from backend.node.create_nodes.providers import validate_provider
+from backend.node.create_nodes.providers import (
+    get_default_provider_for,
+    get_default_providers,
+    validate_provider,
+)
 from backend.protocol_rpc.configuration import GlobalConfiguration
 from backend.protocol_rpc.message_handler.base import MessageHandler
 from backend.database_handler.accounts_manager import AccountsManager
@@ -163,16 +167,19 @@ def create_validator(
     stake: int,
     provider: str,
     model: str,
-    config: json,
+    config: dict | None,
 ) -> dict:
-
-    validate_provider(
-        LLMProvider(
-            provider=provider,
-            model=model,
-            config=config,
+    # fallback for default provider
+    if not config:
+        config = get_default_provider_for(provider, model).config
+    else:
+        validate_provider(
+            LLMProvider(
+                provider=provider,
+                model=model,
+                config=config,
+            )
         )
-    )
 
     new_address = accounts_manager.create_new_account().address
     return validators_registry.create_validator(

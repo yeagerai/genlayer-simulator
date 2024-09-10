@@ -1,11 +1,9 @@
-FROM python:3.12.5-slim
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
 
-WORKDIR /app
+WORKDIR /app/backend/database_handler
 
-COPY migration/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
+RUN pip install -r migration/requirements.txt
 
 ENTRYPOINT [ "alembic" ]
 CMD [ "upgrade", "head" ]

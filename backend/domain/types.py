@@ -10,9 +10,19 @@ class LLMProvider:
     provider: str
     model: str
     config: dict
+    plugin_config: dict
+    id: int | None = None
 
     def __hash__(self):
-        return hash((self.provider, self.model, frozenset(self.config.items())))
+        return hash(
+            (
+                self.id,
+                self.provider,
+                self.model,
+                frozenset(self.config.items()),
+                frozenset(self.plugin_config.items()),
+            )
+        )
 
 
 @dataclass()

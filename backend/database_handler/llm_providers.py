@@ -26,12 +26,7 @@ class LLMProviderRegistry:
 
     def get_all_dict(self) -> list[dict]:
         return [
-            {
-                "id": provider.id,
-                "provider": provider.provider,
-                "model": provider.model,
-                "config": provider.config,
-            }
+            _to_domain(provider).__dict__
             for provider in self.session.query(LLMProviderDBModel).all()
         ]
 
@@ -49,6 +44,7 @@ class LLMProviderRegistry:
                 LLMProviderDBModel.provider: provider.provider,
                 LLMProviderDBModel.model: provider.model,
                 LLMProviderDBModel.config: provider.config,
+                LLMProviderDBModel.plugin_config: provider.plugin_config,
             }
         )
         self.session.commit()
@@ -62,9 +58,11 @@ class LLMProviderRegistry:
 
 def _to_domain(db_model: LLMProvider) -> LLMProvider:
     return LLMProvider(
+        id=db_model.id,
         provider=db_model.provider,
         model=db_model.model,
         config=db_model.config,
+        plugin_config=db_model.plugin_config,
     )
 
 
@@ -73,4 +71,5 @@ def _to_db_model(domain: LLMProvider) -> LLMProviderDBModel:
         provider=domain.provider,
         model=domain.model,
         config=domain.config,
+        plugin_config=domain.plugin_config,
     )

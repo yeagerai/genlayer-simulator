@@ -4,7 +4,8 @@
   "type": "object",
   "properties": {
     "provider": {
-      "enum": ["heuristai", "openai", "ollama"]
+      "type": "string",
+      "examples": ["ollama", "heuristai", "openai"]
     },
     "model": {
       "type": "string"
@@ -34,11 +35,21 @@
           "provider": { "const": "ollama" }
         }
       },
-
       "then": {
         "properties": {
           "plugin": {
             "const": "ollama"
+          },
+          "plugin_config": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "api_url": {
+                "type": "string",
+                "$comment": "Environment variable that contains the API key",
+                "default": "http://ollama:11434/api/"
+              }
+            }
           },
           "model": {
             "enum": ["llama3", "mistral", "gemma"]
@@ -220,8 +231,7 @@
             },
             "required": ["temperature", "max_tokens"]
           }
-        },
-        "required": ["plugin_config"]
+        }
       }
     },
     {
@@ -252,11 +262,10 @@
           "config": {
             "const": "<empty>"
           }
-        },
-        "required": ["plugin_config"]
+        }
       }
     }
   ],
-  "required": ["provider", "model", "config", "plugin"],
+  "required": ["provider", "model", "config", "plugin", "plugin_config"],
   "additionalProperties": false
 }
