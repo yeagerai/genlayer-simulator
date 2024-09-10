@@ -10,6 +10,7 @@ class LLMProvider:
     provider: str
     model: str
     config: dict
+    plugin: str
     plugin_config: dict
     id: int | None = None
 
@@ -29,6 +30,5 @@ class LLMProvider:
 class Validator:
     address: str
     stake: int
-    provider: str
-    model: str
-    config: dict
+    llmprovider: LLMProvider
+    id: int | None = None

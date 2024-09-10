@@ -22,6 +22,8 @@ def test_validators():
             validator["provider"],
             validator["model"],
             validator["config"],
+            validator["plugin"],
+            validator["plugin_config"],
         )
     ).json()
     assert has_success_status(response)

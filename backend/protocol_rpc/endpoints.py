@@ -138,6 +138,8 @@ def add_provider(llm_provider_registry: LLMProviderRegistry, params: dict) -> di
         provider=params["provider"],
         model=params["model"],
         config=params["config"],
+        plugin=params["plugin"],
+        plugin_config=["plugin_config"],
     )
     validate_provider(provider)
 
@@ -151,6 +153,8 @@ def update_provider(
         provider=params["provider"],
         model=params["model"],
         config=params["config"],
+        plugin=params["plugin"],
+        plugin_config=["plugin_config"],
     )
     validate_provider(provider)
 
@@ -168,16 +172,21 @@ def create_validator(
     provider: str,
     model: str,
     config: dict | None,
+    plugin: str | None,
+    plugin_config: dict | None,
 ) -> dict:
     # fallback for default provider
-    if not config:
-        config = get_default_provider_for(provider, model).config
+    if not (config and plugin and plugin_config):
+        provider = get_default_provider_for(provider, model)
+        config = provider.config
     else:
         validate_provider(
             LLMProvider(
                 provider=provider,
                 model=model,
                 config=config,
+                plugin=plugin,
+                plugin_config=plugin_config,
             )
         )
 

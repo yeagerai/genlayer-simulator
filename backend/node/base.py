@@ -1,7 +1,7 @@
 import json
-import traceback
 from typing import Optional
 
+from backend.domain.types import Validator
 from backend.node.genvm.base import GenVM
 from backend.database_handler.contract_snapshot import ContractSnapshot
 from backend.node.genvm.types import Receipt, ExecutionMode, Vote
@@ -12,26 +12,16 @@ class Node:
     def __init__(
         self,
         contract_snapshot: ContractSnapshot,
-        address: str,
         validator_mode: ExecutionMode,
-        stake: int,
-        provider: str,
-        model: str,
-        config: dict,
+        validator: Validator,
         leader_receipt: Optional[Receipt] = None,
         msg_handler: MessageHandler = None,
     ):
         self.validator_mode = validator_mode
-        self.address = address
-        self.validator_info = {
-            "provider": provider,
-            "model": model,
-            "config": config,
-            "stake": stake,
-        }
+        self.address = validator.address
         self.leader_receipt = leader_receipt
         self.genvm = GenVM(
-            contract_snapshot, self.validator_mode, self.validator_info, msg_handler
+            contract_snapshot, self.validator_mode, validator.__dict__, msg_handler
         )
 
     async def exec_transaction(self, transaction: dict):

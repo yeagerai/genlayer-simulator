@@ -53,7 +53,8 @@ def test_llm_providers_behavior():
     assert has_success_status(response)
 
     default_providers = response["result"]["data"]
-    first_default_provider = default_providers[0]
+    first_default_provider: dict = default_providers[0]
+    del first_default_provider["id"]
     last_provider_id = default_providers[-1]["id"]
 
     # Create a new provider

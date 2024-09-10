@@ -69,6 +69,7 @@ def _to_domain(provider: dict) -> LLMProvider:
         provider=provider["provider"],
         model=provider["model"],
         config=provider["config"],
+        plugin=provider["plugin"],
         plugin_config=provider["plugin_config"],
     )
 

@@ -12,6 +12,7 @@ import io
 from contextlib import contextmanager, redirect_stdout
 
 from backend.database_handler.contract_snapshot import ContractSnapshot
+from backend.domain.types import Validator
 from backend.node.genvm.equivalence_principle import EquivalencePrinciple
 from backend.node.genvm.code_enforcement import code_enforcement_check
 from backend.node.genvm.std.vector_store import VectorStore
@@ -53,13 +54,13 @@ class GenVM:
         self,
         snapshot: ContractSnapshot,
         validator_mode: str,
-        validator_info: dict,
+        validator: dict,
         msg_handler: MessageHandler = None,
     ):
         self.snapshot = snapshot
         self.validator_mode = validator_mode
         self.msg_handler = msg_handler
-        self.contract_runner = ContractRunner(validator_mode, validator_info)
+        self.contract_runner = ContractRunner(validator_mode, validator)
 
     @staticmethod
     def _get_contract_class_name(contract_code: str) -> str:
@@ -85,7 +86,7 @@ class GenVM:
             gas_used=self.contract_runner.gas_used,
             mode=self.contract_runner.mode,
             contract_state=encoded_object,
-            node_config=self.contract_runner.node_config,
+            node_config=self.contract_runner.validator.__dict__,
             eq_outputs=self.contract_runner.eq_outputs,
             execution_result=execution_result,
             error=error,

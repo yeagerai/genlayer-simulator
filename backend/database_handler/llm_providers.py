@@ -44,6 +44,7 @@ class LLMProviderRegistry:
                 LLMProviderDBModel.provider: provider.provider,
                 LLMProviderDBModel.model: provider.model,
                 LLMProviderDBModel.config: provider.config,
+                LLMProviderDBModel.plugin: provider.plugin,
                 LLMProviderDBModel.plugin_config: provider.plugin_config,
             }
         )
@@ -62,6 +63,7 @@ def _to_domain(db_model: LLMProvider) -> LLMProvider:
         provider=db_model.provider,
         model=db_model.model,
         config=db_model.config,
+        plugin=db_model.plugin,
         plugin_config=db_model.plugin_config,
     )
 
@@ -71,5 +73,6 @@ def _to_db_model(domain: LLMProvider) -> LLMProviderDBModel:
         provider=domain.provider,
         model=domain.model,
         config=domain.config,
+        plugin=domain.plugin,
         plugin_config=domain.plugin_config,
     )

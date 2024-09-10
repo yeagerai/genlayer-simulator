@@ -30,6 +30,7 @@ def upgrade() -> None:
         sa.Column("provider", sa.String(length=255), nullable=False),
         sa.Column("model", sa.String(length=255), nullable=False),
         sa.Column("config", postgresql.JSONB(astext_type=sa.Text()), nullable=False),
+        sa.Column("plugin", sa.String(length=255), nullable=False),
         sa.Column(
             "plugin_config", postgresql.JSONB(astext_type=sa.Text()), nullable=False
         ),

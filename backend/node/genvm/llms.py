@@ -7,6 +7,7 @@ This file contains the plugins (functions) that are used to interact with the di
 - `return_streaming_channel`: An optional asyncio.Queue to stream the response.
 """
 
+from abc import ABC, abstractmethod
 import os
 import re
 import json
@@ -164,17 +165,64 @@ def get_ollama_url(endpoint: str) -> str:
     return f"{os.environ['OLAMAPROTOCOL']}://{os.environ['OLAMAHOST']}:{os.environ['OLAMAPORT']}/api/{endpoint}"
 
 
-def get_llm_function(plugin: str):
+class Plugin(ABC):
+    @abstractmethod
+    def call(
+        self,
+        model_config: dict,
+        prompt: str,
+        regex: Optional[str],
+        return_streaming_channel: Optional[asyncio.Queue],
+    ) -> str:
+        pass
+
+
+class OllamaPlugin(Plugin):
+    async def call(
+        self,
+        model_config: dict,
+        prompt: str,
+        regex: Optional[str],
+        return_streaming_channel: Optional[asyncio.Queue],
+    ) -> str:
+        return await call_ollama(model_config, prompt, regex, return_streaming_channel)
+
+
+class OpenAIPlugin(Plugin):
+    async def call(
+        self,
+        model_config: dict,
+        prompt: str,
+        regex: Optional[str],
+        return_streaming_channel: Optional[asyncio.Queue],
+    ) -> str:
+        return await call_openai(model_config, prompt, regex, return_streaming_channel)
+
+
+class HeuristAIPlugin(Plugin):
+    async def call(
+        self,
+        model_config: dict,
+        prompt: str,
+        regex: Optional[str],
+        return_streaming_channel: Optional[asyncio.Queue],
+    ) -> str:
+        return await call_heuristai(
+            model_config, prompt, regex, return_streaming_channel
+        )
+
+
+def get_llm_function(plugin: str) -> Plugin:
     """
     Function to register new providers
     """
-    plugin_to_function = {
-        "ollama": call_ollama,
-        "openai": call_openai,
-        "heuristai": call_heuristai,
+    plugin_map = {
+        "ollama": OllamaPlugin(),
+        "openai": OpenAIPlugin(),
+        "heuristai": HeuristAIPlugin(),
     }
 
-    if plugin not in plugin_to_function:
+    if plugin not in plugin_map:
         raise ValueError(f"Plugin {plugin} not registered.")
 
-    return plugin_to_function[plugin]
+    return plugin_map[plugin]
