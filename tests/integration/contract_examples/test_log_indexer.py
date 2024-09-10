@@ -6,10 +6,10 @@ from tests.common.request import (
     payload,
     post_request_localhost,
 )
-from tests.integration.mocks.log_indexer_get_contract_schema_for_code import (
+from tests.integration.contract_examples.mocks.log_indexer_get_contract_schema_for_code import (
     log_indexer_contract_schema,
 )
-from tests.integration.mocks.call_contract_function import (
+from tests.integration.contract_examples.mocks.call_contract_function import (
     call_contract_function_response,
 )
 
@@ -28,7 +28,7 @@ TRANSFER_AMOUNT = 100
 def test_log_indexer():
     # Validators Setup
     result = post_request_localhost(
-        payload("create_random_validators", 5, 8, 12, ["openai"], None, "gpt-3.5-turbo")
+        payload("create_random_validators", 5, 8, 12, ["openai"], None, "gpt-4o-mini")
     ).json()
     assert has_success_status(result)
 

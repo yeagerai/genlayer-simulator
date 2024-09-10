@@ -156,13 +156,7 @@ const hasConstructorInputs = computed(
       </GhostBtn>
     </template>
 
-    <div
-      v-if="isPending"
-      class="flex flex-row items-center justify-center gap-2 p-1"
-    >
-      <Loader />
-      Loading...
-    </div>
+    <ContentLoader v-if="isPending" />
 
     <Alert v-else-if="isError" error> Could not load contract schema. </Alert>
 

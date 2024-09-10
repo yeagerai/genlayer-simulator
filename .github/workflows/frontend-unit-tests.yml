@@ -16,6 +16,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "21.x"
+      - name: Copy examples to assets
+        run: cp -r examples frontend/src/assets/examples
 
       - run: npm ci
         working-directory: frontend

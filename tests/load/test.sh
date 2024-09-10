@@ -16,9 +16,6 @@ oha -n $REQUESTS -c $CONCURRENCY -m POST -d '{"action": "create_tables"}' -H "Co
 echo "Starting load test for create_random_validators endpoint"
 oha -n $REQUESTS -c $CONCURRENCY -m POST -d '{"action": "create_random_validators", "min_stake": 8.0, "max_stake": 12.0, "number_of_validators": 10}' -H "Content-Type: application/json" --no-tui  $BASE_URL
 
-echo "Starting load test for create_account endpoint"
-oha -n $REQUESTS -c $CONCURRENCY -m POST -d '{"action": "create_account"}' -H "Content-Type: application/json" --no-tui  $BASE_URL
-
 # Assume from_address is obtained from a previous step or hardcoded for the test
 FROM_ADDRESS="test_address"
 
