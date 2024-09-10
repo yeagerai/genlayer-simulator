@@ -6,10 +6,10 @@ from tests.common.request import (
     payload,
     post_request_localhost,
 )
-from tests.integration.mocks.log_indexer_get_contract_schema_for_code import (
+from tests.integration.contract_examples.mocks.log_indexer_get_contract_schema_for_code import (
     log_indexer_contract_schema,
 )
-from tests.integration.mocks.call_contract_function import (
+from tests.integration.contract_examples.mocks.call_contract_function import (
     call_contract_function_response,
 )
 
