@@ -37,10 +37,14 @@ class Base(MappedAsDataclass, DeclarativeBase):
 
 class CurrentState(Base):
     __tablename__ = "current_state"
-    __table_args__ = (PrimaryKeyConstraint("id", name="current_state_pkey"),)
+    __table_args__ = (
+        PrimaryKeyConstraint("id", name="current_state_pkey"),
+        CheckConstraint("balance >= 0", name="check_balance_non_negative"),
+    )
 
     id: Mapped[str] = mapped_column(String(255), primary_key=True)
     data: Mapped[dict] = mapped_column(JSONB)
+    balance: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     updated_at: Mapped[Optional[datetime.datetime]] = mapped_column(
         DateTime(True),
         init=False,

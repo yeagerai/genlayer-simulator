@@ -90,10 +90,10 @@ export function useContractQueries() {
       }
       const constructorParamsAsString = JSON.stringify(constructorParams);
       const data = [contract.value?.content ?? '', constructorParamsAsString];
-      const signed = await wallet.signTransaction(
-        accountsStore.currentPrivateKey,
+      const signed = await wallet.signTransaction({
+        privateKey: accountsStore.currentPrivateKey,
         data,
-      );
+      });
       const result = await rpcClient.sendTransaction(signed);
 
       if (result?.status === 'success') {
@@ -207,11 +207,12 @@ export function useContractQueries() {
       const data = [method, methodParamsAsString];
       const to = (address.value as Address) || null;
 
-      const signed = await wallet.signTransaction(
-        accountsStore.currentPrivateKey,
+      const signed = await wallet.signTransaction({
+        privateKey: accountsStore.currentPrivateKey,
         data,
         to,
-      );
+      });
+
       const result = await rpcClient.sendTransaction(signed);
 
       if (result?.status === 'success') {

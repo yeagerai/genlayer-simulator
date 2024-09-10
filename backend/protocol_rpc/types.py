@@ -30,6 +30,7 @@ class DecodedTransaction:
     to_address: str
     data: str
     type: str
+    value: int
 
 
 @dataclass

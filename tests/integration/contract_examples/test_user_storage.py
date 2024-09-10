@@ -7,10 +7,10 @@ from tests.common.request import (
     post_request_localhost,
 )
 
-from tests.integration.mocks.user_storage_get_contract_schema_for_code import (
+from tests.integration.contract_examples.mocks.user_storage_get_contract_schema_for_code import (
     user_storage_contract_schema,
 )
-from tests.integration.mocks.call_contract_function import (
+from tests.integration.contract_examples.mocks.call_contract_function import (
     call_contract_function_response,
 )
 

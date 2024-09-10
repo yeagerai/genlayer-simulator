@@ -10,15 +10,22 @@ def encode_transaction_data(data: list) -> str:
     return to_hex(serialized_data)
 
 
-def construct_signed_transaction(account: Account, data: list, to: str = None) -> dict:
-    encoded_data = encode_transaction_data(data)
+def construct_signed_transaction(
+    account: Account, data: list = None, to: str = None, value: int = 0
+) -> dict:
     transaction = {
         "nonce": 0,
         "gasPrice": 0,
         "gas": 0,
         "to": to,
         "value": 0,
-        "data": encoded_data,
+        "data": data,
+        "value": value,
     }
+
+    if data is not None:
+        encoded_data = encode_transaction_data(data)
+        transaction["data"] = encoded_data
+
     signed_transaction = Account.sign_transaction(transaction, account.key)
     return to_hex(signed_transaction.raw_transaction)

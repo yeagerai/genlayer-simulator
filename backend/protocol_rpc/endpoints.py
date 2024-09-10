@@ -52,19 +52,27 @@ def clear_db_tables(db_client: DBClient, tables: list) -> dict:
 
 
 ####### ACCOUNTS ENDPOINTS #######
-def create_account(accounts_manager: AccountsManager) -> dict:
-    new_account = accounts_manager.create_new_account(0)
-    return {"account_address": new_account.address}
+def get_balance(accounts_manager: AccountsManager, account_address: str) -> dict:
+    if not accounts_manager.is_valid_address(account_address):
+        raise InvalidAddressError(
+            account_address, f"Invalid address from_address: {account_address}"
+        )
+    account_balance = accounts_manager.get_account_balance(account_address)
+    return {"account_balance": account_balance}
 
 
 def fund_account(
-    accounts_manager: AccountsManager, account_address: str, amount: int
+    accounts_manager: AccountsManager,
+    transactions_processor: TransactionsProcessor,
+    account_address: str,
+    amount: int,
 ) -> dict:
     if not accounts_manager.is_valid_address(account_address):
         raise InvalidAddressError(account_address)
-
-    accounts_manager.fund_account(account_address, amount)
-    return {"account_address": account_address, "amount": amount}
+    transaction_hash = transactions_processor.insert_transaction(
+        None, account_address, None, amount, 0
+    )
+    return {"transaction_hash": transaction_hash}
 
 
 def send_transaction(
@@ -253,6 +261,10 @@ def get_validator(
     return validators_registry.get_validator(validator_address)
 
 
+def count_validators(validators_registry: ValidatorsRegistry) -> dict:
+    return validators_registry.count_validators()
+
+
 ####### TRANSACTIONS ENDPOINTS #######
 def get_transaction_by_hash(
     transactions_processor: TransactionsProcessor, transaction_hash: str
@@ -297,12 +309,15 @@ def send_raw_transaction(
 ) -> dict:
     # Decode transaction
     decoded_transaction = decode_signed_transaction(signed_transaction)
+    print("decoded_transaction", decoded_transaction)
 
     # Validate transaction
     if decoded_transaction is None:
         raise InvalidTransactionError("Invalid transaction data")
 
     from_address = decoded_transaction.from_address
+    value = decoded_transaction.value
+
     if not accounts_manager.is_valid_address(from_address):
         raise InvalidAddressError(
             from_address, f"Invalid address from_address: {from_address}"
@@ -318,21 +333,15 @@ def send_raw_transaction(
 
     transaction_data = {}
     result = {}
-    transaction_type = -1
-    if to_address and to_address != "0x":
-        # Contract Call
-        if not accounts_manager.is_valid_address(to_address):
-            raise InvalidAddressError(
-                to_address, f"Invalid address to_address: {to_address}"
-            )
-        decoded_data = decode_method_call_data(decoded_transaction.data)
-        transaction_data = {
-            "function_name": decoded_data.function_name,
-            "function_args": decoded_data.function_args,
-        }
-        transaction_type = 2
-    else:
+    transaction_type = None
+    if not decoded_transaction.data:
+        # Sending value transaction
+        transaction_type = 0
+    elif not to_address or to_address == "0x":
         # Contract deployment
+        if value > 0:
+            raise InvalidTransactionError("Deploy Transaction can't send value")
+
         decoded_data = decode_deployment_data(decoded_transaction.data)
         new_contract_address = accounts_manager.create_new_account().address
 
@@ -344,18 +353,26 @@ def send_raw_transaction(
         result["contract_address"] = new_contract_address
         to_address = None
         transaction_type = 1
+    else:
+        # Contract Call
+        if not accounts_manager.is_valid_address(to_address):
+            raise InvalidAddressError(
+                to_address, f"Invalid address to_address: {to_address}"
+            )
+        decoded_data = decode_method_call_data(decoded_transaction.data)
+        transaction_data = {
+            "function_name": decoded_data.function_name,
+            "function_args": decoded_data.function_args,
+        }
+        transaction_type = 2
 
     # Insert transaction into the database
     transaction_hash = transactions_processor.insert_transaction(
-        from_address, to_address, transaction_data, 0, transaction_type
+        from_address, to_address, transaction_data, value, transaction_type
     )
     result["transaction_hash"] = transaction_hash
 
     return result
-
-
-def count_validators(validators_registry: ValidatorsRegistry) -> dict:
-    return validators_registry.count_validators()
 
 
 def register_all_rpc_endpoints(
@@ -377,10 +394,9 @@ def register_all_rpc_endpoints(
         clear_db_tables, genlayer_db_client, ["current_state", "transactions"]
     )
 
-    register_rpc_endpoint_for_partial(create_account, accounts_manager)
-    register_rpc_endpoint_for_partial(fund_account, accounts_manager)
+    register_rpc_endpoint_for_partial(get_balance, accounts_manager)
     register_rpc_endpoint_for_partial(
-        send_transaction, transactions_processor, accounts_manager
+        fund_account, accounts_manager, transactions_processor
     )
 
     register_rpc_endpoint_for_partial(

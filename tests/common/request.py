@@ -44,11 +44,19 @@ def get_transaction_by_hash(transaction_hash: str):
 
 
 def call_contract_method(
-    account: Account, contract_address: str, method_name: str, method_args: list
+    account: Account,
+    contract_address: str,
+    method_name: str,
+    method_args: list,
+    value: int = 0,
 ):
-    call_data = [method_name, json.dumps(method_args)]
+    call_data = (
+        None
+        if method_name is None and method_args is None
+        else [method_name, json.dumps(method_args)]
+    )
     signed_transaction = construct_signed_transaction(
-        account, call_data, contract_address
+        account, call_data, contract_address, value
     )
     return send_raw_transaction(signed_transaction)
 
@@ -61,9 +69,7 @@ def deploy_intelligent_contract(
     return send_raw_transaction(signed_transaction)
 
 
-def send_raw_transaction(
-    signed_transaction: str, interval: int = 10, retries: int = 15
-):
+def send_raw_transaction(signed_transaction: str):
     payload_data = payload("send_raw_transaction", signed_transaction)
     raw_response = post_request_localhost(payload_data)
     call_method_response = raw_response.json()
@@ -71,12 +77,17 @@ def send_raw_transaction(
         raise ValueError("No result found in the call_method_response")
     transaction_hash = call_method_response["result"]["data"]["transaction_hash"]
 
+    transaction_response = wait_for_transaction(transaction_id)
+    return (call_method_response, transaction_response)
+
+
+def wait_for_transaction(transaction_id: str, interval: int = 10, retries: int = 15):
     attempts = 0
     while attempts < retries:
         transaction_response = get_transaction_by_hash(str(transaction_hash))
         status = transaction_response["result"]["data"]["status"]
         if status == "FINALIZED":
-            return (call_method_response, transaction_response)
+            return transaction_response
         time.sleep(interval)
         attempts += 1
 
