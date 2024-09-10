@@ -6,7 +6,7 @@ import time
 from dotenv import load_dotenv
 from eth_account import Account
 
-from tests.common.transactions import construct_signed_transaction
+from tests.common.transactions import sign_transaction
 
 load_dotenv()
 
@@ -55,9 +55,7 @@ def call_contract_method(
         if method_name is None and method_args is None
         else [method_name, json.dumps(method_args)]
     )
-    signed_transaction = construct_signed_transaction(
-        account, call_data, contract_address, value
-    )
+    signed_transaction = sign_transaction(account, call_data, contract_address, value)
     return send_raw_transaction(signed_transaction)
 
 
@@ -65,7 +63,7 @@ def deploy_intelligent_contract(
     account: Account, contract_code: str, constructor_params: str
 ):
     deploy_data = [contract_code, constructor_params]
-    signed_transaction = construct_signed_transaction(account, deploy_data)
+    signed_transaction = sign_transaction(account, deploy_data)
     return send_raw_transaction(signed_transaction)
 
 
