@@ -1,6 +1,7 @@
 ARG BASE_IMAGE
 FROM ${BASE_IMAGE}
 
+ENV PYTHONPATH ""
 WORKDIR /app/backend/database_handler
 
 RUN pip install -r migration/requirements.txt
