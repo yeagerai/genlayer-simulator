@@ -77,11 +77,11 @@ def send_raw_transaction(signed_transaction: str):
         raise ValueError("No result found in the call_method_response")
     transaction_hash = call_method_response["result"]["data"]["transaction_hash"]
 
-    transaction_response = wait_for_transaction(transaction_id)
+    transaction_response = wait_for_transaction(transaction_hash)
     return (call_method_response, transaction_response)
 
 
-def wait_for_transaction(transaction_id: str, interval: int = 10, retries: int = 15):
+def wait_for_transaction(transaction_hash: str, interval: int = 10, retries: int = 15):
     attempts = 0
     while attempts < retries:
         transaction_response = get_transaction_by_hash(str(transaction_hash))
