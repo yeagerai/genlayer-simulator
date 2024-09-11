@@ -130,8 +130,5 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
-      - name: Build Docker image
-        run: docker compose build
-
       - name: Run Docker Compose
         run: docker compose -f tests/db-sqlalchemy/docker-compose.yml --project-directory . up tests --build --force-recreate --always-recreate-deps

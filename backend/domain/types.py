@@ -32,3 +32,19 @@ class Validator:
     stake: int
     llmprovider: LLMProvider
     id: int | None = None
+
+    def to_dict(self):
+        result = {
+            "address": self.address,
+            "stake": self.stake,
+            "provider": self.llmprovider.provider,
+            "model": self.llmprovider.model,
+            "config": self.llmprovider.config,
+            "plugin": self.llmprovider.plugin,
+            "plugin_config": self.llmprovider.plugin_config,
+        }
+
+        if self.id:
+            result["id"] = self.id
+
+        return result

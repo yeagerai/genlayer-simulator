@@ -20,7 +20,9 @@ def select_random_validators(all_validators: list, num_validators: int) -> list:
     return [all_validators[i] for i in unique_indices]
 
 
-def get_validators_for_transaction(all_validators: list, num_validators: int) -> tuple:
+def get_validators_for_transaction(
+    all_validators: list, num_validators: int
+) -> tuple[dict, list]:
     selected_validators = select_random_validators(all_validators, num_validators)
     leader = selected_validators[0]
     remaining_validators = selected_validators[1 : num_validators + 1]

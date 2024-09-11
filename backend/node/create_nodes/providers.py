@@ -80,6 +80,7 @@ def _to_domain(provider: dict) -> LLMProvider:
     )
 
 
+# TODO: We could merge part of this logic of getting the available providers by loading the plugins. The plugins could have methods like `is_available` and `get_available_models` that would simplify this logic.
 def create_random_providers(amount: int) -> list[LLMProvider]:
     """
     Not being used at the moment, left here for future reference.

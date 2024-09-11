@@ -93,14 +93,14 @@ def get_contract_schema(
         )
     contract_account = accounts_manager.get_account_or_fail(contract_address)
 
-    node = Node(
+    node = Node(  # Mock node just to get the data from the GenVM
         contract_snapshot=None,
-        address="",
         validator_mode=ExecutionMode.LEADER,
-        stake=0,
-        provider="",
-        model="",
-        config=None,
+        validator=Validator(
+            address="",
+            stake=0,
+            llmprovider=None,
+        ),
         leader_receipt=None,
         msg_handler=msg_handler,
     )
@@ -110,14 +110,20 @@ def get_contract_schema(
 def get_contract_schema_for_code(
     msg_handler: MessageHandler, contract_code: str
 ) -> dict:
-    node = Node(
+    node = Node(  # Mock node just to get the data from the GenVM
         contract_snapshot=None,
-        address="",
         validator_mode=ExecutionMode.LEADER,
-        stake=0,
-        provider="",
-        model="",
-        config=None,
+        validator=Validator(
+            address="",
+            stake=0,
+            llmprovider=LLMProvider(
+                provider="",
+                model="",
+                config={},
+                plugin="",
+                plugin_config={},
+            ),
+        ),
         leader_receipt=None,
         msg_handler=msg_handler,
     )
@@ -346,14 +352,20 @@ def call(
     decoded_data = decode_method_call_data(input)
 
     contract_account = accounts_manager.get_account_or_fail(to_address)
-    node = Node(
+    node = Node(  # Mock node just to get the data from the GenVM
         contract_snapshot=None,
-        address="",
         validator_mode=ExecutionMode.LEADER,
-        stake=0,
-        provider="",
-        model="",
-        config=None,
+        validator=Validator(
+            address="",
+            stake=0,
+            llmprovider=LLMProvider(
+                provider="",
+                model="",
+                config={},
+                plugin="",
+                plugin_config={},
+            ),
+        ),
         leader_receipt=None,
         msg_handler=msg_handler,
     )

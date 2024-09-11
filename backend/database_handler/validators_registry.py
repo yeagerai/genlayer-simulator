@@ -1,5 +1,6 @@
 # consensus/domain/state.py
 
+from typing import List
 from sqlalchemy.orm import Session
 
 from backend.domain.types import LLMProvider, Validator
@@ -44,7 +45,7 @@ class ValidatorsRegistry:
     def count_validators(self) -> int:
         return self.session.query(Validators).count()
 
-    def get_all_validators(self) -> list:
+    def get_all_validators(self) -> List[dict]:
         validators_data = self.session.query(Validators).all()
         return [to_dict(validator) for validator in validators_data]
 

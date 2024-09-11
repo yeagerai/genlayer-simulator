@@ -86,7 +86,7 @@ class GenVM:
             gas_used=self.contract_runner.gas_used,
             mode=self.contract_runner.mode,
             contract_state=encoded_object,
-            node_config=self.contract_runner.validator.__dict__,
+            node_config=self.contract_runner.node_config,
             eq_outputs=self.contract_runner.eq_outputs,
             execution_result=execution_result,
             error=error,

@@ -1,3 +1,4 @@
+from dataclasses import asdict
 import json
 from typing import Optional
 
@@ -21,7 +22,10 @@ class Node:
         self.address = validator.address
         self.leader_receipt = leader_receipt
         self.genvm = GenVM(
-            contract_snapshot, self.validator_mode, validator.__dict__, msg_handler
+            contract_snapshot,
+            self.validator_mode,
+            validator.to_dict(),
+            msg_handler,
         )
 
     async def exec_transaction(self, transaction: dict):
