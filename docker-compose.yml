@@ -85,7 +85,7 @@ services:
       context: .
       dockerfile: docker/Dockerfile.backend
       target: base
-    image: backend-base
+    image: backend-base:latest
     pull_policy: build
 
   database-migration:
