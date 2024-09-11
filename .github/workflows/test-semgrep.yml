@@ -4,9 +4,8 @@ on:
   push:
     branches:
       - main
-      - staging
   schedule:
-    - cron: '00 18 * * *' # Sets Semgrep to scan every day at 18:00 UTC.
+    - cron: "00 18 * * *" # Sets Semgrep to scan every day at 18:00 UTC.
   workflow_dispatch:
 
 permissions:
