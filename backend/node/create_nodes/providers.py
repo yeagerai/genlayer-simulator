@@ -61,6 +61,7 @@ def get_default_provider_for(provider: str, model: str) -> LLMProvider:
         raise ValueError(f"No default provider found for {provider} and {model}")
     if len(matches) > 1:
         raise ValueError(f"Multiple default providers found for {provider} and {model}")
+    return matches[0]
 
 
 def _to_domain(provider: dict) -> LLMProvider:

@@ -9,11 +9,10 @@ Create Date: 2024-09-10 14:47:10.730407
 from typing import Sequence, Union
 
 from alembic import op
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import column, table
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
-from backend.database_handler.models import Validators
 from backend.node.create_nodes.providers import get_default_provider_for
 
 # revision identifiers, used by Alembic.
@@ -30,16 +29,39 @@ def upgrade() -> None:
         sa.Column("plugin_config", postgresql.JSONB(astext_type=sa.Text())),
     )
 
-    bind = op.get_bind()
-    # Create a new SQLAlchemy session using the connection
-    with sessionmaker(bind=bind)() as session:
-        validators = session.query(Validators).all()
-        for validator in validators:
-            default_provider = get_default_provider_for(
-                provider=validator.provider, model=validator.model
+    # Modify below
+
+    # Create a table object for the validators table
+    validators = table(
+        "validators",
+        column("id", sa.Integer),
+        column("provider", sa.String),
+        column("model", sa.String),
+        column("plugin", sa.String),
+        column("plugin_config", postgresql.JSONB),
+        column("config", postgresql.JSONB),
+    )
+
+    # Fetch existing data
+    conn = op.get_bind()
+    results = conn.execute(validators.select())
+
+    # Process data and perform updates
+    for validator in results:
+        id = validator.id
+        provider = validator.provider
+        model = validator.model
+        default_provider = get_default_provider_for(provider=provider, model=model)
+        conn.execute(
+            validators.update()
+            .where(validators.c.id == id)
+            .values(
+                plugin=default_provider.plugin,
+                plugin_config=default_provider.plugin_config,
+                config=default_provider.config,
             )
-            validator.plugin = default_provider.plugin
-            validator.plugin_config = default_provider.plugin_config
+        )
+    # Modify above
 
     op.alter_column(
         "validators", "plugin", existing_type=sa.VARCHAR(length=255), nullable=False
