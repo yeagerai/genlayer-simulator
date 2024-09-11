@@ -61,10 +61,8 @@ class TransactionsProcessor:
             to_bytes(hexstr=hex(0)),  # gas limit (placeholder)
         ]
 
-        tx_elements = [
-            elem for elem in tx_elements if elem is not None
-        ]  # Filter out None values
-        print(tx_elements)
+        # Filter out None values
+        tx_elements = [elem for elem in tx_elements if elem is not None]
         rlp_encoded = rlp.encode(tx_elements)
         hash = "0x" + keccak(rlp_encoded).hex()
         return hash

@@ -19,8 +19,8 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
-## TODO: test what happens with legacy transactions that don't have a hash
-## TODO: secondary migration to delete id column forever? Or maybe keep it for the time being to be safe.
+# This migration adds a hash column to the transactions table (instead of id) and a transaction_hash column to the transactions_audit table (instead of transaction_id).
+# To remain backwards compatible and downgradable, the hash and nonce are set to the current id on existing transactions.
 def upgrade() -> None:
     # Add the new 'hash' column
     op.add_column(
