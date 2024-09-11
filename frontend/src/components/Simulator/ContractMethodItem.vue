@@ -22,7 +22,9 @@ const inputs = ref<{ [k: string]: any }>({});
 const responseMessage = ref('');
 
 const missingParams = computed(() => {
-  return props.method.inputs.some((input: any) => !inputs.value[input.name]);
+  return props.method.inputs.some(
+    (input: any) => inputs.value[input.name] === '',
+  );
 });
 
 const handleCallReadMethod = async () => {
