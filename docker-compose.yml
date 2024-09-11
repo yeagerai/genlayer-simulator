@@ -93,7 +93,7 @@ services:
       context: .
       dockerfile: docker/Dockerfile.database-migration
       args:
-        BASE_IMAGE: backend-base
+        BASE_IMAGE: backend-base:latest
     environment:
       - DB_URL=postgresql://${DBUSER}:${DBUSER}@postgres/${DBNAME}
     depends_on:
