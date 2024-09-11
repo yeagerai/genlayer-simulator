@@ -8,7 +8,7 @@ from sqlalchemy import Table
 from backend.database_handler.db_client import DBClient
 from backend.database_handler.llm_providers import LLMProviderRegistry
 from backend.database_handler.models import Base
-from backend.domain.types import LLMProvider
+from backend.domain.types import LLMProvider, Validator
 from backend.node.create_nodes.providers import (
     get_default_provider_for,
     get_default_providers,
@@ -176,23 +176,27 @@ def create_validator(
     plugin_config: dict | None,
 ) -> dict:
     # fallback for default provider
+    # TODO: only accept all or none of the config fields
+    llm_provider = None
     if not (config and plugin and plugin_config):
-        provider = get_default_provider_for(provider, model)
-        config = provider.config
+        llm_provider = get_default_provider_for(provider, model)
     else:
-        validate_provider(
-            LLMProvider(
-                provider=provider,
-                model=model,
-                config=config,
-                plugin=plugin,
-                plugin_config=plugin_config,
-            )
+        llm_provider = LLMProvider(
+            provider=provider,
+            model=model,
+            config=config,
+            plugin=plugin,
+            plugin_config=plugin_config,
         )
+        validate_provider(llm_provider)
 
     new_address = accounts_manager.create_new_account().address
     return validators_registry.create_validator(
-        new_address, stake, provider, model, config
+        Validator(
+            address=new_address,
+            stake=stake,
+            llmprovider=llm_provider,
+        )
     )
 
 
@@ -260,21 +264,29 @@ def update_validator(
     stake: int,
     provider: str,
     model: str,
-    config: json,
+    config: dict,
+    plugin: str,
+    plugin_config: dict,
 ) -> dict:
     # Remove validation while adding migration to update the db address
     # if not accounts_manager.is_valid_address(validator_address):
     #     raise InvalidAddressError(validator_address)
-    validate_provider(
-        LLMProvider(
-            provider=provider,
-            model=model,
-            config=config,
-        )
+    llm_provider = LLMProvider(
+        provider=provider,
+        model=model,
+        config=config,
+        plugin=plugin,
+        plugin_config=plugin_config,
+        id=None,
     )
-    return validators_registry.update_validator(
-        validator_address, stake, provider, model, config
+    validate_provider(llm_provider)
+    validator = Validator(
+        address=validator_address,
+        stake=stake,
+        llmprovider=llm_provider,
+        id=None,
     )
+    return validators_registry.update_validator(validator)
 
 
 def delete_validator(

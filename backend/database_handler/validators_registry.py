@@ -17,6 +17,8 @@ def to_dict(validator: Validators) -> dict:
         "provider": validator.provider,
         "model": validator.model,
         "config": validator.config,
+        "plugin": validator.plugin,
+        "plugin_config": validator.plugin_config,
         "created_at": validator.created_at.isoformat(),
     }
 
@@ -51,7 +53,6 @@ class ValidatorsRegistry:
 
     def create_validator(self, validator: Validator) -> dict:
         self.session.add(_to_db_model(validator))
-        self.session.commit()
 
         return self.get_validator(validator.address)
 
@@ -62,41 +63,37 @@ class ValidatorsRegistry:
         validator = self._get_validator_or_fail(new_validator.address)
 
         validator.stake = new_validator.stake
-        validator.provider = new_validator.provider
-        validator.model = new_validator.model
-        validator.config = new_validator.config
-
-        self.session.commit()
+        validator.provider = new_validator.llmprovider.provider
+        validator.model = new_validator.llmprovider.model
+        validator.config = new_validator.llmprovider.config
+        validator.plugin = new_validator.llmprovider.plugin
+        validator.plugin_config = new_validator.llmprovider.plugin_config
 
         return to_dict(validator)
 
     def delete_validator(self, validator_address):
-        self._get_validator_or_fail(validator_address)
+        validator = self._get_validator_or_fail(validator_address)
 
-        self.session.query(Validators).filter(
-            Validators.address == validator_address
-        ).delete()
-        self.session.commit()
+        self.session.delete(validator)
 
     def delete_all_validators(self):
         self.session.query(Validators).delete()
-        self.session.commit()
 
 
-def _to_domain(validator: Validators) -> Validator:
-    return Validator(
-        address=validator.address,
-        stake=validator.stake,
-        llmprovider=LLMProvider(
-            provider=validator.provider,
-            model=validator.model,
-            config=validator.config,
-            plugin=validator.plugin,
-            plugin_config=validator.plugin_config,
-            id=None,
-        ),
-        id=validator.id,
-    )
+# def _to_domain(validator: Validators) -> Validator:
+#     return Validator(
+#         address=validator.address,
+#         stake=validator.stake,
+#         llmprovider=LLMProvider(
+#             provider=validator.provider,
+#             model=validator.model,
+#             config=validator.config,
+#             plugin=validator.plugin,
+#             plugin_config=validator.plugin_config,
+#             id=None,
+#         ),
+#         id=validator.id,
+#     )
 
 
 def _to_db_model(validator: Validator) -> Validators:
