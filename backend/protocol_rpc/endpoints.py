@@ -139,7 +139,7 @@ def add_provider(llm_provider_registry: LLMProviderRegistry, params: dict) -> di
         model=params["model"],
         config=params["config"],
         plugin=params["plugin"],
-        plugin_config=["plugin_config"],
+        plugin_config=params["plugin_config"],
     )
     validate_provider(provider)
 
@@ -154,7 +154,7 @@ def update_provider(
         model=params["model"],
         config=params["config"],
         plugin=params["plugin"],
-        plugin_config=["plugin_config"],
+        plugin_config=params["plugin_config"],
     )
     validate_provider(provider)
 

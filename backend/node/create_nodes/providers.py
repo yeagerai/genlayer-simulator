@@ -20,9 +20,14 @@ def get_schema() -> dict:
 
 
 def validate_provider(provider: LLMProvider):
+    # Convert to JSON
+    provider_dict = provider.__dict__
+    del provider_dict["id"]
+
+    # Check against schema
     schema = get_schema()
     try:
-        validate(instance=provider.__dict__, schema=schema)
+        validate(instance=provider_dict, schema=schema)
     except Exception as e:
         raise ValueError(f"Error validating provider: {e}")
 

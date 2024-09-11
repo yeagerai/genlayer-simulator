@@ -5,8 +5,9 @@ from tests.common.response import has_success_status
 def test_llm_providers():
     provider = {
         "provider": "openai",
-        "model": "gpt-3.5-turbo",
+        "model": "gpt-4",
         "config": "<empty>",
+        "plugin": "openai",
         "plugin_config": {"api_key_env_var": "OPENAIKEY"},
     }
     # Create a new provider
@@ -19,6 +20,7 @@ def test_llm_providers():
         "provider": "openai",
         "model": "gpt-4o",
         "config": "<empty>",
+        "plugin": "openai",
         "plugin_config": {"api_key_env_var": "OPENAIKEY"},
     }
     # Uodate it
