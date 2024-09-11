@@ -33,7 +33,6 @@ export interface NodeLog {
 
 // TODO: review this
 export interface TransactionItem {
-  id?: number;
   hash: string;
   type: 'deploy' | 'method';
   status: string;
