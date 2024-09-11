@@ -10,7 +10,11 @@ from backend.node.create_nodes.create_nodes import random_validator_config
             ["llama3"],
             [
                 LLMProvider(
-                    provider="ollama", model="llama3", config={}, plugin_config={}
+                    provider="ollama",
+                    model="llama3",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 )
             ],
             None,
@@ -19,7 +23,11 @@ from backend.node.create_nodes.create_nodes import random_validator_config
             {},
             [
                 LLMProvider(
-                    provider="ollama", model="llama3", config={}, plugin_config={}
+                    provider="ollama",
+                    model="llama3",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 )
             ],
             id="only ollama",
@@ -28,16 +36,32 @@ from backend.node.create_nodes.create_nodes import random_validator_config
             ["llama3", "llama3.1"],
             [
                 LLMProvider(
-                    provider="ollama", model="llama3.1", config={}, plugin_config={}
+                    provider="ollama",
+                    model="llama3.1",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
                 LLMProvider(
-                    provider="openai", model="gpt-4", config={}, plugin_config={}
+                    provider="openai",
+                    model="gpt-4",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
                 LLMProvider(
-                    provider="openai", model="gpt-4o", config={}, plugin_config={}
+                    provider="openai",
+                    model="gpt-4o",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
                 LLMProvider(
-                    provider="heuristai", model="", config={}, plugin_config={}
+                    provider="heuristai",
+                    model="",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
             ],
             None,
@@ -46,7 +70,11 @@ from backend.node.create_nodes.create_nodes import random_validator_config
             {"OPENAI_API_KEY": ""},
             [
                 LLMProvider(
-                    provider="ollama", model="llama3.1", config={}, plugin_config={}
+                    provider="ollama",
+                    model="llama3.1",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 )
             ],
             id="only ollama available",
@@ -55,22 +83,46 @@ from backend.node.create_nodes.create_nodes import random_validator_config
             ["llama3", "llama3.1"],
             [
                 LLMProvider(
-                    provider="ollama", model="llama3", config={}, plugin_config={}
+                    provider="ollama",
+                    model="llama3",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
                 LLMProvider(
-                    provider="openai", model="gpt-4", config={}, plugin_config={}
+                    provider="openai",
+                    model="gpt-4",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
                 LLMProvider(
-                    provider="openai", model="gpt-4o", config={}, plugin_config={}
+                    provider="openai",
+                    model="gpt-4o",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
                 LLMProvider(
-                    provider="heuristai", model="", config={}, plugin_config={}
+                    provider="heuristai",
+                    model="",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
                 LLMProvider(
-                    provider="heuristai", model="a", config={}, plugin_config={}
+                    provider="heuristai",
+                    model="a",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
                 LLMProvider(
-                    provider="heuristai", model="b", config={}, plugin_config={}
+                    provider="heuristai",
+                    model="b",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
             ],
             ["openai"],
@@ -79,10 +131,18 @@ from backend.node.create_nodes.create_nodes import random_validator_config
             {"OPENAIKEY": "filled"},
             [
                 LLMProvider(
-                    provider="openai", model="gpt-4", config={}, plugin_config={}
+                    provider="openai",
+                    model="gpt-4",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
                 LLMProvider(
-                    provider="openai", model="gpt-4o", config={}, plugin_config={}
+                    provider="openai",
+                    model="gpt-4o",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
             ],
             id="only openai",
@@ -91,16 +151,32 @@ from backend.node.create_nodes.create_nodes import random_validator_config
             ["llama3", "llama3.1"],
             [
                 LLMProvider(
-                    provider="openai", model="gpt-4", config={}, plugin_config={}
+                    provider="openai",
+                    model="gpt-4",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
                 LLMProvider(
-                    provider="openai", model="gpt-4o", config={}, plugin_config={}
+                    provider="openai",
+                    model="gpt-4o",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
                 LLMProvider(
-                    provider="heuristai", model="a", config={}, plugin_config={}
+                    provider="heuristai",
+                    model="a",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
                 LLMProvider(
-                    provider="heuristai", model="b", config={}, plugin_config={}
+                    provider="heuristai",
+                    model="b",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
             ],
             ["heuristai"],
@@ -109,7 +185,11 @@ from backend.node.create_nodes.create_nodes import random_validator_config
             {"OPENAI_API_KEY": "filled", "HEURISTAI_API_KEY": "filled"},
             [
                 LLMProvider(
-                    provider="heuristai", model="a", config={}, plugin_config={}
+                    provider="heuristai",
+                    model="a",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
             ],
             id="only heuristai",
@@ -118,19 +198,39 @@ from backend.node.create_nodes.create_nodes import random_validator_config
             ["llama3", "llama3.1"],
             [
                 LLMProvider(
-                    provider="ollama", model="llama3.1", config={}, plugin_config={}
+                    provider="ollama",
+                    model="llama3.1",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
                 LLMProvider(
-                    provider="openai", model="gpt-4", config={}, plugin_config={}
+                    provider="openai",
+                    model="gpt-4",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
                 LLMProvider(
-                    provider="openai", model="gpt-4o", config={}, plugin_config={}
+                    provider="openai",
+                    model="gpt-4o",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
                 LLMProvider(
-                    provider="heuristai", model="a", config={}, plugin_config={}
+                    provider="heuristai",
+                    model="a",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
                 LLMProvider(
-                    provider="heuristai", model="b", config={}, plugin_config={}
+                    provider="heuristai",
+                    model="b",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
             ],
             None,
@@ -139,19 +239,39 @@ from backend.node.create_nodes.create_nodes import random_validator_config
             {"OPENAI_API_KEY": "filled", "HEURISTAI_API_KEY": "filled"},
             [
                 LLMProvider(
-                    provider="ollama", model="llama3.1", config={}, plugin_config={}
+                    provider="ollama",
+                    model="llama3.1",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
                 LLMProvider(
-                    provider="openai", model="gpt-4", config={}, plugin_config={}
+                    provider="openai",
+                    model="gpt-4",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
                 LLMProvider(
-                    provider="openai", model="gpt-4o", config={}, plugin_config={}
+                    provider="openai",
+                    model="gpt-4o",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
                 LLMProvider(
-                    provider="heuristai", model="a", config={}, plugin_config={}
+                    provider="heuristai",
+                    model="a",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
                 LLMProvider(
-                    provider="heuristai", model="b", config={}, plugin_config={}
+                    provider="heuristai",
+                    model="b",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 ),
             ],
             id="all available",
@@ -186,7 +306,11 @@ def test_random_validator_config(
             [],
             [
                 LLMProvider(
-                    provider="ollama", model="llama3", config={}, plugin_config={}
+                    provider="ollama",
+                    model="llama3",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 )
             ],
             ["heuristai", "openai"],
@@ -200,7 +324,11 @@ def test_random_validator_config(
             [],
             [
                 LLMProvider(
-                    provider="ollama", model="llama3", config={}, plugin_config={}
+                    provider="ollama",
+                    model="llama3",
+                    config={},
+                    plugin="",
+                    plugin_config={},
                 )
             ],
             ["ollama"],
