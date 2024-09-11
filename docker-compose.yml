@@ -94,6 +94,7 @@ services:
       dockerfile: docker/Dockerfile.database-migration
       args:
         BASE_IMAGE: backend-base:latest
+    pull_policy: never
     environment:
       - DB_URL=postgresql://${DBUSER}:${DBUSER}@postgres/${DBNAME}
     depends_on:
