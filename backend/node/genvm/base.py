@@ -97,6 +97,7 @@ class GenVM:
         code_to_deploy: str,
         constructor_args: dict,
     ):
+        print("deploy_contract called")  # Added print statement
         class_name = self._get_contract_class_name(code_to_deploy)
         code_enforcement_check(code_to_deploy, class_name)
         self.contract_runner.from_address = from_address
@@ -165,6 +166,7 @@ class GenVM:
     async def run_contract(
         self, from_address: str, function_name: str, args: list, leader_receipt: dict
     ) -> Receipt:
+        print("run_contract called")  # Added print statement
         self.contract_runner.from_address = from_address
         contract_code = self.snapshot.contract_code
         execution_result = ExecutionResultStatus.SUCCESS
@@ -206,11 +208,13 @@ class GenVM:
                 print(f"\n{traceback.format_exc()}")
                 error = e
                 execution_result = ExecutionResultStatus.ERROR
+                print("ERROR")
 
             pickled_object = pickle.dumps(current_contract)
             encoded_pickled_object = base64.b64encode(pickled_object).decode("utf-8")
             class_name = self._get_contract_class_name(contract_code)
 
+        print(2)
         if self.contract_runner.mode == ExecutionMode.LEADER:
             # Retrieve the captured stdout and stderr
             captured_stdout = stdout_buffer.getvalue()
@@ -232,7 +236,7 @@ class GenVM:
 
     @staticmethod
     def get_contract_schema(contract_code: str) -> dict:
-
+        print("get_contract_schema called")  # Added print statement
         namespace = {}
         with safe_globals():
             exec(contract_code, globals(), namespace)
@@ -330,6 +334,7 @@ class GenVM:
     def get_contract_data(
         self, code: str, state: str, method_name: str, method_args: list
     ) -> dict:
+        print("get_contract_data called")  # Added print statement
         namespace = {}
 
         # Buffers to capture stdout and stderr
