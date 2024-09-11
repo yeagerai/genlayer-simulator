@@ -79,6 +79,7 @@ services:
     #volumes:
     #  - "./data/postgres:/var/lib/postgresql/data"
 
+  # Used for caching
   build-backend-base:
     build:
       context: .
