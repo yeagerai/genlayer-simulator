@@ -239,7 +239,6 @@ def create_random_validators(
     limit_models = limit_models or []
 
     details = random_validator_config(
-        config.get_available_ollama_models,
         llm_provider_registry.get_all,
         limit_providers=set(limit_providers),
         limit_models=set(limit_models),

@@ -8,6 +8,6 @@
   },
   "plugin_config": {
     "api_key_env_var": "HEURISTAIAPIKEY",
-    "url": "https://llm-gateway.heurist.xyz"
+    "api_url": "https://llm-gateway.heurist.xyz"
   }
 }

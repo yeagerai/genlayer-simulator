@@ -195,12 +195,12 @@
                 "type": "string",
                 "$comment": "Environment variable that contains the API key"
               },
-              "url": {
+              "api_url": {
                 "type": "string",
                 "$comment": "URL of the API endpoint"
               }
             },
-            "required": ["api_key_env_var", "url"]
+            "required": ["api_key_env_var", "api_url"]
           },
           "model": {
             "enum": [

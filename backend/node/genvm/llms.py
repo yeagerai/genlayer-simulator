@@ -1,7 +1,7 @@
 """
 This file contains the plugins (functions) that are used to interact with the different LLMs (Language Model Models) that are used in the system. The plugins are registered in the `get_llm_function` function, which returns the function that corresponds to the plugin name. The plugins are called with the following parameters:
 
-- `model_config`: A dictionary containing the model and configuration to be used.
+- `node_config`: A dictionary containing the model and configuration to be used.
 - `prompt`: The prompt to be sent to the LLM.
 - `regex`: A regular expression to be used to stop the LLM.
 - `return_streaming_channel`: An optional asyncio.Queue to stream the response.
@@ -18,6 +18,7 @@ from openai import OpenAI, Stream
 from openai.types.chat import ChatCompletionChunk
 
 from dotenv import load_dotenv
+import requests
 
 load_dotenv()
 
@@ -44,16 +45,16 @@ async def stream_http_response(url, data):
 
 
 async def call_ollama(
-    model_config: dict,
+    node_config: dict,
     prompt: str,
     regex: Optional[str],
     return_streaming_channel: Optional[asyncio.Queue],
 ) -> str:
     url = get_ollama_url("generate")
 
-    data = {"model": model_config["model"], "prompt": prompt}
+    data = {"model": node_config["model"], "prompt": prompt}
 
-    for name, value in model_config["config"].items():
+    for name, value in node_config["config"].items():
         data[name] = value
 
     buffer = ""
@@ -75,29 +76,29 @@ async def call_ollama(
 
 
 async def call_openai(
-    model_config: dict,
+    node_config: dict,
     prompt: str,
     regex: Optional[str],
     return_streaming_channel: Optional[asyncio.Queue],
 ) -> str:
-    api_key_env_var = model_config[plugin_config_key]["api_key_env_var"]
+    api_key_env_var = node_config[plugin_config_key]["api_key_env_var"]
     client = get_openai_client(os.environ.get(api_key_env_var))
     # TODO: OpenAI exceptions need to be caught here
-    stream = get_openai_stream(client, prompt, model_config)
+    stream = get_openai_stream(client, prompt, node_config)
 
     return await get_openai_output(stream, regex, return_streaming_channel)
 
 
 async def call_heuristai(
-    model_config: dict,
+    node_config: dict,
     prompt: str,
     regex: Optional[str],
     return_streaming_channel: Optional[asyncio.Queue],
 ) -> str:
-    api_key_env_var = model_config[plugin_config_key]["api_key_env_var"]
-    url = model_config[plugin_config_key]["url"]
+    api_key_env_var = node_config[plugin_config_key]["api_key_env_var"]
+    url = node_config[plugin_config_key]["api_url"]
     client = get_openai_client(os.environ.get(api_key_env_var), os.environ.get(url))
-    stream = get_openai_stream(client, prompt, model_config)
+    stream = get_openai_stream(client, prompt, node_config)
     # TODO: Get the line below working
     # return await get_openai_output(stream, regex, return_streaming_channel)
     output = ""
@@ -120,11 +121,11 @@ def get_openai_client(api_key: str, url: str = None) -> OpenAI:
     return openai_client
 
 
-def get_openai_stream(client: OpenAI, prompt, model_config):
-    config = model_config["config"]
+def get_openai_stream(client: OpenAI, prompt, node_config):
+    config = node_config["config"]
     if "temperature" in config and "max_tokens" in config:
         return client.chat.completions.create(
-            model=model_config["model"],
+            model=node_config["model"],
             messages=[{"role": "user", "content": prompt}],
             stream=True,
             temperature=config["temperature"],
@@ -132,7 +133,7 @@ def get_openai_stream(client: OpenAI, prompt, model_config):
         )
     else:
         return client.chat.completions.create(
-            model=model_config["model"],
+            model=node_config["model"],
             messages=[{"role": "user", "content": prompt}],
             stream=True,
         )
@@ -167,62 +168,135 @@ def get_ollama_url(endpoint: str) -> str:
 
 class Plugin(ABC):
     @abstractmethod
-    def call(
+    def __init__(self, plugin_config: dict):
+        pass
+
+    @abstractmethod
+    async def call(
         self,
-        model_config: dict,
+        node_config: dict,
         prompt: str,
         regex: Optional[str],
         return_streaming_channel: Optional[asyncio.Queue],
     ) -> str:
         pass
 
+    @abstractmethod
+    def is_available(self) -> bool:
+        pass
+
+    @abstractmethod
+    def is_model_available(self, model: str) -> bool:
+        pass
+
 
 class OllamaPlugin(Plugin):
+    def __init__(self, plugin_config: dict):
+        self.url = plugin_config["api_url"]
+
     async def call(
         self,
-        model_config: dict,
+        node_config: dict,
         prompt: str,
         regex: Optional[str],
         return_streaming_channel: Optional[asyncio.Queue],
     ) -> str:
-        return await call_ollama(model_config, prompt, regex, return_streaming_channel)
+        return await call_ollama(node_config, prompt, regex, return_streaming_channel)
+
+    def is_available(self) -> bool:
+        try:
+            if requests.get(self.url).status_code == 404:
+                return True
+        except Exception:
+            pass
+        return False
+
+    def is_model_available(self, model: str) -> bool:
+        endpoint = f"{self.url}/tags"
+        ollama_models_result = requests.get(endpoint).json()
+        installed_ollama_models = []
+        for ollama_model in ollama_models_result["models"]:
+            installed_ollama_models.append(ollama_model["name"].split(":")[0])
+        return model in installed_ollama_models
 
 
 class OpenAIPlugin(Plugin):
+    def __init__(self, plugin_config: dict):
+        self.api_key_env_var = plugin_config["api_key_env_var"]
+
     async def call(
         self,
-        model_config: dict,
+        node_config: dict,
         prompt: str,
         regex: Optional[str],
         return_streaming_channel: Optional[asyncio.Queue],
     ) -> str:
-        return await call_openai(model_config, prompt, regex, return_streaming_channel)
+        return await call_openai(node_config, prompt, regex, return_streaming_channel)
+
+    def is_available(self) -> bool:
+        env_var = os.environ.get(self.api_key_env_var)
+
+        return (
+            env_var != None
+            and env_var != ""
+            and env_var != "<add_your_openai_api_key_here>"
+        )
+
+    def is_model_available(self, model: str) -> bool:
+        """
+        Model checks are done by the shema providers_schema.json
+        """
+        return True
 
 
 class HeuristAIPlugin(Plugin):
+    def __init__(self, plugin_config: dict):
+        self.api_key_env_var = plugin_config["api_key_env_var"]
+        self.url = plugin_config["api_url"]
+
     async def call(
         self,
-        model_config: dict,
+        node_config: dict,
         prompt: str,
         regex: Optional[str],
         return_streaming_channel: Optional[asyncio.Queue],
     ) -> str:
         return await call_heuristai(
-            model_config, prompt, regex, return_streaming_channel
+            node_config, prompt, regex, return_streaming_channel
         )
 
+    def is_available(self) -> bool:
+        env_var = os.environ.get(self.api_key_env_var)
 
-def get_llm_function(plugin: str) -> Plugin:
+        return (
+            env_var != None
+            and env_var != ""
+            and env_var != "<add_your_heuristai_api_key_here>"
+        )
+
+    def is_model_available(self, model: str) -> bool:
+        """
+        Model checks are done by the shema providers_schema.json
+        """
+        # heuristic_models_result = requests.get(os.environ['HEURISTAIMODELSURL']).json()
+        # heuristic_models = []
+        # for entry in heuristic_models_result:
+        #    heuristic_models.append(entry['name'])
+
+        return True
+
+
+def get_llm_plugin(plugin: str, plugin_config: dict) -> Plugin:
     """
     Function to register new providers
     """
     plugin_map = {
-        "ollama": OllamaPlugin(),
-        "openai": OpenAIPlugin(),
-        "heuristai": HeuristAIPlugin(),
+        "ollama": OllamaPlugin,
+        "openai": OpenAIPlugin,
+        "heuristai": HeuristAIPlugin,
     }
 
     if plugin not in plugin_map:
         raise ValueError(f"Plugin {plugin} not registered.")
 
-    return plugin_map[plugin]
+    return plugin_map[plugin](plugin_config)
