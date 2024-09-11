@@ -53,7 +53,6 @@ class ValidatorsRegistry:
 
     def create_validator(self, validator: Validator) -> dict:
         self.session.add(_to_db_model(validator))
-
         return self.get_validator(validator.address)
 
     def update_validator(

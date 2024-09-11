@@ -63,6 +63,7 @@ def create_app():
         validators_registry,
         consensus,
         llm_provider_registry,
+        sqlalchemy_db,
     )
 
 
@@ -78,6 +79,7 @@ load_dotenv()
     validators_registry,
     consensus,
     llm_provider_registry,
+    sqlalchemy_db,
 ) = create_app()
 register_all_rpc_endpoints(
     jsonrpc,
@@ -89,6 +91,17 @@ register_all_rpc_endpoints(
     llm_provider_registry,
     config=GlobalConfiguration(),
 )
+
+
+# This method ensures that the transaction is committed or rolled back depending on the success of the request.
+# Opinions on whether this is a good practice are divided https://github.com/pallets-eco/flask-sqlalchemy/issues/216
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    if exception:
+        sqlalchemy_db.session.rollback()  # Rollback if there is an exception
+    else:
+        sqlalchemy_db.session.commit()  # Commit if everything is fine
+    sqlalchemy_db.session.remove()  # Remove the session after every request
 
 
 def run_socketio():

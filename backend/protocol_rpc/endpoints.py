@@ -246,11 +246,7 @@ def create_random_validators(
         validator_address = accounts_manager.create_new_account().address
 
         validator = validators_registry.create_validator(
-            validator_address,
-            stake,
-            detail.provider,
-            detail.model,
-            detail.config,
+            Validator(address=validator_address, stake=stake, llmprovider=detail)
         )
         response.append(validator)
 
