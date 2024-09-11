@@ -6,9 +6,7 @@ import time
 from dotenv import load_dotenv
 from eth_account import Account
 
-from tests.common.transactions import sign_transaction
-from tests.common.transactions import encode_transaction_data
-
+from tests.common.transactions import sign_transaction, encode_transaction_data
 
 load_dotenv()
 
