@@ -31,7 +31,6 @@ export interface NodeLog {
   mock?: boolean;
 }
 
-// TODO: review this
 export interface TransactionItem {
   hash: string;
   type: 'deploy' | 'method';
