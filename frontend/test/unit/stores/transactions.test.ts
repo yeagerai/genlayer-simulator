@@ -54,16 +54,15 @@ describe('useTransactionsStore', () => {
     expect(transactionsStore.transactions[0].status).toBe('FINALIZED');
   });
 
-  it('should get a transaction by id using rpcClient', async () => {
-    // TODO: fix this
-    const transactionId = 123;
-    const transactionData = { id: transactionId, status: 'PENDING' };
+  it('should get a transaction by hash using rpcClient', async () => {
+    const transactionHash = '0x1234567890123456789012345678901234567890';
+    const transactionData = { id: transactionHash, status: 'PENDING' };
     mockRpcClient.getTransactionByHash.mockResolvedValue(transactionData);
 
-    const result = await transactionsStore.getTransaction(transactionId);
+    const result = await transactionsStore.getTransaction(transactionHash);
 
     expect(mockRpcClient.getTransactionByHash).toHaveBeenCalledWith(
-      transactionId,
+      transactionHash,
     );
     expect(result).toEqual(transactionData);
   });
