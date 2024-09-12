@@ -39,7 +39,58 @@
         "properties": {
           "plugin": {
             "const": "ollama"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "provider": { "const": "heuristai" }
+        }
+      },
+      "then": {
+        "properties": {
+          "plugin": {
+            "const": "heuristai"
           },
+          "model": {
+            "enum": [
+              "mistralai/mixtral-8x7b-instruct",
+              "meta-llama/llama-2-70b-chat",
+              "openhermes-2-yi-34b-gptq",
+              "dolphin-2.9-llama3-8b"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "provider": { "const": "openai" }
+        }
+      },
+      "then": {
+        "properties": {
+          "plugin": {
+            "const": "openai"
+          },
+          "model": {
+            "enum": ["gpt-4", "gpt-4o", "gpt-4o-mini"]
+          }
+        }
+      }
+    },
+
+    {
+      "if": {
+        "properties": {
+          "plugin": { "const": "ollama" }
+        }
+      },
+      "then": {
+        "properties": {
           "plugin_config": {
             "type": "object",
             "additionalProperties": false,
@@ -51,9 +102,7 @@
               }
             }
           },
-          "model": {
-            "enum": ["llama3", "mistral", "gemma"]
-          },
+
           "config": {
             "type": "object",
             "additionalProperties": false,
@@ -179,14 +228,11 @@
     {
       "if": {
         "properties": {
-          "provider": { "const": "heuristai" }
+          "plugin": { "const": "heuristai" }
         }
       },
       "then": {
         "properties": {
-          "plugin": {
-            "const": "heuristai"
-          },
           "plugin_config": {
             "type": "object",
             "additionalProperties": false,
@@ -201,14 +247,6 @@
               }
             },
             "required": ["api_key_env_var", "api_url"]
-          },
-          "model": {
-            "enum": [
-              "mistralai/mixtral-8x7b-instruct",
-              "meta-llama/llama-2-70b-chat",
-              "openhermes-2-yi-34b-gptq",
-              "dolphin-2.9-llama3-8b"
-            ]
           },
           "config": {
             "type": "object",
@@ -237,14 +275,11 @@
     {
       "if": {
         "properties": {
-          "provider": { "const": "openai" }
+          "plugin": { "const": "openai" }
         }
       },
       "then": {
         "properties": {
-          "plugin": {
-            "const": "openai"
-          },
           "plugin_config": {
             "type": "object",
             "additionalProperties": false,
@@ -256,9 +291,7 @@
             },
             "required": ["api_key_env_var"]
           },
-          "model": {
-            "enum": ["gpt-3.5-turbo", "gpt-4", "gpt-4o", "gpt-4o-mini"]
-          },
+
           "config": {
             "const": "<empty>"
           }
