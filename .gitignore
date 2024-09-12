@@ -140,3 +140,8 @@ consensus/node_configs.json
 
 # don't include the nodes configuration
 consensus/nodes/nodes.json
+
+# npm
+node_modules/
+package-lock.json
+package.json
