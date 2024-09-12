@@ -17,28 +17,29 @@ def test_default_providers_valid():
                 plugin="openai",
                 provider="custom provider",
                 model="custom model",
-                config="<empty>",
+                config={},
                 plugin_config={
                     "api_key_env_var": "some api key",
+                    "api_url": None,
                 },
             ),
             id="custom openai",
         ),
         pytest.param(
             LLMProvider(
-                plugin="heuristai",
-                provider="custom provider",
-                model="custom model",
+                plugin="openai",
+                provider="heuristai",
+                model="mistralai/mixtral-8x7b-instruct",
                 config={
                     "max_tokens": 100,
                     "temperature": 0.5,
                 },
                 plugin_config={
                     "api_key_env_var": "some api key",
-                    "api_url": "http://localhost:8000",
+                    "api_url": "https://llm-gateway.heurist.xyz",
                 },
             ),
-            id="custom heuristai",
+            id="heuristai",
         ),
         pytest.param(
             LLMProvider(

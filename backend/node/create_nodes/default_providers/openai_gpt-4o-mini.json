@@ -2,8 +2,9 @@
   "provider": "openai",
   "plugin": "openai",
   "model": "gpt-4o-mini",
-  "config": "<empty>",
+  "config": {},
   "plugin_config": {
-    "api_key_env_var": "OPENAIKEY"
+    "api_key_env_var": "OPENAIKEY",
+    "api_url": null
   }
 }

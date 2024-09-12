@@ -1,6 +1,6 @@
 {
   "provider": "heuristai",
-  "plugin": "heuristai",
+  "plugin": "openai",
   "model": "openhermes-2-yi-34b-gptq",
   "config": {
     "temperature": 0.75,

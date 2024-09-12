@@ -16,6 +16,7 @@ import asyncio
 from typing import Optional
 from openai import OpenAI, Stream
 from openai.types.chat import ChatCompletionChunk
+from urllib.parse import urljoin
 
 from dotenv import load_dotenv
 import requests
@@ -37,7 +38,7 @@ async def process_streaming_buffer(buffer: str, chunk: str, regex: str) -> str:
 
 async def stream_http_response(url, data):
     async with aiohttp.ClientSession(
-        connector=aiohttp.TCPConnector(verify_ssl=False)
+        connector=aiohttp.TCPConnector(ssl=False)
     ) as session:
         async with session.post(url, json=data, ssl=False) as response:
             async for chunk in response.content.iter_any():
@@ -50,7 +51,7 @@ async def call_ollama(
     regex: Optional[str],
     return_streaming_channel: Optional[asyncio.Queue],
 ) -> str:
-    url = get_ollama_url("generate")
+    url = urljoin(node_config[plugin_config_key]["api_url"], "generate")
 
     data = {"model": node_config["model"], "prompt": prompt}
 
@@ -82,34 +83,12 @@ async def call_openai(
     return_streaming_channel: Optional[asyncio.Queue],
 ) -> str:
     api_key_env_var = node_config[plugin_config_key]["api_key_env_var"]
-    client = get_openai_client(os.environ.get(api_key_env_var))
+    url = node_config[plugin_config_key]["api_url"]
+    client = get_openai_client(os.environ.get(api_key_env_var), url)
     # TODO: OpenAI exceptions need to be caught here
     stream = get_openai_stream(client, prompt, node_config)
 
     return await get_openai_output(stream, regex, return_streaming_channel)
-
-
-async def call_heuristai(
-    node_config: dict,
-    prompt: str,
-    regex: Optional[str],
-    return_streaming_channel: Optional[asyncio.Queue],
-) -> str:
-    api_key_env_var = node_config[plugin_config_key]["api_key_env_var"]
-    url = node_config[plugin_config_key]["api_url"]
-    client = get_openai_client(os.environ.get(api_key_env_var), os.environ.get(url))
-    stream = get_openai_stream(client, prompt, node_config)
-    # TODO: Get the line below working
-    # return await get_openai_output(stream, regex, return_streaming_channel)
-    output = ""
-    for chunk in stream:
-        # raise Exception(chunk.json(), dir(chunk), chunk.choices[0].delta.content)
-        try:
-            output += chunk.choices[0].delta.content
-        except Exception:
-            raise Exception(chunk.json(), dir(chunk))
-    # return stream.choices[0].message.content
-    return output
 
 
 def get_openai_client(api_key: str, url: str = None) -> OpenAI:
@@ -122,7 +101,7 @@ def get_openai_client(api_key: str, url: str = None) -> OpenAI:
 
 
 def get_openai_stream(client: OpenAI, prompt, node_config):
-    config = node_config["config"]
+    config: dict = node_config["config"]
     if "temperature" in config and "max_tokens" in config:
         return client.chat.completions.create(
             model=node_config["model"],
@@ -159,11 +138,9 @@ async def get_openai_output(
                 if "done" in chunk_str:
                     return buffer
         else:
-            return buffer
+            break
 
-
-def get_ollama_url(endpoint: str) -> str:
-    return f"{os.environ['OLAMAPROTOCOL']}://{os.environ['OLAMAHOST']}:{os.environ['OLAMAPORT']}/api/{endpoint}"
+    return buffer
 
 
 class Plugin(ABC):
@@ -249,43 +226,6 @@ class OpenAIPlugin(Plugin):
         return True
 
 
-class HeuristAIPlugin(Plugin):
-    def __init__(self, plugin_config: dict):
-        self.api_key_env_var = plugin_config["api_key_env_var"]
-        self.url = plugin_config["api_url"]
-
-    async def call(
-        self,
-        node_config: dict,
-        prompt: str,
-        regex: Optional[str],
-        return_streaming_channel: Optional[asyncio.Queue],
-    ) -> str:
-        return await call_heuristai(
-            node_config, prompt, regex, return_streaming_channel
-        )
-
-    def is_available(self) -> bool:
-        env_var = os.environ.get(self.api_key_env_var)
-
-        return (
-            env_var != None
-            and env_var != ""
-            and env_var != "<add_your_heuristai_api_key_here>"
-        )
-
-    def is_model_available(self, model: str) -> bool:
-        """
-        Model checks are done by the shema providers_schema.json
-        """
-        # heuristic_models_result = requests.get(os.environ['HEURISTAIMODELSURL']).json()
-        # heuristic_models = []
-        # for entry in heuristic_models_result:
-        #    heuristic_models.append(entry['name'])
-
-        return True
-
-
 def get_llm_plugin(plugin: str, plugin_config: dict) -> Plugin:
     """
     Function to register new providers
@@ -293,7 +233,6 @@ def get_llm_plugin(plugin: str, plugin_config: dict) -> Plugin:
     plugin_map = {
         "ollama": OllamaPlugin,
         "openai": OpenAIPlugin,
-        "heuristai": HeuristAIPlugin,
     }
 
     if plugin not in plugin_map:

@@ -6,7 +6,7 @@ def test_llm_providers():
     provider = {
         "provider": "openai",
         "model": "gpt-4",
-        "config": "<empty>",
+        "config": {},
         "plugin": "openai",
         "plugin_config": {"api_key_env_var": "OPENAIKEY"},
     }
@@ -19,7 +19,7 @@ def test_llm_providers():
     updated_provider = {
         "provider": "openai",
         "model": "gpt-4o",
-        "config": "<empty>",
+        "config": {},
         "plugin": "openai",
         "plugin_config": {"api_key_env_var": "OPENAIKEY"},
     }

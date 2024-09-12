@@ -1,6 +1,6 @@
 {
   "provider": "heuristai",
-  "plugin": "heuristai",
+  "plugin": "openai",
   "model": "dolphin-2.9-llama3-8b",
   "config": {
     "temperature": 0.75,
