@@ -153,6 +153,7 @@ class GenVM:
                     "response": {"status": "info", "message": captured_stdout},
                 }
                 self.msg_handler.socket_emit(socket_message)
+                print("Deploying contract:", captured_stdout)
 
         return self._generate_receipt(
             class_name,
@@ -221,6 +222,7 @@ class GenVM:
                     "response": {"status": "info", "message": captured_stdout},
                 }
                 self.msg_handler.socket_emit(socket_message)
+                print("Writing to contract:", captured_stdout)
 
         return self._generate_receipt(
             class_name,
@@ -355,6 +357,8 @@ class GenVM:
                 del globals()[name]
 
         if self.contract_runner.mode == ExecutionMode.LEADER:
+            print("Reading from contract:", method_name, method_args)
+            # FIXME: for some reason, the captured_stdout is empty - is that normal?
             # Retrieve the captured stdout and stderr
             captured_stdout = stdout_buffer.getvalue()
             if captured_stdout:
@@ -363,5 +367,6 @@ class GenVM:
                     "response": {"status": "info", "message": captured_stdout},
                 }
                 self.msg_handler.socket_emit(socket_message)
+                # print("Reading from contract:", captured_stdout)
 
         return result
