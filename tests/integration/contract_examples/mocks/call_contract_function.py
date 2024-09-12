@@ -32,7 +32,7 @@ call_contract_function_response = {
                 "function_name": str,
             },
             "from_address": str,
-            "id": int,
+            "hash": str,
             "status": str,
             "to_address": str,
             "type": int,
