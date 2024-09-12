@@ -8,7 +8,7 @@ def test_llm_providers():
         "model": "gpt-4",
         "config": {},
         "plugin": "openai",
-        "plugin_config": {"api_key_env_var": "OPENAIKEY"},
+        "plugin_config": {"api_key_env_var": "OPENAIKEY", "api_url": None},
     }
     # Create a new provider
     response = post_request_localhost(payload("add_provider", provider)).json()
@@ -21,7 +21,7 @@ def test_llm_providers():
         "model": "gpt-4o",
         "config": {},
         "plugin": "openai",
-        "plugin_config": {"api_key_env_var": "OPENAIKEY"},
+        "plugin_config": {"api_key_env_var": "OPENAIKEY", "api_url": None},
     }
     # Uodate it
     response = post_request_localhost(
