@@ -4,7 +4,7 @@ from tests.common.request import (
     payload,
     post_request_localhost,
     wait_for_transaction,
-    call_contract_method,
+    send_transaction,
 )
 
 
@@ -79,7 +79,7 @@ def test_accounts_transfers():
 
     # Test transfer
     transfer_amount = 200
-    _, transaction_response_call_1 = call_contract_method(
+    _, transaction_response_call_1 = send_transaction(
         account_1, account_2.address, None, None, transfer_amount
     )
     assert has_success_status(transaction_response_call_1)
@@ -117,7 +117,7 @@ def test_accounts_burn():
 
     # Test burn
     burn_amount = 200
-    _, transaction_response_call_1 = call_contract_method(
+    _, transaction_response_call_1 = send_transaction(
         account_1, None, None, None, burn_amount
     )
     assert has_success_status(transaction_response_call_1)

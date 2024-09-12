@@ -2,7 +2,7 @@
 
 from tests.common.request import (
     deploy_intelligent_contract,
-    call_contract_method,
+    send_transaction,
     payload,
     post_request_localhost,
 )
@@ -51,7 +51,7 @@ def test_wizard_of_coin():
     contract_address = call_method_response_deploy["result"]["data"]["contract_address"]
 
     # Call Contract Function
-    _, transaction_response_call_1 = call_contract_method(
+    _, transaction_response_call_1 = send_transaction(
         from_account,
         contract_address,
         "ask_for_coin",
