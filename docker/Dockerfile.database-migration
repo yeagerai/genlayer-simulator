@@ -1,5 +1,20 @@
-ARG BASE_IMAGE
-FROM ${BASE_IMAGE}
+# base image mostly copied from Dockerfile.backend to reuse cache
+FROM python:3.12.5-slim AS base
+
+ARG path=/app
+WORKDIR $path
+
+ADD backend/protocol_rpc/requirements.txt backend/protocol_rpc/requirements.txt
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu \
+    && pip install --no-cache-dir -r backend/protocol_rpc/requirements.txt
+
+ENV TRANSFORMERS_CACHE /home/backend-user/.cache/huggingface
+
+COPY ../.env .
+COPY backend $path/backend
+
+FROM base AS migration
 
 ENV PYTHONPATH ""
 WORKDIR /app/backend/database_handler

@@ -15,8 +15,8 @@ RUN groupadd -r backend-group \
     && chown -R backend-user:backend-group $path
 
 ENV PYTHONPATH "${PYTHONPATH}:/${path}"
-ENV FLASK_APP=backend/protocol_rpc/server.py
-ENV TRANSFORMERS_CACHE=/home/backend-user/.cache/huggingface
+ENV FLASK_APP backend/protocol_rpc/server.py
+ENV TRANSFORMERS_CACHE /home/backend-user/.cache/huggingface
 
 COPY ../.env .
 COPY backend $path/backend

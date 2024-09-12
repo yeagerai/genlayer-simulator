@@ -78,26 +78,12 @@ services:
     #volumes:
     #  - "./data/postgres:/var/lib/postgresql/data"
 
-  # Used for caching
-  build-backend-base:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.backend
-      target: base
-    image: backend-base:latest
-    pull_policy: build
-
   database-migration:
     build:
       context: .
       dockerfile: docker/Dockerfile.database-migration
-      args:
-        BASE_IMAGE: backend-base:latest
-    pull_policy: never
     environment:
       - DB_URL=postgresql://${DBUSER}:${DBUSER}@postgres/${DBNAME}
     depends_on:
-      build-backend-base:
-        condition: service_completed_successfully
       postgres:
         condition: service_healthy
