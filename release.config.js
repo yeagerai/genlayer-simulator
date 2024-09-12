@@ -16,7 +16,6 @@ module.exports = {
             {
                 "preset": "conventionalcommits",
                 "presetConfig": {
-                    "header": "What's Changed",
                     "types": [
                         { "type": "feat", "section": "Features" },
                         { "type": "fix", "section": "Bug Fixes" },
