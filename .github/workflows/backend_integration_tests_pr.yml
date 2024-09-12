@@ -62,6 +62,7 @@ jobs:
 
       - name: Build Docker images
         run: |
+          docker compose build build-backend-base
           docker compose build --with-dependencies
 
       - name: Run Docker Compose
