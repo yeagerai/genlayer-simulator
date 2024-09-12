@@ -5,15 +5,8 @@ export interface JsonRPCRequest {
 
 export interface GetContractStateRequest {
   contractAddress: string;
-  method: string;
-  methodArguments: any[];
-}
-
-export interface CallContractFunctionRequest {
   userAccount: string;
-  contractAddress: string;
-  method: string;
-  params: any[];
+  data: string;
 }
 
 export interface DeployContractRequest {

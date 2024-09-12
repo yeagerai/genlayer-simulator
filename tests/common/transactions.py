@@ -10,7 +10,7 @@ def encode_transaction_data(data: list) -> str:
     return to_hex(serialized_data)
 
 
-def construct_signed_transaction(
+def sign_transaction(
     account: Account, data: list = None, to: str = None, value: int = 0
 ) -> dict:
     transaction = {

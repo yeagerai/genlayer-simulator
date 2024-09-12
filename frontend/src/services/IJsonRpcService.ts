@@ -4,8 +4,6 @@ import type {
   JsonRPCResponse,
   JsonRpcResult,
   GetContractStateResult,
-  CallContractFunctionResult,
-  CallContractFunctionRequest,
   DeployContractRequest,
   GetDeployedContractSchemaRequest,
   CreateValidatorRequest,
@@ -19,9 +17,6 @@ export interface IJsonRpcService {
   getContractState(
     request: GetContractStateRequest,
   ): Promise<JsonRpcResult<GetContractStateResult>>;
-  callContractFunction(
-    request: CallContractFunctionRequest,
-  ): Promise<JsonRpcResult<CallContractFunctionResult>>;
   sendTransaction(singedTransaction: string): Promise<JsonRpcResult<any>>;
   deployContract(request: DeployContractRequest): Promise<JsonRpcResult<any>>;
   getContractSchema(
