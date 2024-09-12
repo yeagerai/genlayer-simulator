@@ -18,7 +18,6 @@ def sign_transaction(
         "gasPrice": 0,
         "gas": 0,
         "to": to,
-        "value": 0,
         "data": data,
         "value": value,
     }
