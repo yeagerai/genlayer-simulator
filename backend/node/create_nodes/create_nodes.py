@@ -5,7 +5,7 @@ from numpy.random import default_rng
 from dotenv import load_dotenv
 
 from backend.domain.types import LLMProvider
-from backend.node.genvm.llms import get_llm_plugin
+from backend.node.genvm.llms import Plugin
 
 load_dotenv()
 rng = default_rng(secrets.randbits(128))
@@ -13,6 +13,7 @@ rng = default_rng(secrets.randbits(128))
 
 def random_validator_config(
     get_stored_providers: Callable[[], List[LLMProvider]],
+    get_llm_plugin: Callable[[str, dict], Plugin],
     limit_providers: set[str] = None,
     limit_models: set[str] = None,
     amount: int = 1,
@@ -37,7 +38,6 @@ def random_validator_config(
         )
 
     def filter_by_available(provider: LLMProvider) -> bool:
-        # TODO: we should probably inject the `get_llm_plugin` function to be able to mock it in tests
         plugin = get_llm_plugin(provider.plugin, provider.plugin_config)
         if not plugin.is_available():
             return False

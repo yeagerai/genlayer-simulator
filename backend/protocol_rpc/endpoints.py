@@ -11,9 +11,9 @@ from backend.database_handler.models import Base
 from backend.domain.types import LLMProvider, Validator
 from backend.node.create_nodes.providers import (
     get_default_provider_for,
-    get_default_providers,
     validate_provider,
 )
+from backend.node.genvm.llms import get_llm_plugin
 from backend.protocol_rpc.configuration import GlobalConfiguration
 from backend.protocol_rpc.message_handler.base import MessageHandler
 from backend.database_handler.accounts_manager import AccountsManager
@@ -240,6 +240,7 @@ def create_random_validators(
 
     details = random_validator_config(
         llm_provider_registry.get_all,
+        get_llm_plugin,
         limit_providers=set(limit_providers),
         limit_models=set(limit_models),
         amount=count,
