@@ -248,7 +248,7 @@ class ConsensusAlgorithm:
             # If the sender does not have enough balance, set the transaction status to UNDETERMINED
             if from_balance < transaction["value"]:
                 transactions_processor.update_transaction_status(
-                    transaction["id"], TransactionStatus.UNDETERMINED
+                    transaction["hash"], TransactionStatus.UNDETERMINED
                 )
                 return
 
@@ -267,5 +267,5 @@ class ConsensusAlgorithm:
             )
 
         transactions_processor.update_transaction_status(
-            transaction["id"], TransactionStatus.FINALIZED
+            transaction["hash"], TransactionStatus.FINALIZED
         )
