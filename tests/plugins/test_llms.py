@@ -6,7 +6,7 @@ The purpose of these tests is to have a small feedback loop for developing the L
 """
 
 import asyncio
-from backend.node.genvm.llms import OllamaPlugin, OpenAIPlugin
+from backend.node.genvm.llms import AnthropicPlugin, OllamaPlugin, OpenAIPlugin
 
 
 def test_openai_plugin():
@@ -87,6 +87,29 @@ def test_ollama_plugin():
     }
 
     plugin = OllamaPlugin(plugin_config)
+    result = asyncio.run(
+        plugin.call(
+            node_config=node_config,
+            prompt="Once upon a time",
+            regex=None,
+            return_streaming_channel=None,
+        )
+    )
+
+    print(result)
+    assert result != None and result != "" and isinstance(result, str)
+
+
+def test_anthropic_plugin():
+    plugin_config = {"api_key_env_var": "ANTROPIC_API_KEY"}
+    node_config = {
+        "provider": "anthropic",
+        "model": "claude-3-5-sonnet-20240620",
+        "config": {"max_tokens": 10},
+        "plugin_config": plugin_config,
+    }
+
+    plugin = AnthropicPlugin(plugin_config)
     result = asyncio.run(
         plugin.call(
             node_config=node_config,

@@ -42,7 +42,7 @@ jobs:
       - name: Copy .env file
         run: cp .env.example .env
 
-      # TODO: we should also add a heuristai key to the e2e tests
+      # TODO: we should also add also heuristai and anthropic keys to the e2e tests and test all providers
 
       - name: Set OPENAIKEY in the .env file so it can be loaded from the environment
         env:

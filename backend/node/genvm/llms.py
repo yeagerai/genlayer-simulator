@@ -16,6 +16,7 @@ import asyncio
 from typing import Optional
 from openai import OpenAI, Stream
 from openai.types.chat import ChatCompletionChunk
+from anthropic import AsyncAnthropic
 from urllib.parse import urljoin
 
 from dotenv import load_dotenv
@@ -224,6 +225,65 @@ class OpenAIPlugin(Plugin):
         Model checks are done by the shema providers_schema.json
         """
         return True
+
+
+class AnthropicPlugin(Plugin):
+    def __init__(self, plugin_config: dict):
+        self.api_key_env_var = plugin_config["api_key_env_var"]
+        self.url = plugin_config["api_url"]
+
+    async def call(
+        self,
+        node_config: dict,
+        prompt: str,
+        regex: Optional[str],
+        return_streaming_channel: Optional[asyncio.Queue],
+    ) -> str:
+        if self.url:
+            client = AsyncAnthropic(api_key=self.get_api_key(), base_url=self.url)
+        else:
+            client = AsyncAnthropic(api_key=self.get_api_key())
+
+        buffer = ""
+        async with client.messages.create(
+            model=node_config["model"],
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
+            stream=True,
+            **node_config[
+                "config"
+            ],  # max_tokens, temperature, top_k, top_p, timeout, stop_sequences
+        ) as stream:
+            async for event in stream:
+                if event.type == "text":
+                    buffer += event.text
+                    if return_streaming_channel is not None:
+                        await return_streaming_channel.put(event.text)
+                    match = re.search(regex, buffer)
+                    if match:
+                        return match.group(0)
+                elif event.type == "content_block_stop":
+                    break
+
+        return await stream.get_final_message()
+
+    def is_available(self) -> bool:
+        env_var = self.get_api_key()
+
+        return env_var != None and env_var != ""
+
+    def is_model_available(self, model: str) -> bool:
+        """
+        Model checks are done by the shema providers_schema.json
+        """
+        return True
+
+    def get_api_key(self):
+        return os.environ.get(self.api_key_env_var)
 
 
 def get_llm_plugin(plugin: str, plugin_config: dict) -> Plugin:

@@ -5,7 +5,7 @@
   "properties": {
     "provider": {
       "type": "string",
-      "examples": ["ollama", "heuristai", "openai"]
+      "examples": ["ollama", "heuristai", "openai", "anthropic"]
     },
     "model": {
       "type": "string"
@@ -15,7 +15,7 @@
     },
     "plugin": {
       "$comment": "plugin to be loaded by the simulator to interact with the provider",
-      "enum": ["heuristai", "openai", "ollama"]
+      "enum": ["heuristai", "openai", "ollama", "anthropic"]
     },
     "plugin_config": {
       "type": "object"
@@ -71,6 +71,28 @@
           },
           "model": {
             "enum": ["gpt-4", "gpt-4o", "gpt-4o-mini"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "provider": { "const": "anthropic" }
+        }
+      },
+      "then": {
+        "properties": {
+          "plugin": {
+            "const": "anthropic"
+          },
+          "model": {
+            "enum": [
+              "claude-3-5-sonnet-20240620",
+              "claude-3-opus-20240229",
+              "claude-3-sonnet-20240229",
+              "claude-3-haiku-20240307"
+            ]
           }
         }
       }
@@ -260,6 +282,79 @@
                 "default": 500
               }
             }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "plugin": { "const": "anthropic" }
+        }
+      },
+      "then": {
+        "properties": {
+          "plugin_config": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "api_key_env_var": {
+                "type": "string",
+                "$comment": "Environment variable that contains the API key"
+              },
+              "api_url": {
+                "type": ["string", "null"],
+                "$comment": "URL of the API endpoint. `null` is used to represent the official API"
+              }
+            },
+            "required": ["api_key_env_var", "api_url"]
+          },
+          "config": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "temperature": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "multipleOf": 0.05,
+                "default": 0.75
+              },
+              "max_tokens": {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 2000,
+                "multipleOf": 10,
+                "default": 500
+              },
+              "top_k": {
+                "type": "integer",
+                "minimum": 2,
+                "maximum": 100,
+                "default": 40
+              },
+              "top_p": {
+                "type": "number",
+                "minimum": 0.5,
+                "maximum": 0.99,
+                "multipleOf": 0.01,
+                "default": 0.9
+              },
+              "timeout": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 60,
+                "default": 10
+              },
+              "stop_sequences": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "default": []
+              }
+            },
+            "required": ["max_tokens"]
           }
         }
       }
