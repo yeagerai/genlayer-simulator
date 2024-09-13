@@ -10,6 +10,7 @@ import type {
   UpdateValidatorRequest,
   DeleteValidatorRequest,
   GetContractSchemaRequest,
+  GetProvidersAndModelsData,
 } from '@/types';
 
 export interface IJsonRpcService {
@@ -26,7 +27,7 @@ export interface IJsonRpcService {
     request: GetDeployedContractSchemaRequest,
   ): Promise<JsonRpcResult<any>>;
   getValidators(): Promise<JsonRpcResult<any>>;
-  getProvidersAndModels(): Promise<JsonRpcResult<any>>;
+  getProvidersAndModels(): Promise<JsonRpcResult<GetProvidersAndModelsData>>;
   createValidator(request: CreateValidatorRequest): Promise<JsonRpcResult<any>>;
   updateValidator(request: UpdateValidatorRequest): Promise<JsonRpcResult<any>>;
   deleteValidator(request: DeleteValidatorRequest): Promise<JsonRpcResult<any>>;

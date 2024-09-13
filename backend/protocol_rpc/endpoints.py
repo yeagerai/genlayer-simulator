@@ -177,9 +177,9 @@ def create_validator(
     stake: int,
     provider: str,
     model: str,
-    config: dict | None,
-    plugin: str | None,
-    plugin_config: dict | None,
+    config: dict | None = None,
+    plugin: str | None = None,
+    plugin_config: dict | None = None,
 ) -> dict:
     # fallback for default provider
     # TODO: only accept all or none of the config fields
@@ -266,27 +266,35 @@ def update_validator(
     stake: int,
     provider: str,
     model: str,
-    config: dict,
-    plugin: str,
-    plugin_config: dict,
+    config: dict | None = None,
+    plugin: str | None = None,
+    plugin_config: dict | None = None,
 ) -> dict:
     # Remove validation while adding migration to update the db address
     # if not accounts_manager.is_valid_address(validator_address):
     #     raise InvalidAddressError(validator_address)
-    llm_provider = LLMProvider(
-        provider=provider,
-        model=model,
-        config=config,
-        plugin=plugin,
-        plugin_config=plugin_config,
-        id=None,
-    )
-    validate_provider(llm_provider)
+
+    # fallback for default provider
+    # TODO: only accept all or none of the config fields
+    llm_provider = None
+    if not (plugin and plugin_config):
+        llm_provider = get_default_provider_for(provider, model)
+        if config:
+            llm_provider.config = config
+    else:
+        llm_provider = LLMProvider(
+            provider=provider,
+            model=model,
+            config=config,
+            plugin=plugin,
+            plugin_config=plugin_config,
+        )
+        validate_provider(llm_provider)
+
     validator = Validator(
         address=validator_address,
         stake=stake,
         llmprovider=llm_provider,
-        id=None,
     )
     return validators_registry.update_validator(validator)
 

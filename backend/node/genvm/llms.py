@@ -27,7 +27,7 @@ load_dotenv()
 plugin_config_key = "plugin_config"
 
 
-async def process_streaming_buffer(buffer: str, chunk: str, regex: str) -> str:
+async def process_streaming_buffer(buffer: str, chunk: str, regex: str) -> dict:
     updated_buffer = buffer + chunk
     if regex:
         match = re.search(regex, updated_buffer)
@@ -65,7 +65,6 @@ async def call_ollama(
         if return_streaming_channel is not None:
             if not chunk.get("done"):
                 await return_streaming_channel.put(chunk)
-                continue
             else:
                 await return_streaming_channel.put({"done": True})
         else:
