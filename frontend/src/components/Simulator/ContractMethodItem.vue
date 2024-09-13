@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ContractMethod } from '@/types';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { Collapse } from 'vue-collapsed';
 import { useInputMap } from '@/hooks';
 import { notify } from '@kyvg/vue3-notification';
@@ -20,6 +20,12 @@ const props = defineProps<{
 const isExpanded = ref(false);
 const inputs = ref<{ [k: string]: any }>({});
 const responseMessage = ref('');
+
+const missingParams = computed(() => {
+  return props.method.inputs.some(
+    (input: any) => inputs.value[input.name] === '',
+  );
+});
 
 const handleCallReadMethod = async () => {
   responseMessage.value = '';
@@ -130,6 +136,8 @@ onMounted(() => {
             @click="handleCallReadMethod"
             tiny
             :data-testid="`read-method-btn-${method.name}`"
+            :disabled="missingParams"
+            v-tooltip="missingParams ? 'All parameters are required' : ''"
             >Call Contract</Btn
           >
 
