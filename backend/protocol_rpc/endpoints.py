@@ -75,26 +75,6 @@ def fund_account(
     return {"transaction_hash": transaction_hash}
 
 
-def send_transaction(
-    transactions_processor: TransactionsProcessor,
-    accounts_manager: AccountsManager,
-    from_account: str,
-    to_account: str,
-    amount: int,
-) -> dict:
-    if not accounts_manager.is_valid_address(from_account):
-        raise InvalidAddressError(from_account)
-
-    if not accounts_manager.is_valid_address(to_account):
-        raise InvalidAddressError(to_account)
-
-    transaction_hash = transactions_processor.insert_transaction(
-        from_account, to_account, None, amount, 0
-    )
-
-    return {"transaction_hash": transaction_hash}
-
-
 ####### CONTRACT CODE SCHEMA ENDPOINTS #######
 def get_contract_schema(
     accounts_manager: AccountsManager,
