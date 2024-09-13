@@ -139,7 +139,7 @@ class GenVM:
                             "status": "error",
                             "message": f"{str(e)} ;; {trace}",
                         },
-                    }
+                    },
                 )
 
             ## Clean up
@@ -371,9 +371,9 @@ class GenVM:
             # Retrieve the captured stdout and stderr
             # captured_stdout = stdout_buffer.getvalue()
             # if captured_stdout:
-                # socket_message = {
-                #     "function": "intelligent_contract_execution",
-                #     "response": {"status": "info", "message": captured_stdout},
-                # }
-        
+            # socket_message = {
+            #     "function": "intelligent_contract_execution",
+            #     "response": {"status": "info", "message": captured_stdout},
+            # }
+
         return result

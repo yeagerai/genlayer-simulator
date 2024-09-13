@@ -76,7 +76,6 @@ export const useNodeStore = defineStore('nodeStore', () => {
     });
   });
 
-
   // TODO: remake payloads for rpc calls and responses, split into two events
   // webSocketClient.on('rpc_call', (data: RPCResponseEventData) => {
   //   addLog({
