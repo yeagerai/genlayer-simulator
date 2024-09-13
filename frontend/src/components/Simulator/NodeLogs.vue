@@ -14,11 +14,11 @@ type ColorMapType = {
   [key: string]: string; // Add index signature
 };
 const colorMap: ComputedRef<ColorMapType> = computed(() => ({
-  contractLog: uiStore.mode === 'light' ? 'text-black' : 'text-white',
-  info: 'text-blue-500',
-  error: 'text-red-500',
-  warning: 'text-yellow-500',
-  success: 'text-green-500',
+  // contractLog: uiStore.mode === 'light' ? 'text-black' : 'text-white',
+  info: 'text-blue-400',
+  error: 'text-red-400',
+  warning: 'text-yellow-400',
+  success: 'text-green-400',
 }));
 
 watch(nodeStore.logs, () => {
@@ -52,52 +52,40 @@ watch(nodeStore.logs, () => {
     >
       <div
         v-show="nodeStore.logs.length > 0"
-        class="relative flex flex-col overflow-y-auto scroll-smooth p-1 pr-8"
+        class="relative flex flex-col overflow-y-auto scroll-smooth"
         ref="scrollContainer"
       >
         <div
-          v-for="({ message, date }, index) in nodeStore.logs"
+          v-for="(
+            { category, event, type, message, data }, index
+          ) in nodeStore.logs"
           :key="index"
-          class="flex items-center"
+          class="flex flex-row border-b border-gray-200 px-1 py-1 font-mono text-[10px] first-line:items-center dark:border-zinc-800"
         >
-          <div
-            class="flex items-start"
-            :class="colorMap[message?.response?.status] || 'text-black-500'"
-          >
-            <div class="flex text-xs font-light">
-              <span class="flex w-8 flex-col items-center">{{
-                index + 1
-              }}</span>
-              {{ date }} ::
+          <div class="flex flex-row gap-1">
+            <div class="rounded bg-gray-800 px-[3px] py-[1px]">
+              {{ category }}
             </div>
+
             <div
-              v-if="typeof message === 'string'"
-              class="ml-1 flex flex-1 text-xs"
+              class="rounded bg-gray-800 px-[3px] py-[1px]"
+              :class="colorMap[type]"
             >
-              "{{ message }}
+              {{ event }}
             </div>
-            <div v-else class="ml-1 flex flex-1 text-xs">
-              {{ message.function }}
-              {{
-                message?.response?.message
-                  ? ` ===> ${message.response.message}`
-                  : ''
-              }}
-              <div
-                class="ml-2 flex text-xs"
-                v-if="typeof message.response?.data === 'string'"
-              >
-                {{ message.response?.data || '' }}
-              </div>
-              <JsonViewer
-                class="ml-2"
-                v-if="message.response?.data"
-                :value="message.response?.data"
-                :theme="uiStore.mode === 'light' ? 'light' : 'dark'"
-                :expand="false"
-                sort
-              />
+
+            <div :class="colorMap[type]">
+              {{ message }}
             </div>
+
+            <JsonViewer
+              class="ml-2"
+              v-if="data"
+              :value="data"
+              :theme="uiStore.mode === 'light' ? 'light' : 'dark'"
+              :expand="false"
+              sort
+            />
           </div>
         </div>
       </div>

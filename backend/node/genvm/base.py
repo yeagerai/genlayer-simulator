@@ -131,7 +131,9 @@ class GenVM:
                 print(trace)
                 error = e
                 execution_result = ExecutionResultStatus.ERROR
+                # TODO:
                 self.msg_handler.socket_emit(
+                    "deploy_contract",
                     {
                         "function": "intelligent_contract_execution",
                         "response": {
@@ -152,7 +154,7 @@ class GenVM:
                     "function": "intelligent_contract_execution",
                     "response": {"status": "info", "message": captured_stdout},
                 }
-                self.msg_handler.socket_emit(socket_message)
+                self.msg_handler.socket_emit("genvm_deploy_contract", captured_stdout)
                 print("Deploying contract:", captured_stdout)
 
         return self._generate_receipt(
@@ -204,6 +206,7 @@ class GenVM:
                 else:
                     function_to_run(*args)
             except Exception as e:
+                # TODO:
                 print("\nError running contract", e)
                 print(f"\n{traceback.format_exc()}")
                 error = e
@@ -219,9 +222,10 @@ class GenVM:
             if captured_stdout:
                 socket_message = {
                     "function": "intelligent_contract_execution",
+                    # function_name TODO: ????
                     "response": {"status": "info", "message": captured_stdout},
                 }
-                self.msg_handler.socket_emit(socket_message)
+                self.msg_handler.socket_emit("genvm_run_contract", captured_stdout)
                 print("Writing to contract:", captured_stdout)
 
         return self._generate_receipt(
@@ -357,16 +361,20 @@ class GenVM:
                 del globals()[name]
 
         if self.contract_runner.mode == ExecutionMode.LEADER:
-            print("Reading from contract:", method_name, method_args)
+            socket_message = {
+                "method_name": method_name,
+                "method_args": method_args,
+            }
+            self.msg_handler.socket_emit("genvm_read_contract", socket_message)
+            print("Reading from contract:", socket_message)
+
             # FIXME: for some reason, the captured_stdout is empty - is that normal?
             # Retrieve the captured stdout and stderr
-            captured_stdout = stdout_buffer.getvalue()
-            if captured_stdout:
-                socket_message = {
-                    "function": "intelligent_contract_execution",
-                    "response": {"status": "info", "message": captured_stdout},
-                }
-                self.msg_handler.socket_emit(socket_message)
-                # print("Reading from contract:", captured_stdout)
-
+            # captured_stdout = stdout_buffer.getvalue()
+            # if captured_stdout:
+                # socket_message = {
+                #     "function": "intelligent_contract_execution",
+                #     "response": {"status": "info", "message": captured_stdout},
+                # }
+        
         return result

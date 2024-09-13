@@ -23,13 +23,13 @@ def generate_rpc_endpoint(
         )
         send_message = partial(msg_handler.send_message, function.__name__)
         if shouldPrintInfoLogs:
-            send_message(EndpointResult(EndpointResultStatus.INFO, "Starting..."))
+            send_message(EndpointResult(EndpointResultStatus.INFO, f"Calling: {function.__name__}"))
 
         try:
             function_result = function(*args, **kwargs)
             result = EndpointResult(
                 EndpointResultStatus.SUCCESS,
-                f"Endpoint {function.__name__} successfully executed",
+                f"Success: {function.__name__}",
                 function_result,
             )
             if shouldPrintInfoLogs:

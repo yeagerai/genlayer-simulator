@@ -50,8 +50,8 @@ def create_app():
     accounts_manager = AccountsManager(sqlalchemy_db.session)
     validators_registry = ValidatorsRegistry(sqlalchemy_db.session)
     llm_provider_registry = LLMProviderRegistry(sqlalchemy_db.session)
-
     consensus = ConsensusAlgorithm(genlayer_db_client, msg_handler)
+
     return (
         app,
         jsonrpc,
