@@ -30,6 +30,7 @@ def format_response(function_name: str, result: EndpointResult) -> FormattedResp
 
 class MessageHandler:
 
+    # TODO: ??
     status_mappings = {
         "debug": "info",
         "info": "info",
@@ -42,8 +43,8 @@ class MessageHandler:
         self.socketio = socketio
         setup_logging_config()
 
-    def socket_emit(self, message):
-        self.socketio.emit("status_update", {"message": message})
+    def socket_emit(self, event, data):
+        self.socketio.emit(event, data)
 
     def log_message(self, function_name, result: EndpointResult):
         logging_status = self.status_mappings[result.status.value]
@@ -68,4 +69,4 @@ class MessageHandler:
         self.log_message(function_name, result)
 
         formatted_response = format_response(function_name, result)
-        self.socket_emit(formatted_response.to_json())
+        self.socket_emit("rpc_response", formatted_response.to_json())

@@ -8,11 +8,18 @@ from .models import TransactionStatus
 from hashlib import sha3_256
 from eth_utils import to_bytes, keccak, is_address
 import json
+from backend.protocol_rpc.message_handler.base import MessageHandler
 
 
 class TransactionsProcessor:
-    def __init__(self, session: Session):
+    def __init__(
+        self,
+        session: Session,
+        msg_handler: MessageHandler = None,
+    ):
         self.session = session
+        self.msg_handler = msg_handler
+        print(msg_handler)
 
     @staticmethod
     def _parse_transaction_data(transaction_data: Transactions) -> dict:
@@ -141,6 +148,7 @@ class TransactionsProcessor:
 
         transaction.status = new_status
         self.session.commit()
+        self.dispatch_transaction_status_update(transaction_hash, new_status)
 
     def set_transaction_result(self, transaction_hash: str, consensus_data: dict):
         transaction = (
@@ -156,3 +164,18 @@ class TransactionsProcessor:
             TransactionStatus.FINALIZED.value,
         )
         self.session.commit()
+        self.dispatch_transaction_status_update(
+            transaction_hash, TransactionStatus.FINALIZED
+        )
+
+    def dispatch_transaction_status_update(
+        self, transaction_hash: str, new_status: TransactionStatus
+    ):
+        if self.msg_handler:
+            self.msg_handler.socket_emit(
+                "transaction_status_update",
+                {
+                    "hash": str(transaction_hash),
+                    "new_status": str(new_status.value),
+                },
+            )

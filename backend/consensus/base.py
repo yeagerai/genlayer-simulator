@@ -72,7 +72,7 @@ class ConsensusAlgorithm:
                             tg.create_task(
                                 self.exec_transaction(
                                     transaction,
-                                    TransactionsProcessor(session),
+                                    TransactionsProcessor(session, self.msg_handler),
                                     ChainSnapshot(session),
                                     AccountsManager(session),
                                     session,
@@ -198,6 +198,9 @@ class ConsensusAlgorithm:
             validators=validators_results,
         ).to_dict()
 
+        self.msg_handler.socket_emit("update_consensus_data", consensus_data)
+        print('update_consensus_data', consensus_data)
+
         # Register contract if it is a new contract
         if transaction["type"] == 1:
             new_contract = {
@@ -225,6 +228,8 @@ class ConsensusAlgorithm:
         transactions_processor: TransactionsProcessor,
         accounts_manager: AccountsManager,
     ):
+        
+        # TODO: dispatch event
         """
         Executes a native token transfer between Externally Owned Accounts (EOAs).
 

@@ -18,17 +18,48 @@ export interface DeployedContract {
 }
 
 export interface NodeLog {
-  date: string;
-  message: {
-    function: string;
-    trace_id: string;
-    response: {
-      status: string;
-      message: string;
-      data?: any;
-    };
+  category: string;
+  event: string;
+  type: 'error' | 'warning' | 'info' | 'success';
+  message: string;
+  data: any;
+  // message: {
+  //   function: string;
+  //   trace_id: string;
+  //   response: {
+  //     status: string;
+  //     message: string;
+  //     data?: any;
+  //   };
+  // };
+  // mock?: boolean;
+}
+
+// export interface RPCLog extends NodeLog {
+//   data: {
+//     function: string;
+//     trace_id: string;
+//     response: {
+//       status: string;
+//       message: string;
+//       data?: any;
+//     };
+//   };
+// }
+
+export interface RPCResponseEventData {
+  function_name: string;
+  trace_id: string;
+  response: {
+    status: 'error' | 'warning' | 'info' | 'success';
+    message: string;
+    data?: any;
   };
-  mock?: boolean;
+}
+
+export interface TransactionStatusUpdateEventData {
+  hash: string;
+  new_status: string;
 }
 
 export interface TransactionItem {

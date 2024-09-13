@@ -46,8 +46,8 @@ def create_app():
     transactions_processor = TransactionsProcessor(sqlalchemy_db.session)
     accounts_manager = AccountsManager(sqlalchemy_db.session)
     validators_registry = ValidatorsRegistry(sqlalchemy_db.session)
-
     consensus = ConsensusAlgorithm(genlayer_db_client, msg_handler)
+
     return (
         app,
         jsonrpc,

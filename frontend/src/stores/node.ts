@@ -1,4 +1,10 @@
-import type { NodeLog, NewValidatorDataModel, ValidatorModel } from '@/types';
+import type {
+  NodeLog,
+  NewValidatorDataModel,
+  ValidatorModel,
+  RPCResponseEventData,
+  TransactionStatusUpdateEventData,
+} from '@/types';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { useContractsStore } from './contracts';
@@ -9,44 +15,96 @@ export const useNodeStore = defineStore('nodeStore', () => {
   const rpcClient = useRpcClient();
   const webSocketClient = useWebSocketClient();
   const logs = ref<NodeLog[]>([]);
-  const listenWebsocket = ref<boolean>(true);
+  // const listenWebsocket = ref<boolean>(true);
   const contractsStore = useContractsStore();
   const nodeProviders = ref<Record<string, string[]>>({});
-  // state
   const validators = ref<ValidatorModel[]>([]);
   const isLoadingValidatorData = ref<boolean>(true);
 
   if (!webSocketClient.connected) webSocketClient.connect();
-  webSocketClient.on('status_update', (event) => {
-    if (listenWebsocket.value) {
-      if (event.message?.function !== 'get_transaction_by_hash') {
-        if (event.message?.function === 'intelligent_contract_execution') {
-          const executionLogs: string[] =
-            event.message.response.message.split('\n\n');
-          executionLogs
-            .filter((log: string) => log.trim().length > 0)
-            .forEach((log: string) => {
-              logs.value.push({
-                date: new Date().toISOString(),
-                message: {
-                  function: 'Intelligent Contract Execution Log',
-                  trace_id: String(Math.random() * 100),
-                  response: {
-                    status: 'contractLog',
-                    message: log,
-                  },
-                },
-              });
-            });
-        } else {
-          logs.value.push({
-            date: new Date().toISOString(),
-            message: event.message,
-          });
-        }
-      }
-    }
+
+  // TODO: Consider moving most of this to the backend and log everything there as well
+  // TODO: add category to logs
+
+  webSocketClient.on('genvm_deploy_contract', (data: any) => {
+    addLog({
+      category: 'GenVM',
+      event: 'Deploy',
+      type: 'info',
+      message: 'Deploying contract',
+      data: data,
+    });
   });
+
+  webSocketClient.on('genvm_run_contract', (data: any) => {
+    addLog({
+      category: 'GenVM',
+      event: 'Write',
+      type: 'info',
+      message: 'Writing to contract',
+      data: data,
+    });
+  });
+
+  webSocketClient.on('genvm_read_contract', (data: any) => {
+    addLog({
+      category: 'GenVM',
+      event: 'Read',
+      type: 'info',
+      message: data.method_name,
+      data: data,
+    });
+  });
+
+  webSocketClient.on('update_consensus_data', (data: RPCResponseEventData) => {
+    addLog({
+      category: 'Consensus',
+      event: 'Consensus Update',
+      type: 'info',
+      message: 'xx',
+      data: data,
+    });
+  });
+
+  webSocketClient.on('rpc_response', (data: RPCResponseEventData) => {
+    addLog({
+      category: 'RPC',
+      event: data.response.status === 'info' ? 'Called' : 'Response',
+      type: data.response.status,
+      message: data.function_name,
+      data: data,
+    });
+  });
+
+
+  // TODO: remake payloads for rpc calls and responses, split into two events
+  // webSocketClient.on('rpc_call', (data: RPCResponseEventData) => {
+  //   addLog({
+  //     category: 'RPC',
+  //     event: 'Called Endpoint',
+  //     type: data.response.status,
+  //     message: data.function_name,
+  //     data: data,
+  //   });
+  // });
+
+  webSocketClient.on(
+    'transaction_status_update',
+    (data: TransactionStatusUpdateEventData) => {
+      // console.log('transaction_status_update', data);
+      addLog({
+        category: 'Transactions',
+        event: 'Updated Transaction',
+        type: 'info',
+        message: data.new_status + ' ' + data.hash,
+        data: data,
+      });
+    },
+  );
+
+  function addLog(log: NodeLog) {
+    logs.value.push(log);
+  }
 
   async function getValidatorsData() {
     isLoadingValidatorData.value = true;
@@ -167,7 +225,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
 
   return {
     logs,
-    listenWebsocket,
+    // listenWebsocket,
     validators,
     nodeProviders,
     contractsToDelete,
