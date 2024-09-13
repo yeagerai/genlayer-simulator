@@ -99,7 +99,13 @@ def get_contract_schema(
         validator=Validator(
             address="",
             stake=0,
-            llmprovider=None,
+            llmprovider=LLMProvider(
+                provider="",
+                model="",
+                config={},
+                plugin="",
+                plugin_config={},
+            ),
         ),
         leader_receipt=None,
         msg_handler=msg_handler,

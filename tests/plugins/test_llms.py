@@ -6,6 +6,8 @@ The purpose of these tests is to have a small feedback loop for developing the L
 """
 
 import asyncio
+
+import pytest
 from backend.node.genvm.llms import AnthropicPlugin, OllamaPlugin, OpenAIPlugin
 
 
@@ -32,14 +34,23 @@ def test_openai_plugin():
     assert result != None and result != "" and isinstance(result, str)
 
 
-def test_heuristai_plugin():
+@pytest.mark.parametrize(
+    "model",
+    [
+        "mistralai/mixtral-8x7b-instruct",
+        "meta-llama/llama-2-70b-chat",
+        "openhermes-2-yi-34b-gptq",
+        "dolphin-2.9-llama3-8b",
+    ],
+)
+def test_heuristai_plugin(model):
     plugin_config = {
         "api_key_env_var": "HEURISTAIAPIKEY",
         "api_url": "https://llm-gateway.heurist.xyz",
     }
     node_config = {
         "provider": "heuristai",
-        "model": "mistralai/mixtral-8x7b-instruct",
+        "model": model,
         "config": {"temperature": 0, "max_tokens": 10},
         "plugin_config": plugin_config,
     }
