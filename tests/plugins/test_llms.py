@@ -112,7 +112,7 @@ def test_ollama_plugin():
 
 
 def test_anthropic_plugin():
-    plugin_config = {"api_key_env_var": "ANTROPIC_API_KEY"}
+    plugin_config = {"api_key_env_var": "ANTROPIC_API_KEY", "api_url": None}
     node_config = {
         "provider": "anthropic",
         "model": "claude-3-5-sonnet-20240620",

@@ -238,13 +238,19 @@ class AnthropicPlugin(Plugin):
         regex: Optional[str],
         return_streaming_channel: Optional[asyncio.Queue],
     ) -> str:
+        client: AsyncAnthropic = None
         if self.url:
             client = AsyncAnthropic(api_key=self.get_api_key(), base_url=self.url)
         else:
             client = AsyncAnthropic(api_key=self.get_api_key())
 
+        if "max_tokens" not in node_config["config"]:
+            raise ValueError("`max_tokens` is required for Anthropic")
+
         buffer = ""
-        async with client.messages.create(
+
+        # Not using `async with` (https://github.com/anthropics/anthropic-sdk-python?tab=readme-ov-file#streaming-helpers) since I get a `'coroutine' object does not support the asynchronous context manager protocol`. Probably related to how the `EquivalencePrinciple` class implements
+        stream = await client.messages.create(
             model=node_config["model"],
             messages=[
                 {
@@ -256,19 +262,19 @@ class AnthropicPlugin(Plugin):
             **node_config[
                 "config"
             ],  # max_tokens, temperature, top_k, top_p, timeout, stop_sequences
-        ) as stream:
-            async for event in stream:
-                if event.type == "text":
-                    buffer += event.text
-                    if return_streaming_channel is not None:
-                        await return_streaming_channel.put(event.text)
-                    match = re.search(regex, buffer)
-                    if match:
-                        return match.group(0)
-                elif event.type == "content_block_stop":
-                    break
+        )
+        async for event in stream:
+            if event.type == "text":
+                buffer += event.text
+                if return_streaming_channel is not None:
+                    await return_streaming_channel.put(event.text)
+                match = re.search(regex, buffer)
+                if match:
+                    return match.group(0)
+            elif event.type == "content_block_stop":
+                break
 
-        return await stream.get_final_message()
+        return buffer
 
     def is_available(self) -> bool:
         env_var = self.get_api_key()
