@@ -70,7 +70,7 @@
             "const": "openai"
           },
           "model": {
-            "enum": ["gpt-4", "gpt-4o", "gpt-4o-mini"]
+            "enum": ["gpt-4", "gpt-4o", "gpt-4o-mini", "o1-preview", "o1-mini"]
           }
         }
       }
