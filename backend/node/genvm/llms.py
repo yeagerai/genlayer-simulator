@@ -293,6 +293,7 @@ def get_llm_plugin(plugin: str, plugin_config: dict) -> Plugin:
     plugin_map = {
         "ollama": OllamaPlugin,
         "openai": OpenAIPlugin,
+        "anthropic": AnthropicPlugin,
     }
 
     if plugin not in plugin_map:

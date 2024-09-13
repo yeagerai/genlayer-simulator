@@ -15,7 +15,7 @@
     },
     "plugin": {
       "$comment": "plugin to be loaded by the simulator to interact with the provider",
-      "enum": ["heuristai", "openai", "ollama", "anthropic"]
+      "enum": ["openai", "ollama", "anthropic"]
     },
     "plugin_config": {
       "type": "object"
