@@ -193,6 +193,13 @@ class ConsensusAlgorithm:
             TransactionStatus.REVEALING,
         )
 
+        # TODO:
+        # Revealing → Proposing:
+        # Transition occurs when there is no majority of Agree votes, and there is no majority of DeterministicViolation votes. The leader is rotated, and the transaction returns to the proposing stage with the new leader.
+
+        # Revealing → Undetermined:
+        # Transition occurs when all leaders have been rotated and there is still no consensus. The transaction is marked as undetermined
+
         if (
             len([vote for vote in votes.values() if vote == Vote.AGREE.value])
             < num_validators // 2
