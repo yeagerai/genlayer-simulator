@@ -7,7 +7,7 @@ This file contains the plugins (functions) that are used to interact with the di
 - `return_streaming_channel`: An optional asyncio.Queue to stream the response.
 """
 
-from abc import ABC, abstractmethod
+from typing import Protocol
 import os
 import re
 import json
@@ -143,31 +143,23 @@ async def get_openai_output(
     return buffer
 
 
-class Plugin(ABC):
-    @abstractmethod
-    def __init__(self, plugin_config: dict):
-        pass
+class Plugin(Protocol):
+    def __init__(self, plugin_config: dict): ...
 
-    @abstractmethod
     async def call(
         self,
         node_config: dict,
         prompt: str,
         regex: Optional[str],
         return_streaming_channel: Optional[asyncio.Queue],
-    ) -> str:
-        pass
+    ) -> str: ...
 
-    @abstractmethod
-    def is_available(self) -> bool:
-        pass
+    def is_available(self) -> bool: ...
 
-    @abstractmethod
-    def is_model_available(self, model: str) -> bool:
-        pass
+    def is_model_available(self, model: str) -> bool: ...
 
 
-class OllamaPlugin(Plugin):
+class OllamaPlugin:
     def __init__(self, plugin_config: dict):
         self.url = plugin_config["api_url"]
 
@@ -197,7 +189,7 @@ class OllamaPlugin(Plugin):
         return model in installed_ollama_models
 
 
-class OpenAIPlugin(Plugin):
+class OpenAIPlugin:
     def __init__(self, plugin_config: dict):
         self.api_key_env_var = plugin_config["api_key_env_var"]
 
@@ -226,7 +218,7 @@ class OpenAIPlugin(Plugin):
         return True
 
 
-class AnthropicPlugin(Plugin):
+class AnthropicPlugin:
     def __init__(self, plugin_config: dict):
         self.api_key_env_var = plugin_config["api_key_env_var"]
         self.url = plugin_config["api_url"]
