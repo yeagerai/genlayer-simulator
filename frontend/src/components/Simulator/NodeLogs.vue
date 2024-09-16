@@ -6,6 +6,7 @@ import GhostBtn from '../global/GhostBtn.vue';
 import EmptyListPlaceholder from './EmptyListPlaceholder.vue';
 import { Ban } from 'lucide-vue-next';
 import LogFilterBtn from '@/components/Simulator/LogFilterBtn.vue';
+import TextInput from '../global/inputs/TextInput.vue';
 
 const nodeStore = useNodeStore();
 const uiStore = useUIStore();
@@ -31,6 +32,8 @@ watch(nodeStore.logs, () => {
   });
 });
 
+const search = ref('');
+
 const categories = ref(['RPC', 'GenVM', 'Consensus', 'Transactions']);
 const statuses = ref(['info', 'error', 'warning', 'success']);
 
@@ -55,15 +58,22 @@ const toggleStatus = (status: string) => {
   }
 };
 
+// TODO: make sure it's ordered correctly, otherwise sort by date
 const filteredLogs = computed(() => {
   return nodeStore.logs.filter((log) => {
+    const searchLower = search.value.toLowerCase();
+    const searchMatch =
+      log.message.toLowerCase().includes(searchLower) ||
+      log.category.toLowerCase().includes(searchLower) ||
+      log.event.toLowerCase().includes(searchLower);
+
     const categoryMatch =
       selectedCategories.value.length === 0 ||
       selectedCategories.value.includes(log.category);
     const statusMatch =
       selectedStatuses.value.length === 0 ||
       selectedStatuses.value.includes(log.type);
-    return categoryMatch && statusMatch;
+    return searchMatch && categoryMatch && statusMatch;
   });
 });
 
@@ -86,6 +96,14 @@ const resetFilters = () => {
       class="flex flex-row items-center justify-between gap-1 border-b bg-white p-1 pl-2 dark:border-b-zinc-700 dark:bg-zinc-800"
     >
       Logs
+
+      <TextInput
+        id="searchLogs"
+        name="searchLogs"
+        type="text"
+        v-model="search"
+        placeholder="Search logs"
+      />
 
       <div class="flex flex-row items-center gap-1">
         <div class="flex flex-row items-center gap-1">
