@@ -39,7 +39,7 @@ class PredictionMarket(IContract):
             principle="The score and the winner has to be exactly the same",
             comparative=True,
         ) as eq:
-            web_data = await eq.get_webpage(self.resolution_url)
+            web_data = await eq.get_webpage(self.resolution_url, "text")
             print(web_data)
 
             task = f"""In the following web page, find the winning team in a matchup between the following teams:
