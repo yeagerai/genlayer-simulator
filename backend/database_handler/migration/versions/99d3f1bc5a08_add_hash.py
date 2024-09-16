@@ -53,6 +53,16 @@ def upgrade() -> None:
         "UPDATE transactions_audit SET transaction_hash = CAST(transaction_id AS VARCHAR(255))"
     )
 
+    # Add foreign key constraint
+    op.create_foreign_key(
+        "transaction_hash_fkey",
+        "transactions_audit",
+        "transactions",
+        ["transaction_hash"],
+        ["hash"],
+        ondelete="CASCADE",
+    )
+
     # Delete the id column
     op.drop_column("transactions", "id")
     op.drop_column("transactions_audit", "transaction_id")
@@ -87,6 +97,11 @@ def downgrade() -> None:
         FROM transactions
         WHERE transactions_audit.transaction_hash = transactions.hash
     """
+    )
+
+    # Drop the foreign key constraint
+    op.drop_constraint(
+        "transaction_hash_fkey", "transactions_audit", type_="foreignkey"
     )
 
     # Drop the transaction_hash column from transactions_audit

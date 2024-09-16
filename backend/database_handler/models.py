@@ -11,6 +11,7 @@ from sqlalchemy import (
     String,
     func,
     text,
+    ForeignKey,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, MappedAsDataclass
@@ -88,7 +89,12 @@ class Transactions(Base):
 
 class TransactionsAudit(Base):
     __tablename__ = "transactions_audit"
-    __table_args__ = (PrimaryKeyConstraint("id", name="transactions_audit_pkey"),)
+    __table_args__ = (
+        PrimaryKeyConstraint("id", name="transactions_audit_pkey"),
+        ForeignKey(
+            "transactions.hash", name="transaction_hash_fkey", ondelete="CASCADE"
+        ),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, init=False)
     transaction_hash: Mapped[Optional[str]] = mapped_column(String(66))
