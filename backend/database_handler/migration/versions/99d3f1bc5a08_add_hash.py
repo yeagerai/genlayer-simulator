@@ -4,6 +4,9 @@ Revision ID: 99d3f1bc5a08
 Revises: f9636f013003
 Create Date: 2024-09-05 17:03:30.743557
 
+This migration adds a hash column to the transactions table (instead of id) and a transaction_hash column to the transactions_audit table (instead of transaction_id).
+To remain backwards compatible and downgradable, the hash and nonce are set to the current id on existing transactions.
+
 """
 
 from typing import Sequence, Union
@@ -19,8 +22,6 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
-# This migration adds a hash column to the transactions table (instead of id) and a transaction_hash column to the transactions_audit table (instead of transaction_id).
-# To remain backwards compatible and downgradable, the hash and nonce are set to the current id on existing transactions.
 def upgrade() -> None:
     # Add the new 'hash' column
     op.add_column(
