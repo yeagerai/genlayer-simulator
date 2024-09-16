@@ -25,7 +25,7 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     # Add the new 'hash' column
     op.add_column(
-        "transactions", sa.Column("hash", sa.String(length=255), nullable=True)
+        "transactions", sa.Column("hash", sa.String(length=66), nullable=True)
     )
 
     # Update the 'hash' column with the current 'id' value
@@ -45,7 +45,7 @@ def upgrade() -> None:
     # Add the 'transaction_hash' column to the audit table
     op.add_column(
         "transactions_audit",
-        sa.Column("transaction_hash", sa.String(length=255), nullable=True),
+        sa.Column("transaction_hash", sa.String(length=66), nullable=True),
     )
 
     # Use legacy ID as default value for hash column
