@@ -253,17 +253,26 @@ def get_transaction_by_id(
     return transactions_processor.get_transaction_by_id(transaction_id)
 
 
-def get_contract_state(
+def call(
     accounts_manager: AccountsManager,
     msg_handler: MessageHandler,
-    contract_address: str,
-    method_name: str,
-    method_args: list,
+    to_address: str,
+    from_address: str = "",
+    input: str = "",
+    # Future parameters:
+    # gas: int = 0,
+    # gas_price: int = 0,
+    # value: int = 0,
 ) -> dict:
-    if not accounts_manager.is_valid_address(contract_address):
-        raise InvalidAddressError(contract_address)
+    if not accounts_manager.is_valid_address(from_address):
+        raise InvalidAddressError(from_address)
 
-    contract_account = accounts_manager.get_account_or_fail(contract_address)
+    if not accounts_manager.is_valid_address(to_address):
+        raise InvalidAddressError(to_address)
+
+    decoded_data = decode_method_call_data(input)
+
+    contract_account = accounts_manager.get_account_or_fail(to_address)
     node = Node(
         contract_snapshot=None,
         address="",
@@ -275,10 +284,18 @@ def get_contract_state(
         leader_receipt=None,
         msg_handler=msg_handler,
     )
+
+    method_args = decoded_data.function_args
+    if isinstance(method_args, str):
+        try:
+            method_args = json.loads(method_args)
+        except json.JSONDecodeError:
+            method_args = [method_args]
+
     return node.get_contract_data(
         code=contract_account["data"]["code"],
         state=contract_account["data"]["state"],
-        method_name=method_name,
+        method_name=decoded_data.function_name,
         method_args=method_args,
     )
 
@@ -406,7 +423,7 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint_for_partial(get_validator, validators_registry)
 
     register_rpc_endpoint_for_partial(get_transaction_by_id, transactions_processor)
-    register_rpc_endpoint_for_partial(get_contract_state, accounts_manager, msg_handler)
+    register_rpc_endpoint_for_partial(call, accounts_manager, msg_handler)
     register_rpc_endpoint_for_partial(
         send_raw_transaction, transactions_processor, accounts_manager
     )

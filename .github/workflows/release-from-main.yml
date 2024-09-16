@@ -1,32 +1,35 @@
-name: Create Release from main
+name: Create releases from main every day
 on:
-  push:
-    branches:
-      - main
+  schedule:
+    - cron: "00 08 * * 1-4" # 08:00 AM (UTC) from Monday to Thursday
+
+permissions:
+  contents: read # for checkout
+
+concurrency:
+  group: release-please
 
 jobs:
-  release-main:
+  release:
+    name: Release
     runs-on: ubuntu-latest
-    permissions: # As per https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#create-a-release
-      contents: write
-      pull-requests: read
-
+    permissions:
+      contents: write # to be able to publish a GitHub release
+      issues: write # to be able to comment on released issues
+      pull-requests: write # to be able to comment on released pull requests
+      id-token: write # to enable use of OIDC for npm provenance
     steps:
-      - uses: actions/checkout@v4
-      # We retrieve the original PR since the commit message is line wrapped
-      # Depends on the following format from the commit message:
-      # Release vX.Y.Z (#PR_NUMBER)
-      # ... body of the PR ...
-      - name: Create release
-        run: |
-          commit_msg_head=$(git log -1 --pretty=%B | head -n 1)
-          echo $commit_msg_head
-          release_pr_number=$(echo $commit_msg_head | awk '{print $3}' | grep -oP '\(\#\K[0-9]+')
-          echo $release_pr_number
-          semver=$(echo $commit_msg_head | awk '{print $2}')
-          echo $semver
-          gh pr view $release_pr_number --json body --jq .body > body.txt
-          cat body.txt
-          gh release create $semver --title $semver -F body.txt
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+      - name: Install dependencies
+        run: npm install @semantic-release/github @semantic-release/release-notes-generator @semantic-release/commit-analyzer conventional-changelog-conventionalcommits
+      - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release # Uses `release.config.js` for configuration

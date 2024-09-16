@@ -117,7 +117,7 @@ async def get_webpage_with_principle(
     async with EquivalencePrinciple(
         result=final_result,
         principle=eq_principle,
-        comparative=comparative,
+        comparative=True,
     ) as eq:
         result = await eq.get_webpage(url, format)
         eq.set(result)
