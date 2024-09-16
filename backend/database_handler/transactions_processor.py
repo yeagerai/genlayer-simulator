@@ -5,7 +5,6 @@ from .models import Transactions, TransactionsAudit
 from sqlalchemy.orm import Session
 
 from .models import TransactionStatus
-from hashlib import sha3_256
 from eth_utils import to_bytes, keccak, is_address
 import json
 
