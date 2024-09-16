@@ -26,13 +26,24 @@ export class Web3Client {
     return recoverTransactionAddress(transaction);
   }
 
-  async signTransaction(
-    privateKey: Address,
-    data: Array<unknown>,
-    to?: Address,
-  ): Promise<TransactionSerializedLegacy> {
+  async signTransaction({
+    privateKey,
+    data,
+    to = undefined,
+    value = 0n,
+  }: {
+    privateKey: Address;
+    data: Array<unknown>;
+    to?: Address;
+    value?: bigint;
+  }): Promise<TransactionSerializedLegacy> {
     const account = this.privateKeyToAccount(privateKey);
     const encodedData = this.encodeTransactionData(data);
-    return account.signTransaction({ data: encodedData, to, type: 'legacy' });
+    return account.signTransaction({
+      data: encodedData,
+      to,
+      value,
+      type: 'legacy',
+    });
   }
 }
