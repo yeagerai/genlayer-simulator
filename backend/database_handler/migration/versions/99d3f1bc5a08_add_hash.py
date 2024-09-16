@@ -14,6 +14,11 @@ from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+from backend.database_handler.transactions_processor import TransactionsProcessor
+from backend.database_handler.models import (
+    Transactions,
+    TransactionsAudit,
+)  # Add this import
 
 # revision identifiers, used by Alembic.
 revision: str = "99d3f1bc5a08"
@@ -28,9 +33,26 @@ def upgrade() -> None:
         "transactions", sa.Column("hash", sa.String(length=66), nullable=True)
     )
 
-    # Update the 'hash' column with the current 'id' value
-    op.execute("UPDATE transactions SET hash = CAST(id AS VARCHAR(255))")
-    op.execute("UPDATE transactions SET nonce = id")
+    # Create a session to use TransactionsProcessor
+    bind = op.get_bind()
+    session = sa.orm.Session(bind=bind)
+
+    # Initialize TransactionsProcessor
+    processor = TransactionsProcessor(session)
+
+    # Update the 'hash' column with the generated hash value
+    transactions = session.query(Transactions).all()
+    for transaction in transactions:
+        transaction.hash = processor._generate_transaction_hash(
+            transaction.from_address,
+            transaction.to_address,
+            transaction.data,
+            transaction.value,
+            transaction.type,
+            transaction.nonce,
+        )
+        session.add(transaction)
+    session.commit()
 
     # Set the 'hash' column to not nullable
     op.alter_column("transactions", "hash", nullable=False)
@@ -48,10 +70,15 @@ def upgrade() -> None:
         sa.Column("transaction_hash", sa.String(length=66), nullable=True),
     )
 
-    # Use legacy ID as default value for hash column
-    op.execute(
-        "UPDATE transactions_audit SET transaction_hash = CAST(transaction_id AS VARCHAR(255))"
-    )
+    # Use generated hash as default value for transaction_hash column
+    audit_records = session.query(TransactionsAudit).all()
+    for audit_record in audit_records:
+        transaction = (
+            session.query(Transactions).filter_by(id=audit_record.transaction_id).one()
+        )
+        audit_record.transaction_hash = transaction.hash
+        session.add(audit_record)
+    session.commit()
 
     # Add foreign key constraint
     op.create_foreign_key(
