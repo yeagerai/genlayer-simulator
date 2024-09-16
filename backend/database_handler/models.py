@@ -89,15 +89,14 @@ class Transactions(Base):
 
 class TransactionsAudit(Base):
     __tablename__ = "transactions_audit"
-    __table_args__ = (
-        PrimaryKeyConstraint("id", name="transactions_audit_pkey"),
-        ForeignKey(
-            "transactions.hash", name="transaction_hash_fkey", ondelete="CASCADE"
-        ),
-    )
+    __table_args__ = (PrimaryKeyConstraint("id", name="transactions_audit_pkey"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, init=False)
-    transaction_hash: Mapped[Optional[str]] = mapped_column(String(66))
+    transaction_hash: Mapped[Optional[str]] = mapped_column(
+        String(66),
+        ForeignKey("transactions.hash", ondelete="CASCADE"),
+        name="transaction_hash_fkey",
+    )
     data: Mapped[Optional[dict]] = mapped_column(JSONB)
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(
         DateTime(True), server_default=func.current_timestamp(), init=False
