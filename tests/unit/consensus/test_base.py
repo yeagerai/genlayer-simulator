@@ -2,16 +2,17 @@ from collections import defaultdict
 import pytest
 from backend.consensus.base import ConsensusAlgorithm
 from backend.database_handler.models import TransactionStatus
+from backend.domain.types import Transaction, TransactionType
 
 
 class AccountsManagerMock:
-    def __init__(self):
-        self.accounts = defaultdict(int)
+    def __init__(self, accounts: dict[str, int] | None = None):
+        self.accounts = accounts or defaultdict(int)
 
-    def get_account_balance(self, address) -> int:
+    def get_account_balance(self, address: str) -> int:
         return self.accounts[address]
 
-    def update_account_balance(self, address, balance):
+    def update_account_balance(self, address: str, balance: int):
         self.accounts[address] = balance
 
 
@@ -19,16 +20,16 @@ class TransactionsProcessorMock:
     def __init__(self, transactions=None):
         self.transactions = transactions or []
 
-    def get_transaction_by_id(self, transaction_id) -> dict | None:
+    def get_transaction_by_id(self, transaction_id: str) -> dict:
         for transaction in self.transactions:
             if transaction["id"] == transaction_id:
                 return transaction
-        return None
+        raise ValueError(f"Transaction with id {transaction_id} not found")
 
-    def update_transaction_status(self, transaction_id, status):
+    def update_transaction_status(self, transaction_id: str, status: TransactionStatus):
         self.get_transaction_by_id(transaction_id)["status"] = status
 
-    def set_transaction_result(self, transaction_id, consensus_data):
+    def set_transaction_result(self, transaction_id: str, consensus_data: dict):
         self.get_transaction_by_id(transaction_id)["consensus_data"] = consensus_data
 
 
@@ -46,13 +47,13 @@ async def test_exec_transaction():
     def contract_snapshot_factory(address: str):
         return None
 
-    transaction = {
-        "id": "transaction_id",
-        "from": "from_address",
-        "to": "to_address",
-        "status": TransactionStatus.PENDING.value,
-        "type": 1,
-    }
+    transaction = Transaction(
+        id="transaction_id",
+        from_address="from_address",
+        to_address="to_address",
+        status=TransactionStatus.PENDING,
+        type=TransactionType.RUN_CONTRACT,
+    )
 
     nodes = [
         {
@@ -80,7 +81,7 @@ async def test_exec_transaction():
 
     await ConsensusAlgorithm(None, None).exec_transaction(
         transaction=transaction,
-        transactions_processor=TransactionsProcessorMock([transaction]),
+        transactions_processor=TransactionsProcessorMock([transaction.__dict__]),
         snapshot=SnapshotMock(nodes),
         accounts_manager=AccountsManagerMock(),
         contract_snapshot_factory=contract_snapshot_factory,

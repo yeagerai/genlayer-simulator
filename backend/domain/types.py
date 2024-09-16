@@ -65,13 +65,13 @@ class Transaction:
     hash: str
     status: TransactionStatus
     type: TransactionType
-    from_address: str | None
-    to_address: str | None
-    input_data: dict | None
-    data: dict | None
-    consensus_data: dict | None
+    from_address: str | None = None
+    to_address: str | None = None
+    input_data: dict | None = None
+    data: dict | None = None
+    consensus_data: dict | None = None
     nonce: int | None = None
-    value: decimal.Decimal | None
+    value: decimal.Decimal | None = None
     gaslimit: int | None = None
     r: int | None = None
     s: int | None = None
