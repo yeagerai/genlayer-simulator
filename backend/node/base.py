@@ -28,7 +28,7 @@ class Node:
             msg_handler,
         )
 
-    async def exec_transaction(self, transaction: dict):
+    async def exec_transaction(self, transaction: dict) -> Receipt:
         transaction_data = transaction["data"]
         if transaction["type"] == 1:
             receipt = self.deploy_contract(
@@ -63,7 +63,7 @@ class Node:
         from_address: str,
         code_to_deploy: str,
         constructor_args: dict,
-    ):
+    ) -> Receipt:
         parsed_construction_args = json.loads(constructor_args)
         receipt = self.genvm.deploy_contract(
             from_address, code_to_deploy, parsed_construction_args
@@ -72,7 +72,7 @@ class Node:
 
     async def run_contract(
         self, from_address: str, function_name: str, args: str
-    ) -> dict:
+    ) -> Receipt:
         parsed_args = json.loads(args)
         receipt = await self.genvm.run_contract(
             from_address, function_name, parsed_args, self.leader_receipt

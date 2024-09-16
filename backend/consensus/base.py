@@ -5,6 +5,7 @@ DEFAULT_CONSENSUS_SLEEP_TIME = 5
 
 import asyncio
 import traceback
+from typing import Callable
 from sqlalchemy.orm import Session
 
 from backend.consensus.vrf import get_validators_for_transaction
@@ -76,7 +77,9 @@ class ConsensusAlgorithm:
                                     TransactionsProcessor(session),
                                     ChainSnapshot(session),
                                     AccountsManager(session),
-                                    session,
+                                    lambda contract_address, session=session: ContractSnapshot(
+                                        contract_address, session
+                                    ),
                                 )
                             )
 
@@ -91,7 +94,7 @@ class ConsensusAlgorithm:
         transactions_processor: TransactionsProcessor,
         snapshot: ChainSnapshot,
         accounts_manager: AccountsManager,
-        session: Session,
+        contract_snapshot_factory: Callable[[str], ContractSnapshot],
     ):
         if (
             transactions_processor.get_transaction_by_hash(transaction["hash"])[
@@ -126,7 +129,7 @@ class ConsensusAlgorithm:
         num_validators = len(remaining_validators) + 1
 
         contract_address = transaction.get("to_address", None)
-        contract_snapshot = ContractSnapshot(contract_address, session)
+        contract_snapshot = contract_snapshot_factory(contract_address)
 
         # Create Leader
         leader_node = Node(
@@ -177,7 +180,6 @@ class ConsensusAlgorithm:
         ]
 
         # Validators execute transaction
-        validators_results = []
         validation_tasks = [
             (
                 validator.exec_transaction(transaction)
@@ -186,8 +188,8 @@ class ConsensusAlgorithm:
         ]
         validation_results = await asyncio.gather(*validation_tasks)
 
-        for i in range(len(validation_results)):
-            votes[f"{validator_nodes[i].address}"] = validation_results[i].vote.value
+        for i, validation_result in enumerate(validation_results):
+            votes[validator_nodes[i].address] = validation_result.vote.value
         transactions_processor.update_transaction_status(
             transaction["hash"],
             TransactionStatus.REVEALING,
@@ -215,7 +217,7 @@ class ConsensusAlgorithm:
             final=final,
             votes=votes,
             leader_receipt=leader_receipt,
-            validators=validators_results,
+            validators=validation_results,
         ).to_dict()
 
         # Register contract if it is a new contract
