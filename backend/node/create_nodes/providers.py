@@ -1,5 +1,6 @@
 import json
 import os
+from threading import Thread
 from typing import List
 
 from jsonschema import Draft202012Validator, validate
@@ -9,6 +10,8 @@ from backend.domain.types import LLMProvider
 current_directory = os.path.dirname(os.path.abspath(__file__))
 schema_file = os.path.join(current_directory, "providers_schema.json")
 default_providers_folder = os.path.join(current_directory, "default_providers")
+
+default_providers_cache: List[LLMProvider] = []
 
 
 def get_schema() -> dict:
@@ -33,6 +36,10 @@ def validate_provider(provider: LLMProvider):
 
 
 def get_default_providers() -> List[LLMProvider]:
+    global default_providers_cache
+    if default_providers_cache:
+        return default_providers_cache
+
     schema = get_schema()
 
     files = [
@@ -52,7 +59,13 @@ def get_default_providers() -> List[LLMProvider]:
 
         providers.append(_to_domain(provider))
 
+    default_providers_cache = providers
     return providers
+
+
+# Start in another thread to avoid blocking the main thread
+thread = Thread(target=get_default_providers, args=())
+thread.start()
 
 
 def get_default_provider_for(provider: str, model: str) -> LLMProvider:
