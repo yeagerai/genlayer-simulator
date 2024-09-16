@@ -5,7 +5,7 @@ DEFAULT_CONSENSUS_SLEEP_TIME = 5
 
 import asyncio
 import traceback
-from typing import Callable
+from typing import Any, Callable
 from sqlalchemy.orm import Session
 
 from backend.consensus.vrf import get_validators_for_transaction
@@ -20,8 +20,34 @@ from backend.database_handler.accounts_manager import AccountsManager
 from backend.database_handler.types import ConsensusData
 from backend.domain.types import LLMProvider, Validator
 from backend.node.base import Node
-from backend.node.genvm.types import ExecutionMode, Vote
+from backend.node.genvm.types import ExecutionMode, Receipt, Vote
 from backend.protocol_rpc.message_handler.base import MessageHandler
+
+
+def node_factory(
+    validator: dict,
+    validator_mode: ExecutionMode,
+    contract_snapshot: ContractSnapshot,
+    leader_receipt: Receipt | None,
+    msg_handler: MessageHandler,
+) -> Node:
+    return Node(
+        contract_snapshot=contract_snapshot,
+        validator_mode=validator_mode,
+        leader_receipt=leader_receipt,
+        msg_handler=msg_handler,
+        validator=Validator(
+            address=validator["address"],
+            stake=validator["stake"],
+            llmprovider=LLMProvider(
+                provider=validator["provider"],
+                model=validator["model"],
+                config=validator["config"],
+                plugin=validator["plugin"],
+                plugin_config=validator["plugin_config"],
+            ),
+        ),
+    )
 
 
 class ConsensusAlgorithm:
@@ -95,6 +121,16 @@ class ConsensusAlgorithm:
         snapshot: ChainSnapshot,
         accounts_manager: AccountsManager,
         contract_snapshot_factory: Callable[[str], ContractSnapshot],
+        node_factory: Callable[
+            [
+                dict,
+                ExecutionMode,
+                ContractSnapshot,
+                Receipt | Any,
+                MessageHandler,
+            ],
+            Node,
+        ] = node_factory,
     ):
         if (
             transactions_processor.get_transaction_by_hash(transaction["hash"])[
@@ -132,21 +168,12 @@ class ConsensusAlgorithm:
         contract_snapshot = contract_snapshot_factory(contract_address)
 
         # Create Leader
-        leader_node = Node(
-            contract_snapshot=contract_snapshot,
-            validator_mode=ExecutionMode.LEADER,
-            validator=Validator(
-                address=leader["address"],
-                stake=leader["stake"],
-                llmprovider=LLMProvider(
-                    provider=leader["provider"],
-                    model=leader["model"],
-                    config=leader["config"],
-                    plugin=leader["plugin"],
-                    plugin_config=leader["plugin_config"],
-                ),
-            ),
-            msg_handler=self.msg_handler,
+        leader_node = node_factory(
+            leader,
+            ExecutionMode.LEADER,
+            contract_snapshot,
+            None,
+            self.msg_handler,
         )
 
         # Leader executes transaction
@@ -159,22 +186,12 @@ class ConsensusAlgorithm:
 
         # Create Validators
         validator_nodes = [
-            Node(
-                contract_snapshot=contract_snapshot,
-                validator_mode=ExecutionMode.VALIDATOR,
-                validator=Validator(
-                    address=validator["address"],
-                    stake=validator["stake"],
-                    llmprovider=LLMProvider(
-                        provider=validator["provider"],
-                        model=validator["model"],
-                        config=validator["config"],
-                        plugin=validator["plugin"],
-                        plugin_config=validator["plugin_config"],
-                    ),
-                ),
-                leader_receipt=leader_receipt,
-                msg_handler=self.msg_handler,
+            node_factory(
+                validator,
+                ExecutionMode.VALIDATOR,
+                contract_snapshot,
+                leader_receipt,
+                self.msg_handler,
             )
             for validator in remaining_validators
         ]
