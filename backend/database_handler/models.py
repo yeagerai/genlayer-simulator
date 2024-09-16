@@ -95,7 +95,6 @@ class TransactionsAudit(Base):
     transaction_hash: Mapped[Optional[str]] = mapped_column(
         String(66),
         ForeignKey("transactions.hash", ondelete="CASCADE"),
-        name="transaction_hash_fkey",
     )
     data: Mapped[Optional[dict]] = mapped_column(JSONB)
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(
