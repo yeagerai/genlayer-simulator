@@ -3,6 +3,10 @@
 # These types should not depend on any other layer.
 
 from dataclasses import dataclass
+import decimal
+from enum import Enum
+
+from backend.database_handler.models import TransactionStatus
 
 
 @dataclass()
@@ -48,3 +52,46 @@ class Validator:
             result["id"] = self.id
 
         return result
+
+
+class TransactionType(Enum):
+    SEND = 0
+    DEPLOY_CONTRACT = 1
+    RUN_CONTRACT = 2
+
+
+@dataclass
+class Transaction:
+    hash: str
+    status: TransactionStatus
+    type: TransactionType
+    from_address: str | None
+    to_address: str | None
+    input_data: dict | None
+    data: dict | None
+    consensus_data: dict | None
+    nonce: int | None = None
+    value: decimal.Decimal | None
+    gaslimit: int | None = None
+    r: int | None = None
+    s: int | None = None
+    v: int | None = None
+
+
+def transaction_from_dict(input: dict) -> Transaction:
+    return Transaction(
+        hash=input["hash"],
+        status=TransactionStatus(input["status"]),
+        type=TransactionType(input["type"]),
+        from_address=input["from_address"],
+        to_address=input["to_address"],
+        input_data=input["input_data"],
+        data=input["data"],
+        consensus_data=input["consensus_data"],
+        nonce=input["nonce"],
+        value=input["value"],
+        gaslimit=input["gaslimit"],
+        r=input["r"],
+        s=input["s"],
+        v=input["v"],
+    )

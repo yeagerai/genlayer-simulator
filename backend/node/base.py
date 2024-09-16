@@ -2,7 +2,7 @@ from dataclasses import asdict
 import json
 from typing import Optional
 
-from backend.domain.types import Validator
+from backend.domain.types import Validator, Transaction, TransactionType
 from backend.node.genvm.base import GenVM
 from backend.database_handler.contract_snapshot import ContractSnapshot
 from backend.node.genvm.types import Receipt, ExecutionMode, Vote
@@ -28,17 +28,17 @@ class Node:
             msg_handler,
         )
 
-    async def exec_transaction(self, transaction: dict) -> Receipt:
-        transaction_data = transaction["data"]
-        if transaction["type"] == 1:
+    async def exec_transaction(self, transaction: Transaction) -> Receipt:
+        transaction_data = transaction.data
+        if transaction.type == TransactionType.DEPLOY_CONTRACT:
             receipt = self.deploy_contract(
-                transaction["from_address"],
+                transaction.from_address,
                 transaction_data["contract_code"],
                 transaction_data["constructor_args"],
             )
-        elif transaction["type"] == 2:
+        elif transaction["type"] == TransactionType.RUN_CONTRACT:
             receipt = await self.run_contract(
-                transaction["from_address"],
+                transaction.from_address,
                 transaction_data["function_name"],
                 transaction_data["function_args"],
             )
