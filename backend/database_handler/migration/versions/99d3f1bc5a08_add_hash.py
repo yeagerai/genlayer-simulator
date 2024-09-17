@@ -1,7 +1,7 @@
 """add_hash
 
 Revision ID: 99d3f1bc5a08
-Revises: f9636f013003
+Revises: 986d9a6b0dda
 Create Date: 2024-09-05 17:03:30.743557
 
 This migration adds a hash column to the transactions table (instead of id) and a transaction_hash column to the transactions_audit table (instead of transaction_id).
@@ -18,7 +18,7 @@ import json
 
 # revision identifiers, used by Alembic.
 revision: str = "99d3f1bc5a08"
-down_revision: Union[str, None] = "f9636f013003"
+down_revision: Union[str, None] = "986d9a6b0dda"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
