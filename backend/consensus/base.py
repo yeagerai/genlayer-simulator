@@ -158,11 +158,6 @@ class ConsensusAlgorithm:
                 transaction, transactions_processor, accounts_manager
             )
 
-        # Update transaction status
-        transactions_processor.update_transaction_status(
-            transaction.id, TransactionStatus.PROPOSING
-        )
-
         # Select Leader and validators
         all_validators = snapshot.get_all_validators()
         involved_validators = get_validators_for_transaction(
@@ -170,6 +165,11 @@ class ConsensusAlgorithm:
         )
 
         for validators in rotate(involved_validators):
+            # Update transaction status
+            transactions_processor.update_transaction_status(
+                transaction.id, TransactionStatus.PROPOSING
+            )
+
             [leader, *remaining_validators] = validators
 
             num_validators = len(remaining_validators) + 1
@@ -230,6 +230,7 @@ class ConsensusAlgorithm:
             print(
                 "Consensus not reached for transaction, rotating leader: ", transaction
             )
+
         else:  # this block is executed if the loop above is not broken
             print("Consensus not reached for transaction: ", transaction)
             transactions_processor.update_transaction_status(
