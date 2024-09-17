@@ -9,7 +9,9 @@ on:
 jobs:
   frontend:
     runs-on: ubuntu-latest
-
+    defaults:
+      run:
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js
@@ -18,11 +20,10 @@ jobs:
           node-version: "21.x"
       - name: Copy examples to assets
         run: cp -r examples frontend/src/assets/examples
+        working-directory: .
 
       - run: npm ci
-        working-directory: frontend
       - run: npm run coverage
-        working-directory: frontend
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.0.1
@@ -30,4 +31,4 @@ jobs:
           verbose: true
           token: ${{ secrets.codecov_token }}
           fail_ci_if_error: true
-          directory: frontend/coverage
+          directory: coverage
