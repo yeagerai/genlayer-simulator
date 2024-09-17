@@ -4,8 +4,9 @@ DEFAULT_VALIDATORS_COUNT = 5
 DEFAULT_CONSENSUS_SLEEP_TIME = 5
 
 import asyncio
+from collections import deque
 import traceback
-from typing import Callable
+from typing import Any, Callable, Iterator
 
 from backend.consensus.vrf import get_validators_for_transaction
 from backend.database_handler.chain_snapshot import ChainSnapshot
@@ -149,10 +150,6 @@ class ConsensusAlgorithm:
             return
 
         print(" ~ ~ ~ ~ ~ EXECUTING TRANSACTION: ", transaction)
-        # Update transaction status
-        transactions_processor.update_transaction_status(
-            transaction.hash, TransactionStatus.PROPOSING
-        )
 
         # If transaction is a transfer, execute it
         # TODO: consider when the transfer involves a contract account, bridging, etc.
@@ -161,72 +158,86 @@ class ConsensusAlgorithm:
                 transaction, transactions_processor, accounts_manager
             )
 
+        # Update transaction status
+        transactions_processor.update_transaction_status(
+            transaction.id, TransactionStatus.PROPOSING
+        )
+
         # Select Leader and validators
         all_validators = snapshot.get_all_validators()
         leader, remaining_validators = get_validators_for_transaction(
             all_validators, DEFAULT_VALIDATORS_COUNT
         )
-        num_validators = len(remaining_validators) + 1
 
-        contract_snapshot = contract_snapshot_factory(transaction.to_address)
+        involved_validators = [leader] + remaining_validators
 
-        # Create Leader
-        leader_node = node_factory(
-            leader,
-            ExecutionMode.LEADER,
-            contract_snapshot,
-            None,
-            self.msg_handler,
-        )
+        for validators in rotate(involved_validators):
+            [leader, *remaining_validators] = validators
 
-        # Leader executes transaction
-        leader_receipt = await leader_node.exec_transaction(transaction)
-        votes = {leader["address"]: leader_receipt.vote.value}
-        # Update transaction status
-        transactions_processor.update_transaction_status(
-            transaction.hash, TransactionStatus.COMMITTING
-        )
+            num_validators = len(remaining_validators) + 1
 
-        # Create Validators
-        validator_nodes = [
-            node_factory(
-                validator,
-                ExecutionMode.VALIDATOR,
+            contract_snapshot = contract_snapshot_factory(transaction.to_address)
+
+            # Create Leader
+            leader_node = node_factory(
+                leader,
+                ExecutionMode.LEADER,
                 contract_snapshot,
-                leader_receipt,
+                None,
                 self.msg_handler,
             )
-            for validator in remaining_validators
-        ]
 
-        # Validators execute transaction
-        validation_tasks = [
-            (
-                validator.exec_transaction(transaction)
-            )  # watch out! as ollama uses GPU resources and webrequest aka selenium uses RAM
-            for validator in validator_nodes
-        ]
-        validation_results = await asyncio.gather(*validation_tasks)
+            # Leader executes transaction
+            leader_receipt = await leader_node.exec_transaction(transaction)
+            votes = {leader["address"]: leader_receipt.vote.value}
+            # Update transaction status
+            transactions_processor.update_transaction_status(
+                transaction.id, TransactionStatus.COMMITTING
+            )
 
-        for i, validation_result in enumerate(validation_results):
-            votes[validator_nodes[i].address] = validation_result.vote.value
-        transactions_processor.update_transaction_status(
-            transaction.hash,
-            TransactionStatus.REVEALING,
-        )
+            # Create Validators
+            validator_nodes = [
+                node_factory(
+                    validator,
+                    ExecutionMode.VALIDATOR,
+                    contract_snapshot,
+                    leader_receipt,
+                    self.msg_handler,
+                )
+                for validator in remaining_validators
+            ]
 
-        # TODO:
-        # Revealing → Proposing:
-        # Transition occurs when there is no majority of Agree votes, and there is no majority of DeterministicViolation votes. The leader is rotated, and the transaction returns to the proposing stage with the new leader.
+            # Validators execute transaction
+            validation_tasks = [
+                (
+                    validator.exec_transaction(transaction)
+                )  # watch out! as ollama uses GPU resources and webrequest aka selenium uses RAM
+                for validator in validator_nodes
+            ]
+            validation_results = await asyncio.gather(*validation_tasks)
 
-        # Revealing → Undetermined:
-        # Transition occurs when all leaders have been rotated and there is still no consensus. The transaction is marked as undetermined
+            for i, validation_result in enumerate(validation_results):
+                votes[validator_nodes[i].address] = validation_result.vote.value
+            transactions_processor.update_transaction_status(
+                transaction.id,
+                TransactionStatus.REVEALING,
+            )
 
-        if (
-            len([vote for vote in votes.values() if vote == Vote.AGREE.value])
-            < num_validators // 2
-        ):
-            raise Exception("Consensus not reached")
+            if (
+                len([vote for vote in votes.values() if vote == Vote.AGREE.value])
+                >= num_validators // 2
+            ):
+                break  # Consensus reached
+
+            print(
+                "Consensus not reached for transaction, rotating leader: ", transaction
+            )
+        else:  # this block is executed if the loop above is not broken
+            print("Consensus not reached for transaction: ", transaction)
+            transactions_processor.update_transaction_status(
+                transaction.id, TransactionStatus.UNDETERMINED
+            )
+            return
 
         transactions_processor.update_transaction_status(
             transaction.hash, TransactionStatus.ACCEPTED
@@ -311,3 +322,10 @@ class ConsensusAlgorithm:
         transactions_processor.update_transaction_status(
             transaction.hash, TransactionStatus.FINALIZED
         )
+
+
+def rotate(nodes: list) -> Iterator[list]:
+    nodes = deque(nodes)
+    for _ in range(len(nodes)):
+        yield list(nodes)
+        nodes.rotate(-1)

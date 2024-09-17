@@ -1,6 +1,6 @@
 from collections import defaultdict
 import pytest
-from backend.consensus.base import ConsensusAlgorithm
+from backend.consensus.base import ConsensusAlgorithm, rotate
 from backend.database_handler.contract_snapshot import ContractSnapshot
 from backend.database_handler.models import TransactionStatus
 from backend.domain.types import Transaction, TransactionType
@@ -167,9 +167,10 @@ async def test_exec_transaction():
 
 
 @pytest.mark.asyncio
-async def test_exec_transaction_leader_rotation():
+async def test_exec_transaction_no_consensus():
     """
-    Minor smoke checks for the happy path of a transaction execution
+    Scenario: all nodes disagree on the transaction execution, leaving the transaction in UNDETERMINED state
+    Tests that consensus algorithm correctly rotates the leader when majority of nodes disagree
     """
 
     transaction = Transaction(
@@ -239,18 +240,39 @@ async def test_exec_transaction_leader_rotation():
 
         return mock
 
+    transactions_processor = TransactionsProcessorMock(
+        [transaction_to_dict(transaction)]
+    )
+
     await ConsensusAlgorithm(None, None).exec_transaction(
         transaction=transaction,
-        transactions_processor=TransactionsProcessorMock(
-            [transaction_to_dict(transaction)]
-        ),
+        transactions_processor=transactions_processor,
         snapshot=SnapshotMock(nodes),
         accounts_manager=AccountsManagerMock(),
         contract_snapshot_factory=contract_snapshot_factory,
         node_factory=node_factory,
     )
 
-    assert len(created_nodes) == len(nodes)
+    assert len(created_nodes) == len(nodes) ** 2
 
     for node in created_nodes:
         node.exec_transaction.assert_awaited_once_with(transaction)
+
+    assert (
+        transactions_processor.get_transaction_by_id(transaction.id)["status"]
+        == TransactionStatus.UNDETERMINED
+    )
+
+
+def test_rotate():
+    input = [1, 2, 3, 4, 5]
+    iterator = rotate(input)
+
+    assert next(iterator) == [1, 2, 3, 4, 5]
+    assert next(iterator) == [2, 3, 4, 5, 1]
+    assert next(iterator) == [3, 4, 5, 1, 2]
+    assert next(iterator) == [4, 5, 1, 2, 3]
+    assert next(iterator) == [5, 1, 2, 3, 4]
+
+    with pytest.raises(StopIteration):
+        next(iterator)

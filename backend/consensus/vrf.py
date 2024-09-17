@@ -7,6 +7,10 @@ def get_validators_for_transaction(
     num_validators: int,
     rng=np.random.default_rng(seed=int(datetime.now().timestamp())),
 ) -> tuple[dict, list[dict]]:
+    """
+    Returns a leader and a list of validators for a transaction.
+    The order is given by a random selection based on the stake of the validators.
+    """
     num_validators = min(num_validators, len(nodes))
 
     total_stake = sum(validator["stake"] for validator in nodes)
