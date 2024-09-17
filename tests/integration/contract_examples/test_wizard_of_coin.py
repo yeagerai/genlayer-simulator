@@ -22,13 +22,8 @@ from tests.common.response import (
 from tests.common.accounts import create_new_account
 
 
-def test_wizard_of_coin():
+def test_wizard_of_coin(setup_validators):
     print("test_wizard_of_coin")
-    # Validators
-    result = post_request_localhost(
-        payload("create_random_validators", 10, 8, 12, ["openai"], None, "gpt-4o-mini")
-    ).json()
-    assert has_success_status(result)
 
     # Account Setup
     from_account = create_new_account()
@@ -61,8 +56,3 @@ def test_wizard_of_coin():
 
     # Assert format
     assert_dict_struct(transaction_response_call_1, call_contract_function_response)
-
-    delete_validators_result = post_request_localhost(
-        payload("delete_all_validators")
-    ).json()
-    assert has_success_status(delete_validators_result)

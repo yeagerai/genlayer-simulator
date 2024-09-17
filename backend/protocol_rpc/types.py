@@ -15,7 +15,7 @@ class EndpointResult:
     data: dict = field(default_factory=dict)
     exception: Exception = None
 
-    def to_json(self):
+    def to_json(self) -> dict[str]:
         return {
             "status": self.status.value,
             "message": self.message,

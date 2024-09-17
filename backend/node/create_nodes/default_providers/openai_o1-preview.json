@@ -1,0 +1,10 @@
+{
+  "provider": "openai",
+  "plugin": "openai",
+  "model": "o1-preview",
+  "config": {},
+  "plugin_config": {
+    "api_key_env_var": "OPENAIKEY",
+    "api_url": null
+  }
+}

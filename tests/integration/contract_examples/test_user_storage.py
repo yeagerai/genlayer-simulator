@@ -28,13 +28,7 @@ INITIAL_STATE_USER_B = "user_b_initial_state"
 UPDATED_STATE_USER_B = "user_b_updated_state"
 
 
-def test_user_storage():
-    # Validators Setup
-    result = post_request_localhost(
-        payload("create_random_validators", 10, 8, 12, ["openai"], None, "gpt-4o-mini")
-    ).json()
-    assert has_success_status(result)
-
+def test_user_storage(setup_validators):
     # Account Setup
     from_account_a = create_new_account()
     from_account_b = create_new_account()
@@ -155,8 +149,3 @@ def test_user_storage():
     )
     assert has_success_status(contract_state_4_2)
     assert contract_state_4_2["result"]["data"] == INITIAL_STATE_USER_B
-
-    delete_validators_result = post_request_localhost(
-        payload("delete_all_validators")
-    ).json()
-    assert has_success_status(delete_validators_result)

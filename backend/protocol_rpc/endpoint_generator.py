@@ -17,7 +17,7 @@ def generate_rpc_endpoint(
 ) -> Callable:
     @jsonrpc.method(function.__name__)
     @wraps(function)
-    def endpoint(*args, **kwargs):
+    def endpoint(*args, **kwargs) -> dict[str]:
         shouldPrintInfoLogs = (
             function.__name__ not in config.get_disabled_info_logs_endpoints()
         )

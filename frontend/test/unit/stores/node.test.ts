@@ -14,6 +14,8 @@ const testValidator1: ValidatorModel = {
   model: 'gpt-4',
   config: '{}',
   updated_at: new Date().toISOString(),
+  plugin: 'openai',
+  plugin_config: {},
 };
 
 const testValidator2: ValidatorModel = {
@@ -24,6 +26,8 @@ const testValidator2: ValidatorModel = {
   model: 'llama3',
   config: '{}',
   updated_at: new Date().toISOString(),
+  plugin: 'ollama',
+  plugin_config: {},
 };
 
 const testLog: NodeLog = {

@@ -16,10 +16,12 @@ call_contract_function_response = {
                     "method": str,
                     "mode": str,
                     "node_config": {
-                        "config": dict,
+                        "config": dict | str,
                         "model": str,
                         "provider": str,
                         "stake": int,
+                        "plugin": str,
+                        "plugin_config": dict,
                     },
                     "vote": str,
                 },

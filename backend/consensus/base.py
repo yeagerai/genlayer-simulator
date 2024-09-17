@@ -17,6 +17,7 @@ from backend.database_handler.transactions_processor import (
 )
 from backend.database_handler.accounts_manager import AccountsManager
 from backend.database_handler.types import ConsensusData
+from backend.domain.types import LLMProvider, Validator
 from backend.node.base import Node
 from backend.node.genvm.types import ExecutionMode, Vote
 from backend.protocol_rpc.message_handler.base import MessageHandler
@@ -130,12 +131,18 @@ class ConsensusAlgorithm:
         # Create Leader
         leader_node = Node(
             contract_snapshot=contract_snapshot,
-            address=leader["address"],
             validator_mode=ExecutionMode.LEADER,
-            stake=leader["stake"],
-            provider=leader["provider"],
-            model=leader["model"],
-            config=leader["config"],
+            validator=Validator(
+                address=leader["address"],
+                stake=leader["stake"],
+                llmprovider=LLMProvider(
+                    provider=leader["provider"],
+                    model=leader["model"],
+                    config=leader["config"],
+                    plugin=leader["plugin"],
+                    plugin_config=leader["plugin_config"],
+                ),
+            ),
             msg_handler=self.msg_handler,
         )
 
@@ -151,16 +158,22 @@ class ConsensusAlgorithm:
         validator_nodes = [
             Node(
                 contract_snapshot=contract_snapshot,
-                address=validator["address"],
                 validator_mode=ExecutionMode.VALIDATOR,
-                stake=validator["stake"],
-                provider=validator["provider"],
-                model=validator["model"],
-                config=validator["config"],
+                validator=Validator(
+                    address=validator["address"],
+                    stake=validator["stake"],
+                    llmprovider=LLMProvider(
+                        provider=validator["provider"],
+                        model=validator["model"],
+                        config=validator["config"],
+                        plugin=validator["plugin"],
+                        plugin_config=validator["plugin_config"],
+                    ),
+                ),
                 leader_receipt=leader_receipt,
                 msg_handler=self.msg_handler,
             )
-            for i, validator in enumerate(remaining_validators)
+            for validator in remaining_validators
         ]
 
         # Validators execute transaction

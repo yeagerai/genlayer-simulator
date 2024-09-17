@@ -25,13 +25,7 @@ TOKEN_TOTAL_SUPPLY = 1000
 TRANSFER_AMOUNT = 100
 
 
-def test_llm_erc20():
-    # Validators Setup
-    result = post_request_localhost(
-        payload("create_random_validators", 5, 8, 12, ["openai"], None, "gpt-4o")
-    ).json()
-    assert has_success_status(result)
-
+def test_llm_erc20(setup_validators):
     # Account Setup
     from_account_a = create_new_account()
     from_account_b = create_new_account()
@@ -106,8 +100,3 @@ def test_llm_erc20():
     )
     assert has_success_status(contract_state_2_3)
     assert contract_state_2_3["result"]["data"] == TRANSFER_AMOUNT
-
-    delete_validators_result = post_request_localhost(
-        payload("delete_all_validators")
-    ).json()
-    assert has_success_status(delete_validators_result)

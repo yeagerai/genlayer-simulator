@@ -2,7 +2,11 @@
   "[vue]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "python.testing.pytestArgs": ["tests"],
+  "python.testing.pytestArgs": ["tests", "backend"],
   "python.testing.unittestEnabled": false,
-  "python.testing.pytestEnabled": true
+  "python.testing.pytestEnabled": true,
+  "sonarlint.connectedMode.project": {
+    "connectionId": "YeagerAI",
+    "projectKey": "yeagerai_genlayer-simulator"
+  }
 }

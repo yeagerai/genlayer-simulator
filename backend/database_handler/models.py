@@ -113,8 +113,31 @@ class Validators(Base):
     stake: Mapped[int] = mapped_column(Integer)
     config: Mapped[dict] = mapped_column(JSONB)
     address: Mapped[Optional[str]] = mapped_column(String(255))
-    provider: Mapped[Optional[str]] = mapped_column(String(255))
-    model: Mapped[Optional[str]] = mapped_column(String(255))
+    provider: Mapped[str] = mapped_column(String(255))
+    model: Mapped[str] = mapped_column(String(255))
+    plugin: Mapped[str] = mapped_column(String(255))
+    plugin_config: Mapped[dict] = mapped_column(JSONB)
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(
         DateTime(True), server_default=func.current_timestamp(), init=False
+    )
+
+
+class LLMProviderDBModel(Base):
+    __tablename__ = "llm_provider"
+    __table_args__ = (PrimaryKeyConstraint("id", name="llm_provider_pkey"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, init=False)
+    provider: Mapped[str] = mapped_column(String(255))
+    model: Mapped[str] = mapped_column(String(255))
+    config: Mapped[dict | str] = mapped_column(JSONB)
+    plugin: Mapped[str] = mapped_column(String(255), nullable=False)
+    plugin_config: Mapped[dict] = mapped_column(JSONB)
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(True), server_default=func.current_timestamp(), init=False
+    )
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(True),
+        init=False,
+        server_default=func.current_timestamp(),
+        onupdate=func.current_timestamp(),
     )
