@@ -4,8 +4,10 @@ from backend.consensus.base import ConsensusAlgorithm
 from backend.database_handler.contract_snapshot import ContractSnapshot
 from backend.database_handler.models import TransactionStatus
 from backend.domain.types import Transaction, TransactionType
+from backend.node.base import Node
 from backend.node.genvm.types import ExecutionMode, ExecutionResultStatus, Receipt, Vote
 from backend.protocol_rpc.message_handler.base import MessageHandler
+from unittest.mock import AsyncMock, MagicMock, Mock
 
 
 class AccountsManagerMock:
@@ -108,6 +110,8 @@ async def test_exec_transaction():
         },
     ]
 
+    created_nodes = []
+
     def node_factory(
         node: dict,
         mode: ExecutionMode,
@@ -115,29 +119,31 @@ async def test_exec_transaction():
         receipt: Receipt | None,
         msg_handler: MessageHandler,
     ):
+        mock = Mock(Node)
 
-        class NodeMock:
-            def __init__(self):
-                self.validator_mode = mode
-                self.address = node["address"]
-                self.leader_receipt = receipt
+        mock.validator_mode = mode
+        mock.address = node["address"]
+        mock.leader_receipt = receipt
 
-            async def exec_transaction(self, transaction: Transaction) -> Receipt:
-                return Receipt(
-                    vote=Vote.AGREE,
-                    class_name="",
-                    args=[],
-                    mode=mode,
-                    method="",
-                    gas_used=0,
-                    contract_state="",
-                    node_config={},
-                    eq_outputs={},
-                    execution_result=ExecutionResultStatus.SUCCESS,
-                    error=None,
-                )
+        mock.exec_transaction = AsyncMock(
+            return_value=Receipt(
+                vote=Vote.AGREE,
+                class_name="",
+                args=[],
+                mode=mode,
+                method="",
+                gas_used=0,
+                contract_state="",
+                node_config={},
+                eq_outputs={},
+                execution_result=ExecutionResultStatus.SUCCESS,
+                error=None,
+            )
+        )
 
-        return NodeMock()
+        created_nodes.append(mock)
+
+        return mock
 
     await ConsensusAlgorithm(None, None).exec_transaction(
         transaction=transaction,
@@ -149,3 +155,8 @@ async def test_exec_transaction():
         contract_snapshot_factory=contract_snapshot_factory,
         node_factory=node_factory,
     )
+
+    assert len(created_nodes) == len(nodes)
+
+    for node in created_nodes:
+        node.exec_transaction.assert_awaited_once_with(transaction)
