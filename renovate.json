@@ -4,10 +4,7 @@
     "config:recommended",
     "group:recommended",
     "group:allNonMajor",
-    "group:dockerCompose",
-    "group:dockerfile",
-    "group:githubActions",
-    "group:pip_requirements"
+    "group:githubArtifactActions"
   ],
   "packageRules": [
     {
@@ -16,14 +13,6 @@
         "*"
       ]
     },
-    {
-      "groupName": "прт and nv",
-      "matchPackagePatterns": [
-        "^прт",
-        "^nv"
-      ]
-    }
-  ],
   "vulnerabilityAlerts": {
     "enabled": true
   },
