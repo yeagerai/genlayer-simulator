@@ -39,16 +39,20 @@ class ConsensusAlgorithm:
         loop.close()
 
     async def _crawl_snapshot(self):
+        processed_transactions = set()
         while True:
             with self.dbclient.get_session() as session:
                 chain_snapshot = ChainSnapshot(session)
                 pending_transactions = chain_snapshot.get_pending_transactions()
                 for transaction in pending_transactions:
-                    address = transaction["to_address"] or transaction["from_address"]
-
-                    if address not in self.queues:
-                        self.queues[address] = asyncio.Queue()
-                    await self.queues[address].put(transaction)
+                    if transaction["id"] not in processed_transactions:
+                        address = (
+                            transaction["to_address"] or transaction["from_address"]
+                        )
+                        if address not in self.queues:
+                            self.queues[address] = asyncio.Queue()
+                        await self.queues[address].put(transaction)
+                        processed_transactions.add(transaction["id"])
             await asyncio.sleep(DEFAULT_CONSENSUS_SLEEP_TIME)
 
     def run_consensus_loop(self):
@@ -65,6 +69,12 @@ class ConsensusAlgorithm:
             try:
                 async with asyncio.TaskGroup() as tg:
                     for queue in [q for q in self.queues.values() if not q.empty()]:
+                        print(
+                            [
+                                (transaction["id"], transaction["status"])
+                                for transaction in queue._queue
+                            ]
+                        )
                         # sessions cannot be shared between coroutines, we need to create a new session for each coroutine
                         # https://docs.sqlalchemy.org/en/20/orm/session_basics.html#is-the-session-thread-safe-is-asyncsession-safe-to-share-in-concurrent-tasks
                         transaction = await queue.get()
