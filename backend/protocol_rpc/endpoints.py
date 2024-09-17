@@ -19,10 +19,7 @@ from backend.node.create_nodes.create_nodes import (
     random_validator_config,
 )
 
-from backend.protocol_rpc.endpoint_generator import (
-    generate_rpc_endpoint,
-    generate_rpc_endpoint_for_partial,
-)
+from backend.protocol_rpc.endpoint_generator import generate_rpc_endpoint
 from backend.protocol_rpc.transactions_parser import (
     decode_signed_transaction,
     transaction_has_valid_signature,
@@ -41,42 +38,7 @@ def ping() -> dict:
     return {"status": "OK"}
 
 
-def clear_db_tables(db_client: DBClient, tables: list) -> dict:
-    with db_client.get_session() as session:
-        for table_name in tables:
-            table = Table(
-                table_name, Base.metadata, autoload=True, autoload_with=session.bind
-            )
-            session.execute(table.delete())
-        session.commit()
-
-
-####### ACCOUNTS ENDPOINTS #######
-def get_balance(accounts_manager: AccountsManager, account_address: str) -> dict:
-    if not accounts_manager.is_valid_address(account_address):
-        raise InvalidAddressError(
-            account_address, f"Invalid address from_address: {account_address}"
-        )
-    account_balance = accounts_manager.get_account_balance(account_address)
-    return {"account_balance": account_balance}
-
-
-def fund_account(
-    accounts_manager: AccountsManager,
-    transactions_processor: TransactionsProcessor,
-    account_address: str,
-    amount: int,
-) -> dict:
-    if not accounts_manager.is_valid_address(account_address):
-        raise InvalidAddressError(account_address)
-
-    transaction_id = transactions_processor.insert_transaction(
-        None, account_address, None, amount, 0
-    )
-    return {"transaction_id": transaction_id}
-
-
-####### CONTRACT CODE SCHEMA ENDPOINTS #######
+####### SIMULATOR ENDPOINTS #######
 def get_contract_schema(
     accounts_manager: AccountsManager,
     msg_handler: MessageHandler,
@@ -232,7 +194,7 @@ def delete_all_validators(
     return validators_registry.get_all_validators()
 
 
-def get_all_validators(validators_registry: ValidatorsRegistry) -> dict:
+def get_all_validators(validators_registry: ValidatorsRegistry) -> list:
     return validators_registry.get_all_validators()
 
 
@@ -246,7 +208,44 @@ def count_validators(validators_registry: ValidatorsRegistry) -> dict:
     return validators_registry.count_validators()
 
 
-####### TRANSACTIONS ENDPOINTS #######
+####### GEN ENDPOINTS #######
+def clear_db_tables(db_client: DBClient, tables: list) -> dict:
+    with db_client.get_session() as session:
+        for table_name in tables:
+            table = Table(
+                table_name, Base.metadata, autoload=True, autoload_with=session.bind
+            )
+            session.execute(table.delete())
+        session.commit()
+
+
+def fund_account(
+    accounts_manager: AccountsManager,
+    transactions_processor: TransactionsProcessor,
+    account_address: str,
+    amount: int,
+) -> int:
+    if not accounts_manager.is_valid_address(account_address):
+        raise InvalidAddressError(account_address)
+
+    transaction_id = transactions_processor.insert_transaction(
+        None, account_address, None, amount, 0
+    )
+    return transaction_id
+
+
+####### ETH ENDPOINTS #######
+def get_balance(
+    accounts_manager: AccountsManager, account_address: str, block_tag: str
+) -> int:
+    if not accounts_manager.is_valid_address(account_address):
+        raise InvalidAddressError(
+            account_address, f"Invalid address from_address: {account_address}"
+        )
+    account_balance = accounts_manager.get_account_balance(account_address)
+    return account_balance
+
+
 def get_transaction_by_id(
     transactions_processor: TransactionsProcessor, transaction_id: str
 ) -> dict:
@@ -382,48 +381,80 @@ def register_all_rpc_endpoints(
     validators_registry: ValidatorsRegistry,
     config: GlobalConfiguration,
 ):
-    register_rpc_endpoint = partial(generate_rpc_endpoint, jsonrpc, msg_handler, config)
-    register_rpc_endpoint_for_partial = partial(
-        generate_rpc_endpoint_for_partial, register_rpc_endpoint
-    )
+    register_rpc_endpoint = partial(generate_rpc_endpoint, jsonrpc, msg_handler)
 
-    register_rpc_endpoint(ping)
-    register_rpc_endpoint_for_partial(
-        clear_db_tables, genlayer_db_client, ["current_state", "transactions"]
+    register_rpc_endpoint(function=ping)
+    register_rpc_endpoint(
+        function=clear_db_tables,
+        args=[genlayer_db_client, ["current_state", "transactions"]],
     )
-
-    register_rpc_endpoint_for_partial(get_balance, accounts_manager)
-    register_rpc_endpoint_for_partial(
-        fund_account, accounts_manager, transactions_processor
+    register_rpc_endpoint(
+        function=fund_account,
+        args=[accounts_manager, transactions_processor],
     )
-
-    register_rpc_endpoint_for_partial(
-        get_contract_schema, accounts_manager, msg_handler
+    register_rpc_endpoint(
+        function=get_providers_and_models,
+        args=[config],
     )
-    register_rpc_endpoint_for_partial(get_contract_schema_for_code, msg_handler)
-
-    register_rpc_endpoint_for_partial(get_providers_and_models, config)
-    register_rpc_endpoint_for_partial(
-        create_validator, validators_registry, accounts_manager
+    register_rpc_endpoint(
+        function=create_validator,
+        args=[validators_registry, accounts_manager],
     )
-    register_rpc_endpoint_for_partial(
-        create_random_validator, validators_registry, accounts_manager, config
+    register_rpc_endpoint(
+        function=create_random_validator,
+        args=[validators_registry, accounts_manager, config],
     )
-    register_rpc_endpoint_for_partial(
-        create_random_validators, validators_registry, accounts_manager, config
+    register_rpc_endpoint(
+        function=create_random_validators,
+        args=[validators_registry, accounts_manager, config],
     )
-    register_rpc_endpoint_for_partial(
-        update_validator, validators_registry, accounts_manager
+    register_rpc_endpoint(
+        function=update_validator,
+        args=[validators_registry, accounts_manager],
     )
-    register_rpc_endpoint_for_partial(
-        delete_validator, validators_registry, accounts_manager
+    register_rpc_endpoint(
+        function=delete_validator,
+        args=[validators_registry, accounts_manager],
     )
-    register_rpc_endpoint_for_partial(delete_all_validators, validators_registry)
-    register_rpc_endpoint_for_partial(get_all_validators, validators_registry)
-    register_rpc_endpoint_for_partial(get_validator, validators_registry)
-
-    register_rpc_endpoint_for_partial(get_transaction_by_id, transactions_processor)
-    register_rpc_endpoint_for_partial(call, accounts_manager, msg_handler)
-    register_rpc_endpoint_for_partial(
-        send_raw_transaction, transactions_processor, accounts_manager
+    register_rpc_endpoint(
+        function=delete_all_validators,
+        args=[validators_registry],
+    )
+    register_rpc_endpoint(
+        function=get_all_validators,
+        args=[validators_registry],
+    )
+    register_rpc_endpoint(
+        function=get_validator,
+        args=[validators_registry],
+    )
+    register_rpc_endpoint(
+        method_name="gen_getContractSchema",
+        function=get_contract_schema,
+        args=[accounts_manager, msg_handler],
+    )
+    register_rpc_endpoint(
+        method_name="gen_getContractSchemaForCode",
+        function=get_contract_schema_for_code,
+        args=[msg_handler],
+    )
+    register_rpc_endpoint(
+        method_name="eth_getBalance",
+        function=get_balance,
+        args=[accounts_manager],
+    )
+    register_rpc_endpoint(
+        method_name="eth_getTransactionById",
+        function=get_transaction_by_id,
+        args=[transactions_processor],
+    )
+    register_rpc_endpoint(
+        method_name="eth_call",
+        function=call,
+        args=[accounts_manager, msg_handler],
+    )
+    register_rpc_endpoint(
+        method_name="eth_sendRawTransaction",
+        function=send_raw_transaction,
+        args=[transactions_processor, accounts_manager],
     )

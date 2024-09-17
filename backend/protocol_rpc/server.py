@@ -41,7 +41,7 @@ def create_app():
     CORS(app, resources={r"/api/*": {"origins": "*"}}, intercept_exceptions=False)
     jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
     socketio = SocketIO(app, cors_allowed_origins="*")
-    msg_handler = MessageHandler(app, socketio)
+    msg_handler = MessageHandler(app, socketio, config=GlobalConfiguration())
     genlayer_db_client = DBClient(database_name_seed)
     transactions_processor = TransactionsProcessor(sqlalchemy_db.session)
     accounts_manager = AccountsManager(sqlalchemy_db.session)

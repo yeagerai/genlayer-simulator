@@ -3,12 +3,51 @@ import random
 import string
 import os
 import json
+from functools import wraps, partial
 from logging.config import dictConfig
 
 from backend.protocol_rpc.message_handler.types import FormattedResponse
-from backend.protocol_rpc.types import EndpointResult
+from backend.protocol_rpc.types import EndpointResult, EndpointResultStatus
 
 MAX_LOG_MESSAGE_LENGTH = 3000
+
+
+def log_endpoint_info_wrapper(msg_handler, config):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            shouldPrintInfoLogs = (
+                func.__name__ not in config.get_disabled_info_logs_endpoints()
+            )
+            send_message = partial(msg_handler.send_message, func.__name__)
+
+            if shouldPrintInfoLogs:
+                send_message(EndpointResult(EndpointResultStatus.INFO, "Starting..."))
+
+            try:
+                result = func(*args, **kwargs)
+                if shouldPrintInfoLogs:
+                    send_message(
+                        EndpointResult(
+                            EndpointResultStatus.SUCCESS,
+                            f"Endpoint {func.__name__} successfully executed",
+                            result,
+                        )
+                    )
+                return result
+            except Exception as e:
+                send_message(
+                    EndpointResult(
+                        EndpointResultStatus.ERROR,
+                        f"Error executing endpoint {func.__name__}: {str(e)}",
+                        {"traceback": traceback.format_exc()},
+                        e,
+                    )
+                )
+
+        return wrapper
+
+    return decorator
 
 
 def setup_logging_config():
@@ -37,10 +76,14 @@ class MessageHandler:
         "error": "error",
     }
 
-    def __init__(self, app, socketio):
+    def __init__(self, app, socketio, config):
         self.app = app
         self.socketio = socketio
+        self.config = config
         setup_logging_config()
+
+    def log_endpoint_info(self, func):
+        return log_endpoint_info_wrapper(self, self.config)(func)
 
     def socket_emit(self, message):
         self.socketio.emit("status_update", {"message": message})
