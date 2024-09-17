@@ -65,18 +65,22 @@ def transaction_to_dict(transaction: Transaction) -> dict:
     }
 
 
+def contract_snapshot_factory(address: str):
+    class ContractSnapshotMock:
+        def __init__(self):
+            self.address = address
+
+        def update_contract_state(self, state: str):
+            pass
+
+    return ContractSnapshotMock()
+
+
 @pytest.mark.asyncio
 async def test_exec_transaction():
-
-    def contract_snapshot_factory(address: str):
-        class ContractSnapshotMock:
-            def __init__(self):
-                self.address = address
-
-            def update_contract_state(self, state: str):
-                pass
-
-        return ContractSnapshotMock()
+    """
+    Minor smoke checks for the happy path of a transaction execution
+    """
 
     transaction = Transaction(
         id="transaction_id",
@@ -128,6 +132,96 @@ async def test_exec_transaction():
         mock.exec_transaction = AsyncMock(
             return_value=Receipt(
                 vote=Vote.AGREE,
+                class_name="",
+                args=[],
+                mode=mode,
+                method="",
+                gas_used=0,
+                contract_state="",
+                node_config={},
+                eq_outputs={},
+                execution_result=ExecutionResultStatus.SUCCESS,
+                error=None,
+            )
+        )
+
+        created_nodes.append(mock)
+
+        return mock
+
+    await ConsensusAlgorithm(None, None).exec_transaction(
+        transaction=transaction,
+        transactions_processor=TransactionsProcessorMock(
+            [transaction_to_dict(transaction)]
+        ),
+        snapshot=SnapshotMock(nodes),
+        accounts_manager=AccountsManagerMock(),
+        contract_snapshot_factory=contract_snapshot_factory,
+        node_factory=node_factory,
+    )
+
+    assert len(created_nodes) == len(nodes)
+
+    for node in created_nodes:
+        node.exec_transaction.assert_awaited_once_with(transaction)
+
+
+@pytest.mark.asyncio
+async def test_exec_transaction_leader_rotation():
+    """
+    Minor smoke checks for the happy path of a transaction execution
+    """
+
+    transaction = Transaction(
+        id="transaction_id",
+        from_address="from_address",
+        to_address="to_address",
+        status=TransactionStatus.PENDING,
+        type=TransactionType.RUN_CONTRACT,
+    )
+
+    nodes = [
+        {
+            "address": "address1",
+            "stake": 1,
+            "provider": "provider1",
+            "model": "model1",
+            "config": "config1",
+        },
+        {
+            "address": "address2",
+            "stake": 2,
+            "provider": "provider2",
+            "model": "model2",
+            "config": "config2",
+        },
+        {
+            "address": "address3",
+            "stake": 3,
+            "provider": "provider3",
+            "model": "model3",
+            "config": "config3",
+        },
+    ]
+
+    created_nodes = []
+
+    def node_factory(
+        node: dict,
+        mode: ExecutionMode,
+        contract_snapshot: ContractSnapshot,
+        receipt: Receipt | None,
+        msg_handler: MessageHandler,
+    ):
+        mock = Mock(Node)
+
+        mock.validator_mode = mode
+        mock.address = node["address"]
+        mock.leader_receipt = receipt
+
+        mock.exec_transaction = AsyncMock(
+            return_value=Receipt(
+                vote=Vote.DISAGREE,
                 class_name="",
                 args=[],
                 mode=mode,
