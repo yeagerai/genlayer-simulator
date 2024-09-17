@@ -64,7 +64,17 @@ export const useNodeStore = defineStore('nodeStore', () => {
       }
 
       if (modelsResult?.status === 'success') {
-        nodeProviders.value = modelsResult.data;
+        nodeProviders.value = modelsResult.data.reduce(
+          (acc: Record<string, string[]>, llmprovider) => {
+            const provider = llmprovider.provider;
+            if (!acc[provider]) {
+              acc[provider] = [];
+            }
+            acc[provider].push(llmprovider.model);
+            return acc;
+          },
+          {},
+        );
       } else {
         throw new Error('Error getting Providers and Models data');
       }

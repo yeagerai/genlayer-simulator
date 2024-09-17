@@ -13,7 +13,7 @@ repos:
     hooks:
       - id: backend-unit-pytest
         name: backend unit tests with pytest
-        entry: python3 -m pytest backend
+        entry: pytest tests/unit
         language: system
         types: [python]
         pass_filenames: false

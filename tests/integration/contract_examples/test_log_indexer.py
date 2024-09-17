@@ -25,13 +25,7 @@ TOKEN_TOTAL_SUPPLY = 1000
 TRANSFER_AMOUNT = 100
 
 
-def test_log_indexer():
-    # Validators Setup
-    result = post_request_localhost(
-        payload("create_random_validators", 5, 8, 12, ["openai"], None, "gpt-4o-mini")
-    ).json()
-    assert has_success_status(result)
-
+def test_log_indexer(setup_validators):
     # Account Setup
     from_account = create_new_account()
 

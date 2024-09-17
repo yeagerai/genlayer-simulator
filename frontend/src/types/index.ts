@@ -12,6 +12,8 @@ export interface ValidatorModel {
   provider: string;
   stake: number;
   updated_at: string;
+  plugin: string;
+  plugin_config: Record<string, any>;
 }
 
 export interface NewValidatorDataModel {

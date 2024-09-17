@@ -12,6 +12,7 @@ import type {
   CreateValidatorRequest,
   UpdateValidatorRequest,
   TransactionItem,
+  GetProvidersAndModelsData,
 } from '@/types';
 
 export class JsonRpcService implements IJsonRpcService {
@@ -124,10 +125,12 @@ export class JsonRpcService implements IJsonRpcService {
   /**
    * Retrieves a list of providers and models from the JSON-RPC server.
    *
-   * @return {Promise<JsonRpcResult<any>>} A promise that resolves to the list of providers and models.
+   * @return {Promise<JsonRpcResult<GetProvidersAndModelsData>>} A promise that resolves to the list of providers and models.
    */
-  async getProvidersAndModels(): Promise<JsonRpcResult<any>> {
-    const { result } = await this.rpcClient.call({
+  async getProvidersAndModels(): Promise<
+    JsonRpcResult<GetProvidersAndModelsData>
+  > {
+    const { result } = await this.rpcClient.call<GetProvidersAndModelsData>({
       method: 'get_providers_and_models',
       params: [],
     });
