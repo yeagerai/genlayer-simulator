@@ -1,6 +1,35 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
-  ]
+    "config:recommended",
+    "group:recommended",
+    "group:allNonMajor",
+    "group:dockerCompose",
+    "group:dockerfile",
+    "group:githubActions",
+    "group:pip_requirements"
+  ],
+  "packageRules": [
+    {
+      "enabled": false,
+      "matchPackageNames": [
+        "*"
+      ]
+    },
+    {
+      "groupName": "прт and nv",
+      "matchPackagePatterns": [
+        "^прт",
+        "^nv"
+      ]
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true
+  },
+  "osvVulnerabilityAlerts": true,
+  "dependencyDashboard": true,
+  "npm": {
+    "minimumReleaseAge": "3 days"
+  }
 }
