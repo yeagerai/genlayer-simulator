@@ -8,11 +8,9 @@
   ],
   "packageRules": [
     {
-      "enabled": false,
-      "matchPackageNames": [
-        "*"
-      ]
-    },
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "automerge": true
+    }
   ],
   "vulnerabilityAlerts": {
     "enabled": true
