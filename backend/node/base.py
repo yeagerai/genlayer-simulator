@@ -36,7 +36,7 @@ class Node:
                 transaction_data["contract_code"],
                 transaction_data["constructor_args"],
             )
-        elif transaction["type"] == TransactionType.RUN_CONTRACT:
+        elif transaction.type == TransactionType.RUN_CONTRACT:
             receipt = await self.run_contract(
                 transaction.from_address,
                 transaction_data["function_name"],
