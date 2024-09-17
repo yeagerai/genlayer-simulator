@@ -24,7 +24,7 @@ class AccountsManagerMock:
 class TransactionsProcessorMock:
     def __init__(self, transactions=None):
         self.transactions = transactions or []
-        self.updated_transaction_status = defaultdict(list)
+        self.updated_transaction_status_history = defaultdict(list)
 
     def get_transaction_by_id(self, transaction_id: str) -> dict:
         for transaction in self.transactions:
@@ -34,12 +34,14 @@ class TransactionsProcessorMock:
 
     def update_transaction_status(self, transaction_id: str, status: TransactionStatus):
         self.get_transaction_by_id(transaction_id)["status"] = status
-        self.updated_transaction_status[transaction_id].append(status)
+        self.updated_transaction_status_history[transaction_id].append(status)
 
     def set_transaction_result(self, transaction_id: str, consensus_data: dict):
         transaction = self.get_transaction_by_id(transaction_id)
         transaction["consensus_data"] = consensus_data
-        transaction["status"] = TransactionStatus.FINALIZED
+        status = TransactionStatus.FINALIZED
+        transaction["status"] = status
+        self.updated_transaction_status_history[transaction_id].append(status)
 
 
 class SnapshotMock:
@@ -176,6 +178,16 @@ async def test_exec_transaction():
         == TransactionStatus.FINALIZED
     )
 
+    assert transactions_processor.updated_transaction_status_history == {
+        "transaction_id": [
+            TransactionStatus.PROPOSING,
+            TransactionStatus.COMMITTING,
+            TransactionStatus.REVEALING,
+            TransactionStatus.ACCEPTED,
+            TransactionStatus.FINALIZED,
+        ]
+    }
+
 
 @pytest.mark.asyncio
 async def test_exec_transaction_no_consensus():
@@ -274,7 +286,7 @@ async def test_exec_transaction_no_consensus():
         == TransactionStatus.UNDETERMINED
     )
 
-    assert transactions_processor.updated_transaction_status == {
+    assert transactions_processor.updated_transaction_status_history == {
         "transaction_id": [
             TransactionStatus.PROPOSING,  # leader 1
             TransactionStatus.COMMITTING,
