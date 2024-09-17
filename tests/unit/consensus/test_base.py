@@ -35,7 +35,9 @@ class TransactionsProcessorMock:
         self.get_transaction_by_id(transaction_id)["status"] = status
 
     def set_transaction_result(self, transaction_id: str, consensus_data: dict):
-        self.get_transaction_by_id(transaction_id)["consensus_data"] = consensus_data
+        transaction = self.get_transaction_by_id(transaction_id)
+        transaction["consensus_data"] = consensus_data
+        transaction["status"] = TransactionStatus.FINALIZED
 
 
 class SnapshotMock:
@@ -149,11 +151,13 @@ async def test_exec_transaction():
 
         return mock
 
+    transactions_processor = TransactionsProcessorMock(
+        [transaction_to_dict(transaction)]
+    )
+
     await ConsensusAlgorithm(None, None).exec_transaction(
         transaction=transaction,
-        transactions_processor=TransactionsProcessorMock(
-            [transaction_to_dict(transaction)]
-        ),
+        transactions_processor=transactions_processor,
         snapshot=SnapshotMock(nodes),
         accounts_manager=AccountsManagerMock(),
         contract_snapshot_factory=contract_snapshot_factory,
@@ -164,6 +168,11 @@ async def test_exec_transaction():
 
     for node in created_nodes:
         node.exec_transaction.assert_awaited_once_with(transaction)
+
+    assert (
+        transactions_processor.get_transaction_by_id(transaction.id)["status"]
+        == TransactionStatus.FINALIZED
+    )
 
 
 @pytest.mark.asyncio

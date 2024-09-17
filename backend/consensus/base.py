@@ -165,11 +165,9 @@ class ConsensusAlgorithm:
 
         # Select Leader and validators
         all_validators = snapshot.get_all_validators()
-        leader, remaining_validators = get_validators_for_transaction(
+        involved_validators = get_validators_for_transaction(
             all_validators, DEFAULT_VALIDATORS_COUNT
         )
-
-        involved_validators = [leader] + remaining_validators
 
         for validators in rotate(involved_validators):
             [leader, *remaining_validators] = validators

@@ -16,15 +16,14 @@ def test_get_validators_for_transaction():
     nodes_set = list_of_dicst_to_set(nodes)
 
     while True:
-        leader, validators = get_validators_for_transaction(nodes, 10)
-        leader_and_validators = [leader] + validators
-        assert list_of_dicst_to_set(leader_and_validators) == nodes_set
+        validators = get_validators_for_transaction(nodes, 10)
 
-        if nodes != leader_and_validators:
+        assert list_of_dicst_to_set(validators) == nodes_set
+
+        if nodes != validators:
             # Since the order is random, at some point the order will be different
             break
 
-    print(leader)
     print(validators)
 
 
@@ -39,10 +38,9 @@ def test_get_validators_for_transaction_2():
 
     accumulated = set()
     while True:
-        leader, validators = get_validators_for_transaction(nodes, 2)
-        print(leader)
+        validators = get_validators_for_transaction(nodes, 2)
         print(validators)
-        accumulated.update(list_of_dicst_to_set([leader] + validators))
+        accumulated.update(list_of_dicst_to_set(validators))
 
         if accumulated == nodes_set:
             break
