@@ -9,6 +9,7 @@ on:
 jobs:
   SonarCloud-Scan:
     runs-on: ubuntu-latest
+    if: (github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]')
     steps:
       - uses: actions/checkout@v4
         with:
