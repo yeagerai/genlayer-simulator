@@ -94,6 +94,7 @@ class GenVM:
         from_address: str,
         code_to_deploy: str,
         constructor_args: dict,
+        leader_receipt: Receipt | None,
     ):
         class_name = self._get_contract_class_name(code_to_deploy)
         code_enforcement_check(code_to_deploy, class_name)
@@ -116,6 +117,10 @@ class GenVM:
                 globals()[name] = value
 
             self.eq_principle.contract_runner = self.contract_runner
+            if self.contract_runner.mode == ExecutionMode.VALIDATOR:
+                self.contract_runner.eq_outputs[ExecutionMode.LEADER.value] = (
+                    leader_receipt.eq_outputs[ExecutionMode.LEADER.value]
+                )
 
             module = sys.modules[__name__]
             setattr(module, class_name, contract_class)
@@ -123,7 +128,9 @@ class GenVM:
             encoded_pickled_object = None  # Default value in order to have something to return in case of error
             try:
                 # Manual instantiation of the class is done to handle async __init__ methods
-                current_contract = contract_class.__new__(contract_class)
+                current_contract = contract_class.__new__(
+                    contract_class, **constructor_args
+                )
                 if inspect.iscoroutinefunction(current_contract.__init__):
                     await current_contract.__init__(**constructor_args)
                 else:
@@ -172,7 +179,11 @@ class GenVM:
         )
 
     async def run_contract(
-        self, from_address: str, function_name: str, args: list, leader_receipt: dict
+        self,
+        from_address: str,
+        function_name: str,
+        args: list,
+        leader_receipt: Receipt | None,
     ) -> Receipt:
         self.contract_runner.from_address = from_address
         contract_code = self.snapshot.contract_code

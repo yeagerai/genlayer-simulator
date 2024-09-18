@@ -66,7 +66,7 @@ class Node:
     ):
         parsed_construction_args = json.loads(constructor_args)
         receipt = await self.genvm.deploy_contract(
-            from_address, code_to_deploy, parsed_construction_args
+            from_address, code_to_deploy, parsed_construction_args, self.leader_receipt
         )
         return self.parse_transaction_execution_receipt(receipt)
 
