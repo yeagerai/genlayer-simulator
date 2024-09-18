@@ -3,7 +3,7 @@ Flask[async]==3.0.3
 flask-socketio==5.3.7
 Flask-Cors==5.0.0
 psycopg2-binary>=2.9.9
-requests==2.31.0
+requests==2.32.2
 python-dotenv==1.0.1
 asgiref==3.8.1
 pydantic==2.9.2
