@@ -18,7 +18,7 @@ anthropic==0.34.2
 SQLAlchemy[asyncio]==2.0.35
 alembic==1.13.2
 eth-account==0.13.3
-eth-utils==4.1.1
+eth-utils==5.0.0
 sentence-transformers==3.1.0
 Flask-SQLAlchemy==3.1.1
 jsf==0.11.2
