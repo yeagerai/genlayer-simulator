@@ -1,0 +1,12 @@
+{
+  "provider": "anthropic",
+  "plugin": "anthropic",
+  "model": "claude-3-sonnet-20240229",
+  "config": {
+    "max_tokens": 500
+  },
+  "plugin_config": {
+    "api_key_env_var": "ANTHROPIC_API_KEY",
+    "api_url": null
+  }
+}

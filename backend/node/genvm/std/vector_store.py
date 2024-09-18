@@ -1,5 +1,6 @@
 # backend/node/genvm/std/vector_store.py
 
+from typing import Any
 import numpy as np
 from backend.node.genvm.std.models import get_model
 
@@ -18,13 +19,13 @@ class VectorStore:
         self.model_name = model_name
         self.next_id = 0
 
-    def add_text(self, text: str, metadata: any):
+    def add_text(self, text: str, metadata: Any):
         """
         Add a new text to the store with its metadata.
 
         Args:
             text (str): The text to be added.
-            metadata (any): The metadata.
+            metadata (Any): The metadata.
         """
 
         model = get_model(self.model_name)
@@ -38,7 +39,7 @@ class VectorStore:
 
         return vector_id
 
-    def get_closest_vector(self, text: str) -> tuple[float, int, str, any, list[float]]:
+    def get_closest_vector(self, text: str) -> tuple[float, int, str, Any, list[float]]:
         """
         Get the closest vector to the given text along with the similarity percentage and metadata.
 
@@ -58,7 +59,7 @@ class VectorStore:
 
     def get_k_closest_vectors(
         self, text: str, k: int = 5
-    ) -> list[tuple[float, int, str, any, list[float]]]:
+    ) -> list[tuple[float, int, str, Any, list[float]]]:
         """
         Get the closest k vectors to the given text along with the similarity percentages and metadata.
 
@@ -103,7 +104,7 @@ class VectorStore:
         ]
         return results
 
-    def update_text(self, vector_id: int, new_text: str, new_metadata: any):
+    def update_text(self, vector_id: int, new_text: str, new_metadata: Any):
         """
         Update the text and metadata of an existing vector.
 
@@ -135,7 +136,7 @@ class VectorStore:
         else:
             raise ValueError("Vector ID does not exist")
 
-    def get_vector(self, vector_id: int) -> tuple[str, any, list[float]]:
+    def get_vector(self, vector_id: int) -> tuple[str, Any, list[float]]:
         """
         Retrieve a vector and its metadata from the store.
 
@@ -172,7 +173,7 @@ class VectorStore:
         norm_b = np.linalg.norm(b)
         return dot_product / (norm_a * norm_b)
 
-    def get_all_items(self) -> list[tuple[str, any]]:
+    def get_all_items(self) -> list[tuple[str, Any]]:
         """
         Get all vectors and their metadata from the store.
         """

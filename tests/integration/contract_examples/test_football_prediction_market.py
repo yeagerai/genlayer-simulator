@@ -22,13 +22,7 @@ from tests.common.response import (
 from tests.common.accounts import create_new_account
 
 
-def test_football_prediction_market():
-    # Validators Setup
-    result = post_request_localhost(
-        payload("create_random_validators", 5, 8, 12, ["openai"], None, "gpt-4o")
-    ).json()
-    assert has_success_status(result)
-
+def test_football_prediction_market(setup_validators):
     # Account Setup
     from_account = create_new_account()
 
@@ -64,8 +58,3 @@ def test_football_prediction_market():
 
     # Assert response format
     assert_dict_struct(transaction_response_call_1, call_contract_function_response)
-
-    delete_validators_result = post_request_localhost(
-        payload("delete_all_validators")
-    ).json()
-    assert has_success_status(delete_validators_result)

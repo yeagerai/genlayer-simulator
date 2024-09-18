@@ -1,4 +1,5 @@
 from logging.config import fileConfig
+import sys
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
@@ -6,6 +7,8 @@ from sqlalchemy import pool
 from alembic import context
 import os
 
+# set up Python path as the project root directory, so that we can import as backend...
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 
 DB_URL = os.environ.get("DB_URL")
 
@@ -21,7 +24,7 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from models import Base
+from backend.database_handler.models import Base
 
 target_metadata = Base.metadata
 

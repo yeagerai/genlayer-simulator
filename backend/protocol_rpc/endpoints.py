@@ -6,16 +6,20 @@ from flask_jsonrpc import JSONRPC
 from sqlalchemy import Table
 
 from backend.database_handler.db_client import DBClient
+from backend.database_handler.llm_providers import LLMProviderRegistry
 from backend.database_handler.models import Base
+from backend.domain.types import LLMProvider, Validator
+from backend.node.create_nodes.providers import (
+    get_default_provider_for,
+    validate_provider,
+)
+from backend.node.genvm.llms import get_llm_plugin
 from backend.protocol_rpc.configuration import GlobalConfiguration
 from backend.protocol_rpc.message_handler.base import MessageHandler
 from backend.database_handler.accounts_manager import AccountsManager
 from backend.database_handler.validators_registry import ValidatorsRegistry
 
 from backend.node.create_nodes.create_nodes import (
-    get_default_config_for_providers_and_nodes,
-    get_providers,
-    get_provider_models,
     random_validator_config,
 )
 
@@ -89,14 +93,20 @@ def get_contract_schema(
         )
     contract_account = accounts_manager.get_account_or_fail(contract_address)
 
-    node = Node(
+    node = Node(  # Mock node just to get the data from the GenVM
         contract_snapshot=None,
-        address="",
         validator_mode=ExecutionMode.LEADER,
-        stake=0,
-        provider="",
-        model="",
-        config=None,
+        validator=Validator(
+            address="",
+            stake=0,
+            llmprovider=LLMProvider(
+                provider="",
+                model="",
+                config={},
+                plugin="",
+                plugin_config={},
+            ),
+        ),
         leader_receipt=None,
         msg_handler=msg_handler,
     )
@@ -106,29 +116,65 @@ def get_contract_schema(
 def get_contract_schema_for_code(
     msg_handler: MessageHandler, contract_code: str
 ) -> dict:
-    node = Node(
+    node = Node(  # Mock node just to get the data from the GenVM
         contract_snapshot=None,
-        address="",
         validator_mode=ExecutionMode.LEADER,
-        stake=0,
-        provider="",
-        model="",
-        config=None,
+        validator=Validator(
+            address="",
+            stake=0,
+            llmprovider=LLMProvider(
+                provider="",
+                model="",
+                config={},
+                plugin="",
+                plugin_config={},
+            ),
+        ),
         leader_receipt=None,
         msg_handler=msg_handler,
     )
     return node.get_contract_schema(contract_code)
 
 
-def get_providers_and_models(config: GlobalConfiguration) -> dict:
-    default_config = get_default_config_for_providers_and_nodes()
-    providers = get_providers()
-    providers_and_models = {}
-    for provider in providers:
-        providers_and_models[provider] = get_provider_models(
-            default_config["providers"], provider, config.get_ollama_url
-        )
-    return providers_and_models
+# TODO: these endpoints shouldn't return a `dict`, but I'm getting `TypeError: return type of dict must be a type; got NoneType instead`
+def reset_defaults_llm_providers(llm_provider_registry: LLMProviderRegistry) -> dict:
+    llm_provider_registry.reset_defaults()
+
+
+def get_providers_and_models(llm_provider_registry: LLMProviderRegistry) -> dict:
+    return llm_provider_registry.get_all_dict()
+
+
+def add_provider(llm_provider_registry: LLMProviderRegistry, params: dict) -> dict:
+    provider = LLMProvider(
+        provider=params["provider"],
+        model=params["model"],
+        config=params["config"],
+        plugin=params["plugin"],
+        plugin_config=params["plugin_config"],
+    )
+    validate_provider(provider)
+
+    return llm_provider_registry.add(provider)
+
+
+def update_provider(
+    llm_provider_registry: LLMProviderRegistry, id: int, params: dict
+) -> dict:
+    provider = LLMProvider(
+        provider=params["provider"],
+        model=params["model"],
+        config=params["config"],
+        plugin=params["plugin"],
+        plugin_config=params["plugin_config"],
+    )
+    validate_provider(provider)
+
+    llm_provider_registry.update(id, provider)
+
+
+def delete_provider(llm_provider_registry: LLMProviderRegistry, id: int) -> dict:
+    llm_provider_registry.delete(id)
 
 
 def create_validator(
@@ -137,61 +183,85 @@ def create_validator(
     stake: int,
     provider: str,
     model: str,
-    config: json,
+    config: dict | None = None,
+    plugin: str | None = None,
+    plugin_config: dict | None = None,
 ) -> dict:
+    # fallback for default provider
+    # TODO: only accept all or none of the config fields
+    llm_provider = None
+    if not (config and plugin and plugin_config):
+        llm_provider = get_default_provider_for(provider, model)
+    else:
+        llm_provider = LLMProvider(
+            provider=provider,
+            model=model,
+            config=config,
+            plugin=plugin,
+            plugin_config=plugin_config,
+        )
+        validate_provider(llm_provider)
+
     new_address = accounts_manager.create_new_account().address
     return validators_registry.create_validator(
-        new_address, stake, provider, model, config
+        Validator(
+            address=new_address,
+            stake=stake,
+            llmprovider=llm_provider,
+        )
     )
 
 
 def create_random_validator(
     validators_registry: ValidatorsRegistry,
     accounts_manager: AccountsManager,
+    llm_provider_registry: LLMProviderRegistry,
     config: GlobalConfiguration,
     stake: int,
 ) -> dict:
-    validator_address = accounts_manager.create_new_account().address
-    details = random_validator_config(config.get_ollama_url)
-    response = validators_registry.create_validator(
-        validator_address,
+    return create_random_validators(
+        validators_registry,
+        accounts_manager,
+        llm_provider_registry,
+        config,
+        1,
         stake,
-        details["provider"],
-        details["model"],
-        details["config"],
-    )
-    return response
+        stake,
+    )[0]
 
 
-# TODO: Refactor this function to put the random config generator inside the domain
-# and reuse the generate single random validator function
 def create_random_validators(
     validators_registry: ValidatorsRegistry,
     accounts_manager: AccountsManager,
+    llm_provider_registry: LLMProviderRegistry,
     config: GlobalConfiguration,
     count: int,
     min_stake: int,
     max_stake: int,
-    providers: list = None,
-    fixed_provider: str = None,
-    fixed_model: str = None,
-) -> dict:
-    providers = providers or []
+    limit_providers: list[str] = None,
+    limit_models: list[str] = None,
+) -> dict:  # TODO: should return list
+    limit_providers = limit_providers or []
+    limit_models = limit_models or []
 
-    for _ in range(count):
-        stake = random.uniform(min_stake, max_stake)
+    details = random_validator_config(
+        llm_provider_registry.get_all,
+        get_llm_plugin,
+        limit_providers=set(limit_providers),
+        limit_models=set(limit_models),
+        amount=count,
+    )
+
+    response = []
+    for detail in details:
+        stake = random.randint(min_stake, max_stake)
         validator_address = accounts_manager.create_new_account().address
-        details = random_validator_config(config.get_ollama_url, providers=providers)
-        new_validator = validators_registry.create_validator(
-            validator_address,
-            stake,
-            fixed_provider or details["provider"],
-            fixed_model or details["model"],
-            details["config"],
+
+        validator = validators_registry.create_validator(
+            Validator(address=validator_address, stake=stake, llmprovider=detail)
         )
-        if not "id" in new_validator:
-            raise SystemError("Failed to create Validator")
-    response = validators_registry.get_all_validators()
+        response.append(validator)
+
     return response
 
 
@@ -202,14 +272,37 @@ def update_validator(
     stake: int,
     provider: str,
     model: str,
-    config: json,
+    config: dict | None = None,
+    plugin: str | None = None,
+    plugin_config: dict | None = None,
 ) -> dict:
     # Remove validation while adding migration to update the db address
     # if not accounts_manager.is_valid_address(validator_address):
     #     raise InvalidAddressError(validator_address)
-    return validators_registry.update_validator(
-        validator_address, stake, provider, model, config
+
+    # fallback for default provider
+    # TODO: only accept all or none of the config fields
+    llm_provider = None
+    if not (plugin and plugin_config):
+        llm_provider = get_default_provider_for(provider, model)
+        if config:
+            llm_provider.config = config
+    else:
+        llm_provider = LLMProvider(
+            provider=provider,
+            model=model,
+            config=config,
+            plugin=plugin,
+            plugin_config=plugin_config,
+        )
+        validate_provider(llm_provider)
+
+    validator = Validator(
+        address=validator_address,
+        stake=stake,
+        llmprovider=llm_provider,
     )
+    return validators_registry.update_validator(validator)
 
 
 def delete_validator(
@@ -273,14 +366,20 @@ def call(
     decoded_data = decode_method_call_data(input)
 
     contract_account = accounts_manager.get_account_or_fail(to_address)
-    node = Node(
+    node = Node(  # Mock node just to get the data from the GenVM
         contract_snapshot=None,
-        address="",
         validator_mode=ExecutionMode.LEADER,
-        stake=0,
-        provider="",
-        model="",
-        config=None,
+        validator=Validator(
+            address="",
+            stake=0,
+            llmprovider=LLMProvider(
+                provider="",
+                model="",
+                config={},
+                plugin="",
+                plugin_config={},
+            ),
+        ),
         leader_receipt=None,
         msg_handler=msg_handler,
     )
@@ -380,6 +479,7 @@ def register_all_rpc_endpoints(
     accounts_manager: AccountsManager,
     transactions_processor: TransactionsProcessor,
     validators_registry: ValidatorsRegistry,
+    llm_provider_registry: LLMProviderRegistry,
     config: GlobalConfiguration,
 ):
     register_rpc_endpoint = partial(generate_rpc_endpoint, jsonrpc, msg_handler, config)
@@ -402,15 +502,29 @@ def register_all_rpc_endpoints(
     )
     register_rpc_endpoint_for_partial(get_contract_schema_for_code, msg_handler)
 
-    register_rpc_endpoint_for_partial(get_providers_and_models, config)
+    register_rpc_endpoint_for_partial(get_providers_and_models, llm_provider_registry)
+    register_rpc_endpoint_for_partial(
+        reset_defaults_llm_providers, llm_provider_registry
+    )
+    register_rpc_endpoint_for_partial(add_provider, llm_provider_registry)
+    register_rpc_endpoint_for_partial(update_provider, llm_provider_registry)
+    register_rpc_endpoint_for_partial(delete_provider, llm_provider_registry)
     register_rpc_endpoint_for_partial(
         create_validator, validators_registry, accounts_manager
     )
     register_rpc_endpoint_for_partial(
-        create_random_validator, validators_registry, accounts_manager, config
+        create_random_validator,
+        validators_registry,
+        accounts_manager,
+        llm_provider_registry,
+        config,
     )
     register_rpc_endpoint_for_partial(
-        create_random_validators, validators_registry, accounts_manager, config
+        create_random_validators,
+        validators_registry,
+        accounts_manager,
+        llm_provider_registry,
+        config,
     )
     register_rpc_endpoint_for_partial(
         update_validator, validators_registry, accounts_manager
