@@ -24,7 +24,7 @@ def plugin_mock(available: bool, available_models: List[str]) -> Plugin:
             return available
 
         def is_model_available(self, model: str) -> bool:
-            return model in available_models
+            return model in available_models and self.is_available()
 
     return PluginMock({})
 
