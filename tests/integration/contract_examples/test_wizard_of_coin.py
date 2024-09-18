@@ -21,8 +21,6 @@ from tests.common.response import (
 
 
 def test_wizard_of_coin(setup_validators, from_account):
-    print("test_wizard_of_coin")
-
     # Get contract schema
     contract_code = open("examples/contracts/wizard_of_coin.py", "r").read()
     result_schema = post_request_localhost(
