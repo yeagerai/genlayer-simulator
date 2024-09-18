@@ -1,9 +1,7 @@
 # backend/node/genvm/base.py
 
 import inspect
-import ast
 import re
-import asyncio
 import pickle
 import base64
 import sys
@@ -12,7 +10,6 @@ import io
 from contextlib import contextmanager, redirect_stdout
 
 from backend.database_handler.contract_snapshot import ContractSnapshot
-from backend.domain.types import Validator
 from backend.node.genvm.equivalence_principle import EquivalencePrinciple
 from backend.node.genvm.code_enforcement import code_enforcement_check
 from backend.node.genvm.std.vector_store import VectorStore
@@ -209,7 +206,7 @@ class GenVM:
             function_to_run = getattr(current_contract, function_name, None)
 
             try:
-                if asyncio.iscoroutinefunction(function_to_run):
+                if inspect.iscoroutinefunction(function_to_run):
                     await function_to_run(*args)
                 else:
                     function_to_run(*args)
