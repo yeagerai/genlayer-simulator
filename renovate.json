@@ -19,5 +19,6 @@
   "dependencyDashboard": true,
   "npm": {
     "minimumReleaseAge": "3 days"
-  }
+  },
+  "baseBranches": ["staging"]
 }
