@@ -34,52 +34,34 @@ from backend.node.genvm.types import ExecutionMode
 
 
 ####### HELPER ENDPOINTS #######
-def ping() -> dict:
-    return {"status": "OK"}
+def ping() -> str:
+    return "OK"
 
 
 ####### SIMULATOR ENDPOINTS #######
-def get_contract_schema(
+def clear_db_tables(db_client: DBClient, tables: list) -> None:
+    with db_client.get_session() as session:
+        for table_name in tables:
+            table = Table(
+                table_name, Base.metadata, autoload=True, autoload_with=session.bind
+            )
+            session.execute(table.delete())
+        session.commit()
+
+
+def fund_account(
     accounts_manager: AccountsManager,
-    msg_handler: MessageHandler,
-    contract_address: str,
-) -> dict:
-    if not accounts_manager.is_valid_address(contract_address):
-        raise InvalidAddressError(
-            contract_address,
-            "Incorrect address format. Please provide a valid address.",
-        )
-    contract_account = accounts_manager.get_account_or_fail(contract_address)
+    transactions_processor: TransactionsProcessor,
+    account_address: str,
+    amount: int,
+) -> int:
+    if not accounts_manager.is_valid_address(account_address):
+        raise InvalidAddressError(account_address)
 
-    node = Node(
-        contract_snapshot=None,
-        address="",
-        validator_mode=ExecutionMode.LEADER,
-        stake=0,
-        provider="",
-        model="",
-        config=None,
-        leader_receipt=None,
-        msg_handler=msg_handler,
+    transaction_id = transactions_processor.insert_transaction(
+        None, account_address, None, amount, 0
     )
-    return node.get_contract_schema(contract_account["data"]["code"])
-
-
-def get_contract_schema_for_code(
-    msg_handler: MessageHandler, contract_code: str
-) -> dict:
-    node = Node(
-        contract_snapshot=None,
-        address="",
-        validator_mode=ExecutionMode.LEADER,
-        stake=0,
-        provider="",
-        model="",
-        config=None,
-        leader_receipt=None,
-        msg_handler=msg_handler,
-    )
-    return node.get_contract_schema(contract_code)
+    return transaction_id
 
 
 def get_providers_and_models(config: GlobalConfiguration) -> dict:
@@ -137,7 +119,7 @@ def create_random_validators(
     providers: list = None,
     fixed_provider: str = None,
     fixed_model: str = None,
-) -> dict:
+) -> list:
     providers = providers or []
 
     for _ in range(count):
@@ -178,7 +160,7 @@ def delete_validator(
     validators_registry: ValidatorsRegistry,
     accounts_manager: AccountsManager,
     validator_address: str,
-) -> dict:
+) -> str:
     # Remove validation while adding migration to update the db address
     # if not accounts_manager.is_valid_address(validator_address):
     #     raise InvalidAddressError(validator_address)
@@ -189,7 +171,7 @@ def delete_validator(
 
 def delete_all_validators(
     validators_registry: ValidatorsRegistry,
-) -> dict:
+) -> list:
     validators_registry.delete_all_validators()
     return validators_registry.get_all_validators()
 
@@ -204,39 +186,57 @@ def get_validator(
     return validators_registry.get_validator(validator_address)
 
 
-def count_validators(validators_registry: ValidatorsRegistry) -> dict:
+def count_validators(validators_registry: ValidatorsRegistry) -> int:
     return validators_registry.count_validators()
 
 
 ####### GEN ENDPOINTS #######
-def clear_db_tables(db_client: DBClient, tables: list) -> dict:
-    with db_client.get_session() as session:
-        for table_name in tables:
-            table = Table(
-                table_name, Base.metadata, autoload=True, autoload_with=session.bind
-            )
-            session.execute(table.delete())
-        session.commit()
-
-
-def fund_account(
+def get_contract_schema(
     accounts_manager: AccountsManager,
-    transactions_processor: TransactionsProcessor,
-    account_address: str,
-    amount: int,
-) -> int:
-    if not accounts_manager.is_valid_address(account_address):
-        raise InvalidAddressError(account_address)
+    msg_handler: MessageHandler,
+    contract_address: str,
+) -> dict:
+    if not accounts_manager.is_valid_address(contract_address):
+        raise InvalidAddressError(
+            contract_address,
+            "Incorrect address format. Please provide a valid address.",
+        )
+    contract_account = accounts_manager.get_account_or_fail(contract_address)
 
-    transaction_id = transactions_processor.insert_transaction(
-        None, account_address, None, amount, 0
+    node = Node(
+        contract_snapshot=None,
+        address="",
+        validator_mode=ExecutionMode.LEADER,
+        stake=0,
+        provider="",
+        model="",
+        config=None,
+        leader_receipt=None,
+        msg_handler=msg_handler,
     )
-    return transaction_id
+    return node.get_contract_schema(contract_account["data"]["code"])
+
+
+def get_contract_schema_for_code(
+    msg_handler: MessageHandler, contract_code: str
+) -> dict:
+    node = Node(
+        contract_snapshot=None,
+        address="",
+        validator_mode=ExecutionMode.LEADER,
+        stake=0,
+        provider="",
+        model="",
+        config=None,
+        leader_receipt=None,
+        msg_handler=msg_handler,
+    )
+    return node.get_contract_schema(contract_code)
 
 
 ####### ETH ENDPOINTS #######
 def get_balance(
-    accounts_manager: AccountsManager, account_address: str, block_tag: str
+    accounts_manager: AccountsManager, account_address: str, block_tag: str = "latest"
 ) -> int:
     if not accounts_manager.is_valid_address(account_address):
         raise InvalidAddressError(
@@ -303,7 +303,7 @@ def send_raw_transaction(
     transactions_processor: TransactionsProcessor,
     accounts_manager: AccountsManager,
     signed_transaction: str,
-) -> dict:
+) -> int:
     # Decode transaction
     decoded_transaction = decode_signed_transaction(signed_transaction)
     print("decoded_transaction", decoded_transaction)
@@ -367,9 +367,8 @@ def send_raw_transaction(
     transaction_id = transactions_processor.insert_transaction(
         from_address, to_address, transaction_data, value, transaction_type
     )
-    result["transaction_id"] = transaction_id
 
-    return result
+    return transaction_id
 
 
 def register_all_rpc_endpoints(
@@ -383,78 +382,63 @@ def register_all_rpc_endpoints(
 ):
     register_rpc_endpoint = partial(generate_rpc_endpoint, jsonrpc, msg_handler)
 
-    register_rpc_endpoint(function=ping)
+    register_rpc_endpoint(ping)
     register_rpc_endpoint(
-        function=clear_db_tables,
-        args=[genlayer_db_client, ["current_state", "transactions"]],
+        partial(clear_db_tables, genlayer_db_client),
     )
     register_rpc_endpoint(
-        function=fund_account,
-        args=[accounts_manager, transactions_processor],
+        partial(fund_account, accounts_manager, transactions_processor),
     )
     register_rpc_endpoint(
-        function=get_providers_and_models,
-        args=[config],
+        partial(get_providers_and_models, config),
     )
     register_rpc_endpoint(
-        function=create_validator,
-        args=[validators_registry, accounts_manager],
+        partial(create_validator, validators_registry, accounts_manager),
     )
     register_rpc_endpoint(
-        function=create_random_validator,
-        args=[validators_registry, accounts_manager, config],
+        partial(create_random_validator, validators_registry, accounts_manager, config),
     )
     register_rpc_endpoint(
-        function=create_random_validators,
-        args=[validators_registry, accounts_manager, config],
+        partial(
+            create_random_validators, validators_registry, accounts_manager, config
+        ),
     )
     register_rpc_endpoint(
-        function=update_validator,
-        args=[validators_registry, accounts_manager],
+        partial(update_validator, validators_registry, accounts_manager),
     )
     register_rpc_endpoint(
-        function=delete_validator,
-        args=[validators_registry, accounts_manager],
+        partial(delete_validator, validators_registry, accounts_manager),
     )
     register_rpc_endpoint(
-        function=delete_all_validators,
-        args=[validators_registry],
+        partial(delete_all_validators, validators_registry),
     )
     register_rpc_endpoint(
-        function=get_all_validators,
-        args=[validators_registry],
+        partial(get_all_validators, validators_registry),
     )
     register_rpc_endpoint(
-        function=get_validator,
-        args=[validators_registry],
+        partial(get_validator, validators_registry),
     )
     register_rpc_endpoint(
+        partial(get_contract_schema, accounts_manager, msg_handler),
         method_name="gen_getContractSchema",
-        function=get_contract_schema,
-        args=[accounts_manager, msg_handler],
     )
     register_rpc_endpoint(
+        partial(get_contract_schema_for_code, msg_handler),
         method_name="gen_getContractSchemaForCode",
-        function=get_contract_schema_for_code,
-        args=[msg_handler],
     )
     register_rpc_endpoint(
+        partial(get_balance, accounts_manager),
         method_name="eth_getBalance",
-        function=get_balance,
-        args=[accounts_manager],
     )
     register_rpc_endpoint(
+        partial(get_transaction_by_id, transactions_processor),
         method_name="eth_getTransactionById",
-        function=get_transaction_by_id,
-        args=[transactions_processor],
     )
     register_rpc_endpoint(
+        partial(call, accounts_manager, msg_handler),
         method_name="eth_call",
-        function=call,
-        args=[accounts_manager, msg_handler],
     )
     register_rpc_endpoint(
+        partial(send_raw_transaction, transactions_processor, accounts_manager),
         method_name="eth_sendRawTransaction",
-        function=send_raw_transaction,
-        args=[transactions_processor, accounts_manager],
     )
