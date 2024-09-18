@@ -98,6 +98,7 @@ const isConfigValid = computed(() => {
 const providerOptions = computed(() => {
   return Object.keys(nodeStore.nodeProviders);
 });
+console.log('🚀 ~ providerOptions ~ providerOptions:', providerOptions);
 
 const handleChangeProvider = () => {
   newValidatorData.value.model =

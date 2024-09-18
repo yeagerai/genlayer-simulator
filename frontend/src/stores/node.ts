@@ -56,20 +56,9 @@ export const useNodeStore = defineStore('nodeStore', () => {
         rpcClient.getValidators(),
         rpcClient.getProvidersAndModels(),
       ]);
-
-      if (validatorsResult?.status === 'success') {
-        validators.value = validatorsResult.data;
-      } else {
-        throw new Error('Error getting validators');
-      }
-
-      if (modelsResult?.status === 'success') {
-        nodeProviders.value = modelsResult.data;
-      } else {
-        throw new Error('Error getting Providers and Models data');
-      }
+      validators.value = validatorsResult;
+      nodeProviders.value = modelsResult;
     } catch (error) {
-      console.error(error);
       notify({
         title: 'Error',
         text: (error as Error)?.message || 'Error loading validators',
@@ -97,16 +86,12 @@ export const useNodeStore = defineStore('nodeStore', () => {
       model,
       config: validatorConfig,
     });
-    if (result?.status === 'success') {
-      const index = validators.value.findIndex(
-        (v) => v.address === validator.address,
-      );
+    const index = validators.value.findIndex(
+      (v) => v.address === validator.address,
+    );
 
-      if (index >= 0) {
-        validators.value.splice(index, 1, result.data);
-      }
-    } else {
-      throw new Error('Error udpating the validator');
+    if (index >= 0) {
+      validators.value.splice(index, 1, result);
     }
   }
 
@@ -114,16 +99,12 @@ export const useNodeStore = defineStore('nodeStore', () => {
     if (validators.value.length === 1) {
       throw new Error('You must have at least one validator');
     }
-    const result = await rpcClient.deleteValidator({
+    await rpcClient.deleteValidator({
       address: validator.address || '',
     });
-    if (result?.status === 'success') {
-      validators.value = validators.value.filter(
-        (v) => v.address !== validator.address,
-      );
-    } else {
-      throw new Error('Error deleting the validator');
-    }
+    validators.value = validators.value.filter(
+      (v) => v.address !== validator.address,
+    );
   };
 
   async function createNewValidator(newValidatorData: NewValidatorDataModel) {
@@ -135,20 +116,12 @@ export const useNodeStore = defineStore('nodeStore', () => {
       model,
       config: validatorConfig,
     });
-    if (result?.status === 'success') {
-      validators.value.push(result.data);
-    } else {
-      throw new Error('Error creating a new validator');
-    }
+    validators.value.push(result);
   }
 
   async function cloneValidator(validator: ValidatorModel) {
     const result = await rpcClient.createValidator(validator);
-    if (result?.status === 'success') {
-      validators.value.push(result.data);
-    } else {
-      throw new Error('Error cloning validator');
-    }
+    validators.value.push(result);
   }
 
   const contractsToDelete = computed(() =>

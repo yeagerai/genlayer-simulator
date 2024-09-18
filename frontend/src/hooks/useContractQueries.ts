@@ -95,42 +95,29 @@ export function useContractQueries() {
         data,
       });
       const result = await rpcClient.sendTransaction(signed);
+      const tx: TransactionItem = {
+        contractAddress: result?.data.contract_address,
+        localContractId: contract.value?.id ?? '',
+        txId: result?.data.transaction_id,
+        type: 'deploy',
+        status: 'PENDING',
+        data: {},
+      };
 
-      if (result?.status === 'success') {
-        const tx: TransactionItem = {
-          contractAddress: result?.data.contract_address,
-          localContractId: contract.value?.id ?? '',
-          txId: result?.data.transaction_id,
-          type: 'deploy',
-          status: 'PENDING',
-          data: {},
-        };
+      notify({
+        title: 'Started deploying contract',
+        type: 'success',
+      });
 
-        notify({
-          title: 'Started deploying contract',
-          type: 'success',
-        });
+      trackEvent('deployed_contract', {
+        contract_name: contract.value?.name || '',
+      });
 
-        trackEvent('deployed_contract', {
-          contract_name: contract.value?.name || '',
-        });
-
-        transactionsStore.clearTransactionsForContract(
-          contract.value?.id ?? '',
-        );
-        transactionsStore.addTransaction(tx);
-
-        return tx;
-      } else {
-        throw new Error(
-          typeof result?.message === 'string'
-            ? result.message
-            : 'Error Deploying the contract',
-        );
-      }
+      transactionsStore.clearTransactionsForContract(contract.value?.id ?? '');
+      transactionsStore.addTransaction(tx);
+      return tx;
     } catch (error) {
       isDeploying.value = false;
-      console.error(error);
       notify({
         type: 'error',
         title: 'Error deploying contract',
@@ -184,12 +171,7 @@ export function useContractQueries() {
         data: encodedData,
       });
 
-      if (result?.status === 'error') {
-        console.error(result.message);
-        throw new Error(result.message);
-      }
-
-      return result?.data;
+      return result;
     } catch (error) {
       console.error(error);
       throw new Error('Error getting the contract state');
@@ -218,24 +200,18 @@ export function useContractQueries() {
       });
 
       const result = await rpcClient.sendTransaction(signed);
-
-      if (result?.status === 'success') {
-        transactionsStore.addTransaction({
-          contractAddress: address.value || '',
-          localContractId: contract.value?.id || '',
-          txId: (result?.data as any).transaction_id,
-          type: 'method',
-          status: 'PENDING',
-          data: {},
-        });
-
-        return true;
-      }
+      transactionsStore.addTransaction({
+        contractAddress: address.value || '',
+        localContractId: contract.value?.id || '',
+        txId: (result?.data as any).transaction_id,
+        type: 'method',
+        status: 'PENDING',
+        data: {},
+      });
+      return true;
     } catch (error) {
-      console.error(error);
       throw new Error('Error writing to contract');
     }
-    return false;
   }
 
   return {
