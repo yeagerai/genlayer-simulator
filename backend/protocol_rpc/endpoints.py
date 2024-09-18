@@ -73,11 +73,10 @@ def fund_account(
 ) -> dict:
     if not accounts_manager.is_valid_address(account_address):
         raise InvalidAddressError(account_address)
-
-    transaction_id = transactions_processor.insert_transaction(
+    transaction_hash = transactions_processor.insert_transaction(
         None, account_address, None, amount, 0
     )
-    return {"transaction_id": transaction_id}
+    return {"transaction_hash": transaction_hash}
 
 
 ####### CONTRACT CODE SCHEMA ENDPOINTS #######
@@ -340,10 +339,10 @@ def count_validators(validators_registry: ValidatorsRegistry) -> dict:
 
 
 ####### TRANSACTIONS ENDPOINTS #######
-def get_transaction_by_id(
-    transactions_processor: TransactionsProcessor, transaction_id: str
+def get_transaction_by_hash(
+    transactions_processor: TransactionsProcessor, transaction_hash: str
 ) -> dict:
-    return transactions_processor.get_transaction_by_id(transaction_id)
+    return transactions_processor.get_transaction_by_hash(transaction_hash)
 
 
 def call(
@@ -464,10 +463,10 @@ def send_raw_transaction(
         transaction_type = 2
 
     # Insert transaction into the database
-    transaction_id = transactions_processor.insert_transaction(
+    transaction_hash = transactions_processor.insert_transaction(
         from_address, to_address, transaction_data, value, transaction_type
     )
-    result["transaction_id"] = transaction_id
+    result["transaction_hash"] = transaction_hash
 
     return result
 
@@ -536,7 +535,7 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint_for_partial(get_all_validators, validators_registry)
     register_rpc_endpoint_for_partial(get_validator, validators_registry)
 
-    register_rpc_endpoint_for_partial(get_transaction_by_id, transactions_processor)
+    register_rpc_endpoint_for_partial(get_transaction_by_hash, transactions_processor)
     register_rpc_endpoint_for_partial(call, accounts_manager, msg_handler)
     register_rpc_endpoint_for_partial(
         send_raw_transaction, transactions_processor, accounts_manager

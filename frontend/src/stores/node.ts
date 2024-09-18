@@ -19,7 +19,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
   if (!webSocketClient.connected) webSocketClient.connect();
   webSocketClient.on('status_update', (event) => {
     if (listenWebsocket.value) {
-      if (event.message?.function !== 'get_transaction_by_id') {
+      if (event.message?.function !== 'get_transaction_by_hash') {
         if (event.message?.function === 'intelligent_contract_execution') {
           const executionLogs: string[] =
             event.message.response.message.split('\n\n');

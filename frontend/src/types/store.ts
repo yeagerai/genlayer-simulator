@@ -32,12 +32,11 @@ export interface NodeLog {
 }
 
 export interface TransactionItem {
-  id?: number;
+  hash: string;
   type: 'deploy' | 'method';
   status: string;
   contractAddress: string;
   localContractId: string;
-  txId: number;
   data?: any;
 }
 

@@ -39,7 +39,7 @@ export class JsonRpcService implements IJsonRpcService {
   }
 
   /**
-   * Deploys a new intelligent contract.
+   * Sends a signed transaction.
    *
    * @param {Object} signedTransaction - The signed transaction to be sent
    * @return {Promise<JsonRpcResult<any>>} A promise that resolves to the result of the transaction being received and processed.
@@ -202,12 +202,12 @@ export class JsonRpcService implements IJsonRpcService {
     return result;
   }
 
-  async getTransactionById(
-    txId: number,
+  async getTransactionByHash(
+    hash: string,
   ): Promise<JsonRpcResult<TransactionItem>> {
     const { result } = await this.rpcClient.call<TransactionItem>({
-      method: 'get_transaction_by_id',
-      params: [`${txId}`],
+      method: 'get_transaction_by_hash',
+      params: [`${hash}`],
     });
     return result;
   }

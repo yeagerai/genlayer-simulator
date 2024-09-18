@@ -1,9 +1,12 @@
 # consensus/services/transactions_db_service.py
+import rlp
 
 from .models import Transactions, TransactionsAudit
 from sqlalchemy.orm import Session
 
 from .models import TransactionStatus
+from eth_utils import to_bytes, keccak, is_address
+import json
 
 
 class TransactionsProcessor:
@@ -13,7 +16,7 @@ class TransactionsProcessor:
     @staticmethod
     def _parse_transaction_data(transaction_data: Transactions) -> dict:
         return {
-            "id": transaction_data.id,
+            "hash": transaction_data.hash,
             "from_address": transaction_data.from_address,
             "to_address": transaction_data.to_address,
             "data": transaction_data.data,
@@ -29,6 +32,40 @@ class TransactionsProcessor:
             "created_at": transaction_data.created_at.isoformat(),
         }
 
+    @staticmethod
+    def _generate_transaction_hash(
+        from_address: str,
+        to_address: str,
+        data: dict,
+        value: float,
+        type: int,
+        nonce: int,
+    ) -> str:
+        from_address_bytes = (
+            to_bytes(hexstr=from_address) if is_address(from_address) else None
+        )
+        to_address_bytes = (
+            to_bytes(hexstr=to_address) if is_address(to_address) else None
+        )
+        data_bytes = to_bytes(text=json.dumps(data))
+
+        tx_elements = [
+            from_address_bytes,
+            to_address_bytes,
+            to_bytes(hexstr=hex(int(value))),
+            data_bytes,
+            to_bytes(hexstr=hex(type)),
+            to_bytes(hexstr=hex(nonce)),
+            to_bytes(hexstr=hex(0)),  # gas price (placeholder)
+            to_bytes(hexstr=hex(0)),  # gas limit (placeholder)
+        ]
+
+        # Filter out None values
+        tx_elements = [elem for elem in tx_elements if elem is not None]
+        rlp_encoded = rlp.encode(tx_elements)
+        hash = "0x" + keccak(rlp_encoded).hex()
+        return hash
+
     def insert_transaction(
         self,
         from_address: str,
@@ -37,8 +74,18 @@ class TransactionsProcessor:
         value: float,
         type: int,
     ) -> int:
-        # Insert transaction into the transactions table
+        nonce = (
+            self.session.query(Transactions)
+            .filter(Transactions.from_address == from_address)
+            .count()
+        )
+
+        hash = self._generate_transaction_hash(
+            from_address, to_address, data, value, type, nonce
+        )
+
         new_transaction = Transactions(
+            hash=hash,
             from_address=from_address,
             to_address=to_address,
             data=data,
@@ -46,10 +93,10 @@ class TransactionsProcessor:
             type=type,
             status=TransactionStatus.PENDING,
             consensus_data=None,  # Will be set when the transaction is finalized
+            nonce=nonce,
             # Future fields, unused for now
             gaslimit=None,
             input_data=None,
-            nonce=None,
             r=None,
             s=None,
             v=None,
@@ -61,7 +108,7 @@ class TransactionsProcessor:
 
         # Insert transaction audit record into the transactions_audit table
         transaction_audit_record = TransactionsAudit(
-            transaction_id=new_transaction.id,
+            transaction_hash=new_transaction.hash,
             data=self._parse_transaction_data(new_transaction),
         )
 
@@ -69,11 +116,13 @@ class TransactionsProcessor:
 
         self.session.commit()
 
-        return new_transaction.id
+        return new_transaction.hash
 
-    def get_transaction_by_id(self, transaction_id: int) -> dict | None:
+    def get_transaction_by_hash(self, transaction_hash: str) -> dict | None:
         transaction = (
-            self.session.query(Transactions).filter_by(id=transaction_id).one_or_none()
+            self.session.query(Transactions)
+            .filter_by(hash=transaction_hash)
+            .one_or_none()
         )
 
         if transaction is None:
@@ -82,19 +131,19 @@ class TransactionsProcessor:
         return self._parse_transaction_data(transaction)
 
     def update_transaction_status(
-        self, transaction_id: int, new_status: TransactionStatus
+        self, transaction_hash: str, new_status: TransactionStatus
     ):
 
         transaction = (
-            self.session.query(Transactions).filter_by(id=transaction_id).one()
+            self.session.query(Transactions).filter_by(hash=transaction_hash).one()
         )
 
         transaction.status = new_status
         self.session.commit()
 
-    def set_transaction_result(self, transaction_id: int, consensus_data: dict):
+    def set_transaction_result(self, transaction_hash: str, consensus_data: dict):
         transaction = (
-            self.session.query(Transactions).filter_by(id=transaction_id).one()
+            self.session.query(Transactions).filter_by(hash=transaction_hash).one()
         )
 
         transaction.status = TransactionStatus.FINALIZED
@@ -102,7 +151,7 @@ class TransactionsProcessor:
 
         print(
             "Updating transaction status",
-            transaction_id,
+            transaction_hash,
             TransactionStatus.FINALIZED.value,
         )
         self.session.commit()

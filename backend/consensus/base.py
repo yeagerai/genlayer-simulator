@@ -94,7 +94,9 @@ class ConsensusAlgorithm:
         session: Session,
     ):
         if (
-            transactions_processor.get_transaction_by_id(transaction["id"])["status"]
+            transactions_processor.get_transaction_by_hash(transaction["hash"])[
+                "status"
+            ]
             != TransactionStatus.PENDING.value
         ):
             # This is a patch for a TOCTOU problem we have https://github.com/yeagerai/genlayer-simulator/issues/387
@@ -106,7 +108,7 @@ class ConsensusAlgorithm:
         print(" ~ ~ ~ ~ ~ EXECUTING TRANSACTION: ", transaction)
         # Update transaction status
         transactions_processor.update_transaction_status(
-            transaction["id"], TransactionStatus.PROPOSING
+            transaction["hash"], TransactionStatus.PROPOSING
         )
 
         # If transaction is a transfer, execute it
@@ -149,7 +151,7 @@ class ConsensusAlgorithm:
         votes = {leader["address"]: leader_receipt.vote.value}
         # Update transaction status
         transactions_processor.update_transaction_status(
-            transaction["id"], TransactionStatus.COMMITTING
+            transaction["hash"], TransactionStatus.COMMITTING
         )
 
         # Create Validators
@@ -187,7 +189,7 @@ class ConsensusAlgorithm:
         for i in range(len(validation_results)):
             votes[f"{validator_nodes[i].address}"] = validation_results[i].vote.value
         transactions_processor.update_transaction_status(
-            transaction["id"],
+            transaction["hash"],
             TransactionStatus.REVEALING,
         )
 
@@ -198,7 +200,7 @@ class ConsensusAlgorithm:
             raise Exception("Consensus not reached")
 
         transactions_processor.update_transaction_status(
-            transaction["id"], TransactionStatus.ACCEPTED
+            transaction["hash"], TransactionStatus.ACCEPTED
         )
 
         final = False
@@ -226,7 +228,7 @@ class ConsensusAlgorithm:
 
         # Finalize transaction
         transactions_processor.set_transaction_result(
-            transaction["id"],
+            transaction["hash"],
             consensus_data,
         )
 
@@ -259,7 +261,7 @@ class ConsensusAlgorithm:
             # If the sender does not have enough balance, set the transaction status to UNDETERMINED
             if from_balance < transaction["value"]:
                 transactions_processor.update_transaction_status(
-                    transaction["id"], TransactionStatus.UNDETERMINED
+                    transaction["hash"], TransactionStatus.UNDETERMINED
                 )
                 return
 
@@ -278,5 +280,5 @@ class ConsensusAlgorithm:
             )
 
         transactions_processor.update_transaction_status(
-            transaction["id"], TransactionStatus.FINALIZED
+            transaction["hash"], TransactionStatus.FINALIZED
         )
