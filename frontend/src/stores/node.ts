@@ -59,6 +59,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
       validators.value = validatorsResult;
       nodeProviders.value = modelsResult;
     } catch (error) {
+      console.error(error);
       notify({
         title: 'Error',
         text: (error as Error)?.message || 'Error loading validators',

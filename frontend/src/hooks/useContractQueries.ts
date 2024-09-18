@@ -66,11 +66,7 @@ export function useContractQueries() {
       code: contract.value?.content ?? '',
     });
 
-    if (result?.status === 'error') {
-      throw new Error(result?.message || 'Error fetching contract schema');
-    }
-
-    schema.value = result?.data;
+    schema.value = result;
 
     return schema.value;
   }
@@ -96,9 +92,9 @@ export function useContractQueries() {
       });
       const result = await rpcClient.sendTransaction(signed);
       const tx: TransactionItem = {
-        contractAddress: result?.data.contract_address,
+        contractAddress: '',
         localContractId: contract.value?.id ?? '',
-        txId: result?.data.transaction_id,
+        txId: result,
         type: 'deploy',
         status: 'PENDING',
         data: {},
@@ -151,12 +147,7 @@ export function useContractQueries() {
       address: deployedContract.value?.address ?? '',
     });
 
-    if (result?.status === 'error') {
-      console.error(result.message);
-      throw new Error('Error fetching contract abi');
-    }
-
-    return result?.data;
+    return result;
   }
 
   async function callReadMethod(method: string, methodArguments: string[]) {
@@ -203,7 +194,7 @@ export function useContractQueries() {
       transactionsStore.addTransaction({
         contractAddress: address.value || '',
         localContractId: contract.value?.id || '',
-        txId: (result?.data as any).transaction_id,
+        txId: result,
         type: 'method',
         status: 'PENDING',
         data: {},

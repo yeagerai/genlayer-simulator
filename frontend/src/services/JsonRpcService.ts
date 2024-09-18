@@ -135,7 +135,7 @@ export class JsonRpcService implements IJsonRpcService {
   async getTransactionById(txId: number): Promise<TransactionItem> {
     return this.callRpcMethod<TransactionItem>(
       'eth_getTransactionById',
-      [txId],
+      [String(txId)],
       'Error getting transaction by ID',
     ) as Promise<TransactionItem>;
   }
