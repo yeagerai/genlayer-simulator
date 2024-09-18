@@ -1,5 +1,8 @@
 from collections import defaultdict
+from unittest.mock import AsyncMock, Mock
+
 import pytest
+
 from backend.consensus.base import ConsensusAlgorithm, rotate
 from backend.database_handler.contract_snapshot import ContractSnapshot
 from backend.database_handler.models import TransactionStatus
@@ -7,7 +10,6 @@ from backend.domain.types import Transaction, TransactionType
 from backend.node.base import Node
 from backend.node.genvm.types import ExecutionMode, ExecutionResultStatus, Receipt, Vote
 from backend.protocol_rpc.message_handler.base import MessageHandler
-from unittest.mock import AsyncMock, MagicMock, Mock
 
 
 class AccountsManagerMock:
@@ -26,22 +28,24 @@ class TransactionsProcessorMock:
         self.transactions = transactions or []
         self.updated_transaction_status_history = defaultdict(list)
 
-    def get_transaction_by_id(self, transaction_id: str) -> dict:
+    def get_transaction_by_hash(self, transaction_hash: str) -> dict:
         for transaction in self.transactions:
-            if transaction["id"] == transaction_id:
+            if transaction["hash"] == transaction_hash:
                 return transaction
-        raise ValueError(f"Transaction with id {transaction_id} not found")
+        raise ValueError(f"Transaction with hash {transaction_hash} not found")
 
-    def update_transaction_status(self, transaction_id: str, status: TransactionStatus):
-        self.get_transaction_by_id(transaction_id)["status"] = status
-        self.updated_transaction_status_history[transaction_id].append(status)
+    def update_transaction_status(
+        self, transaction_hash: str, status: TransactionStatus
+    ):
+        self.get_transaction_by_hash(transaction_hash)["status"] = status
+        self.updated_transaction_status_history[transaction_hash].append(status)
 
-    def set_transaction_result(self, transaction_id: str, consensus_data: dict):
-        transaction = self.get_transaction_by_id(transaction_id)
+    def set_transaction_result(self, transaction_hash: str, consensus_data: dict):
+        transaction = self.get_transaction_by_hash(transaction_hash)
         transaction["consensus_data"] = consensus_data
         status = TransactionStatus.FINALIZED
         transaction["status"] = status
-        self.updated_transaction_status_history[transaction_id].append(status)
+        self.updated_transaction_status_history[transaction_hash].append(status)
 
 
 class SnapshotMock:
@@ -54,7 +58,7 @@ class SnapshotMock:
 
 def transaction_to_dict(transaction: Transaction) -> dict:
     return {
-        "id": transaction.id,
+        "hash": transaction.hash,
         "status": transaction.status.value,
         "from_address": transaction.from_address,
         "to_address": transaction.to_address,
@@ -89,7 +93,7 @@ async def test_exec_transaction():
     """
 
     transaction = Transaction(
-        id="transaction_id",
+        hash="transaction_hash",
         from_address="from_address",
         to_address="to_address",
         status=TransactionStatus.PENDING,
@@ -179,7 +183,7 @@ async def test_exec_transaction():
     )
 
     assert transactions_processor.updated_transaction_status_history == {
-        "transaction_id": [
+        "transaction_hash": [
             TransactionStatus.PROPOSING,
             TransactionStatus.COMMITTING,
             TransactionStatus.REVEALING,
@@ -197,7 +201,7 @@ async def test_exec_transaction_no_consensus():
     """
 
     transaction = Transaction(
-        id="transaction_id",
+        hash="transaction_hash",
         from_address="from_address",
         to_address="to_address",
         status=TransactionStatus.PENDING,
@@ -282,7 +286,7 @@ async def test_exec_transaction_no_consensus():
         node.exec_transaction.assert_awaited_once_with(transaction)
 
     assert transactions_processor.updated_transaction_status_history == {
-        "transaction_id": [
+        "transaction_hash": [
             TransactionStatus.PROPOSING,  # leader 1
             TransactionStatus.COMMITTING,
             TransactionStatus.REVEALING,
@@ -305,7 +309,7 @@ async def test_exec_transaction_one_disagreement():
     """
 
     transaction = Transaction(
-        id="transaction_id",
+        hash="transaction_hash",
         from_address="from_address",
         to_address="to_address",
         status=TransactionStatus.PENDING,
@@ -391,7 +395,7 @@ async def test_exec_transaction_one_disagreement():
     )
 
     assert transactions_processor.updated_transaction_status_history == {
-        "transaction_id": [
+        "transaction_hash": [
             TransactionStatus.PROPOSING,  # leader 1
             TransactionStatus.COMMITTING,
             TransactionStatus.REVEALING,

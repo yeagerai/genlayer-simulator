@@ -167,7 +167,7 @@ class ConsensusAlgorithm:
         for validators in rotate(involved_validators):
             # Update transaction status
             transactions_processor.update_transaction_status(
-                transaction.id, TransactionStatus.PROPOSING
+                transaction.hash, TransactionStatus.PROPOSING
             )
 
             [leader, *remaining_validators] = validators
@@ -190,7 +190,7 @@ class ConsensusAlgorithm:
             votes = {leader["address"]: leader_receipt.vote.value}
             # Update transaction status
             transactions_processor.update_transaction_status(
-                transaction.id, TransactionStatus.COMMITTING
+                transaction.hash, TransactionStatus.COMMITTING
             )
 
             # Create Validators
@@ -217,7 +217,7 @@ class ConsensusAlgorithm:
             for i, validation_result in enumerate(validation_results):
                 votes[validator_nodes[i].address] = validation_result.vote.value
             transactions_processor.update_transaction_status(
-                transaction.id,
+                transaction.hash,
                 TransactionStatus.REVEALING,
             )
 
@@ -234,7 +234,7 @@ class ConsensusAlgorithm:
         else:  # this block is executed if the loop above is not broken
             print("Consensus not reached for transaction: ", transaction)
             transactions_processor.update_transaction_status(
-                transaction.id, TransactionStatus.UNDETERMINED
+                transaction.hash, TransactionStatus.UNDETERMINED
             )
             return
 
