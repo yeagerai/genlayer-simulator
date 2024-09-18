@@ -178,7 +178,7 @@ async def test_exec_transaction():
         node.exec_transaction.assert_awaited_once_with(transaction)
 
     assert (
-        transactions_processor.get_transaction_by_id(transaction.id)["status"]
+        transactions_processor.get_transaction_by_hash(transaction.hash)["status"]
         == TransactionStatus.FINALIZED
     )
 
