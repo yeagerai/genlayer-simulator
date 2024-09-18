@@ -118,12 +118,19 @@ class GenVM:
             for name, value in local_namespace.items():
                 globals()[name] = value
 
+            self.eq_principle.contract_runner = self.contract_runner
+
             module = sys.modules[__name__]
             setattr(module, class_name, contract_class)
 
             encoded_pickled_object = None  # Default value in order to have something to return in case of error
             try:
-                current_contract = contract_class(**constructor_args)
+                # Manual instantiation of the class is done to handle async __init__ methods
+                current_contract = contract_class.__new__(contract_class)
+                if inspect.iscoroutinefunction(current_contract.__init__):
+                    await current_contract.__init__(**constructor_args)
+                else:
+                    current_contract.__init__(**constructor_args)
                 pickled_object = pickle.dumps(current_contract)
                 encoded_pickled_object = base64.b64encode(pickled_object).decode(
                     "utf-8"
