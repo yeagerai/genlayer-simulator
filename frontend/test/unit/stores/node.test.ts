@@ -126,10 +126,7 @@ describe('useNodeStore', () => {
   it('should create a new validator', async () => {
     const newValidatorData = testValidator1;
 
-    mockRpcClient.createValidator.mockResolvedValue({
-      status: 'success',
-      data: newValidatorData,
-    });
+    mockRpcClient.createValidator.mockResolvedValue(newValidatorData);
 
     await nodeStore.createNewValidator(newValidatorData);
     expect(nodeStore.validators).to.deep.include(newValidatorData);
@@ -147,8 +144,8 @@ describe('useNodeStore', () => {
     nodeStore.validators = [testValidator1];
 
     mockRpcClient.updateValidator.mockResolvedValue({
-      status: 'success',
-      data: { ...validator, ...newValidatorData },
+      ...validator,
+      ...newValidatorData,
     });
     await nodeStore.updateValidator(validator, newValidatorData);
 

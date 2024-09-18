@@ -42,7 +42,7 @@ describe('JsonRprService', () => {
       expect(spy.getMockName()).toEqual('call');
       expect(rpcClient.call).toHaveBeenCalledTimes(1);
       expect(rpcClient.call).toHaveBeenCalledWith({
-        method: 'call',
+        method: 'eth_call',
         params: [input.contractAddress, input.userAccount, input.data],
       });
     });
