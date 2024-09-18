@@ -35,21 +35,19 @@ def test_football_prediction_market():
     # Get contract schema
     contract_code = open("examples/contracts/football_prediction_market.py", "r").read()
     result_schema = post_request_localhost(
-        payload("get_contract_schema_for_code", contract_code)
+        payload("gen_getContractSchemaForCode", contract_code)
     ).json()
     assert has_success_status(result_schema)
     assert_dict_exact(result_schema, football_prediction_market_contract_schema)
 
     # Deploy Contract
-    call_method_response_deploy, transaction_response_deploy = (
-        deploy_intelligent_contract(
-            from_account,
-            contract_code,
-            f'{{"game_date": "2024-06-26", "team1": "Georgia", "team2": "Portugal"}}',
-        )
+    _, transaction_response_deploy = deploy_intelligent_contract(
+        from_account,
+        contract_code,
+        f'{{"game_date": "2024-06-26", "team1": "Georgia", "team2": "Portugal"}}',
     )
     assert has_success_status(transaction_response_deploy)
-    contract_address = call_method_response_deploy["result"]["data"]["contract_address"]
+    contract_address = transaction_response_deploy["data"]["contract_address"]
 
     ########################################
     ############# RESOLVE match ############

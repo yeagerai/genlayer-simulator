@@ -262,7 +262,7 @@ def call(
     # gas: int = 0,
     # gas_price: int = 0,
     # value: int = 0,
-) -> dict:
+) -> any:
     if not accounts_manager.is_valid_address(from_address):
         raise InvalidAddressError(from_address)
 

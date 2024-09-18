@@ -36,19 +36,17 @@ def test_wizard_of_coin():
     # Get contract schema
     contract_code = open("examples/contracts/wizard_of_coin.py", "r").read()
     result_schema = post_request_localhost(
-        payload("get_contract_schema_for_code", contract_code)
+        payload("gen_getContractSchemaForCode", contract_code)
     ).json()
     assert has_success_status(result_schema)
     assert_dict_exact(result_schema, wizard_contract_schema)
 
     # Deploy Contract
-    call_method_response_deploy, transaction_response_deploy = (
-        deploy_intelligent_contract(
-            from_account, contract_code, f'{{"have_coin": true}}'
-        )
+    _, transaction_response_deploy = deploy_intelligent_contract(
+        from_account, contract_code, f'{{"have_coin": true}}'
     )
     assert has_success_status(transaction_response_deploy)
-    contract_address = call_method_response_deploy["result"]["data"]["contract_address"]
+    contract_address = transaction_response_deploy["data"]["contract_address"]
 
     # Call Contract Function
     _, transaction_response_call_1 = send_transaction(

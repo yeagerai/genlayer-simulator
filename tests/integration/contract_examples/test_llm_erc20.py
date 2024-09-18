@@ -39,20 +39,18 @@ def test_llm_erc20():
     # Get contract schema
     contract_code = open("examples/contracts/llm_erc20.py", "r").read()
     result_schema = post_request_localhost(
-        payload("get_contract_schema_for_code", contract_code)
+        payload("gen_getContractSchemaForCode", contract_code)
     ).json()
     assert has_success_status(result_schema)
     assert_dict_exact(result_schema, llm_erc20_contract_schema)
 
     # Deploy Contract
-    call_method_response_deploy, transaction_response_deploy = (
-        deploy_intelligent_contract(
-            from_account_a, contract_code, f'{{"total_supply": "{TOKEN_TOTAL_SUPPLY}"}}'
-        )
+    _, transaction_response_deploy = deploy_intelligent_contract(
+        from_account_a, contract_code, f'{{"total_supply": "{TOKEN_TOTAL_SUPPLY}"}}'
     )
 
     assert has_success_status(transaction_response_deploy)
-    contract_address = call_method_response_deploy["result"]["data"]["contract_address"]
+    contract_address = transaction_response_deploy["data"]["contract_address"]
 
     ########################################
     ######### GET Initial State ############
@@ -60,10 +58,7 @@ def test_llm_erc20():
     contract_state_1 = call_contract_method(
         contract_address, from_account_a, "get_balances", []
     )
-    assert has_success_status(contract_state_1)
-    assert contract_state_1["result"]["data"][from_account_a.address] == str(
-        TOKEN_TOTAL_SUPPLY
-    )
+    assert contract_state_1[from_account_a.address] == str(TOKEN_TOTAL_SUPPLY)
 
     ########################################
     #### TRANSFER from User A to User B ####
@@ -85,27 +80,23 @@ def test_llm_erc20():
     )
     assert has_success_status(contract_state_2_1)
     assert (
-        contract_state_2_1["result"]["data"][from_account_a.address]
+        contract_state_2_1[from_account_a.address]
         == TOKEN_TOTAL_SUPPLY - TRANSFER_AMOUNT
     )
 
-    assert (
-        contract_state_2_1["result"]["data"][from_account_b.address] == TRANSFER_AMOUNT
-    )
+    assert contract_state_2_1[from_account_b.address] == TRANSFER_AMOUNT
 
     # Get Updated State
     contract_state_2_2 = call_contract_method(
         contract_address, from_account_a, "get_balance_of", [from_account_a.address]
     )
-    assert has_success_status(contract_state_2_2)
-    assert contract_state_2_2["result"]["data"] == TOKEN_TOTAL_SUPPLY - TRANSFER_AMOUNT
+    assert contract_state_2_2 == TOKEN_TOTAL_SUPPLY - TRANSFER_AMOUNT
 
     # Get Updated State
     contract_state_2_3 = call_contract_method(
         contract_address, from_account_a, "get_balance_of", [from_account_b.address]
     )
-    assert has_success_status(contract_state_2_3)
-    assert contract_state_2_3["result"]["data"] == TRANSFER_AMOUNT
+    assert contract_state_2_3 == TRANSFER_AMOUNT
 
     delete_validators_result = post_request_localhost(
         payload("delete_all_validators")

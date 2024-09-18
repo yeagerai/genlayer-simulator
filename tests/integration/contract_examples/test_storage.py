@@ -38,27 +38,24 @@ def test_storage():
     # Get contract schema
     contract_code = open("examples/contracts/storage.py", "r").read()
     result_schema = post_request_localhost(
-        payload("get_contract_schema_for_code", contract_code)
+        payload("gen_getContractSchemaForCode", contract_code)
     ).json()
     assert has_success_status(result_schema)
     assert_dict_exact(result_schema, storage_contract_schema)
 
     # Deploy Contract
-    call_method_response_deploy, transaction_response_deploy = (
-        deploy_intelligent_contract(
-            from_account, contract_code, f'{{"initial_storage": "{INITIAL_STATE}"}}'
-        )
+    _, transaction_response_deploy = deploy_intelligent_contract(
+        from_account, contract_code, f'{{"initial_storage": "{INITIAL_STATE}"}}'
     )
 
     assert has_success_status(transaction_response_deploy)
-    contract_address = call_method_response_deploy["result"]["data"]["contract_address"]
+    contract_address = transaction_response_deploy["data"]["contract_address"]
 
     # Get Initial State
     contract_state_1 = call_contract_method(
         contract_address, from_account, "get_storage", []
     )
-    assert has_success_status(contract_state_1)
-    assert contract_state_1["result"]["data"] == INITIAL_STATE
+    assert contract_state_1 == INITIAL_STATE
 
     # Update State
     _, transaction_response_call_1 = send_transaction(
@@ -74,8 +71,7 @@ def test_storage():
     contract_state_2 = call_contract_method(
         contract_address, from_account, "get_storage", []
     )
-    assert has_success_status(contract_state_2)
-    assert contract_state_2["result"]["data"] == UPDATED_STATE
+    assert contract_state_2 == UPDATED_STATE
 
     delete_validators_result = post_request_localhost(
         payload("delete_all_validators")
