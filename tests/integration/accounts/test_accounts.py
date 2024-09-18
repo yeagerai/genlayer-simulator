@@ -25,19 +25,16 @@ def test_accounts_funding():
     fund_account_result = post_request_localhost(
         payload("fund_account", new_account_address, fund_amount)
     ).json()
+    print("fund_account_result", fund_account_result)
     assert has_success_status(fund_account_result)
-    assert "transaction_id" in fund_account_result["result"]["data"]
-    wait_for_transaction(fund_account_result["result"]["data"]["transaction_id"])
+    wait_for_transaction(fund_account_result["result"])
 
     # Verify balance after funding
     get_balance_after_fund_result = post_request_localhost(
-        payload("get_balance", new_account_address)
+        payload("eth_getBalance", new_account_address)
     ).json()
     assert has_success_status(get_balance_after_fund_result)
-    assert (
-        get_balance_after_fund_result["result"]["data"]["account_balance"]
-        == fund_amount
-    )
+    assert get_balance_after_fund_result["result"] == fund_amount
 
     # Test fund_account with invalid address
     invalid_address = "0xinvalid_address"
@@ -49,17 +46,17 @@ def test_accounts_funding():
 
     assert (
         "Incorrect address format. Please provide a valid address."
-        in fund_invalid_account_result["result"]["message"]
+        in fund_invalid_account_result["error"]["message"]
     )
 
     # Test get_balance with invalid address
     get_balance_invalid_result = post_request_localhost(
-        payload("get_balance", invalid_address)
+        payload("eth_getBalance", invalid_address)
     ).json()
     assert has_error_status(get_balance_invalid_result)
     assert (
         "Incorrect address format. Please provide a valid address."
-        in fund_invalid_account_result["result"]["message"]
+        in fund_invalid_account_result["error"]["message"]
     )
 
 
@@ -75,7 +72,7 @@ def test_accounts_transfers():
     fund_account_result = post_request_localhost(
         payload("fund_account", account_1_address, fund_amount)
     ).json()
-    wait_for_transaction(fund_account_result["result"]["data"]["transaction_id"])
+    wait_for_transaction(fund_account_result["result"])
 
     # Test transfer
     transfer_amount = 200
@@ -86,22 +83,16 @@ def test_accounts_transfers():
 
     # Verify balance after transfer
     get_balance_1_after_transfer = post_request_localhost(
-        payload("get_balance", account_1_address)
+        payload("eth_getBalance", account_1_address)
     ).json()
     assert has_success_status(get_balance_1_after_transfer)
-    assert (
-        get_balance_1_after_transfer["result"]["data"]["account_balance"]
-        == fund_amount - transfer_amount
-    )
+    assert get_balance_1_after_transfer["result"] == fund_amount - transfer_amount
 
     get_balance_2_after_transfer = post_request_localhost(
-        payload("get_balance", account_2_address)
+        payload("eth_getBalance", account_2_address)
     ).json()
     assert has_success_status(get_balance_2_after_transfer)
-    assert (
-        get_balance_2_after_transfer["result"]["data"]["account_balance"]
-        == transfer_amount
-    )
+    assert get_balance_2_after_transfer["result"] == transfer_amount
 
 
 def test_accounts_burn():
@@ -113,7 +104,7 @@ def test_accounts_burn():
     fund_account_result = post_request_localhost(
         payload("fund_account", account_1_address, fund_amount)
     ).json()
-    wait_for_transaction(fund_account_result["result"]["data"]["transaction_id"])
+    wait_for_transaction(fund_account_result["result"])
 
     # Test burn
     burn_amount = 200
@@ -124,10 +115,7 @@ def test_accounts_burn():
 
     # Verify balance after transfer
     get_balance_1_after_transfer = post_request_localhost(
-        payload("get_balance", account_1_address)
+        payload("eth_getBalance", account_1_address)
     ).json()
     assert has_success_status(get_balance_1_after_transfer)
-    assert (
-        get_balance_1_after_transfer["result"]["data"]["account_balance"]
-        == fund_amount - burn_amount
-    )
+    assert get_balance_1_after_transfer["result"] == fund_amount - burn_amount

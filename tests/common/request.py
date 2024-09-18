@@ -38,9 +38,10 @@ def post_request_localhost(payload: dict):
 
 
 def get_transaction_by_id(transaction_id: str):
-    payload_data = payload("get_transaction_by_id", transaction_id)
+    payload_data = payload("eth_getTransactionById", transaction_id)
     raw_response = post_request_localhost(payload_data)
-    return raw_response.json()
+    parsed_raw_response = raw_response.json()
+    return parsed_raw_response["result"]
 
 
 def call_contract_method(
@@ -52,7 +53,7 @@ def call_contract_method(
     params_as_string = json.dumps(method_args)
     encoded_data = encode_transaction_data([method_name, params_as_string])
     return post_request_localhost(
-        payload("call", contract_address, from_account.address, encoded_data)
+        payload("eth_call", contract_address, from_account.address, encoded_data)
     ).json()
 
 
@@ -81,22 +82,22 @@ def deploy_intelligent_contract(
 
 
 def send_raw_transaction(signed_transaction: str):
-    payload_data = payload("send_raw_transaction", signed_transaction)
+    payload_data = payload("eth_sendRawTransaction", signed_transaction)
     raw_response = post_request_localhost(payload_data)
     call_method_response = raw_response.json()
-    if not call_method_response["result"]:
-        raise ValueError("No result found in the call_method_response")
-    transaction_id = call_method_response["result"]["data"]["transaction_id"]
+    print("call_method_response", call_method_response)
+    transaction_id = call_method_response["result"]
 
     transaction_response = wait_for_transaction(transaction_id)
-    return (call_method_response, transaction_response)
+    return (call_method_response["result"], transaction_response)
 
 
 def wait_for_transaction(transaction_id: str, interval: int = 10, retries: int = 15):
     attempts = 0
     while attempts < retries:
         transaction_response = get_transaction_by_id(str(transaction_id))
-        status = transaction_response["result"]["data"]["status"]
+        print("transaction_response", transaction_response)
+        status = transaction_response["status"]
         if status == "FINALIZED":
             return transaction_response
         time.sleep(interval)
