@@ -1,6 +1,6 @@
 requests==2.31.0
 python-dotenv==1.0.1
-black==24.4.2
-pytest==8.2.1
+black==24.8.0
+pytest==8.3.3
 pytest-mock==3.14.0
-pre-commit==3.7.1
+pre-commit==3.8.0
