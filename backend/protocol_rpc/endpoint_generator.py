@@ -37,8 +37,6 @@ def generate_rpc_endpoint(
     partial_function.__name__ = json_rpc_method_name
     partial_function.__annotations__ = get_function_annotations(partial_function)
 
-    @msg_handler.log_endpoint_info(partial_function)
-    @jsonrpc.method(json_rpc_method_name)
     @wraps(partial_function)
     def endpoint(*endpoint_args, **endpoint_kwargs):
         try:
@@ -46,5 +44,8 @@ def generate_rpc_endpoint(
             return result
         except Exception as e:
             raise JSONRPCError(code=-32000, message=str(e))
+
+    endpoint = msg_handler.log_endpoint_info(endpoint)
+    endpoint = jsonrpc.method(json_rpc_method_name)(endpoint)
 
     return endpoint

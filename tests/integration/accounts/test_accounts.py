@@ -25,7 +25,6 @@ def test_accounts_funding():
     fund_account_result = post_request_localhost(
         payload("fund_account", new_account_address, fund_amount)
     ).json()
-    print("fund_account_result", fund_account_result)
     assert has_success_status(fund_account_result)
     wait_for_transaction(fund_account_result["result"])
 

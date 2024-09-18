@@ -44,6 +44,7 @@ def log_endpoint_info_wrapper(msg_handler, config):
                         e,
                     )
                 )
+                raise e
 
         return wrapper
 

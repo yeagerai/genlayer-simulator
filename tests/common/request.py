@@ -85,7 +85,6 @@ def send_raw_transaction(signed_transaction: str):
     payload_data = payload("eth_sendRawTransaction", signed_transaction)
     raw_response = post_request_localhost(payload_data)
     call_method_response = raw_response.json()
-    print("call_method_response", call_method_response)
     transaction_id = call_method_response["result"]
 
     transaction_response = wait_for_transaction(transaction_id)
@@ -96,7 +95,6 @@ def wait_for_transaction(transaction_id: str, interval: int = 10, retries: int =
     attempts = 0
     while attempts < retries:
         transaction_response = get_transaction_by_id(str(transaction_id))
-        print("transaction_response", transaction_response)
         status = transaction_response["status"]
         if status == "FINALIZED":
             return transaction_response
