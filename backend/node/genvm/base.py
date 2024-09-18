@@ -92,7 +92,7 @@ class GenVM:
             error=error,
         )
 
-    def deploy_contract(
+    async def deploy_contract(
         self,
         from_address: str,
         code_to_deploy: str,
@@ -113,6 +113,10 @@ class GenVM:
             exec(code_to_deploy, globals(), local_namespace)
 
             contract_class = local_namespace[class_name]
+
+            # Ensure the class and other necessary elements are in the global local_namespace if needed
+            for name, value in local_namespace.items():
+                globals()[name] = value
 
             module = sys.modules[__name__]
             setattr(module, class_name, contract_class)
