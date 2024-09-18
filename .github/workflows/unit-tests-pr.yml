@@ -23,3 +23,13 @@ jobs:
     uses: ./.github/workflows/frontend-unit-tests.yml
     secrets:
       codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+  backend-unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+          cache: pip
+      - run: pip install -r backend/protocol_rpc/requirements.txt
+      - run: pytest tests/unit -vv
