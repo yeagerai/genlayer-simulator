@@ -28,7 +28,6 @@ class Node:
             msg_handler,
         )
 
-
     async def exec_transaction(self, transaction: Transaction) -> Receipt:
         transaction_data = transaction.data
         if transaction.type == TransactionType.DEPLOY_CONTRACT:
