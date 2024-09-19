@@ -1,19 +1,33 @@
-# backend/node/genvm/llms.py
+"""
+This file contains the plugins (functions) that are used to interact with the different LLMs (Language Model Models) that are used in the system. The plugins are registered in the `get_llm_function` function, which returns the function that corresponds to the plugin name. The plugins are called with the following parameters:
 
+- `node_config`: A dictionary containing the model and configuration to be used.
+- `prompt`: The prompt to be sent to the LLM.
+- `regex`: A regular expression to be used to stop the LLM.
+- `return_streaming_channel`: An optional asyncio.Queue to stream the response.
+"""
+
+from typing import Protocol
 import os
 import re
 import json
 import aiohttp
 import asyncio
 from typing import Optional
-from openai import OpenAI
+from openai import OpenAI, Stream
+from openai.types.chat import ChatCompletionChunk
+from anthropic import AsyncAnthropic
+from urllib.parse import urljoin
 
 from dotenv import load_dotenv
+import requests
 
 load_dotenv()
 
+plugin_config_key = "plugin_config"
 
-async def process_streaming_buffer(buffer: str, chunk: str, regex: str) -> str:
+
+async def process_streaming_buffer(buffer: str, chunk: str, regex: str) -> dict:
     updated_buffer = buffer + chunk
     if regex:
         match = re.search(regex, updated_buffer)
@@ -25,7 +39,7 @@ async def process_streaming_buffer(buffer: str, chunk: str, regex: str) -> str:
 
 async def stream_http_response(url, data):
     async with aiohttp.ClientSession(
-        connector=aiohttp.TCPConnector(verify_ssl=False)
+        connector=aiohttp.TCPConnector(ssl=False)
     ) as session:
         async with session.post(url, json=data, ssl=False) as response:
             async for chunk in response.content.iter_any():
@@ -33,16 +47,16 @@ async def stream_http_response(url, data):
 
 
 async def call_ollama(
-    model_config: dict,
+    node_config: dict,
     prompt: str,
     regex: Optional[str],
     return_streaming_channel: Optional[asyncio.Queue],
 ) -> str:
-    url = get_ollama_url("generate")
+    url = urljoin(node_config[plugin_config_key]["api_url"], "generate")
 
-    data = {"model": model_config["model"], "prompt": prompt}
+    data = {"model": node_config["model"], "prompt": prompt}
 
-    for name, value in model_config["config"].items():
+    for name, value in node_config["config"].items():
         data[name] = value
 
     buffer = ""
@@ -51,7 +65,6 @@ async def call_ollama(
         if return_streaming_channel is not None:
             if not chunk.get("done"):
                 await return_streaming_channel.put(chunk)
-                continue
             else:
                 await return_streaming_channel.put({"done": True})
         else:
@@ -64,42 +77,21 @@ async def call_ollama(
 
 
 async def call_openai(
-    model_config: dict,
+    node_config: dict,
     prompt: str,
     regex: Optional[str],
     return_streaming_channel: Optional[asyncio.Queue],
 ) -> str:
-    client = get_openai_client(os.environ.get("OPENAIKEY"))
+    api_key_env_var = node_config[plugin_config_key]["api_key_env_var"]
+    url = node_config[plugin_config_key]["api_url"]
+    client = get_openai_client(os.environ.get(api_key_env_var), url)
     # TODO: OpenAI exceptions need to be caught here
-    stream = get_openai_stream(client, prompt, model_config)
+    stream = get_openai_stream(client, prompt, node_config)
 
     return await get_openai_output(stream, regex, return_streaming_channel)
 
 
-async def call_heuristai(
-    model_config: dict,
-    prompt: str,
-    regex: Optional[str],
-    return_streaming_channel: Optional[asyncio.Queue],
-) -> str:
-    client = get_openai_client(
-        os.environ.get("HEURISTAIAPIKEY"), os.environ.get("HEURISTAIURL")
-    )
-    stream = get_openai_stream(client, prompt, model_config)
-    # TODO: Get the line below working
-    # return await get_openai_output(stream, regex, return_streaming_channel)
-    output = ""
-    for chunk in stream:
-        # raise Exception(chunk.json(), dir(chunk), chunk.choices[0].delta.content)
-        try:
-            output += chunk.choices[0].delta.content
-        except Exception:
-            raise Exception(chunk.json(), dir(chunk))
-    # return stream.choices[0].message.content
-    return output
-
-
-def get_openai_client(api_key: str, url: str = None):
+def get_openai_client(api_key: str, url: str = None) -> OpenAI:
     openai_client = None
     if url:
         openai_client = OpenAI(api_key=api_key, base_url=url)
@@ -108,11 +100,11 @@ def get_openai_client(api_key: str, url: str = None):
     return openai_client
 
 
-def get_openai_stream(client, prompt, model_config):
-    config = model_config["config"]
+def get_openai_stream(client: OpenAI, prompt, node_config):
+    config: dict = node_config["config"]
     if "temperature" in config and "max_tokens" in config:
         return client.chat.completions.create(
-            model=model_config["model"],
+            model=node_config["model"],
             messages=[{"role": "user", "content": prompt}],
             stream=True,
             temperature=config["temperature"],
@@ -120,13 +112,15 @@ def get_openai_stream(client, prompt, model_config):
         )
     else:
         return client.chat.completions.create(
-            model=model_config["model"],
+            model=node_config["model"],
             messages=[{"role": "user", "content": prompt}],
             stream=True,
         )
 
 
-async def get_openai_output(stream, regex, return_streaming_channel):
+async def get_openai_output(
+    stream: Stream[ChatCompletionChunk], regex, return_streaming_channel
+):
     buffer = ""
     for chunk in stream:
         chunk_str = chunk.choices[0].delta.content
@@ -144,8 +138,162 @@ async def get_openai_output(stream, regex, return_streaming_channel):
                 if "done" in chunk_str:
                     return buffer
         else:
-            return buffer
+            break
+
+    return buffer
 
 
-def get_ollama_url(endpoint: str) -> str:
-    return f"{os.environ['OLAMAPROTOCOL']}://{os.environ['OLAMAHOST']}:{os.environ['OLAMAPORT']}/api/{endpoint}"
+class Plugin(Protocol):
+    def __init__(self, plugin_config: dict): ...
+
+    async def call(
+        self,
+        node_config: dict,
+        prompt: str,
+        regex: Optional[str],
+        return_streaming_channel: Optional[asyncio.Queue],
+    ) -> str: ...
+
+    def is_available(self) -> bool: ...
+
+    def is_model_available(self, model: str) -> bool: ...
+
+
+class OllamaPlugin:
+    def __init__(self, plugin_config: dict):
+        self.url = plugin_config["api_url"]
+
+    async def call(
+        self,
+        node_config: dict,
+        prompt: str,
+        regex: Optional[str],
+        return_streaming_channel: Optional[asyncio.Queue],
+    ) -> str:
+        return await call_ollama(node_config, prompt, regex, return_streaming_channel)
+
+    def is_available(self) -> bool:
+        try:
+            if requests.get(self.url).status_code == 404:
+                return True
+        except Exception:
+            pass
+        return False
+
+    def is_model_available(self, model: str) -> bool:
+        endpoint = f"{self.url}/tags"
+        ollama_models_result = requests.get(endpoint).json()
+        installed_ollama_models = []
+        for ollama_model in ollama_models_result["models"]:
+            installed_ollama_models.append(ollama_model["name"].split(":")[0])
+        return model in installed_ollama_models
+
+
+class OpenAIPlugin:
+    def __init__(self, plugin_config: dict):
+        self.api_key_env_var = plugin_config["api_key_env_var"]
+
+    async def call(
+        self,
+        node_config: dict,
+        prompt: str,
+        regex: Optional[str],
+        return_streaming_channel: Optional[asyncio.Queue],
+    ) -> str:
+        return await call_openai(node_config, prompt, regex, return_streaming_channel)
+
+    def is_available(self) -> bool:
+        env_var = os.environ.get(self.api_key_env_var)
+
+        return (
+            env_var != None
+            and env_var != ""
+            and env_var != "<add_your_openai_api_key_here>"
+        )
+
+    def is_model_available(self, model: str) -> bool:
+        """
+        Model checks are done by the shema providers_schema.json
+        """
+        return True
+
+
+class AnthropicPlugin:
+    def __init__(self, plugin_config: dict):
+        self.api_key_env_var = plugin_config["api_key_env_var"]
+        self.url = plugin_config["api_url"]
+
+    async def call(
+        self,
+        node_config: dict,
+        prompt: str,
+        regex: Optional[str],
+        return_streaming_channel: Optional[asyncio.Queue],
+    ) -> str:
+        client: AsyncAnthropic = None
+        if self.url:
+            client = AsyncAnthropic(api_key=self.get_api_key(), base_url=self.url)
+        else:
+            client = AsyncAnthropic(api_key=self.get_api_key())
+
+        if "max_tokens" not in node_config["config"]:
+            raise ValueError("`max_tokens` is required for Anthropic")
+
+        buffer = ""
+
+        # Not using `async with` (https://github.com/anthropics/anthropic-sdk-python?tab=readme-ov-file#streaming-helpers) since I get a `'coroutine' object does not support the asynchronous context manager protocol`. Probably related to how the `EquivalencePrinciple` class implements
+        stream = await client.messages.create(
+            model=node_config["model"],
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
+            stream=True,
+            **node_config[
+                "config"
+            ],  # max_tokens, temperature, top_k, top_p, timeout, stop_sequences
+        )
+        async for event in stream:
+            if event.type == "text":
+                buffer += event.text
+                if return_streaming_channel is not None:
+                    await return_streaming_channel.put(event.text)
+                match = re.search(regex, buffer)
+                if match:
+                    return match.group(0)
+            elif event.type == "content_block_stop":
+                break
+
+        return buffer
+
+    def is_available(self) -> bool:
+        env_var = self.get_api_key()
+
+        return env_var != None and env_var != ""
+
+    def is_model_available(self, model: str) -> bool:
+        """
+        Model checks are done by the shema providers_schema.json
+        """
+        return True
+
+    def get_api_key(self):
+        return os.environ.get(self.api_key_env_var)
+
+
+def get_llm_plugin(plugin: str, plugin_config: dict) -> Plugin:
+    """
+    Function to register new providers
+    """
+    plugin_map = {
+        "ollama": OllamaPlugin,
+        "openai": OpenAIPlugin,
+        "anthropic": AnthropicPlugin,
+    }
+
+    if plugin not in plugin_map:
+        raise ValueError(f"Plugin {plugin} not registered.")
+
+    return plugin_map[plugin](plugin_config)

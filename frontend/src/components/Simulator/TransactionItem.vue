@@ -7,6 +7,7 @@ import ModalSection from '@/components/Simulator/ModalSection.vue';
 import JsonViewer from '@/components/JsonViewer/json-viewer.vue';
 import { useUIStore } from '@/stores';
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/vue/16/solid';
+import CopyTextButton from '../global/CopyTextButton.vue';
 
 const uiStore = useUIStore();
 
@@ -33,6 +34,10 @@ const dateText = computed(() => {
 const leaderReceipt = computed(() => {
   return props.transaction?.data?.consensus_data?.leader_receipt;
 });
+
+const shortHash = computed(() => {
+  return props.transaction.hash?.slice(0, 8);
+});
 </script>
 
 <template>
@@ -40,8 +45,9 @@ const leaderReceipt = computed(() => {
     class="flex cursor-pointer flex-row items-center justify-between gap-2 rounded p-0.5 pl-1 hover:bg-gray-100 dark:hover:bg-zinc-700"
     @click="isDetailsModalOpen = true"
   >
-    <div class="text-xs text-gray-500 dark:text-gray-400">
-      #{{ transaction.txId }}
+    <div class="truncate text-xs text-gray-500 dark:text-gray-400">
+      <span class="font-mono">{{ shortHash }}</span>
+      <span class="font-normal">...</span>
     </div>
 
     <div class="grow truncate text-left text-xs font-medium">
@@ -55,28 +61,39 @@ const leaderReceipt = computed(() => {
     <div class="flex items-center justify-between gap-2 p-1">
       <Loader :size="15" v-if="transaction.status !== 'FINALIZED'" />
 
-      <TransactionStatusBadge>
+      <TransactionStatusBadge class="px-[4px] py-[1px] text-[10px]">
         {{ transaction.status }}
       </TransactionStatusBadge>
     </div>
 
     <Modal :open="isDetailsModalOpen" @close="isDetailsModalOpen = false" wide>
-      <div class="flex flex-row items-center justify-between gap-2">
-        <div class="flex flex-col text-lg font-semibold">
-          Transaction #{{ transaction.txId }}
-          <span class="text-sm font-medium text-gray-400">
-            {{
-              transaction.type === 'method'
-                ? 'Method Call'
-                : 'Contract Deployment'
-            }}
+      <template #title>
+        <div class="flex flex-row items-center justify-between gap-2">
+          <div>
+            Transaction
+            <span class="text-sm font-medium text-gray-400">
+              {{
+                transaction.type === 'method'
+                  ? 'Method Call'
+                  : 'Contract Deployment'
+              }}
+            </span>
+          </div>
+
+          <span class="text-[12px]">
+            {{ dateText }}
           </span>
         </div>
+      </template>
 
-        <span class="text-[12px]">
-          {{ dateText }}
-        </span>
-      </div>
+      <template #info>
+        <div
+          class="flex flex-row items-center justify-center gap-2 text-xs font-normal"
+        >
+          {{ transaction.hash }}
+          <CopyTextButton :text="transaction.hash" />
+        </div>
+      </template>
 
       <div class="flex flex-col gap-4">
         <div class="mt-2 flex flex-col">

@@ -9,25 +9,22 @@ vi.mock('@/hooks', () => ({
 }));
 
 const testTransaction: TransactionItem = {
+  hash: '0x1234567890123456789012345678901234567890',
   type: 'deploy',
   status: 'PENDING',
   contractAddress: '0xAf4ec2548dBBdc43ab6dCFbD4EdcEedde3FEAFB5',
   localContractId: '47490604-6ee9-4c0e-bf31-05d33197eedd',
-  txId: 140,
 };
 
 const updatedTransactionPayload = {
-  id: 140,
-  type: 'deploy',
+  ...testTransaction,
   status: 'FINALIZED',
-  contractAddress: '0xAf4ec2548dBBdc43ab6dCFbD4EdcEedde3FEAFB5',
-  localContractId: '47490604-6ee9-4c0e-bf31-05d33197eedd',
 };
 
 describe('useTransactionsStore', () => {
   let transactionsStore: ReturnType<typeof useTransactionsStore>;
   const mockRpcClient = {
-    getTransactionById: vi.fn(),
+    getTransactionByHash: vi.fn(),
   };
 
   beforeEach(() => {
@@ -36,7 +33,7 @@ describe('useTransactionsStore', () => {
     transactionsStore = useTransactionsStore();
     transactionsStore.transactions = [];
     transactionsStore.processingQueue = [];
-    mockRpcClient.getTransactionById.mockClear();
+    mockRpcClient.getTransactionByHash.mockClear();
   });
 
   it('should add a transaction', () => {
@@ -57,22 +54,30 @@ describe('useTransactionsStore', () => {
     expect(transactionsStore.transactions[0].status).toBe('FINALIZED');
   });
 
-  it('should get a transaction by id using rpcClient', async () => {
-    const transactionId = 123;
-    const transactionData = { id: transactionId, status: 'PENDING' };
-    mockRpcClient.getTransactionById.mockResolvedValue(transactionData);
+  it('should get a transaction by hash using rpcClient', async () => {
+    const transactionHash = '0x1234567890123456789012345678901234567890';
+    const transactionData = { id: transactionHash, status: 'PENDING' };
+    mockRpcClient.getTransactionByHash.mockResolvedValue(transactionData);
 
-    const result = await transactionsStore.getTransaction(transactionId);
+    const result = await transactionsStore.getTransaction(transactionHash);
 
-    expect(mockRpcClient.getTransactionById).toHaveBeenCalledWith(
-      transactionId,
+    expect(mockRpcClient.getTransactionByHash).toHaveBeenCalledWith(
+      transactionHash,
     );
     expect(result).toEqual(transactionData);
   });
 
   it('should clear transactions for a specific contract', () => {
-    const tx1 = { ...testTransaction, txId: 1, localContractId: 'contract-1' };
-    const tx2 = { ...testTransaction, txId: 2, localContractId: 'contract-2' };
+    const tx1 = {
+      ...testTransaction,
+      hash: '0x1234567890123456789012345678901234567891',
+      localContractId: 'contract-1',
+    };
+    const tx2 = {
+      ...testTransaction,
+      hash: '0x1234567890123456789012345678901234567892',
+      localContractId: 'contract-2',
+    };
 
     transactionsStore.addTransaction(tx1);
     transactionsStore.addTransaction(tx2);
@@ -86,8 +91,16 @@ describe('useTransactionsStore', () => {
   });
 
   it('should compute pending transactions', () => {
-    const tx1 = { ...testTransaction, txId: 1, status: 'FINALIZED' };
-    const tx2 = { ...testTransaction, txId: 2, status: 'PENDING' };
+    const tx1 = {
+      ...testTransaction,
+      hash: '0x1234567890123456789012345678901234567891',
+      status: 'FINALIZED',
+    };
+    const tx2 = {
+      ...testTransaction,
+      hash: '0x1234567890123456789012345678901234567892',
+      status: 'PENDING',
+    };
 
     transactionsStore.transactions = [tx1, tx2];
 

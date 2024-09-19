@@ -9,6 +9,7 @@ from flask_jsonrpc import JSONRPC
 from flask_socketio import SocketIO
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
+from backend.database_handler.llm_providers import LLMProviderRegistry
 from backend.protocol_rpc.configuration import GlobalConfiguration
 from backend.protocol_rpc.message_handler.base import MessageHandler
 from backend.protocol_rpc.endpoints import register_all_rpc_endpoints
@@ -39,13 +40,16 @@ def create_app():
     sqlalchemy_db.init_app(app)
 
     CORS(app, resources={r"/api/*": {"origins": "*"}}, intercept_exceptions=False)
-    jsonrpc = JSONRPC(app, "/api", enable_web_browsable_api=True)
+    jsonrpc = JSONRPC(
+        app, "/api", enable_web_browsable_api=True
+    )  # check it out at http://localhost:4000/api/browse/#/
     socketio = SocketIO(app, cors_allowed_origins="*")
     msg_handler = MessageHandler(app, socketio, config=GlobalConfiguration())
     genlayer_db_client = DBClient(database_name_seed)
     transactions_processor = TransactionsProcessor(sqlalchemy_db.session)
     accounts_manager = AccountsManager(sqlalchemy_db.session)
     validators_registry = ValidatorsRegistry(sqlalchemy_db.session)
+    llm_provider_registry = LLMProviderRegistry(sqlalchemy_db.session)
 
     consensus = ConsensusAlgorithm(genlayer_db_client, msg_handler)
     return (
@@ -58,6 +62,8 @@ def create_app():
         transactions_processor,
         validators_registry,
         consensus,
+        llm_provider_registry,
+        sqlalchemy_db,
     )
 
 
@@ -72,6 +78,8 @@ load_dotenv()
     transactions_processor,
     validators_registry,
     consensus,
+    llm_provider_registry,
+    sqlalchemy_db,
 ) = create_app()
 register_all_rpc_endpoints(
     jsonrpc,
@@ -80,8 +88,20 @@ register_all_rpc_endpoints(
     accounts_manager,
     transactions_processor,
     validators_registry,
+    llm_provider_registry,
     config=GlobalConfiguration(),
 )
+
+
+# This ensures that the transaction is committed or rolled back depending on the success of the request.
+# Opinions on whether this is a good practice are divided https://github.com/pallets-eco/flask-sqlalchemy/issues/216
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    if exception:
+        sqlalchemy_db.session.rollback()  # Rollback if there is an exception
+    else:
+        sqlalchemy_db.session.commit()  # Commit if everything is fine
+    sqlalchemy_db.session.remove()  # Remove the session after every request
 
 
 def run_socketio():

@@ -19,7 +19,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
   if (!webSocketClient.connected) webSocketClient.connect();
   webSocketClient.on('status_update', (event) => {
     if (listenWebsocket.value) {
-      if (event.message?.function !== 'get_transaction_by_id') {
+      if (event.message?.function !== 'get_transaction_by_hash') {
         if (event.message?.function === 'intelligent_contract_execution') {
           const executionLogs: string[] =
             event.message.response.message.split('\n\n');
@@ -58,6 +58,18 @@ export const useNodeStore = defineStore('nodeStore', () => {
       ]);
       validators.value = validatorsResult;
       nodeProviders.value = modelsResult;
+
+      nodeProviders.value = modelsResult.reduce(
+        (acc: Record<string, string[]>, llmprovider: any) => {
+          const provider = llmprovider.provider;
+          if (!acc[provider]) {
+            acc[provider] = [];
+          }
+          acc[provider].push(llmprovider.model);
+          return acc;
+        },
+        {},
+      );
     } catch (error) {
       console.error(error);
       notify({

@@ -22,3 +22,8 @@ frontend/src/assets/examples
 frontend/.nyc_output
 frontend/coverage
 frontend/vite.config.ts.timestamp-*
+
+# Python
+# Byte-compiled / optimized / DLL files
+**/__pycache__/
+**/*.py[cod]

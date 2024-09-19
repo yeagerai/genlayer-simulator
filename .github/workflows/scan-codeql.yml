@@ -19,6 +19,7 @@ jobs:
     name: Analyze
     runs-on: [ubuntu-latest]
     timeout-minutes: 10
+    if: (github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]')
     permissions:
       actions: read
       contents: read

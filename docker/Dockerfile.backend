@@ -1,4 +1,4 @@
-FROM python:3.12.5-slim AS base
+FROM python:3.12.6-slim AS base
 
 ARG path=/app
 WORKDIR $path
@@ -15,8 +15,8 @@ RUN groupadd -r backend-group \
     && chown -R backend-user:backend-group $path
 
 ENV PYTHONPATH "${PYTHONPATH}:/${path}"
-ENV FLASK_APP=backend/protocol_rpc/server.py
-ENV TRANSFORMERS_CACHE=/home/backend-user/.cache/huggingface
+ENV FLASK_APP backend/protocol_rpc/server.py
+ENV TRANSFORMERS_CACHE /home/backend-user/.cache/huggingface
 
 COPY ../.env .
 COPY backend $path/backend
@@ -25,7 +25,7 @@ COPY backend $path/backend
 FROM base AS debug
 RUN pip install --no-cache-dir debugpy watchdog
 USER backend-user
-CMD watchmedo auto-restart --recursive --pattern="*.py" --ignore-patterns="*.pyc;*__pycache__*" -- python -m debugpy --listen 0.0.0.0:${RPCDEBUGPORT} -m flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}
+CMD watchmedo auto-restart --no-restart-on-command-exit --recursive --pattern="*.py" --ignore-patterns="*.pyc;*__pycache__*" -- python -m debugpy --listen 0.0.0.0:${RPCDEBUGPORT} -m flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}
 
 ###########START NEW IMAGE: PRODUCTION ###################
 FROM base AS prod

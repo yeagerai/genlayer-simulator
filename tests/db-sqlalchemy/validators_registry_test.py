@@ -5,6 +5,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from backend.database_handler.validators_registry import ValidatorsRegistry
+from backend.domain.types import LLMProvider, Validator
 
 
 @pytest.fixture
@@ -17,11 +18,25 @@ def test_validators_registry(validators_registry: ValidatorsRegistry):
 
     stake = 1
     provider = "ollama"
+    plugin = "ollama"
     model = "llama3"
     config = {}
-    actual_validator = validators_registry.create_validator(
-        validator_address, stake, provider, model, config
+    plugin_config = {}
+    llm_provider = LLMProvider(
+        provider=provider,
+        model=model,
+        config=config,
+        plugin=plugin,
+        plugin_config=plugin_config,
     )
+    validator = Validator(
+        address=validator_address,
+        stake=stake,
+        llmprovider=llm_provider,
+    )
+
+    # Create
+    actual_validator = validators_registry.create_validator(validator)
     assert validators_registry.count_validators() == 1
 
     assert actual_validator["stake"] == stake
@@ -38,14 +53,18 @@ def test_validators_registry(validators_registry: ValidatorsRegistry):
 
     assert actual_validators == [actual_validator]
 
+    # Update
     new_stake = 2
     new_provider = "ollama_new"
     new_model = "llama3.1"
     new_config = {"seed": 1, "key": {"array": [1, 2, 3]}}
 
-    actual_validator = validators_registry.update_validator(
-        validator_address, 2, new_provider, new_model, new_config
-    )
+    validator.stake = new_stake
+    validator.llmprovider.provider = new_provider
+    validator.llmprovider.model = new_model
+    validator.llmprovider.config = new_config
+
+    actual_validator = validators_registry.update_validator(validator)
 
     assert validators_registry.count_validators() == 1
 
@@ -58,6 +77,7 @@ def test_validators_registry(validators_registry: ValidatorsRegistry):
     assert actual_validator["id"] == validator_id
     assert actual_validator["created_at"] == created_at
 
+    # Delete
     validators_registry.delete_validator(validator_address)
 
     assert len(validators_registry.get_all_validators()) == 0

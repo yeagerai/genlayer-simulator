@@ -1,6 +1,6 @@
 # backend/node/genvm/equivalence_principle.py
 
-from typing import Optional
+from typing import Any, Optional
 from backend.node.genvm.context_wrapper import enforce_with_context
 from backend.node.genvm import llms
 from backend.node.genvm.webpage_utils import get_webpage_content
@@ -22,7 +22,7 @@ def clear_locals(scope):
 
 @enforce_with_context
 class EquivalencePrinciple:
-    contract_runner: dict
+    contract_runner: Any  # TODO: this should be of type ContractRunner but that raises a cyclic import error
 
     def __init__(
         self,
@@ -92,9 +92,10 @@ class EquivalencePrinciple:
         self.contract_runner.eq_num += 1
 
     def __get_llm_function(self):
-        function_name = "call_" + self.contract_runner.node_config["provider"]
-        llm_function = getattr(llms, function_name)
-        return llm_function
+        return llms.get_llm_plugin(
+            self.contract_runner.node_config["plugin"],
+            self.contract_runner.node_config["plugin_config"],
+        ).call
 
 
 async def call_llm_with_principle(prompt, eq_principle, comparative=True):

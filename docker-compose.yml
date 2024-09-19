@@ -7,6 +7,8 @@ services:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     volumes:
       - ./examples:/app/src/assets/examples
+      - ./frontend:/app/frontend
+    entrypoint: ["npm", "run", "dev"]
     depends_on:
       - jsonrpc
     expose:
@@ -51,13 +53,12 @@ services:
       - "${WEBREQUESTPORT}"
 
   ollama:
-    image: ollama/ollama:0.2.1
+    image: ollama/ollama:0.3.11
     ports:
       - 11434:11434
     volumes:
       - ./.ollama:/root/.ollama
     container_name: ollama
-    pull_policy: always
     tty: true
     restart: always
 
@@ -81,8 +82,8 @@ services:
 
   database-migration:
     build:
-      context: ./backend/database_handler
-      dockerfile: ../../docker/Dockerfile.database-migration
+      context: .
+      dockerfile: docker/Dockerfile.database-migration
     environment:
       - DB_URL=postgresql://${DBUSER}:${DBUSER}@postgres/${DBNAME}
     depends_on:

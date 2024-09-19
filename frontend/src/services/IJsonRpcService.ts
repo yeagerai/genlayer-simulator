@@ -24,5 +24,5 @@ export interface IJsonRpcService {
   createValidator(request: CreateValidatorRequest): Promise<any>;
   updateValidator(request: UpdateValidatorRequest): Promise<any>;
   deleteValidator(request: DeleteValidatorRequest): Promise<any>;
-  getTransactionById(txId: number): Promise<any>;
+  getTransactionByHash(txId: number): Promise<any>;
 }

@@ -11,6 +11,7 @@ from sqlalchemy import (
     String,
     func,
     text,
+    ForeignKey,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, MappedAsDataclass
@@ -57,10 +58,10 @@ class Transactions(Base):
     __tablename__ = "transactions"
     __table_args__ = (
         CheckConstraint("type = ANY (ARRAY[0, 1, 2])", name="transactions_type_check"),
-        PrimaryKeyConstraint("id", name="transactions_pkey"),
+        PrimaryKeyConstraint("hash", name="transactions_pkey"),
     )
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, init=False)
+    hash: Mapped[str] = mapped_column(String(66), primary_key=True, unique=True)
     status: Mapped[TransactionStatus] = mapped_column(
         Enum(
             TransactionStatus,
@@ -91,7 +92,10 @@ class TransactionsAudit(Base):
     __table_args__ = (PrimaryKeyConstraint("id", name="transactions_audit_pkey"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, init=False)
-    transaction_id: Mapped[Optional[int]] = mapped_column(Integer)
+    transaction_hash: Mapped[Optional[str]] = mapped_column(
+        String(66),
+        ForeignKey("transactions.hash", ondelete="CASCADE"),
+    )
     data: Mapped[Optional[dict]] = mapped_column(JSONB)
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(
         DateTime(True), server_default=func.current_timestamp(), init=False
@@ -109,8 +113,31 @@ class Validators(Base):
     stake: Mapped[int] = mapped_column(Integer)
     config: Mapped[dict] = mapped_column(JSONB)
     address: Mapped[Optional[str]] = mapped_column(String(255))
-    provider: Mapped[Optional[str]] = mapped_column(String(255))
-    model: Mapped[Optional[str]] = mapped_column(String(255))
+    provider: Mapped[str] = mapped_column(String(255))
+    model: Mapped[str] = mapped_column(String(255))
+    plugin: Mapped[str] = mapped_column(String(255))
+    plugin_config: Mapped[dict] = mapped_column(JSONB)
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(
         DateTime(True), server_default=func.current_timestamp(), init=False
+    )
+
+
+class LLMProviderDBModel(Base):
+    __tablename__ = "llm_provider"
+    __table_args__ = (PrimaryKeyConstraint("id", name="llm_provider_pkey"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, init=False)
+    provider: Mapped[str] = mapped_column(String(255))
+    model: Mapped[str] = mapped_column(String(255))
+    config: Mapped[dict | str] = mapped_column(JSONB)
+    plugin: Mapped[str] = mapped_column(String(255), nullable=False)
+    plugin_config: Mapped[dict] = mapped_column(JSONB)
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(True), server_default=func.current_timestamp(), init=False
+    )
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(True),
+        init=False,
+        server_default=func.current_timestamp(),
+        onupdate=func.current_timestamp(),
     )

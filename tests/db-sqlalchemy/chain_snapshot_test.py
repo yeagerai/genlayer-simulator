@@ -64,7 +64,7 @@ def test_chain_snapshot(session: Session):
     pending_transactions = chain_snapshot.get_pending_transactions()
 
     assert len(pending_transactions) == 2
-    pending_transactions.sort(key=lambda x: x["id"])
+    pending_transactions.sort(key=lambda x: x["hash"])
 
     assert (
         TransactionsProcessor._parse_transaction_data(pending_transaction_1)
