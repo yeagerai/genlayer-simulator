@@ -73,6 +73,7 @@ class TransactionsProcessor:
         data: dict,
         value: float,
         type: int,
+        leader_only: bool,
     ) -> int:
         nonce = (
             self.session.query(Transactions)
@@ -100,6 +101,7 @@ class TransactionsProcessor:
             r=None,
             s=None,
             v=None,
+            leader_only=leader_only,
         )
 
         self.session.add(new_transaction)

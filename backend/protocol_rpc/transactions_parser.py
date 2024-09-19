@@ -15,7 +15,7 @@ from backend.protocol_rpc.types import (
 )
 
 
-def decode_signed_transaction(raw_transaction) -> DecodedTransaction:
+def decode_signed_transaction(raw_transaction) -> DecodedTransaction | None:
     try:
         transaction_bytes = HexBytes(raw_transaction)
         signed_transaction = Transaction.from_bytes(transaction_bytes)
@@ -37,11 +37,12 @@ def decode_signed_transaction(raw_transaction) -> DecodedTransaction:
             else None
         )
         return DecodedTransaction(
-            sender,
-            to_address,
-            data,
-            signed_transaction_as_dict.get("type", 0),
-            value,
+            from_address=sender,
+            to_address=to_address,
+            data=data,
+            type=signed_transaction_as_dict.get("type", 0),
+            value=value,
+            leader_only=signed_transaction_as_dict.get("leader_only", False),
         )
 
     except Exception as e:
@@ -67,8 +68,8 @@ def decode_method_call_data(data: str) -> DecodedMethodCallData:
     data_decoded = rlp.decode(data_bytes, MethodCallTransactionPayload)
 
     return DecodedMethodCallData(
-        decode_data_field(data_decoded["function_name"]),
-        decode_data_field(data_decoded["function_args"]),
+        function_name=decode_data_field(data_decoded["function_name"]),
+        function_args=decode_data_field(data_decoded["function_args"]),
     )
 
 
@@ -77,8 +78,8 @@ def decode_deployment_data(data: str) -> DecodedDeploymentData:
     data_decoded = rlp.decode(data_bytes, DeploymentContractTransactionPayload)
 
     return DecodedDeploymentData(
-        decode_data_field(data_decoded["contract_code"]),
-        decode_data_field(data_decoded["constructor_args"]),
+        contract_code=decode_data_field(data_decoded["contract_code"]),
+        constructor_args=decode_data_field(data_decoded["constructor_args"]),
     )
 
 

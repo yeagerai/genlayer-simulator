@@ -2,11 +2,11 @@ from typing import Optional
 
 from sqlalchemy import (
     BigInteger,
+    Boolean,
     CheckConstraint,
     DateTime,
     Enum,
     Integer,
-    Numeric,
     PrimaryKeyConstraint,
     String,
     func,
@@ -82,6 +82,7 @@ class Transactions(Base):
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(
         DateTime(True), server_default=func.current_timestamp(), init=False
     )
+    leader_only: Mapped[bool] = mapped_column(Boolean)
     r: Mapped[Optional[int]] = mapped_column(Integer)
     s: Mapped[Optional[int]] = mapped_column(Integer)
     v: Mapped[Optional[int]] = mapped_column(Integer)

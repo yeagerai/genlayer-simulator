@@ -464,7 +464,12 @@ def send_raw_transaction(
 
     # Insert transaction into the database
     transaction_hash = transactions_processor.insert_transaction(
-        from_address, to_address, transaction_data, value, transaction_type
+        from_address,
+        to_address,
+        transaction_data,
+        value,
+        transaction_type,
+        decoded_transaction.leader_only,
     )
     result["transaction_hash"] = transaction_hash
 
