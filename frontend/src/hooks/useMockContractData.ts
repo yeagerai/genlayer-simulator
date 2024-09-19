@@ -45,7 +45,7 @@ export function useMockContractData() {
   const mockDeploymentTx: TransactionItem = {
     contractAddress: mockContractAddress,
     localContractId: mockContractId,
-    txId: 1,
+    hash: '0x123',
     type: 'deploy',
     status: 'FINALIZED',
     data: {},

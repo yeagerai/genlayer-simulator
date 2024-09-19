@@ -31,3 +31,18 @@ class Receipt:
     execution_result: ExecutionResultStatus
     error: Optional[Exception] = None
     vote: Optional[Vote] = None
+
+    def to_dict(self):
+        return {
+            "vote": self.vote.value,
+            "execution_result": self.execution_result.value,
+            "class_name": self.class_name,
+            "method": self.method,
+            "args": self.args,
+            "gas_used": self.gas_used,
+            "mode": self.mode.value,
+            "contract_state": self.contract_state,
+            "node_config": self.node_config,
+            "eq_outputs": self.eq_outputs,
+            "error": str(self.error) if self.error else None,
+        }

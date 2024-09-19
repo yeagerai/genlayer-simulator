@@ -20,8 +20,8 @@ jobs:
       # A Docker image with Semgrep installed. Do not change this.
       image: semgrep/semgrep
 
-    # Skip any PR created by dependabot to avoid permission issues:
-    if: (github.actor != 'dependabot[bot]')
+    # Skip any PR created by dependabot/renovatebot to avoid permission issues:
+    if: (github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]')
     steps:
       - uses: actions/checkout@v4
 

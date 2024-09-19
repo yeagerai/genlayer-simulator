@@ -26,8 +26,8 @@ def test_accounts_funding():
         payload("fund_account", new_account_address, fund_amount)
     ).json()
     assert has_success_status(fund_account_result)
-    assert "transaction_id" in fund_account_result["result"]["data"]
-    wait_for_transaction(fund_account_result["result"]["data"]["transaction_id"])
+    assert "transaction_hash" in fund_account_result["result"]["data"]
+    wait_for_transaction(fund_account_result["result"]["data"]["transaction_hash"])
 
     # Verify balance after funding
     get_balance_after_fund_result = post_request_localhost(
@@ -75,7 +75,7 @@ def test_accounts_transfers():
     fund_account_result = post_request_localhost(
         payload("fund_account", account_1_address, fund_amount)
     ).json()
-    wait_for_transaction(fund_account_result["result"]["data"]["transaction_id"])
+    wait_for_transaction(fund_account_result["result"]["data"]["transaction_hash"])
 
     # Test transfer
     transfer_amount = 200
@@ -113,7 +113,7 @@ def test_accounts_burn():
     fund_account_result = post_request_localhost(
         payload("fund_account", account_1_address, fund_amount)
     ).json()
-    wait_for_transaction(fund_account_result["result"]["data"]["transaction_id"])
+    wait_for_transaction(fund_account_result["result"]["data"]["transaction_hash"])
 
     # Test burn
     burn_amount = 200
