@@ -10,36 +10,27 @@ on:
     types:
       - submitted
       - edited
-
-concurrency:
-  group: unit-tests-${{ github.event.number }}
-  cancel-in-progress: true
+  push:
+    branches:
+      - main # so that test reports get uploaded to Codecov
 
 permissions:
   contents: read
 
 jobs:
-  triggers:
-    name: Get Triggers
-    runs-on: ubuntu-latest
-    outputs:
-      is_pull_request_opened: ${{ github.event_name == 'pull_request' && github.event.action == 'opened'}}
-      is_pull_request_review_approved: ${{ github.event_name == 'pull_request_review' && github.event.review.state == 'APPROVED'}}
-      is_pull_request_labeled_with_run_tests: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-tests')}}
-    steps:
-      - run: true
-  test:
+  frontend-unit-tests:
     name: Unit Tests
-    needs: triggers
-    if: ${{ needs.triggers.outputs.is_pull_request_opened == 'true' || needs.triggers.outputs.is_pull_request_review_approved == 'true' || needs.triggers.outputs.is_pull_request_labeled_with_run_tests == 'true' }}
     uses: ./.github/workflows/frontend-unit-tests.yml
     secrets:
       codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
-  load-test:
-    name: Load Tests
-    needs: triggers
-    if: ${{ needs.triggers.outputs.is_pull_request_opened == 'true' || needs.triggers.outputs.is_pull_request_review_approved == 'true' || needs.triggers.outputs.is_pull_request_labeled_with_run_tests == 'true' }}
-    uses: ./.github/workflows/load-test-oha.yml
-    with:
-      oha-version: "v1.4.5"
+  backend-unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+          cache: pip
+      - run: pip install -r backend/protocol_rpc/requirements.txt
+      - run: pytest tests/unit -vv
