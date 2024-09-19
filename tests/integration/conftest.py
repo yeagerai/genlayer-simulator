@@ -10,7 +10,7 @@ from tests.common.response import has_success_status
 @pytest.fixture
 def setup_validators():
     result = post_request_localhost(
-        payload("create_random_validators", 5, 8, 12, ["openai"], ["gpt-4o-mini"])
+        payload("create_random_validators", 5, 8, 12, ["openai"], ["gpt-4o"])
     ).json()
     assert has_success_status(result)
 
