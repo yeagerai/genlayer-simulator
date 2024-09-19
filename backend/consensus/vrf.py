@@ -1,29 +1,26 @@
-import random
-
-
-def select_random_validators(all_validators: list, num_validators: int) -> list:
-    weights = []
-    for i in all_validators:
-        weights.append(float(i["stake"]))
-
-    weighted_indices = random.choices(
-        range(len(all_validators)), weights=weights, k=num_validators * 10
-    )
-    unique_indices = set()
-    random.shuffle(weighted_indices)
-
-    for idx in weighted_indices:
-        unique_indices.add(idx)
-        if len(unique_indices) == num_validators:
-            break
-
-    return [all_validators[i] for i in unique_indices]
+from datetime import datetime
+import numpy as np
 
 
 def get_validators_for_transaction(
-    all_validators: list, num_validators: int
-) -> tuple[dict, list]:
-    selected_validators = select_random_validators(all_validators, num_validators)
-    leader = selected_validators[0]
-    remaining_validators = selected_validators[1 : num_validators + 1]
-    return leader, remaining_validators
+    nodes: list[dict],
+    num_validators: int,
+    rng=np.random.default_rng(seed=int(datetime.now().timestamp())),
+) -> list[dict]:
+    """
+    Returns subset of validators for a transaction.
+    The selelction and order is given by a random sampling based on the stake of the validators.
+    """
+    num_validators = min(num_validators, len(nodes))
+
+    total_stake = sum(validator["stake"] for validator in nodes)
+    probabilities = [validator["stake"] / total_stake for validator in nodes]
+
+    selected_validators = rng.choice(
+        nodes,
+        p=probabilities,
+        size=num_validators,
+        replace=False,
+    )
+
+    return list(selected_validators)
