@@ -1,9 +1,7 @@
 # backend/node/genvm/base.py
 
 import inspect
-import ast
 import re
-import asyncio
 import pickle
 import base64
 import sys
@@ -12,7 +10,6 @@ import io
 from contextlib import contextmanager, redirect_stdout
 
 from backend.database_handler.contract_snapshot import ContractSnapshot
-from backend.domain.types import Validator
 from backend.node.genvm.equivalence_principle import EquivalencePrinciple
 from backend.node.genvm.code_enforcement import code_enforcement_check
 from backend.node.genvm.std.vector_store import VectorStore
@@ -92,11 +89,12 @@ class GenVM:
             error=error,
         )
 
-    def deploy_contract(
+    async def deploy_contract(
         self,
         from_address: str,
         code_to_deploy: str,
         constructor_args: dict,
+        leader_receipt: Receipt | None,
     ):
         class_name = self._get_contract_class_name(code_to_deploy)
         code_enforcement_check(code_to_deploy, class_name)
@@ -114,12 +112,29 @@ class GenVM:
 
             contract_class = local_namespace[class_name]
 
+            # Ensure the class and other necessary elements are in the global local_namespace if needed
+            for name, value in local_namespace.items():
+                globals()[name] = value
+
+            self.eq_principle.contract_runner = self.contract_runner
+            if self.contract_runner.mode == ExecutionMode.VALIDATOR:
+                self.contract_runner.eq_outputs[ExecutionMode.LEADER.value] = (
+                    leader_receipt.eq_outputs[ExecutionMode.LEADER.value]
+                )
+
             module = sys.modules[__name__]
             setattr(module, class_name, contract_class)
 
             encoded_pickled_object = None  # Default value in order to have something to return in case of error
             try:
-                current_contract = contract_class(**constructor_args)
+                # Manual instantiation of the class is done to handle async __init__ methods
+                current_contract = contract_class.__new__(
+                    contract_class, **constructor_args
+                )
+                if inspect.iscoroutinefunction(current_contract.__init__):
+                    await current_contract.__init__(**constructor_args)
+                else:
+                    current_contract.__init__(**constructor_args)
                 pickled_object = pickle.dumps(current_contract)
                 encoded_pickled_object = base64.b64encode(pickled_object).decode(
                     "utf-8"
@@ -164,7 +179,11 @@ class GenVM:
         )
 
     async def run_contract(
-        self, from_address: str, function_name: str, args: list, leader_receipt: dict
+        self,
+        from_address: str,
+        function_name: str,
+        args: list,
+        leader_receipt: Receipt | None,
     ) -> Receipt:
         self.contract_runner.from_address = from_address
         contract_code = self.snapshot.contract_code
@@ -198,7 +217,7 @@ class GenVM:
             function_to_run = getattr(current_contract, function_name, None)
 
             try:
-                if asyncio.iscoroutinefunction(function_to_run):
+                if inspect.iscoroutinefunction(function_to_run):
                     await function_to_run(*args)
                 else:
                     function_to_run(*args)
