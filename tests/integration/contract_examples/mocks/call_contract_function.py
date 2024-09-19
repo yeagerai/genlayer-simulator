@@ -38,7 +38,7 @@ call_contract_function_response = {
             "status": str,
             "to_address": str,
             "type": int,
-            "value": float,
+            "value": int,
         },
         "message": str,
         "status": str,
