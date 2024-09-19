@@ -20,6 +20,7 @@ USER appuser
 WORKDIR $base
 COPY --chown=appuser:appuser ../.env .
 COPY --chown=appuser:appuser $path $base/$path
-RUN pip install --no-cache-dir -r $path/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --cache-dir=/root/.cache/pip -r $path/requirements.txt
 WORKDIR $path
 CMD ["python3", "server.py"]
