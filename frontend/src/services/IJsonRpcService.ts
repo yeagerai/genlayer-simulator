@@ -6,6 +6,9 @@ import type {
   GetContractStateResult,
   DeployContractRequest,
   GetDeployedContractSchemaRequest,
+  AddProviderRequest,
+  UpdateProviderRequest,
+  DeleteProviderRequest,
   CreateValidatorRequest,
   UpdateValidatorRequest,
   DeleteValidatorRequest,
@@ -28,6 +31,11 @@ export interface IJsonRpcService {
   ): Promise<JsonRpcResult<any>>;
   getValidators(): Promise<JsonRpcResult<any>>;
   getProvidersAndModels(): Promise<JsonRpcResult<GetProvidersAndModelsData>>;
+
+  addProvider(request: AddProviderRequest): Promise<JsonRpcResult<any>>;
+  updateProvider(request: UpdateProviderRequest): Promise<JsonRpcResult<any>>;
+  deleteProvider(request: DeleteProviderRequest): Promise<JsonRpcResult<any>>;
+
   createValidator(request: CreateValidatorRequest): Promise<JsonRpcResult<any>>;
   updateValidator(request: UpdateValidatorRequest): Promise<JsonRpcResult<any>>;
   deleteValidator(request: DeleteValidatorRequest): Promise<JsonRpcResult<any>>;

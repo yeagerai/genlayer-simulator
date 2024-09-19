@@ -5,8 +5,9 @@ import {
   XCircleIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/vue/20/solid';
+import { computed } from 'vue';
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     info?: boolean;
     success?: boolean;
@@ -20,13 +21,17 @@ withDefaults(
     error: false,
   },
 );
+
+const isInfo = computed(() => {
+  return props.info || (!props.success && !props.warning && !props.error);
+});
 </script>
 
 <template>
   <div
     class="rounded-md bg-opacity-20 p-2"
     :class="[
-      info && 'bg-blue-500',
+      isInfo && 'bg-blue-500',
       success && 'bg-green-500',
       warning && 'bg-yellow-500',
       error && 'bg-red-500',
@@ -35,7 +40,7 @@ withDefaults(
     <div class="flex">
       <div class="flex-shrink-0">
         <InformationCircleIcon
-          v-if="info"
+          v-if="isInfo"
           class="h-5 w-5 text-blue-400"
           aria-hidden="true"
         />
@@ -60,7 +65,7 @@ withDefaults(
         <p
           class="text-sm"
           :class="[
-            info && 'text-gray-600 dark:text-blue-300',
+            isInfo && 'text-gray-600 dark:text-blue-300',
             success && 'text-green-700 dark:text-green-300',
             warning && 'text-yellow-700 dark:text-yellow-300',
             error && 'text-red-700 dark:text-red-300',

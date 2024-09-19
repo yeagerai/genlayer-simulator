@@ -11,6 +11,9 @@ import type {
   GetDeployedContractSchemaRequest,
   CreateValidatorRequest,
   UpdateValidatorRequest,
+  AddProviderRequest,
+  UpdateProviderRequest,
+  DeleteProviderRequest,
   TransactionItem,
   GetProvidersAndModelsData,
 } from '@/types';
@@ -136,6 +139,75 @@ export class JsonRpcService implements IJsonRpcService {
     });
     return result;
   }
+
+  /**
+   * Adds a new provider on the JSON-RPC server.
+   *
+   * @param {Object} params - The parameters for adding the provider.
+   * @param {string} params.provider - The name of the provider.
+   * @param {string} params.model - The model name for the provider.
+   * @param {Object} params.config - The configuration for the provider.
+   * @param {string} params.plugin - The plugin name for the provider.
+   * @param {Object} params.plugin_config - The plugin configuration for the provider.
+   * @return {Promise<JsonRpcResult<any>>} A promise that resolves to the result of adding the provider.
+   */
+  async addProvider({
+    provider,
+    model,
+    config,
+    plugin,
+    plugin_config,
+  }: AddProviderRequest): Promise<JsonRpcResult<any>> {
+    const { result } = await this.rpcClient.call({
+      method: 'add_provider',
+      params: [{ provider, model, config, plugin, plugin_config }],
+    });
+    return result;
+  }
+
+  /**
+   * Updates an existing provider on the JSON-RPC server.
+   *
+   * @param {number} id - The ID of the provider to update.
+   * @param {Object} params - The parameters for updating the provider.
+   * @param {string} params.provider - The updated name of the provider.
+   * @param {string} params.model - The updated model name for the provider.
+   * @param {Object} params.config - The updated configuration for the provider.
+   * @param {string} params.plugin - The updated plugin name for the provider.
+   * @param {Object} params.plugin_config - The updated plugin configuration for the provider.
+   * @return {Promise<JsonRpcResult<any>>} A promise that resolves to the result of updating the provider.
+   */
+  async updateProvider({
+    id,
+    provider,
+    model,
+    config,
+    plugin,
+    plugin_config,
+  }: UpdateProviderRequest): Promise<JsonRpcResult<any>> {
+    const { result } = await this.rpcClient.call({
+      method: 'update_provider',
+      params: [id, { provider, model, config, plugin, plugin_config }],
+    });
+    return result;
+  }
+
+  /**
+   * Deletes a provider from the JSON-RPC server.
+   *
+   * @param {number} id - The ID of the provider to delete.
+   * @return {Promise<JsonRpcResult<any>>} A promise that resolves to the result of deleting the provider.
+   */
+  async deleteProvider({
+    id,
+  }: DeleteProviderRequest): Promise<JsonRpcResult<any>> {
+    const { result } = await this.rpcClient.call({
+      method: 'delete_provider',
+      params: [id],
+    });
+    return result;
+  }
+
   /**
    * Creates a validator on the JSON-RPC server.
    *

@@ -3,18 +3,32 @@ import { notify } from '@kyvg/vue3-notification';
 import { useNodeStore, useContractsStore } from '@/stores';
 import ValidatorItem from '@/components/Simulator/ValidatorItem.vue';
 import ValidatorModal from '@/components/Simulator/ValidatorModal.vue';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import MainTitle from '@/components/Simulator/MainTitle.vue';
 import PageSection from '@/components/Simulator/PageSection.vue';
 import { ArchiveBoxXMarkIcon } from '@heroicons/vue/24/solid';
 import { PlusIcon } from '@heroicons/vue/16/solid';
 import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
+import { uniqBy } from 'lodash-es';
+import GhostBtn from '@/components/global/GhostBtn.vue';
+import ProviderItem from '@/components/Simulator/ProviderItem.vue';
+import ProviderModal from '@/components/Simulator/ProviderModal.vue';
 
 const contractsStore = useContractsStore();
 const nodeStore = useNodeStore();
 const isNewValidatorModalOpen = ref(false);
+const isNewProviderModalOpen = ref(false);
 const isResetStorageModalOpen = ref(false);
 const isResetting = ref(false);
+
+const modelGroups = computed(() => {
+  return uniqBy(nodeStore.nodeProviders, 'provider').map((provider: any) => ({
+    provider: provider.provider,
+    models: nodeStore.nodeProviders.filter(
+      (p) => p.provider === provider.provider,
+    ),
+  }));
+});
 
 const handleResetStorage = async () => {
   isResetting.value = true;
@@ -92,6 +106,57 @@ const handleResetStorage = async () => {
         :open="isNewValidatorModalOpen"
         @close="isNewValidatorModalOpen = false"
       />
+    </PageSection>
+
+    <PageSection>
+      <template #title>Providers</template>
+
+      <template #actions>
+        <GhostBtn
+          @click="isNewProviderModalOpen = true"
+          v-tooltip="'New Provider'"
+          testId="create-new-validator-btn"
+        >
+          <PlusIcon class="h-4 w-4" />
+        </GhostBtn>
+      </template>
+
+      <div v-for="group in modelGroups" :key="group.provider">
+        {{ group.provider }} :
+
+        <div
+          class="overflow-hidden rounded-md border border-gray-300 dark:border-gray-800"
+          v-if="nodeStore.validators.length > 0"
+        >
+          <div class="divide-y divide-gray-200 dark:divide-gray-800"></div>
+          <ProviderItem
+            v-for="model in group.models"
+            :key="model"
+            :provider="model"
+          />
+        </div>
+      </div>
+
+      <ProviderModal
+        :open="isNewProviderModalOpen"
+        @close="isNewProviderModalOpen = false"
+      />
+
+      <!-- <GhostBtn
+        @click="
+          nodeStore.addProvider({
+            provider: 'openai',
+            model: 'gpt-4o-mini',
+            config: {},
+            plugin: 'openai',
+            plugin_config: {
+              api_key_env_var: 'OPENAIKEY',
+              api_url: null,
+            },
+          })
+        "
+        >Add Provider</GhostBtn
+      > -->
     </PageSection>
 
     <PageSection>

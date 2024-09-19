@@ -1,4 +1,11 @@
-import type { NodeLog, NewValidatorDataModel, ValidatorModel } from '@/types';
+import type {
+  NodeLog,
+  NewValidatorDataModel,
+  ValidatorModel,
+  GetProvidersAndModelsData,
+  NewProviderDataModel,
+  ProviderModel,
+} from '@/types';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { useContractsStore } from './contracts';
@@ -11,7 +18,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
   const logs = ref<NodeLog[]>([]);
   const listenWebsocket = ref<boolean>(true);
   const contractsStore = useContractsStore();
-  const nodeProviders = ref<Record<string, string[]>>({});
+  const nodeProviders = ref<GetProvidersAndModelsData>([]);
   // state
   const validators = ref<ValidatorModel[]>([]);
   const isLoadingValidatorData = ref<boolean>(true);
@@ -64,17 +71,8 @@ export const useNodeStore = defineStore('nodeStore', () => {
       }
 
       if (modelsResult?.status === 'success') {
-        nodeProviders.value = modelsResult.data.reduce(
-          (acc: Record<string, string[]>, llmprovider) => {
-            const provider = llmprovider.provider;
-            if (!acc[provider]) {
-              acc[provider] = [];
-            }
-            acc[provider].push(llmprovider.model);
-            return acc;
-          },
-          {},
-        );
+        console.log(modelsResult);
+        nodeProviders.value = modelsResult.data;
       } else {
         throw new Error('Error getting Providers and Models data');
       }
@@ -161,6 +159,42 @@ export const useNodeStore = defineStore('nodeStore', () => {
     }
   }
 
+  async function addProvider(provider: NewProviderDataModel) {
+    const result = await rpcClient.addProvider(provider);
+    console.log(result);
+    if (result?.status === 'success') {
+      // nodeProviders.value.push(result.data);
+      getValidatorsData();
+    } else {
+      if (result.exception) {
+        throw new Error(result.exception);
+      } else {
+        throw new Error(result.message);
+      }
+    }
+  }
+
+  async function updateProvider(provider: ProviderModel) {
+    const result = await rpcClient.updateProvider(provider);
+    if (result?.status === 'success') {
+      // nodeProviders.value.push(result.data);
+      getValidatorsData();
+    } else {
+      console.log(result.message);
+    }
+  }
+
+  async function deleteProvider(id: number) {
+    const result = await rpcClient.deleteProvider({ id });
+    console.log(result);
+    if (result?.status === 'success') {
+      // nodeProviders.value = nodeProviders.value.filter((provider) => provider.id !== id);
+      getValidatorsData();
+    } else {
+      throw new Error('Error adding provider');
+    }
+  }
+
   const contractsToDelete = computed(() =>
     contractsStore.contracts.filter((c) => c.example),
   );
@@ -174,6 +208,28 @@ export const useNodeStore = defineStore('nodeStore', () => {
   };
 
   const hasAtLeastOneValidator = computed(() => validators.value.length >= 1);
+
+  const availableProviders = computed(() => [
+    ...new Set(
+      nodeProviders.value
+        .filter((provider) => provider.is_available)
+        .map((provider) => provider.provider),
+    ),
+  ]);
+
+  const availableModelsForProvider = computed(
+    () => (selectedProvider: string) => [
+      ...new Set(
+        nodeProviders.value
+          .filter(
+            (provider) =>
+              provider.is_model_available &&
+              provider.provider === selectedProvider,
+          )
+          .map((provider) => provider.model),
+      ),
+    ],
+  );
 
   return {
     logs,
@@ -189,7 +245,12 @@ export const useNodeStore = defineStore('nodeStore', () => {
     deleteValidator,
     updateValidator,
     clearLogs,
+    addProvider,
+    updateProvider,
+    deleteProvider,
 
+    availableProviders,
+    availableModelsForProvider,
     validatorsOrderedById,
     hasAtLeastOneValidator,
   };

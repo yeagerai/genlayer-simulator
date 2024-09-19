@@ -2,6 +2,8 @@ from backend.domain.types import LLMProvider
 from backend.node.create_nodes.providers import get_default_providers
 from .models import LLMProviderDBModel
 from sqlalchemy.orm import Session
+from backend.node.genvm.llms import get_llm_plugin
+import pprint
 
 
 class LLMProviderRegistry:
@@ -25,10 +27,12 @@ class LLMProviderRegistry:
         ]
 
     def get_all_dict(self) -> list[dict]:
-        return [
+        list = [
             _to_domain(provider).__dict__
             for provider in self.session.query(LLMProviderDBModel).all()
         ]
+
+        return list
 
     def add(self, provider: LLMProvider) -> int:
         model = _to_db_model(provider)

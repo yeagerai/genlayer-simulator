@@ -2,6 +2,7 @@ export interface JsonRpcResult<T> {
   data: T;
   message: string;
   status: string;
+  exception: string;
 }
 
 export interface GetContractStateResult extends Record<string, any> {}
@@ -14,4 +15,6 @@ export interface GetProvidersAndModelsData
     plugin: string;
     plugin_config: Record<string, any>;
     provider: string;
+    is_available: boolean;
+    is_model_available: boolean;
   }> {}

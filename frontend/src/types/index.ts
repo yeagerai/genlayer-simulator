@@ -23,6 +23,29 @@ export interface NewValidatorDataModel {
   stake: number;
 }
 
+export interface ProviderModel {
+  id: number;
+  provider: string;
+  model: string;
+  config: Record<string, any>;
+  plugin: string;
+  plugin_config: Record<string, any>;
+  is_available: boolean;
+  is_model_available: boolean;
+}
+
+export interface NewProviderDataModel {
+  provider: string;
+  model: string;
+  // config: Record<string, any>;
+  config: string;
+  plugin: string;
+  plugin_config: string;
+  // plugin_config: Record<string, any>;
+  // api_key_env_var: string;
+  // api_url: string | null;
+}
+
 export interface ContractMethod {
   type: string;
   name: string;

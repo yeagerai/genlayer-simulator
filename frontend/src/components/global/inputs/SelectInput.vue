@@ -3,8 +3,14 @@ defineProps<{
   name: string;
   testId?: string;
   invalid?: boolean;
-  options: Array<string> | Array<Object> | Object;
+  options: Array<string | Option>;
 }>();
+
+interface Option {
+  value?: string;
+  label?: string;
+  disabled?: boolean;
+}
 
 const model = defineModel();
 </script>
@@ -24,11 +30,20 @@ const model = defineModel();
   >
     <option
       v-for="option in options"
-      :key="option"
-      :value="option"
-      :selected="option === model"
+      :key="typeof option === 'string' ? option : option.value"
+      :value="typeof option === 'string' ? option : option.value"
+      :selected="(typeof option === 'string' ? option : option.value) === model"
+      :disabled="typeof option === 'string' ? false : option.disabled || false"
+      v-tooltip="'test'"
     >
-      {{ option }}
+      {{ typeof option === 'string' ? option : option.label }}
+      {{
+        typeof option === 'string'
+          ? ''
+          : option.disabled
+            ? '(missing configuration)'
+            : ''
+      }}
     </option>
   </select>
 </template>

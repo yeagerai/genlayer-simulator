@@ -138,13 +138,29 @@ def get_contract_schema_for_code(
 # TODO: these endpoints shouldn't return a `dict`, but I'm getting `TypeError: return type of dict must be a type; got NoneType instead`
 def reset_defaults_llm_providers(llm_provider_registry: LLMProviderRegistry) -> dict:
     llm_provider_registry.reset_defaults()
+    # TODO: ? add reset btn in ui ?
 
 
 def get_providers_and_models(llm_provider_registry: LLMProviderRegistry) -> dict:
-    return llm_provider_registry.get_all_dict()
+    list = llm_provider_registry.get_all()
+
+    for provider in list:
+        print(provider)
+        plugin = get_llm_plugin(provider.plugin, provider.plugin_config)
+        provider.is_available = plugin.is_available()
+        provider.is_model_available = plugin.is_model_available(provider.model)
+        print(
+            provider.provider,
+            provider.model,
+            provider.is_available,
+            provider.is_model_available,
+        )
+
+    return [provider.__dict__ for provider in list]
 
 
 def add_provider(llm_provider_registry: LLMProviderRegistry, params: dict) -> dict:
+    print("add_provider", params)
     provider = LLMProvider(
         provider=params["provider"],
         model=params["model"],
@@ -152,6 +168,8 @@ def add_provider(llm_provider_registry: LLMProviderRegistry, params: dict) -> di
         plugin=params["plugin"],
         plugin_config=params["plugin_config"],
     )
+    print(provider)
+
     validate_provider(provider)
 
     return llm_provider_registry.add(provider)

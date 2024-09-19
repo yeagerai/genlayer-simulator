@@ -10,6 +10,10 @@ import FieldError from '@/components/global/fields/FieldError.vue';
 import FieldLabel from '@/components/global/fields/FieldLabel.vue';
 import { useEventTracking } from '@/hooks';
 import CopyTextButton from '../global/CopyTextButton.vue';
+import { uniqBy } from 'lodash-es';
+import Alert from '../global/Alert.vue';
+
+// TODO: populate default config ?
 
 const nodeStore = useNodeStore();
 const { trackEvent } = useEventTracking();
@@ -96,20 +100,43 @@ const isConfigValid = computed(() => {
 });
 
 const providerOptions = computed(() => {
-  return Object.keys(nodeStore.nodeProviders);
+  return uniqBy(nodeStore.nodeProviders, 'provider').map((provider: any) => {
+    return {
+      label: provider.provider,
+      value: provider.provider,
+      disabled: !provider?.is_available,
+    };
+  });
+});
+
+const modelOptions = computed(() => {
+  return uniqBy(nodeStore.nodeProviders, 'model')
+    .filter(
+      (provider: any) => provider.provider === newValidatorData.value.provider,
+    )
+    .map((provider: any) => {
+      return {
+        label: provider.model,
+        value: provider.model,
+        disabled: !provider?.is_model_available,
+      };
+    });
 });
 
 const handleChangeProvider = () => {
+  console.log('handleChangeProvider', newValidatorData.value.provider);
+  const availableModels = nodeStore.availableModelsForProvider(
+    newValidatorData.value.provider,
+  );
   newValidatorData.value.model =
-    nodeStore.nodeProviders[newValidatorData.value.provider][0];
+    availableModels.length > 0 ? availableModels[0] : '';
 };
 
 const tryInitValues = () => {
   if (!props.validator) {
     try {
-      newValidatorData.value.provider = Object.keys(nodeStore.nodeProviders)[0];
-      newValidatorData.value.model =
-        nodeStore.nodeProviders[newValidatorData.value.provider][0];
+      newValidatorData.value.provider = nodeStore.nodeProviders[0].provider;
+      handleChangeProvider();
     } catch (err) {
       console.error('Could not initialize values', err);
     }
@@ -160,13 +187,21 @@ const tryInitValues = () => {
       <FieldLabel for="model">Model:</FieldLabel>
       <SelectInput
         name="model"
-        :options="nodeStore.nodeProviders[newValidatorData.provider] || []"
+        :options="modelOptions"
         v-model="newValidatorData.model"
         :invalid="!newValidatorData.model"
         required
         testId="dropdown-model"
         :disabled="providerOptions.length === 0"
       />
+
+      <Alert
+        warning
+        class="mt-2"
+        v-if="!newValidatorData.model && !!newValidatorData.provider"
+        >No available models for this provider. Check your provider
+        settings.</Alert
+      >
     </div>
 
     <div>
