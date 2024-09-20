@@ -27,10 +27,7 @@ const isCreateMode = computed(() => !props.provider);
 
 async function handleCreateProvider() {
   try {
-    const data = { ...newProviderData.value };
-    data.config = JSON.parse(data.config);
-    data.plugin_config = JSON.parse(data.plugin_config);
-    await nodeStore.addProvider(data);
+    await nodeStore.addProvider(newProviderData.value);
 
     notify({
       title: 'Added new provider',
@@ -58,19 +55,20 @@ async function handleCreateProvider() {
 
 async function handleUpdateProvider(provider: ProviderModel) {
   try {
-    await nodeStore.updateProvider(newProviderData.value);
+    await nodeStore.updateProvider(provider, newProviderData.value);
     notify({
       title: `Updated ${provider.model}`,
       type: 'success',
     });
     emit('close');
-  } catch (error) {
-    console.error(error);
-    notify({
-      title: 'Error',
-      text: (error as Error)?.message || 'Error udpating the provider',
-      type: 'error',
-    });
+  } catch (err) {
+    console.error(err);
+    error.value = (err as Error)?.message;
+    // notify({
+    //   title: 'Error',
+    //   text: (error as Error)?.message || 'Error udpating the provider',
+    //   type: 'error',
+    // });
   }
 }
 
@@ -124,10 +122,30 @@ const isConfigValid = computed(() => {
     return false;
   }
 });
+
+const tryInitValues = () => {
+  if (!props.provider) {
+    // TODO: ?
+    // try {
+    //   newValidatorData.value.provider = nodeStore.nodeProviders[0].provider;
+    //   handleChangeProvider();
+    // } catch (err) {
+    //   console.error('Could not initialize values', err);
+    // }
+  } else {
+    newProviderData.value = {
+      model: props.provider.model,
+      provider: props.provider.provider,
+      plugin: props.provider.plugin,
+      config: JSON.stringify(props.provider.config, null, 2),
+      plugin_config: JSON.stringify(props.provider.plugin_config, null, 2),
+    };
+  }
+};
 </script>
 
 <template>
-  <Modal @close="emit('close')">
+  <Modal @close="emit('close')" @onOpen="tryInitValues">
     <template #title v-if="isCreateMode">New Provider</template>
     <template #title v-else>Provider #{{ provider?.id }}</template>
 
@@ -193,7 +211,7 @@ const isConfigValid = computed(() => {
       <FieldError v-if="!isConfigValid">Please enter valid JSON.</FieldError>
     </div>
 
-    <Alert v-if="error" type="error">{{ error }}</Alert>
+    <Alert error v-if="error" type="error">{{ error }}</Alert>
 
     <Btn
       v-if="isCreateMode"

@@ -159,8 +159,12 @@ export const useNodeStore = defineStore('nodeStore', () => {
     }
   }
 
-  async function addProvider(provider: NewProviderDataModel) {
-    const result = await rpcClient.addProvider(provider);
+  async function addProvider(providerData: NewProviderDataModel) {
+    const result = await rpcClient.addProvider({
+      ...providerData,
+      plugin_config: JSON.parse(providerData.plugin_config),
+      config: JSON.parse(providerData.config),
+    });
     console.log(result);
     if (result?.status === 'success') {
       // nodeProviders.value.push(result.data);
@@ -174,13 +178,24 @@ export const useNodeStore = defineStore('nodeStore', () => {
     }
   }
 
-  async function updateProvider(provider: ProviderModel) {
-    const result = await rpcClient.updateProvider(provider);
+  async function updateProvider(
+    provider: ProviderModel,
+    newProviderData: NewProviderDataModel,
+  ) {
+    const result = await rpcClient.updateProvider({
+      id: provider.id,
+      ...newProviderData,
+      config: JSON.parse(newProviderData.config),
+      plugin_config: JSON.parse(newProviderData.plugin_config),
+    });
     if (result?.status === 'success') {
-      // nodeProviders.value.push(result.data);
       getValidatorsData();
     } else {
-      console.log(result.message);
+      if (result.exception) {
+        throw new Error(result.exception);
+      } else {
+        throw new Error(result.message);
+      }
     }
   }
 

@@ -141,22 +141,6 @@ const handleResetStorage = async () => {
         :open="isNewProviderModalOpen"
         @close="isNewProviderModalOpen = false"
       />
-
-      <!-- <GhostBtn
-        @click="
-          nodeStore.addProvider({
-            provider: 'openai',
-            model: 'gpt-4o-mini',
-            config: {},
-            plugin: 'openai',
-            plugin_config: {
-              api_key_env_var: 'OPENAIKEY',
-              api_url: null,
-            },
-          })
-        "
-        >Add Provider</GhostBtn
-      > -->
     </PageSection>
 
     <PageSection>

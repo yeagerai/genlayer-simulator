@@ -7,7 +7,7 @@ import {
   TrashIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/vue/16/solid';
-// import ProviderModal from '@/components/Simulator/ProviderModal.vue';
+import ProviderModal from '@/components/Simulator/ProviderModal.vue';
 import { ref } from 'vue';
 import { useNodeStore } from '@/stores';
 import { notify } from '@kyvg/vue3-notification';
@@ -103,11 +103,11 @@ async function handleDeleteProvider() {
     </div>
   </div>
 
-  <!-- <ProviderModal
+  <ProviderModal
     :provider="provider"
     :open="isUpdateModalMopen"
     @close="isUpdateModalMopen = false"
-  /> -->
+  />
 </template>
 
 <style scoped>

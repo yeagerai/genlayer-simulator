@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { useNodeStore } from '@/stores';
-import { type ValidatorModel, type NewValidatorDataModel } from '@/types';
+import {
+  type ValidatorModel,
+  type NewValidatorDataModel,
+  type ProviderModel,
+} from '@/types';
 import { notify } from '@kyvg/vue3-notification';
 import { computed, ref } from 'vue';
 import SelectInput from '@/components/global/inputs/SelectInput.vue';
@@ -132,6 +136,16 @@ const handleChangeProvider = () => {
     availableModels.length > 0 ? availableModels[0] : '';
 };
 
+const handleChangeModel = () => {
+  console.log('handleChangeModel', newValidatorData.value.model);
+  console.log(nodeStore.nodeProviders);
+  const config = nodeStore.nodeProviders.find(
+    (provider: ProviderModel) =>
+      provider.model === newValidatorData.value.model,
+  )?.config;
+  newValidatorData.value.config = JSON.stringify(config, null, 2);
+};
+
 const tryInitValues = () => {
   if (!props.validator) {
     try {
@@ -189,6 +203,7 @@ const tryInitValues = () => {
         name="model"
         :options="modelOptions"
         v-model="newValidatorData.model"
+        @change="handleChangeModel"
         :invalid="!newValidatorData.model"
         required
         testId="dropdown-model"
