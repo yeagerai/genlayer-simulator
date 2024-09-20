@@ -28,6 +28,10 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
         status: tx.status,
         data: tx,
       });
+    } else {
+      // Temporary logging to debug always-PENDING transactions
+      console.warn('Transaction not found', tx);
+      console.trace('updateTransaction', tx); // Temporary logging to debug always-PENDING transactions
     }
   }
 
