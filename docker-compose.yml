@@ -3,12 +3,13 @@ services:
     build:
       context: ./
       dockerfile: ./docker/Dockerfile.frontend
+      # Uncomment to run in dev mode
+      # target: dev
     ports:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     volumes:
       - ./examples:/app/src/assets/examples
-      - ./frontend:/app/frontend
-    entrypoint: ["npm", "run", "dev"]
+      - ./frontend/src:/app/src
     depends_on:
       - jsonrpc
     expose:
