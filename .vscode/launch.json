@@ -18,22 +18,6 @@
       "justMyCode": true
     },
     {
-      "name": "GenVM: Remote Attach",
-      "type": "debugpy",
-      "request": "attach",
-      "pathMappings": [
-        {
-          "localRoot": "${workspaceFolder}",
-          "remoteRoot": "/app"
-        }
-      ],
-      "connect": {
-        "port": 6678,
-        "host": "localhost"
-      },
-      "justMyCode": true
-    },
-    {
       "name": "SQLAlchemy tests: Remote Attach",
       "type": "debugpy",
       "request": "attach",
