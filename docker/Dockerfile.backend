@@ -4,9 +4,9 @@ ARG path=/app
 WORKDIR $path
 
 ADD backend/protocol_rpc/requirements.txt backend/protocol_rpc/requirements.txt
-RUN pip install --upgrade pip \
-    && pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu \
-    && pip install --no-cache-dir -r backend/protocol_rpc/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --cache-dir=/root/.cache/pip torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu \
+    && pip install --cache-dir=/root/.cache/pip -r backend/protocol_rpc/requirements.txt
 
 RUN groupadd -r backend-group \
     && useradd -r -g backend-group backend-user \
@@ -16,14 +16,15 @@ RUN groupadd -r backend-group \
 
 ENV PYTHONPATH "${PYTHONPATH}:/${path}"
 ENV FLASK_APP backend/protocol_rpc/server.py
-ENV TRANSFORMERS_CACHE /home/backend-user/.cache/huggingface
+ENV HUGGINGFACE_HUB_CACHE /home/backend-user/.cache/huggingface
 
 COPY ../.env .
 COPY backend $path/backend
 
 ###########START NEW IMAGE : DEBUGGER ###################
 FROM base AS debug
-RUN pip install --no-cache-dir debugpy watchdog
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --cache-dir=/root/.cache/pip debugpy watchdog
 USER backend-user
 CMD watchmedo auto-restart --no-restart-on-command-exit --recursive --pattern="*.py" --ignore-patterns="*.pyc;*__pycache__*" -- python -m debugpy --listen 0.0.0.0:${RPCDEBUGPORT} -m flask run -h 0.0.0.0 -p ${FLASK_SERVER_PORT}
 
