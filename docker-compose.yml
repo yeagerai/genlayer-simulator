@@ -3,8 +3,7 @@ services:
     build:
       context: ./
       dockerfile: ./docker/Dockerfile.frontend
-      # Uncomment to run in dev mode
-      # target: dev
+      target: ${FRONTEND_BUILD_TARGET:-final}
     ports:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     volumes:
