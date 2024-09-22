@@ -38,7 +38,7 @@
     "jump.js": "^1.0.2",
     "lodash-es": "^4.17.21",
     "lucide-vue-next": "^0.441.0",
-    "monaco-editor": "^0.51.0",
+    "monaco-editor": "^0.52.0",
     "path": "^0.12.7",
     "pinia": "^2.1.7",
     "socket.io-client": "^4.7.5",
