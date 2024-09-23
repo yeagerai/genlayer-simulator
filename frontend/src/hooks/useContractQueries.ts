@@ -77,11 +77,10 @@ export function useContractQueries() {
 
   const isDeploying = ref(false);
 
-  async function deployContract({
-    constructorParams,
-  }: {
-    constructorParams: { [k: string]: string };
-  }) {
+  async function deployContract(
+    constructorParams: { [k: string]: string },
+    leaderOnly: boolean,
+  ) {
     isDeploying.value = true;
 
     try {
@@ -89,7 +88,11 @@ export function useContractQueries() {
         throw new Error('Error Deploying the contract');
       }
       const constructorParamsAsString = JSON.stringify(constructorParams);
-      const data = [contract.value?.content ?? '', constructorParamsAsString];
+      const data = [
+        contract.value?.content ?? '',
+        constructorParamsAsString,
+        leaderOnly,
+      ];
       const signed = await wallet.signTransaction({
         privateKey: accountsStore.currentPrivateKey,
         data,

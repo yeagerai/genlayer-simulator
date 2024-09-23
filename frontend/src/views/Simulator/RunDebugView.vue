@@ -8,10 +8,11 @@ import MainTitle from '@/components/Simulator/MainTitle.vue';
 import { ref, watch } from 'vue';
 import { useContractsStore, useNodeStore } from '@/stores';
 import ContractInfo from '@/components/Simulator/ContractInfo.vue';
-
+import BooleanField from '@/components/global/fields/BooleanField.vue';
 const contractsStore = useContractsStore();
 const { isDeployed, address, contract } = useContractQueries();
 const nodeStore = useNodeStore();
+const leaderOnly = ref(false);
 
 const isDeploymentOpen = ref(!isDeployed.value);
 
@@ -37,16 +38,30 @@ watch(
         :showNewDeploymentButton="!isDeploymentOpen"
         @openDeployment="isDeploymentOpen = true"
       />
-
+      <BooleanField
+        v-model="leaderOnly"
+        name="leaderOnly"
+        label="Leader Only Execution"
+        class="p-2"
+      />
       <template v-if="nodeStore.hasAtLeastOneValidator">
         <ConstructorParameters
           id="tutorial-how-to-deploy"
           v-if="isDeploymentOpen"
           @deployedContract="isDeploymentOpen = false"
+          :leaderOnly="leaderOnly"
         />
 
-        <ContractReadMethods v-if="isDeployed" id="tutorial-read-methods" />
-        <ContractWriteMethods v-if="isDeployed" id="tutorial-write-methods" />
+        <ContractReadMethods
+          v-if="isDeployed"
+          id="tutorial-read-methods"
+          :leaderOnly="leaderOnly"
+        />
+        <ContractWriteMethods
+          v-if="isDeployed"
+          id="tutorial-write-methods"
+          :leaderOnly="leaderOnly"
+        />
         <TransactionsList id="tutorial-tx-response" />
       </template>
     </template>
