@@ -18,6 +18,13 @@
       "justMyCode": true
     },
     {
+      "type": "chrome",
+      "request": "launch",
+      "name": "vuejs: chrome",
+      "url": "http://localhost:8080",
+      "webRoot": "${workspaceFolder}/frontend/src"
+    },
+    {
       "name": "SQLAlchemy tests: Remote Attach",
       "type": "debugpy",
       "request": "attach",

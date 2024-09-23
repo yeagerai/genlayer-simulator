@@ -5,7 +5,7 @@ services:
       dockerfile: ./docker/Dockerfile.frontend
       target: ${FRONTEND_BUILD_TARGET:-final}
     ports:
-      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+      - "${FRONTEND_PORT}:8080"
     volumes:
       - ./examples:/app/src/assets/examples
       - ./frontend/src:/app/src
