@@ -202,16 +202,18 @@ export function useContractQueries() {
   async function callWriteMethod({
     method,
     params,
+    leaderOnly,
   }: {
     method: string;
     params: any[];
+    leaderOnly: boolean;
   }) {
     try {
       if (!accountsStore.currentPrivateKey) {
         throw new Error('Error Deploying the contract');
       }
       const methodParamsAsString = JSON.stringify(params);
-      const data = [method, methodParamsAsString];
+      const data = [method, methodParamsAsString, leaderOnly];
       const to = (address.value as Address) || null;
 
       const signed = await wallet.signTransaction({

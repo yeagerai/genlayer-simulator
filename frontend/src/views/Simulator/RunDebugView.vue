@@ -34,15 +34,15 @@ watch(
     <template
       v-if="contractsStore.currentContract && contractsStore.currentContractId"
     >
-      <ContractInfo
-        :showNewDeploymentButton="!isDeploymentOpen"
-        @openDeployment="isDeploymentOpen = true"
-      />
       <BooleanField
         v-model="leaderOnly"
         name="leaderOnly"
         label="Leader Only Execution"
         class="p-2"
+      />
+      <ContractInfo
+        :showNewDeploymentButton="!isDeploymentOpen"
+        @openDeployment="isDeploymentOpen = true"
       />
       <template v-if="nodeStore.hasAtLeastOneValidator">
         <ConstructorParameters
