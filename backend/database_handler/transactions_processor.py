@@ -27,7 +27,7 @@ class TransactionsProcessor:
             "from_address": transaction_data.from_address,
             "to_address": transaction_data.to_address,
             "data": transaction_data.data,
-            "value": float(transaction_data.value),
+            "value": transaction_data.value,
             "type": transaction_data.type,
             "status": transaction_data.status.value,
             "consensus_data": transaction_data.consensus_data,

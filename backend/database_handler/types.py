@@ -1,5 +1,3 @@
-import json
-from typing import Dict, List, Optional
 from dataclasses import dataclass
 from backend.node.genvm.types import Receipt
 
@@ -7,9 +5,9 @@ from backend.node.genvm.types import Receipt
 @dataclass
 class ConsensusData:
     final: bool
-    votes: Dict[str, str]
+    votes: dict[str, str]
     leader_receipt: Receipt
-    validators: Optional[List] = None
+    validators: list[Receipt] | None = None
 
     def to_dict(self):
         return {
@@ -32,5 +30,5 @@ class ConsensusData:
                     else None
                 ),
             },
-            "validators": self.validators,
+            "validators": [receipt.to_dict() for receipt in self.validators],
         }
