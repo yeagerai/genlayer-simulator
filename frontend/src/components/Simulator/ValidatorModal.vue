@@ -22,6 +22,8 @@ import Alert from '../global/Alert.vue';
 const nodeStore = useNodeStore();
 const { trackEvent } = useEventTracking();
 const emit = defineEmits(['close']);
+const error = ref('');
+const isLoading = ref(false);
 
 const props = defineProps<{
   validator?: ValidatorModel;
@@ -30,6 +32,9 @@ const props = defineProps<{
 const isCreateMode = computed(() => !props.validator);
 
 async function handleCreateValidator() {
+  error.value = '';
+  isLoading.value = true;
+
   try {
     await nodeStore.createNewValidator(newValidatorData.value);
 
@@ -45,17 +50,22 @@ async function handleCreateValidator() {
     });
 
     emit('close');
-  } catch (error) {
-    console.error(error);
-    notify({
-      title: 'Error',
-      text: (error as Error)?.message || 'Error creating new validator',
-      type: 'error',
-    });
+  } catch (err) {
+    console.error(err);
+    error.value = (err as Error)?.message;
+    // notify({
+    //   title: 'Error',
+    //   text: (error as Error)?.message || 'Error creating new validator',
+    //   type: 'error',
+    // });
+  } finally {
+    isLoading.value = false;
   }
 }
 
 async function handleUpdateValidator(validator: ValidatorModel) {
+  error.value = '';
+  isLoading.value = true;
   try {
     await nodeStore.updateValidator(validator, newValidatorData.value);
     notify({
@@ -63,13 +73,16 @@ async function handleUpdateValidator(validator: ValidatorModel) {
       type: 'success',
     });
     emit('close');
-  } catch (error) {
-    console.error(error);
-    notify({
-      title: 'Error',
-      text: (error as Error)?.message || 'Error udpating the validator',
-      type: 'error',
-    });
+  } catch (err) {
+    console.error(err);
+    error.value = (err as Error)?.message;
+    // notify({
+    //   title: 'Error',
+    //   text: (error as Error)?.message || 'Error udpating the validator',
+    //   type: 'error',
+    // });
+  } finally {
+    isLoading.value = false;
   }
 }
 
@@ -128,6 +141,7 @@ const modelOptions = computed(() => {
 });
 
 const handleChangeProvider = () => {
+  error.value = '';
   console.log('handleChangeProvider', newValidatorData.value.provider);
   const availableModels = nodeStore.availableModelsForProvider(
     newValidatorData.value.provider,
@@ -137,6 +151,7 @@ const handleChangeProvider = () => {
 };
 
 const handleChangeModel = () => {
+  error.value = '';
   console.log('handleChangeModel', newValidatorData.value.model);
   console.log(nodeStore.nodeProviders);
   const config = nodeStore.nodeProviders.find(
@@ -250,11 +265,14 @@ const tryInitValues = () => {
       <FieldError v-if="!isConfigValid">Please enter valid JSON.</FieldError>
     </div>
 
+    <Alert error v-if="error" type="error">{{ error }}</Alert>
+
     <Btn
       v-if="isCreateMode"
       @click="handleCreateValidator"
       :disabled="!validatorModelValid"
       testId="btn-create-validator"
+      :loading="isLoading"
     >
       Create
     </Btn>
@@ -264,6 +282,7 @@ const tryInitValues = () => {
       @click="handleUpdateValidator(validator)"
       :disabled="!validatorModelValid"
       testId="btn-update-validator"
+      :loading="isLoading"
     >
       Save
     </Btn>

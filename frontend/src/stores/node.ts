@@ -114,7 +114,12 @@ export const useNodeStore = defineStore('nodeStore', () => {
         validators.value.splice(index, 1, result.data);
       }
     } else {
-      throw new Error('Error udpating the validator');
+      // TODO: better normalize error handling
+      if (result.exception) {
+        throw new Error(result.exception);
+      } else {
+        throw new Error(result.message);
+      }
     }
   }
 
@@ -146,7 +151,12 @@ export const useNodeStore = defineStore('nodeStore', () => {
     if (result?.status === 'success') {
       validators.value.push(result.data);
     } else {
-      throw new Error('Error creating a new validator');
+      // TODO: better normalize error handling
+      if (result.exception) {
+        throw new Error(result.exception);
+      } else {
+        throw new Error(result.message);
+      }
     }
   }
 

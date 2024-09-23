@@ -207,7 +207,7 @@ def create_validator(
     # fallback for default provider
     # TODO: only accept all or none of the config fields
     llm_provider = None
-    if not (config and plugin and plugin_config):
+    if not (config is None and plugin is None and plugin_config is None):
         llm_provider = get_default_provider_for(provider, model)
     else:
         llm_provider = LLMProvider(

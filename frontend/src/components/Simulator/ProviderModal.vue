@@ -13,12 +13,14 @@ import { useEventTracking } from '@/hooks';
 import CopyTextButton from '../global/CopyTextButton.vue';
 import { uniqBy } from 'lodash-es';
 import Alert from '../global/Alert.vue';
+// TODO: make sure this import is legit
+import providersSchema from '../../../../backend/node/create_nodes/providers_schema.json';
 
 const nodeStore = useNodeStore();
 const { trackEvent } = useEventTracking();
 const emit = defineEmits(['close']);
 const error = ref('');
-
+const isLoading = ref(false);
 const props = defineProps<{
   provider?: ProviderModel;
 }>();
@@ -26,6 +28,8 @@ const props = defineProps<{
 const isCreateMode = computed(() => !props.provider);
 
 async function handleCreateProvider() {
+  error.value = '';
+  isLoading.value = true;
   try {
     await nodeStore.addProvider(newProviderData.value);
 
@@ -50,10 +54,14 @@ async function handleCreateProvider() {
     //   text: (err as Error)?.message || 'Error adding provider',
     //   type: 'error',
     // });
+  } finally {
+    isLoading.value = false;
   }
 }
 
 async function handleUpdateProvider(provider: ProviderModel) {
+  error.value = '';
+  isLoading.value = true;
   try {
     await nodeStore.updateProvider(provider, newProviderData.value);
     notify({
@@ -69,6 +77,8 @@ async function handleUpdateProvider(provider: ProviderModel) {
     //   text: (error as Error)?.message || 'Error udpating the provider',
     //   type: 'error',
     // });
+  } finally {
+    isLoading.value = false;
   }
 }
 
@@ -157,7 +167,9 @@ const tryInitValues = () => {
         v-model="newProviderData.provider"
         required
         testId="input-provider"
-        placeholder="openai, ollama..."
+        :placeholder="
+          providersSchema.properties.provider.examples.join(', ') + '...'
+        "
       />
     </div>
 
@@ -175,13 +187,13 @@ const tryInitValues = () => {
 
     <div>
       <FieldLabel for="plugin">Plugin:</FieldLabel>
-      <TextInput
+      <SelectInput
         id="plugin"
         name="plugin"
         v-model="newProviderData.plugin"
+        :options="providersSchema.properties.plugin.enum"
         required
         testId="input-plugin"
-        placeholder=""
       />
     </div>
 
@@ -218,6 +230,7 @@ const tryInitValues = () => {
       @click="handleCreateProvider"
       :disabled="!providerModelValid"
       testId="btn-create-provider"
+      :loading="isLoading"
     >
       Create
     </Btn>
@@ -227,6 +240,7 @@ const tryInitValues = () => {
       @click="handleUpdateProvider(provider)"
       :disabled="!providerModelValid"
       testId="btn-update-provider"
+      :loading="isLoading"
     >
       Save
     </Btn>
