@@ -31,7 +31,6 @@ class DecodedTransaction:
     data: str
     type: str
     value: int
-    leader_only: bool = False
 
 
 @dataclass

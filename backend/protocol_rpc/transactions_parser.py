@@ -1,21 +1,21 @@
 # rpc/transaction_utils.py
 
 import rlp
-import codecs
+from rlp.sedes import text, boolean
+from eth_account import Account
 from eth_account._utils.legacy_transactions import Transaction, vrs_from
 from eth_account._utils.signing import hash_of_signed_transaction
-from eth_account import Account
 from eth_utils import to_checksum_address
 from hexbytes import HexBytes
-from rlp.sedes import binary
+
 from backend.protocol_rpc.types import (
-    DecodedTransaction,
-    DecodedMethodCallData,
     DecodedDeploymentData,
+    DecodedMethodCallData,
+    DecodedTransaction,
 )
 
 
-def decode_signed_transaction(raw_transaction) -> DecodedTransaction | None:
+def decode_signed_transaction(raw_transaction: str) -> DecodedTransaction | None:
     try:
         transaction_bytes = HexBytes(raw_transaction)
         signed_transaction = Transaction.from_bytes(transaction_bytes)
@@ -42,7 +42,6 @@ def decode_signed_transaction(raw_transaction) -> DecodedTransaction | None:
             data=data,
             type=signed_transaction_as_dict.get("type", 0),
             value=value,
-            leader_only=signed_transaction_as_dict.get("leader_only", False),
         )
 
     except Exception as e:
@@ -58,37 +57,69 @@ def transaction_has_valid_signature(
     return recovered_address == decoded_tx.from_address
 
 
-def decode_data_field(input: HexBytes) -> str:
-    param = input.hex().replace("0x", "")
-    return codecs.decode(param, "hex").decode("utf-8")
-
-
 def decode_method_call_data(data: str) -> DecodedMethodCallData:
     data_bytes = HexBytes(data)
-    data_decoded = rlp.decode(data_bytes, MethodCallTransactionPayload)
+
+    try:
+        data_decoded = rlp.decode(data_bytes, MethodCallTransactionPayload)
+    except rlp.exceptions.DeserializationError as e:
+        print("Error decoding method call data, falling back to default:", e)
+        data_decoded = rlp.decode(data_bytes, MethodCallTransactionPayloadDefault)
+
+    leader_only = getattr(data_decoded, "leader_only", False)
 
     return DecodedMethodCallData(
-        function_name=decode_data_field(data_decoded["function_name"]),
-        function_args=decode_data_field(data_decoded["function_args"]),
+        function_name=data_decoded["function_name"],
+        function_args=data_decoded["function_args"],
+        leader_only=leader_only,
     )
 
 
 def decode_deployment_data(data: str) -> DecodedDeploymentData:
     data_bytes = HexBytes(data)
-    data_decoded = rlp.decode(data_bytes, DeploymentContractTransactionPayload)
+
+    try:
+        data_decoded = rlp.decode(data_bytes, DeploymentContractTransactionPayload)
+    except rlp.exceptions.DeserializationError as e:
+        print("Error decoding deployment data, falling back to default:", e)
+        data_decoded = rlp.decode(
+            data_bytes, DeploymentContractTransactionPayloadDefault
+        )
+
+    leader_only = getattr(data_decoded, "leader_only", False)
 
     return DecodedDeploymentData(
-        contract_code=decode_data_field(data_decoded["contract_code"]),
-        constructor_args=decode_data_field(data_decoded["constructor_args"]),
+        contract_code=data_decoded["contract_code"],
+        constructor_args=data_decoded["constructor_args"],
+        leader_only=leader_only,
     )
 
 
 class DeploymentContractTransactionPayload(rlp.Serializable):
     fields = [
-        ("contract_code", binary),
-        ("constructor_args", binary),
+        ("contract_code", text),
+        ("constructor_args", text),
+        ("leader_only", boolean),
+    ]
+
+
+class DeploymentContractTransactionPayloadDefault(rlp.Serializable):
+    fields = [
+        ("contract_code", text),
+        ("constructor_args", text),
     ]
 
 
 class MethodCallTransactionPayload(rlp.Serializable):
-    fields = [("function_name", binary), ("function_args", binary)]
+    fields = [
+        ("function_name", text),
+        ("function_args", text),
+        ("leader_only", boolean),
+    ]
+
+
+class MethodCallTransactionPayloadDefault(rlp.Serializable):
+    fields = [
+        ("function_name", text),
+        ("function_args", text),
+    ]
