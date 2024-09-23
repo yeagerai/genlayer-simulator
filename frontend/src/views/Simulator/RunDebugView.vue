@@ -37,7 +37,7 @@ watch(
       <BooleanField
         v-model="leaderOnly"
         name="leaderOnly"
-        label="Leader Only Execution"
+        label="Leader Only (Fast Execution)"
         class="p-2"
       />
       <ContractInfo
