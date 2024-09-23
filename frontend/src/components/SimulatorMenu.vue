@@ -6,7 +6,9 @@ import {
   CommandLineIcon,
   HandThumbUpIcon,
   DocumentTextIcon,
+  ServerIcon,
 } from '@heroicons/vue/24/solid';
+import { HardDrive } from 'lucide-vue-next';
 import DiscordIcon from '@/assets/icons/DiscordIcon.vue';
 import { LINKS } from '@/constants/links';
 import SimulatorMenuItem from './SimulatorMenuItem.vue';
@@ -33,10 +35,10 @@ import SimulatorMenuLink from './SimulatorMenuLink.vue';
       </SimulatorMenuItem>
 
       <SimulatorMenuItem
-        :to="{ name: 'settings' }"
-        v-tooltip="{ content: 'Settings', placement: 'right' }"
+        :to="{ name: 'validators' }"
+        v-tooltip="{ content: 'Validators', placement: 'right' }"
       >
-        <Cog6ToothIcon />
+        <ServerIcon />
       </SimulatorMenuItem>
     </div>
 
@@ -63,10 +65,10 @@ import SimulatorMenuLink from './SimulatorMenuLink.vue';
       </SimulatorMenuLink>
 
       <SimulatorMenuItem
-        :to="{ name: 'profile' }"
-        v-tooltip="{ content: 'Profile', placement: 'right' }"
+        :to="{ name: 'settings' }"
+        v-tooltip="{ content: 'Settings', placement: 'right' }"
       >
-        <UserCircleIcon />
+        <Cog6ToothIcon />
       </SimulatorMenuItem>
     </div>
   </nav>

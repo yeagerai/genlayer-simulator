@@ -2,8 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router';
 import SimulatorView from '@/views/Simulator/SimulatorView.vue';
 import ContractsView from '@/views/Simulator/ContractsView.vue';
 import RunDebugView from '@/views/Simulator/RunDebugView.vue';
+import ValidatorsView from '@/views/Simulator/ValidatorsView.vue';
 import SettingsView from '@/views/Simulator/SettingsView.vue';
-import ProfileView from '@/views/ProfileView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -27,6 +27,12 @@ const router = createRouter({
           props: true,
         },
         {
+          path: 'validators',
+          name: 'validators',
+          component: ValidatorsView,
+          props: true,
+        },
+        {
           path: 'settings',
           name: 'settings',
           component: SettingsView,
@@ -34,7 +40,6 @@ const router = createRouter({
         },
       ],
     },
-    { path: '/profile', name: 'profile', component: ProfileView },
   ],
 });
 
