@@ -1,7 +1,8 @@
 # rpc/transaction_utils.py
 
 import rlp
-from rlp.sedes import text, boolean
+from rlp.sedes import text
+from rlp.exceptions import DeserializationError, SerializationError
 from eth_account import Account
 from eth_account._utils.legacy_transactions import Transaction, vrs_from
 from eth_account._utils.signing import hash_of_signed_transaction
@@ -13,6 +14,39 @@ from backend.protocol_rpc.types import (
     DecodedMethodCallData,
     DecodedTransaction,
 )
+
+
+class Boolean:
+    """A sedes for booleans
+    Copied from rlp/sedes/boolean.py
+    Adding custom logic to also handle `False` as `0x00`, since the Frontend library sends `False` as `0x00`
+    """
+
+    def serialize(self, obj):
+        if not isinstance(obj, bool):
+            raise SerializationError("Can only serialize integers", obj)
+
+        if obj is False:
+            return b""
+        elif obj is True:
+            return b"\x01"
+        else:
+            raise Exception("Invariant: no other options for boolean values")
+
+    def deserialize(self, serial):
+        if serial == b"":
+            return False
+        elif serial == b"\x01":
+            return True
+        elif serial == b"\x00":  # Custom logic to handle `False` as `0x00`
+            return False
+        else:
+            raise DeserializationError(
+                "Invalid serialized boolean.  Must be either 0x01 or 0x00", serial
+            )
+
+
+boolean = Boolean()
 
 
 def decode_signed_transaction(raw_transaction: str) -> DecodedTransaction | None:
