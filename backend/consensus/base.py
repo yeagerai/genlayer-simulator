@@ -29,6 +29,12 @@ from backend.node.base import Node
 from backend.node.genvm.types import ExecutionMode, Receipt, Vote
 from backend.protocol_rpc.message_handler.base import MessageHandler
 
+from sqlalchemy.orm import Session
+
+
+def get_contract_snapshot(address: str, session: Session) -> ContractSnapshot:
+    return ContractSnapshot(address, session)
+
 
 def node_factory(
     validator: dict,
@@ -36,6 +42,7 @@ def node_factory(
     contract_snapshot: ContractSnapshot,
     leader_receipt: Receipt | None,
     msg_handler: MessageHandler,
+    contract_snapshot_factory: Callable[[str], ContractSnapshot],
 ) -> Node:
     return Node(
         contract_snapshot=contract_snapshot,
@@ -53,6 +60,7 @@ def node_factory(
                 plugin_config=validator["plugin_config"],
             ),
         ),
+        contract_snapshot_factory=contract_snapshot_factory,
     )
 
 
@@ -135,6 +143,7 @@ class ConsensusAlgorithm:
                 ContractSnapshot,
                 Receipt | None,
                 MessageHandler,
+                Callable[[str], ContractSnapshot],
             ],
             Node,
         ] = node_factory,
@@ -186,6 +195,7 @@ class ConsensusAlgorithm:
                 contract_snapshot,
                 None,
                 self.msg_handler,
+                contract_snapshot_factory,
             )
 
             # Leader executes transaction
@@ -204,6 +214,7 @@ class ConsensusAlgorithm:
                     contract_snapshot,
                     leader_receipt,
                     self.msg_handler,
+                    contract_snapshot_factory,
                 )
                 for validator in remaining_validators
             ]

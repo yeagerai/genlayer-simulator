@@ -3,6 +3,7 @@ from .models import CurrentState
 from sqlalchemy.orm import Session
 
 
+# TODO: should ContractSnapshot be a dataclass with just the contract data? Snapshots shouldn't be allowed to be modified, so it doesn't make sense to modify the database
 class ContractSnapshot:
     """
     Warning: if you initialize this class with a contract_address:
