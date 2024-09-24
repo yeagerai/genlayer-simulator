@@ -57,19 +57,22 @@ const toggleStatus = (status: string) => {
 // TODO: make sure it's ordered correctly, otherwise sort by date
 const filteredLogs = computed(() => {
   return nodeStore.logs.filter((log) => {
+    const categoryMatch =
+      selectedScopes.value.length === 0 ||
+      selectedScopes.value.includes(log.scope);
+
+    const statusMatch =
+      selectedStatuses.value.length === 0 ||
+      selectedStatuses.value.includes(log.type);
+
     const searchLower = nodeStore.searchFilter.toLowerCase();
     const searchMatch =
       log.message.toLowerCase().includes(searchLower) ||
       log.scope.toLowerCase().includes(searchLower) ||
-      log.name.toLowerCase().includes(searchLower);
+      log.name.toLowerCase().includes(searchLower) ||
+      JSON.stringify(log.data).toLowerCase().includes(searchLower);
 
-    const categoryMatch =
-      selectedScopes.value.length === 0 ||
-      selectedScopes.value.includes(log.scope);
-    const statusMatch =
-      selectedStatuses.value.length === 0 ||
-      selectedStatuses.value.includes(log.type);
-    return searchMatch && categoryMatch && statusMatch;
+    return categoryMatch && statusMatch && searchMatch;
   });
 });
 
