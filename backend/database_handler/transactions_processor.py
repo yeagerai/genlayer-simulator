@@ -7,7 +7,12 @@ from sqlalchemy.orm import Session
 from .models import TransactionStatus
 from eth_utils import to_bytes, keccak, is_address
 import json
-from backend.protocol_rpc.message_handler.base import MessageHandler
+from backend.protocol_rpc.message_handler.base import (
+    LogEvent,
+    EventType,
+    EventScope,
+    MessageHandler,
+)
 
 
 class TransactionsProcessor:
@@ -18,7 +23,6 @@ class TransactionsProcessor:
     ):
         self.session = session
         self.msg_handler = msg_handler
-        print(msg_handler)
 
     @staticmethod
     def _parse_transaction_data(transaction_data: Transactions) -> dict:
@@ -157,11 +161,6 @@ class TransactionsProcessor:
         transaction.status = TransactionStatus.FINALIZED
         transaction.consensus_data = consensus_data
 
-        print(
-            "Updating transaction status",
-            transaction_hash,
-            TransactionStatus.FINALIZED.value,
-        )
         self.session.commit()
         self.dispatch_transaction_status_update(
             transaction_hash, TransactionStatus.FINALIZED
@@ -171,10 +170,15 @@ class TransactionsProcessor:
         self, transaction_hash: str, new_status: TransactionStatus
     ):
         if self.msg_handler:
-            self.msg_handler.socket_emit(
-                "transaction_status_update",
-                {
-                    "hash": str(transaction_hash),
-                    "new_status": str(new_status.value),
-                },
+            self.msg_handler.send_message(
+                LogEvent(
+                    "transaction_status_update",
+                    EventType.INFO,
+                    EventScope.CONSENSUS,
+                    "Updated transaction status",
+                    {
+                        "hash": str(transaction_hash),
+                        "new_status": str(new_status.value),
+                    },
+                )
             )

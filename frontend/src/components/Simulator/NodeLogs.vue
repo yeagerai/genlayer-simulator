@@ -34,19 +34,17 @@ watch(nodeStore.logs, () => {
 
 const search = ref('');
 
-const categories = ref(['RPC', 'GenVM', 'Consensus', 'Transactions']);
-const statuses = ref(['info', 'error', 'warning', 'success']);
+const scopes = ref(['RPC', 'GenVM', 'Consensus', 'Transactions']);
+const statuses = ref(['info', 'error', 'success']);
 
-const selectedCategories = ref(categories.value);
-const selectedStatuses = ref(['info', 'error', 'warning', 'success']);
+const selectedScopes = ref(scopes.value);
+const selectedStatuses = ref(['info', 'error', 'success']);
 
 const toggleCategory = (category: string) => {
-  if (selectedCategories.value.includes(category)) {
-    selectedCategories.value = selectedCategories.value.filter(
-      (c) => c !== category,
-    );
+  if (selectedScopes.value.includes(category)) {
+    selectedScopes.value = selectedScopes.value.filter((c) => c !== category);
   } else {
-    selectedCategories.value.push(category);
+    selectedScopes.value.push(category);
   }
 };
 
@@ -64,12 +62,12 @@ const filteredLogs = computed(() => {
     const searchLower = search.value.toLowerCase();
     const searchMatch =
       log.message.toLowerCase().includes(searchLower) ||
-      log.category.toLowerCase().includes(searchLower) ||
-      log.event.toLowerCase().includes(searchLower);
+      log.scope.toLowerCase().includes(searchLower) ||
+      log.name.toLowerCase().includes(searchLower);
 
     const categoryMatch =
-      selectedCategories.value.length === 0 ||
-      selectedCategories.value.includes(log.category);
+      selectedScopes.value.length === 0 ||
+      selectedScopes.value.includes(log.scope);
     const statusMatch =
       selectedStatuses.value.length === 0 ||
       selectedStatuses.value.includes(log.type);
@@ -79,13 +77,13 @@ const filteredLogs = computed(() => {
 
 const isAnyFilterActive = computed(() => {
   return (
-    selectedCategories.value.length !== categories.value.length ||
+    selectedScopes.value.length !== scopes.value.length ||
     selectedStatuses.value.length !== statuses.value.length
   );
 });
 
 const resetFilters = () => {
-  selectedCategories.value = categories.value;
+  selectedScopes.value = scopes.value;
   selectedStatuses.value = statuses.value;
 };
 </script>
@@ -109,9 +107,9 @@ const resetFilters = () => {
         <div class="flex flex-row items-center gap-1">
           <span class="font-mono text-xs opacity-50">Category</span>
           <LogFilterBtn
-            v-for="category in categories"
+            v-for="category in scopes"
             :key="category"
-            :active="selectedCategories.includes(category)"
+            :active="selectedScopes.includes(category)"
             @click="toggleCategory(category)"
           >
             {{ category }}
@@ -150,22 +148,20 @@ const resetFilters = () => {
         ref="scrollContainer"
       >
         <div
-          v-for="(
-            { category, event, type, message, data }, index
-          ) in filteredLogs"
+          v-for="({ scope, name, type, message, data }, index) in filteredLogs"
           :key="index"
           class="flex flex-row border-b border-gray-200 px-1 py-1 font-mono text-[10px] first-line:items-center dark:border-zinc-800"
         >
           <div class="flex flex-row gap-1">
             <div class="rounded bg-gray-800 px-[3px] py-[1px]">
-              {{ category }}
+              {{ scope }}
             </div>
 
             <div
               class="rounded bg-gray-800 px-[3px] py-[1px]"
               :class="colorMap[type]"
             >
-              {{ event }}
+              {{ name }}
             </div>
 
             <div :class="colorMap[type]">

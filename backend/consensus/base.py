@@ -27,7 +27,12 @@ from backend.domain.types import (
 )
 from backend.node.base import Node
 from backend.node.genvm.types import ExecutionMode, Receipt, Vote
-from backend.protocol_rpc.message_handler.base import MessageHandler
+from backend.protocol_rpc.message_handler.base import (
+    LogEvent,
+    EventType,
+    EventScope,
+    MessageHandler,
+)
 
 
 def node_factory(
@@ -250,8 +255,15 @@ class ConsensusAlgorithm:
             validators=validation_results,
         ).to_dict()
 
-        self.msg_handler.socket_emit("update_consensus_data", consensus_data)
-        print("update_consensus_data", consensus_data)
+        self.msg_handler.send_message(
+            LogEvent(
+                "consensus_data_updated",
+                EventType.INFO,
+                EventScope.CONSENSUS,
+                "Updated consensus data",
+                consensus_data,
+            )
+        )
 
         # Register contract if it is a new contract
         if transaction.type == TransactionType.DEPLOY_CONTRACT:

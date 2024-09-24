@@ -1,9 +1,11 @@
-import traceback
+from enum import Enum
 import random
 import string
 import os
 import json
+from flask import Flask
 from logging.config import dictConfig
+from dataclasses import dataclass, asdict
 
 from backend.protocol_rpc.message_handler.types import FormattedResponse
 from backend.protocol_rpc.types import EndpointResult
@@ -28,9 +30,40 @@ def format_response(function_name: str, result: EndpointResult) -> FormattedResp
     return FormattedResponse(function_name, trace_id, result)
 
 
-class MessageHandler:
+## TODO: move to types files
+class EventType(Enum):
+    # DEBUG = "debug"
+    INFO = "info"
+    SUCCESS = "success"
+    ERROR = "error"
 
-    # TODO: ??
+
+class EventScope(Enum):
+    RPC = "RPC"
+    GENVM = "GenVM"
+    CONSENSUS = "Consensus"
+
+
+@dataclass
+class LogEvent:
+    name: str
+    type: EventType
+    scope: EventScope
+    message: str
+    data: dict = None
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "type": self.type.value,
+            "scope": self.scope.value,
+            "message": self.message,
+            "data": self.data,
+        }
+
+
+class MessageHandler:
+    # TODO: keep this?
     status_mappings = {
         "debug": "info",
         "info": "info",
@@ -38,35 +71,41 @@ class MessageHandler:
         "error": "error",
     }
 
-    def __init__(self, app, socketio):
+    def __init__(self, app: Flask, socketio):
         self.app = app
         self.socketio = socketio
         setup_logging_config()
 
-    def socket_emit(self, event, data):
-        self.socketio.emit(event, data)
+    def socket_emit(self, log_event: LogEvent):
+        self.socketio.emit(log_event.name, log_event.to_dict())
 
-    def log_message(self, function_name, result: EndpointResult):
-        logging_status = self.status_mappings[result.status.value]
-        if hasattr(self.app.logger, logging_status):
-            log_method = getattr(self.app.logger, logging_status)
-            result_string = str(result)
-            function_result = (
-                (result_string[:MAX_LOG_MESSAGE_LENGTH] + "...")
-                if result_string is not None
-                and len(result_string) > MAX_LOG_MESSAGE_LENGTH
-                else result_string
-            )
-            log_method(function_name + ": " + function_result)
-        else:
-            raise Exception(f"Logger does not have the method {result.status}")
+    ## TODO: use a library or salvage logic
+    def log_message(self, log_event: LogEvent):
+        print(
+            f"{log_event.type.value} "
+            f"{log_event.scope.value} "
+            f"{log_event.name} "
+            f"{log_event.message}"
+        )
+        # logging_status = self.status_mappings[log_event.type]
+        # if hasattr(self.app.logger, logging_status):
+        #     log_method = getattr(self.app.logger, logging_status)
+        #     message = (
+        #         (log_event.message[:MAX_LOG_MESSAGE_LENGTH] + "...")
+        #         if log_event.message is not None
+        #         and len(log_event.message) > MAX_LOG_MESSAGE_LENGTH
+        #         else log_event.message
+        #     )
+        #     log_message = f"{log_event.name} [{log_event.scope}]: {message}"
+        #     if log_event.data:
+        #         try:
+        #             log_message += f" | Data: {json.dumps(log_event.data, default=lambda o: o.__dict__)}"
+        #         except TypeError as e:
+        #             log_message += f" | Data: {str(log_event.data)} (serialization error: {e})"
+        #     log_method(log_message)
+        # else:
+        #     raise Exception(f"Logger does not have the method {log_event.type}")
 
-    def send_message(
-        self,
-        function_name: str,
-        result: EndpointResult,
-    ):
-        self.log_message(function_name, result)
-
-        formatted_response = format_response(function_name, result)
-        self.socket_emit("rpc_response", formatted_response.to_json())
+    def send_message(self, log_event: LogEvent):
+        self.log_message(log_event)
+        self.socket_emit(log_event)

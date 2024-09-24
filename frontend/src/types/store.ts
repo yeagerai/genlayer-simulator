@@ -18,8 +18,8 @@ export interface DeployedContract {
 }
 
 export interface NodeLog {
-  category: string;
-  event: string;
+  scope: string;
+  name: string;
   type: 'error' | 'warning' | 'info' | 'success';
   message: string;
   data: any;

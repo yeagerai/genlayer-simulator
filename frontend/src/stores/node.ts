@@ -26,80 +26,30 @@ export const useNodeStore = defineStore('nodeStore', () => {
   // TODO: Consider moving most of this to the backend and log everything there as well
   // TODO: add category to logs
 
-  webSocketClient.on('genvm_deploy_contract', (data: any) => {
-    addLog({
-      category: 'GenVM',
-      event: 'Deploy',
-      type: 'info',
-      message: 'Deploying contract',
-      data: data,
-    });
-  });
-
-  webSocketClient.on('genvm_run_contract', (data: any) => {
-    addLog({
-      category: 'GenVM',
-      event: 'Write',
-      type: 'info',
-      message: 'Writing to contract',
-      data: data,
-    });
-  });
-
-  webSocketClient.on('genvm_read_contract', (data: any) => {
-    addLog({
-      category: 'GenVM',
-      event: 'Read',
-      type: 'info',
-      message: data.method_name,
-      data: data,
-    });
-  });
-
-  webSocketClient.on('update_consensus_data', (data: RPCResponseEventData) => {
-    addLog({
-      category: 'Consensus',
-      event: 'Consensus Update',
-      type: 'info',
-      message: 'xx',
-      data: data,
-    });
-  });
-
-  webSocketClient.on('rpc_response', (data: RPCResponseEventData) => {
-    addLog({
-      category: 'RPC',
-      event: data.response.status === 'info' ? 'Called' : 'Response',
-      type: data.response.status,
-      message: data.function_name,
-      data: data,
-    });
-  });
-
-  // TODO: remake payloads for rpc calls and responses, split into two events
-  // webSocketClient.on('rpc_call', (data: RPCResponseEventData) => {
-  //   addLog({
-  //     category: 'RPC',
-  //     event: 'Called Endpoint',
-  //     type: data.response.status,
-  //     message: data.function_name,
-  //     data: data,
-  //   });
-  // });
-
-  webSocketClient.on(
+  const trackedEvents = [
+    'endpoint_call',
+    'endpoint_success',
+    'endpoint_error',
     'transaction_status_update',
-    (data: TransactionStatusUpdateEventData) => {
-      // console.log('transaction_status_update', data);
+    'consensus_data_updated',
+    'read_contract',
+    'write_contract',
+    'write_contract_failed',
+    'deploying_contract',
+    'contract_deployment_failed',
+  ];
+  trackedEvents.forEach((eventName) => {
+    webSocketClient.on(eventName, (data: any) => {
+      console.log(eventName, data);
       addLog({
-        category: 'Transactions',
-        event: 'Updated Transaction',
-        type: 'info',
-        message: data.new_status + ' ' + data.hash,
-        data: data,
+        scope: data.scope,
+        name: data.name,
+        type: data.type,
+        message: data.message,
+        data: data.data,
       });
-    },
-  );
+    });
+  });
 
   function addLog(log: NodeLog) {
     logs.value.push(log);

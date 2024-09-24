@@ -5,7 +5,12 @@ from typing import Callable
 from flask_jsonrpc import JSONRPC
 
 from backend.protocol_rpc.configuration import GlobalConfiguration
-from backend.protocol_rpc.message_handler.base import MessageHandler
+from backend.protocol_rpc.message_handler.base import (
+    LogEvent,
+    EventType,
+    EventScope,
+    MessageHandler,
+)
 from backend.protocol_rpc.types import EndpointResult, EndpointResultStatus
 
 
@@ -21,11 +26,15 @@ def generate_rpc_endpoint(
         shouldPrintInfoLogs = (
             function.__name__ not in config.get_disabled_info_logs_endpoints()
         )
-        send_message = partial(msg_handler.send_message, function.__name__)
+
         if shouldPrintInfoLogs:
-            send_message(
-                EndpointResult(
-                    EndpointResultStatus.INFO, f"Calling: {function.__name__}"
+            msg_handler.send_message(
+                LogEvent(
+                    "endpoint_call",
+                    EventType.INFO,
+                    EventScope.RPC,
+                    "Endpoint was called",
+                    {"endpoint_name": function.__name__, "args": args},
                 )
             )
 
@@ -37,8 +46,20 @@ def generate_rpc_endpoint(
                 function_result,
             )
             if shouldPrintInfoLogs:
-                send_message(result)
+                msg_handler.send_message(
+                    LogEvent(
+                        "endpoint_success",
+                        EventType.SUCCESS,
+                        EventScope.RPC,
+                        "Endpoint responded",
+                        {
+                            "endpoint_name": function.__name__,
+                            "result": function_result,
+                        },
+                    )
+                )
             return result.to_json()
+
         except Exception as e:
             result = EndpointResult(
                 EndpointResultStatus.ERROR,
@@ -46,7 +67,18 @@ def generate_rpc_endpoint(
                 {"traceback": traceback.format_exc()},
                 e,
             )
-            send_message(result)
+            msg_handler.send_message(
+                LogEvent(
+                    "endpoint_error",
+                    EventType.ERROR,
+                    EventScope.RPC,
+                    f"Error executing endpoint {function.__name__}: {str(e)}",
+                    {
+                        "endpoint_name": function.__name__,
+                        "traceback": traceback.format_exc(),
+                    },
+                )
+            )
             return result.to_json()
 
     return endpoint
