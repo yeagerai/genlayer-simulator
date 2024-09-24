@@ -32,7 +32,7 @@ jobs:
           cache: pip
       - run: pip install -r backend/protocol_rpc/requirements.txt
       - run: pip install pytest-cov
-      - run: pytest tests/unit --cov=. --cov-report=xml --cov-branch
+      - run: pytest tests/unit --cov=. --cov-report=xml:coverage-reports/coverage.xml --cov-branch
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@v3.0.0
         env:
