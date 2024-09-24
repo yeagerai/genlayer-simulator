@@ -4,16 +4,7 @@ import { useNodeStore, useUIStore } from '@/stores';
 import JsonViewer from '@/components/JsonViewer/json-viewer.vue';
 import GhostBtn from '../global/GhostBtn.vue';
 import EmptyListPlaceholder from './EmptyListPlaceholder.vue';
-import {
-  Ban,
-  SearchIcon,
-  CircleX,
-  CheckCircle,
-  Info,
-  ArrowDownUp,
-  HardDrive,
-  Brain,
-} from 'lucide-vue-next';
+import { Ban, SearchIcon } from 'lucide-vue-next';
 import LogFilterBtn from '@/components/Simulator/LogFilterBtn.vue';
 import TextInput from '../global/inputs/TextInput.vue';
 import { useEventBus } from '@vueuse/core';
@@ -126,7 +117,7 @@ const resetFilters = () => {
           <div
             class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-1"
           >
-            <SearchIcon class="h-3 w-3 text-gray-400" aria-hidden="true" />
+            <SearchIcon class="h-3 w-3 text-gray-500" aria-hidden="true" />
           </div>
 
           <TextInput
@@ -134,8 +125,8 @@ const resetFilters = () => {
             name="searchLogs"
             type="text"
             v-model="search"
-            placeholder="Filter by hash, etc."
-            class="rounded px-0 py-1 pl-6 text-xs"
+            placeholder="Filter by hash, method, etc."
+            class="rounded px-0 py-1 pl-5 text-xs"
           />
         </div>
 
