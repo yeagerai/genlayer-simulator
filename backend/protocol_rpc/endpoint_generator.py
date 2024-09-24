@@ -33,7 +33,7 @@ def generate_rpc_endpoint(
                     "endpoint_call",
                     EventType.INFO,
                     EventScope.RPC,
-                    "Endpoint was called",
+                    "Calling endpoint: " + function.__name__,
                     {"endpoint_name": function.__name__, "args": args},
                 )
             )
@@ -51,7 +51,7 @@ def generate_rpc_endpoint(
                         "endpoint_success",
                         EventType.SUCCESS,
                         EventScope.RPC,
-                        "Endpoint responded",
+                        "Endpoint responded: " + function.__name__,
                         {
                             "endpoint_name": function.__name__,
                             "result": function_result,
@@ -75,6 +75,7 @@ def generate_rpc_endpoint(
                     f"Error executing endpoint {function.__name__}: {str(e)}",
                     {
                         "endpoint_name": function.__name__,
+                        "error": str(e),
                         "traceback": traceback.format_exc(),
                     },
                 )

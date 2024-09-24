@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Ghost } from 'lucide-vue-next';
+// import { Ghost } from 'lucide-vue-next';
 
 // import { useNodeStore } from '@/stores';
 

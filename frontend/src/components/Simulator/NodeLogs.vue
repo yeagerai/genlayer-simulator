@@ -34,7 +34,7 @@ watch(nodeStore.logs, () => {
 
 const search = ref('');
 
-const scopes = ref(['RPC', 'GenVM', 'Consensus', 'Transactions']);
+const scopes = ref(['RPC', 'GenVM', 'Consensus']);
 const statuses = ref(['info', 'error', 'success']);
 
 const selectedScopes = ref(scopes.value);
@@ -148,20 +148,13 @@ const resetFilters = () => {
         ref="scrollContainer"
       >
         <div
-          v-for="({ scope, name, type, message, data }, index) in filteredLogs"
+          v-for="({ scope, type, message, data }, index) in filteredLogs"
           :key="index"
           class="flex flex-row border-b border-gray-200 px-1 py-1 font-mono text-[10px] first-line:items-center dark:border-zinc-800"
         >
           <div class="flex flex-row gap-1">
             <div class="rounded bg-gray-800 px-[3px] py-[1px]">
               {{ scope }}
-            </div>
-
-            <div
-              class="rounded bg-gray-800 px-[3px] py-[1px]"
-              :class="colorMap[type]"
-            >
-              {{ name }}
             </div>
 
             <div :class="colorMap[type]">

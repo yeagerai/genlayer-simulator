@@ -172,10 +172,10 @@ class TransactionsProcessor:
         if self.msg_handler:
             self.msg_handler.send_message(
                 LogEvent(
-                    "transaction_status_update",
+                    "transaction_status_updated",
                     EventType.INFO,
                     EventScope.CONSENSUS,
-                    "Updated transaction status",
+                    f"{str(transaction_hash)} tx {str(transaction_hash)}",
                     {
                         "hash": str(transaction_hash),
                         "new_status": str(new_status.value),

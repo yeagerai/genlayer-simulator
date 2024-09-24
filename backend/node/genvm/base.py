@@ -156,7 +156,7 @@ class GenVM:
                         "contract_deployment_failed",
                         EventType.ERROR,
                         EventScope.GENVM,
-                        "Error deploying contract",
+                        "Error deploying contract: " + str(e),
                         {
                             "error": str(e),
                             "traceback": f"\n{traceback.format_exc()}",
@@ -247,7 +247,7 @@ class GenVM:
                         "write_contract_failed",
                         EventType.ERROR,
                         EventScope.GENVM,
-                        "Writing to contract failed",
+                        "Error running " + function_name + ": " + str(e),
                         {
                             "method_name": function_name,
                             "method_args": args,
@@ -279,7 +279,7 @@ class GenVM:
                     "write_contract",
                     EventType.INFO,
                     EventScope.GENVM,
-                    "Writing to contract",
+                    "Running " + function_name,
                     {
                         "method_name": function_name,
                         "method_args": args,
@@ -420,6 +420,8 @@ class GenVM:
             for name in namespace.keys():
                 del globals()[name]
 
+            ## TODO: try for call methods too for better error handling
+
         if self.contract_runner.mode == ExecutionMode.LEADER:
             # TODO: for some reason, the captured_stdout is empty - is that normal? Maybe only when error?
             # Retrieve the captured stdout and stderr
@@ -435,7 +437,7 @@ class GenVM:
                     "read_contract",
                     EventType.INFO,
                     EventScope.GENVM,
-                    "Reading from contract",
+                    "Calling " + method_name,
                     {
                         "method_name": method_name,
                         "method_args": method_args,

@@ -2,8 +2,8 @@ import type {
   NodeLog,
   NewValidatorDataModel,
   ValidatorModel,
-  RPCResponseEventData,
-  TransactionStatusUpdateEventData,
+  // RPCResponseEventData, // TODO: add this back
+  // TransactionStatusUpdateEventData, // TODO: add this back
 } from '@/types';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
@@ -30,7 +30,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
     'endpoint_call',
     'endpoint_success',
     'endpoint_error',
-    'transaction_status_update',
+    'transaction_status_updated',
     'consensus_data_updated',
     'read_contract',
     'write_contract',

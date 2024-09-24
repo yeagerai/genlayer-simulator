@@ -30,6 +30,10 @@ def format_response(function_name: str, result: EndpointResult) -> FormattedResp
     return FormattedResponse(function_name, trace_id, result)
 
 
+## TODO: make sure all print to terminal as well
+## TODO: print errors and tracebacks to terminal
+
+
 ## TODO: move to types files
 class EventType(Enum):
     # DEBUG = "debug"
@@ -87,7 +91,7 @@ class MessageHandler:
             f"{log_event.name} "
             f"{log_event.message}"
         )
-        # logging_status = self.status_mappings[log_event.type]
+        # logging_status = self.status_mappings[log_event.type.value]
         # if hasattr(self.app.logger, logging_status):
         #     log_method = getattr(self.app.logger, logging_status)
         #     message = (
@@ -96,7 +100,7 @@ class MessageHandler:
         #         and len(log_event.message) > MAX_LOG_MESSAGE_LENGTH
         #         else log_event.message
         #     )
-        #     log_message = f"{log_event.name} [{log_event.scope}]: {message}"
+        #     log_message = f"{log_event.name} [{log_event.scope.value}]: {message}"
         #     if log_event.data:
         #         try:
         #             log_message += f" | Data: {json.dumps(log_event.data, default=lambda o: o.__dict__)}"
@@ -104,7 +108,7 @@ class MessageHandler:
         #             log_message += f" | Data: {str(log_event.data)} (serialization error: {e})"
         #     log_method(log_message)
         # else:
-        #     raise Exception(f"Logger does not have the method {log_event.type}")
+        #     raise Exception(f"Logger does not have the method {log_event.type.value}")
 
     def send_message(self, log_event: LogEvent):
         self.log_message(log_event)
