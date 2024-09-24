@@ -36,7 +36,7 @@ const icon = computed(() => {
 
 <template>
   <button
-    class="flex flex-row items-center gap-1 border border-gray-300 px-1 py-0.5 font-mono text-[10px] font-semibold dark:border-zinc-500"
+    class="flex flex-row items-center gap-1 rounded border border-gray-300 px-1 py-0.5 font-mono text-[10px] font-semibold dark:border-zinc-500"
     :class="[
       active && 'bg-white hover:opacity-90 dark:bg-zinc-700',
       !active &&

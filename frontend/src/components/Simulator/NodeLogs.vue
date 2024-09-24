@@ -137,20 +137,19 @@ const resetFilters = () => {
           />
         </div>
 
-        <div class="flex flex-row">
+        <div class="flex flex-row gap-1">
           <LogFilterBtn
             v-for="scope in scopes"
             :key="scope"
             :active="selectedScopes.includes(scope)"
             :icon="scope"
             @click="toggleCategory(scope)"
-            class="first:rounded-l last:rounded-r"
           >
             {{ scope }}
           </LogFilterBtn>
         </div>
 
-        <div class="flex flex-row">
+        <div class="flex flex-row gap-1">
           <LogFilterBtn
             v-for="status in statuses"
             :key="status"
@@ -158,7 +157,6 @@ const resetFilters = () => {
             :icon="status"
             @click="toggleStatus(status)"
             :class="colorMap[status]"
-            class="first:rounded-l last:rounded-r"
           >
             {{ status }}
           </LogFilterBtn>
