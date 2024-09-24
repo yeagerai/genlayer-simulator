@@ -99,12 +99,14 @@ const isolateCategory = (category: string) => {
 
 const isAnyFilterActive = computed(() => {
   return (
+    search.value.length > 0 ||
     selectedScopes.value.length !== scopes.value.length ||
     selectedStatuses.value.length !== statuses.value.length
   );
 });
 
 const resetFilters = () => {
+  search.value = '';
   selectedScopes.value = scopes.value;
   selectedStatuses.value = statuses.value;
 };
