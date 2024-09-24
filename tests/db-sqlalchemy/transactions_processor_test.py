@@ -16,7 +16,7 @@ def test_transactions_processor(transactions_processor: TransactionsProcessor):
     transaction_type = 1
 
     actual_transaction_hash = transactions_processor.insert_transaction(
-        from_address, to_address, data, value, transaction_type
+        from_address, to_address, data, value, transaction_type, True
     )
 
     actual_transaction = transactions_processor.get_transaction_by_hash(
@@ -32,6 +32,7 @@ def test_transactions_processor(transactions_processor: TransactionsProcessor):
     assert actual_transaction["hash"] == actual_transaction_hash
     created_at = actual_transaction["created_at"]
     assert datetime.fromisoformat(created_at)
+    assert actual_transaction["leader_only"] is True
 
     new_status = TransactionStatus.ACCEPTED
     transactions_processor.update_transaction_status(
@@ -50,6 +51,7 @@ def test_transactions_processor(transactions_processor: TransactionsProcessor):
     assert math.isclose(actual_transaction["value"], value)
     assert actual_transaction["type"] == transaction_type
     assert actual_transaction["created_at"] == created_at
+    assert actual_transaction["leader_only"] is True
 
     consensus_data = {"result": "success"}
     transactions_processor.set_transaction_result(
