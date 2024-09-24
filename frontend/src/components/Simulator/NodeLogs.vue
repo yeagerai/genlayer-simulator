@@ -75,6 +75,17 @@ const filteredLogs = computed(() => {
   });
 });
 
+const isolateCategory = (category: string) => {
+  if (
+    selectedScopes.value.includes(category) &&
+    selectedScopes.value.length == 1
+  ) {
+    selectedScopes.value = scopes.value;
+  } else {
+    selectedScopes.value = [category];
+  }
+};
+
 const isAnyFilterActive = computed(() => {
   return (
     selectedScopes.value.length !== scopes.value.length ||
@@ -150,12 +161,15 @@ const resetFilters = () => {
         <div
           v-for="({ scope, type, message, data }, index) in filteredLogs"
           :key="index"
-          class="flex flex-row border-b border-gray-200 px-1 py-1 font-mono text-[10px] first-line:items-center dark:border-zinc-800"
+          class="flex flex-row border-b border-gray-200 px-1 py-1 font-mono text-[10px] first-line:items-center hover:bg-white dark:border-zinc-800 dark:hover:bg-zinc-800"
         >
-          <div class="flex flex-row gap-1">
-            <div class="rounded bg-gray-800 px-[3px] py-[1px]">
+          <div class="flex flex-row items-start gap-1">
+            <button
+              class="rounded border px-[3px] py-[1px] dark:border-zinc-700 dark:bg-zinc-800"
+              @click="isolateCategory(scope)"
+            >
               {{ scope }}
-            </div>
+            </button>
 
             <div :class="colorMap[type]">
               {{ message }}

@@ -247,7 +247,7 @@ class GenVM:
                         "write_contract_failed",
                         EventType.ERROR,
                         EventScope.GENVM,
-                        "Error running " + function_name + ": " + str(e),
+                        "Error executing method " + function_name + ": " + str(e),
                         {
                             "method_name": function_name,
                             "method_args": args,
@@ -279,7 +279,7 @@ class GenVM:
                     "write_contract",
                     EventType.INFO,
                     EventScope.GENVM,
-                    "Running " + function_name,
+                    "Execute method: " + function_name,
                     {
                         "method_name": function_name,
                         "method_args": args,
@@ -437,7 +437,7 @@ class GenVM:
                     "read_contract",
                     EventType.INFO,
                     EventScope.GENVM,
-                    "Calling " + method_name,
+                    "Call method: " + method_name,
                     {
                         "method_name": method_name,
                         "method_args": method_args,

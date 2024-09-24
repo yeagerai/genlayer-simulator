@@ -33,7 +33,7 @@ def generate_rpc_endpoint(
                     "endpoint_call",
                     EventType.INFO,
                     EventScope.RPC,
-                    "Calling endpoint: " + function.__name__,
+                    "Endpoint called: " + function.__name__,
                     {"endpoint_name": function.__name__, "args": args},
                 )
             )
