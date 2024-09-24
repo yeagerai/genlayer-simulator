@@ -165,7 +165,7 @@ const resetFilters = () => {
         >
           <div class="flex flex-row items-start gap-1">
             <button
-              class="rounded border px-[3px] py-[1px] dark:border-zinc-700 dark:bg-zinc-800"
+              class="rounded border bg-white px-[3px] py-[1px] dark:border-zinc-700 dark:bg-zinc-800"
               @click="isolateCategory(scope)"
             >
               {{ scope }}
