@@ -112,13 +112,17 @@ export const useContractsStore = defineStore('contractsStore', () => {
       (c) => c.contractId === contractId,
     );
     const newItem = { contractId, address, defaultState };
-    if (index === -1) deployedContracts.value.push(newItem);
-    else deployedContracts.value.splice(index, 1, newItem);
 
-    notify({
-      title: 'Contract deployed',
-      type: 'success',
-    });
+    if (index === -1) {
+      deployedContracts.value.push(newItem);
+
+      notify({
+        title: 'Contract deployed',
+        type: 'success',
+      });
+    } else {
+      deployedContracts.value.splice(index, 1, newItem);
+    }
   }
 
   function removeDeployedContract(contractId: string): void {
