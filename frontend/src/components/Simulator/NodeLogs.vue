@@ -4,21 +4,19 @@ import { useNodeStore, useUIStore } from '@/stores';
 import JsonViewer from '@/components/JsonViewer/json-viewer.vue';
 import GhostBtn from '../global/GhostBtn.vue';
 import EmptyListPlaceholder from './EmptyListPlaceholder.vue';
-import { Ban, SearchIcon } from 'lucide-vue-next';
+import { Ban, SearchIcon, X, XCircle } from 'lucide-vue-next';
 import LogFilterBtn from '@/components/Simulator/LogFilterBtn.vue';
 import TextInput from '../global/inputs/TextInput.vue';
-import { useEventBus } from '@vueuse/core';
 
 const nodeStore = useNodeStore();
 const uiStore = useUIStore();
 const scrollContainer = ref<HTMLDivElement>();
-const eventBus = useEventBus('globalEventBus');
 
 type ColorMapType = {
-  [key: string]: string; // Add index signature
+  [key: string]: string;
 };
+
 const colorMap: ComputedRef<ColorMapType> = computed(() => ({
-  // contractLog: uiStore.mode === 'light' ? 'text-black' : 'text-white',
   info: 'text-blue-400',
   error: 'text-red-400',
   warning: 'text-yellow-400',
@@ -33,8 +31,6 @@ watch(nodeStore.logs, () => {
     });
   });
 });
-
-const search = ref('');
 
 const scopes = ref(['RPC', 'GenVM', 'Consensus']);
 const statuses = ref(['info', 'success', 'error']);
@@ -61,7 +57,7 @@ const toggleStatus = (status: string) => {
 // TODO: make sure it's ordered correctly, otherwise sort by date
 const filteredLogs = computed(() => {
   return nodeStore.logs.filter((log) => {
-    const searchLower = search.value.toLowerCase();
+    const searchLower = nodeStore.searchFilter.toLowerCase();
     const searchMatch =
       log.message.toLowerCase().includes(searchLower) ||
       log.scope.toLowerCase().includes(searchLower) ||
@@ -90,14 +86,14 @@ const isolateCategory = (category: string) => {
 
 const isAnyFilterActive = computed(() => {
   return (
-    search.value.length > 0 ||
+    nodeStore.searchFilter.length > 0 ||
     selectedScopes.value.length !== scopes.value.length ||
     selectedStatuses.value.length !== statuses.value.length
   );
 });
 
 const resetFilters = () => {
-  search.value = '';
+  nodeStore.searchFilter = '';
   selectedScopes.value = scopes.value;
   selectedStatuses.value = statuses.value;
 };
@@ -124,10 +120,18 @@ const resetFilters = () => {
             id="searchLogs"
             name="searchLogs"
             type="text"
-            v-model="search"
+            v-model="nodeStore.searchFilter"
             placeholder="Filter by hash, method, etc."
-            class="rounded px-0 py-1 pl-5 text-xs"
+            class="rounded py-1 pl-5 pr-5 text-xs"
           />
+
+          <div
+            v-if="nodeStore.searchFilter.length > 0"
+            @click="nodeStore.searchFilter = ''"
+            class="absolute inset-y-0 right-0 flex cursor-pointer items-center p-1 opacity-50 hover:opacity-100"
+          >
+            <X class="h-3 w-3 text-gray-300" aria-hidden="true" />
+          </div>
         </div>
 
         <div class="flex flex-row gap-1">

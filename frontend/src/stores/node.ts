@@ -15,11 +15,11 @@ export const useNodeStore = defineStore('nodeStore', () => {
   const rpcClient = useRpcClient();
   const webSocketClient = useWebSocketClient();
   const logs = ref<NodeLog[]>([]);
-  // const listenWebsocket = ref<boolean>(true);
   const contractsStore = useContractsStore();
   const nodeProviders = ref<Record<string, string[]>>({});
   const validators = ref<ValidatorModel[]>([]);
   const isLoadingValidatorData = ref<boolean>(true);
+  const searchFilter = ref<string>('');
 
   if (!webSocketClient.connected) webSocketClient.connect();
 
@@ -184,11 +184,11 @@ export const useNodeStore = defineStore('nodeStore', () => {
 
   return {
     logs,
-    // listenWebsocket,
     validators,
     nodeProviders,
     contractsToDelete,
     isLoadingValidatorData,
+    searchFilter,
 
     getValidatorsData,
     createNewValidator,
