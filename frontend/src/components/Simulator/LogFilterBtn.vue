@@ -1,21 +1,49 @@
 <script setup lang="ts">
-// import { Ghost } from 'lucide-vue-next';
+import { computed } from 'vue';
+import {
+  CircleX,
+  CheckCircle,
+  Info,
+  ArrowDownUp,
+  HardDrive,
+  Vote,
+} from 'lucide-vue-next';
 
-// import { useNodeStore } from '@/stores';
-
-// const nodeStore = useNodeStore();
-// import { Filter } from 'lucide-vue-next';
-
-defineProps<{
+const props = defineProps<{
   active: boolean;
+  icon: string;
 }>();
+
+const icon = computed(() => {
+  switch (props.icon) {
+    case 'RPC':
+      return ArrowDownUp;
+    case 'GenVM':
+      return HardDrive;
+    case 'Consensus':
+      return Vote;
+    case 'error':
+      return CircleX;
+    case 'info':
+      return Info;
+    case 'success':
+      return CheckCircle;
+    default:
+      return null;
+  }
+});
 </script>
 
 <template>
-  <GhostBtn
-    class="border px-1 py-0.5 font-mono text-[10px] font-normal"
-    :class="[active && 'border-white', !active && 'border-transparent']"
+  <button
+    class="flex flex-row items-center gap-1 border border-gray-300 px-1 py-0.5 font-mono text-[10px] font-semibold dark:border-zinc-500"
+    :class="[
+      active && 'bg-white hover:opacity-90 dark:bg-zinc-700',
+      !active &&
+        '!text-gray-400 opacity-40 hover:opacity-60 dark:border-zinc-700 dark:bg-zinc-800',
+    ]"
   >
+    <component :is="icon" :size="13" />
     <slot />
-  </GhostBtn>
+  </button>
 </template>

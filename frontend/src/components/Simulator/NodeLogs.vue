@@ -4,13 +4,24 @@ import { useNodeStore, useUIStore } from '@/stores';
 import JsonViewer from '@/components/JsonViewer/json-viewer.vue';
 import GhostBtn from '../global/GhostBtn.vue';
 import EmptyListPlaceholder from './EmptyListPlaceholder.vue';
-import { Ban } from 'lucide-vue-next';
+import {
+  Ban,
+  SearchIcon,
+  CircleX,
+  CheckCircle,
+  Info,
+  ArrowDownUp,
+  HardDrive,
+  Brain,
+} from 'lucide-vue-next';
 import LogFilterBtn from '@/components/Simulator/LogFilterBtn.vue';
 import TextInput from '../global/inputs/TextInput.vue';
+import { useEventBus } from '@vueuse/core';
 
 const nodeStore = useNodeStore();
 const uiStore = useUIStore();
 const scrollContainer = ref<HTMLDivElement>();
+const eventBus = useEventBus('globalEventBus');
 
 type ColorMapType = {
   [key: string]: string; // Add index signature
@@ -35,10 +46,10 @@ watch(nodeStore.logs, () => {
 const search = ref('');
 
 const scopes = ref(['RPC', 'GenVM', 'Consensus']);
-const statuses = ref(['info', 'error', 'success']);
+const statuses = ref(['info', 'success', 'error']);
 
 const selectedScopes = ref(scopes.value);
-const selectedStatuses = ref(['info', 'error', 'success']);
+const selectedStatuses = ref(['info', 'success', 'error']);
 
 const toggleCategory = (category: string) => {
   if (selectedScopes.value.includes(category)) {
@@ -102,38 +113,52 @@ const resetFilters = () => {
 <template>
   <div class="flex h-full w-full flex-col">
     <div
-      class="flex flex-row items-center justify-between gap-1 border-b bg-white p-1 pl-2 dark:border-b-zinc-700 dark:bg-zinc-800"
+      class="flex flex-row items-center gap-1 border-b bg-white px-2 py-1 dark:border-b-zinc-700 dark:bg-zinc-800"
     >
-      Logs
+      <span class="text-sm">Logs</span>
 
-      <TextInput
-        id="searchLogs"
-        name="searchLogs"
-        type="text"
-        v-model="search"
-        placeholder="Search logs"
-      />
+      <div class="flex grow flex-row items-center gap-2">
+        <div class="grow"></div>
 
-      <div class="flex flex-row items-center gap-1">
-        <div class="flex flex-row items-center gap-1">
-          <span class="font-mono text-xs opacity-50">Category</span>
-          <LogFilterBtn
-            v-for="category in scopes"
-            :key="category"
-            :active="selectedScopes.includes(category)"
-            @click="toggleCategory(category)"
+        <div class="relative flex max-w-[300px] grow">
+          <div
+            class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-1"
           >
-            {{ category }}
+            <SearchIcon class="h-3 w-3 text-gray-400" aria-hidden="true" />
+          </div>
+
+          <TextInput
+            id="searchLogs"
+            name="searchLogs"
+            type="text"
+            v-model="search"
+            placeholder="Filter by hash, etc."
+            class="rounded px-0 py-1 pl-6 text-xs"
+          />
+        </div>
+
+        <div class="flex flex-row">
+          <LogFilterBtn
+            v-for="scope in scopes"
+            :key="scope"
+            :active="selectedScopes.includes(scope)"
+            :icon="scope"
+            @click="toggleCategory(scope)"
+            class="first:rounded-l last:rounded-r"
+          >
+            {{ scope }}
           </LogFilterBtn>
         </div>
 
-        <div class="flex flex-row items-center gap-1">
-          <span class="font-mono text-xs opacity-50">Status</span>
+        <div class="flex flex-row">
           <LogFilterBtn
             v-for="status in statuses"
             :key="status"
             :active="selectedStatuses.includes(status)"
+            :icon="status"
             @click="toggleStatus(status)"
+            :class="colorMap[status]"
+            class="first:rounded-l last:rounded-r"
           >
             {{ status }}
           </LogFilterBtn>
@@ -141,7 +166,7 @@ const resetFilters = () => {
 
         <GhostBtn
           @click="nodeStore.clearLogs"
-          v-tooltip="{ content: 'Clear Logs', placement: 'left' }"
+          v-tooltip="{ content: 'Clear Logs', placement: 'top' }"
           class="opacity-50"
         >
           <Ban :size="14" />
