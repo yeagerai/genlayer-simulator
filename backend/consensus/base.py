@@ -177,6 +177,9 @@ class ConsensusAlgorithm:
 
             [leader, *remaining_validators] = validators
 
+            if transaction.leader_only:
+                remaining_validators = []
+
             num_validators = len(remaining_validators) + 1
 
             contract_snapshot = contract_snapshot_factory(transaction.to_address)
