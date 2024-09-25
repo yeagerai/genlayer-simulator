@@ -126,7 +126,13 @@ class GenVM:
         stdout_buffer = io.StringIO()
 
         with redirect_stdout(stdout_buffer), safe_globals(
-            {"contract_runner": self.contract_runner}
+            {
+                "contract_runner": self.contract_runner,
+                "Contract": partial(
+                    ExternalContract,
+                    self.contract_runner.contract_snapshot_factory,
+                ),
+            }
         ):
             local_namespace = {}
             exec(code_to_deploy, globals(), local_namespace)
