@@ -75,7 +75,7 @@ def get_providers_and_models(llm_provider_registry: LLMProviderRegistry) -> list
     return llm_provider_registry.get_all_dict()
 
 
-def add_provider(llm_provider_registry: LLMProviderRegistry, params: dict) -> dict:
+def add_provider(llm_provider_registry: LLMProviderRegistry, params: dict) -> int:
     provider = LLMProvider(
         provider=params["provider"],
         model=params["model"],
@@ -90,7 +90,7 @@ def add_provider(llm_provider_registry: LLMProviderRegistry, params: dict) -> di
 
 def update_provider(
     llm_provider_registry: LLMProviderRegistry, id: int, params: dict
-) -> dict:
+) -> None:
     provider = LLMProvider(
         provider=params["provider"],
         model=params["model"],
@@ -103,7 +103,7 @@ def update_provider(
     llm_provider_registry.update(id, provider)
 
 
-def delete_provider(llm_provider_registry: LLMProviderRegistry, id: int) -> dict:
+def delete_provider(llm_provider_registry: LLMProviderRegistry, id: int) -> None:
     llm_provider_registry.delete(id)
 
 
@@ -146,14 +146,12 @@ def create_random_validator(
     validators_registry: ValidatorsRegistry,
     accounts_manager: AccountsManager,
     llm_provider_registry: LLMProviderRegistry,
-    config: GlobalConfiguration,
     stake: int,
 ) -> dict:
     return create_random_validators(
         validators_registry,
         accounts_manager,
         llm_provider_registry,
-        config,
         1,
         stake,
         stake,
@@ -169,7 +167,7 @@ def create_random_validators(
     max_stake: int,
     limit_providers: list[str] = None,
     limit_models: list[str] = None,
-) -> dict:  # TODO: should return list
+) -> list[dict]:
     limit_providers = limit_providers or []
     limit_models = limit_models or []
 
@@ -523,7 +521,6 @@ def register_all_rpc_endpoints(
             validators_registry,
             accounts_manager,
             llm_provider_registry,
-            config,
         ),
         method_name="sim_createRandomValidator",
     )
