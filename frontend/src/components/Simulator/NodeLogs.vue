@@ -17,10 +17,10 @@ type ColorMapType = {
 };
 
 const colorMap: ComputedRef<ColorMapType> = computed(() => ({
-  info: 'text-blue-500',
-  error: 'text-red-500',
+  info: 'text-blue-200',
+  error: 'text-red-400',
   warning: 'text-yellow-500',
-  success: 'text-green-500',
+  success: 'text-green-400',
 }));
 
 watch(nodeStore.logs, () => {
@@ -54,7 +54,6 @@ const toggleStatus = (status: string) => {
   }
 };
 
-// TODO: make sure it's ordered correctly, otherwise sort by date
 const filteredLogs = computed(() => {
   return nodeStore.logs.filter((log) => {
     const categoryMatch =
