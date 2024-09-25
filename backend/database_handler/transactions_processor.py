@@ -175,7 +175,7 @@ class TransactionsProcessor:
                     "transaction_status_updated",
                     EventType.INFO,
                     EventScope.CONSENSUS,
-                    f"{str(new_status.value)} tx {str(transaction_hash)}",
+                    f"{str(new_status.value)} {str(transaction_hash)}",
                     {
                         "hash": str(transaction_hash),
                         "new_status": str(new_status.value),

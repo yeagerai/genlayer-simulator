@@ -23,3 +23,4 @@ sentence-transformers==3.1.1
 Flask-SQLAlchemy==3.1.1
 jsf==0.11.2
 jsonschema==4.23.0
+loguru==0.7.2
