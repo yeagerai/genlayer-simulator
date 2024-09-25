@@ -157,8 +157,8 @@ export function useContractQueries() {
       const encodedData = wallet.encodeTransactionData(data);
 
       const result = await rpcClient.getContractState({
-        contractAddress: address.value || '',
-        userAccount: accountsStore.currentUserAddress,
+        to: address.value || '',
+        from: accountsStore.currentUserAddress,
         data: encodedData,
       });
 

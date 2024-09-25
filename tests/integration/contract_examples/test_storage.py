@@ -57,7 +57,7 @@ def test_storage(setup_validators):
     )
 
     assert has_success_status(transaction_response_call_1)
-
+    print("transaction_response_call_1", transaction_response_call_1)
     # Assert response format
     assert_dict_struct(transaction_response_call_1, call_contract_function_response)
 

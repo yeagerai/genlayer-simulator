@@ -30,13 +30,13 @@ export class JsonRpcService implements IJsonRpcService {
   }
 
   async getContractState({
-    contractAddress,
-    userAccount,
+    to,
+    from,
     data,
   }: GetContractStateRequest): Promise<GetContractStateResult> {
     return this.callRpcMethod<GetContractStateResult>(
       'eth_call',
-      [contractAddress, userAccount, data],
+      [{ to, from, data }],
       'Error getting contract state',
     );
   }

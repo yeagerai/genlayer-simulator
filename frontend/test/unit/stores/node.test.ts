@@ -93,14 +93,8 @@ describe('useNodeStore', () => {
   });
 
   it('should fetch validators data successfully', async () => {
-    mockRpcClient.getValidators.mockResolvedValue({
-      status: 'success',
-      data: [],
-    });
-    mockRpcClient.getProvidersAndModels.mockResolvedValue({
-      status: 'success',
-      data: {},
-    });
+    mockRpcClient.getValidators.mockResolvedValue([]);
+    mockRpcClient.getProvidersAndModels.mockResolvedValue([]);
 
     await nodeStore.getValidatorsData();
 

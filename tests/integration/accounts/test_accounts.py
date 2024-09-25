@@ -23,7 +23,7 @@ def test_accounts_funding():
     # Test fund_account
     fund_amount = 1000
     fund_account_result = post_request_localhost(
-        payload("fund_account", new_account_address, fund_amount)
+        payload("sim_fundAccount", new_account_address, fund_amount)
     ).json()
     assert has_success_status(fund_account_result)
     wait_for_transaction(fund_account_result["result"])
@@ -38,7 +38,7 @@ def test_accounts_funding():
     # Test fund_account with invalid address
     invalid_address = "0xinvalid_address"
     fund_invalid_account_result = post_request_localhost(
-        payload("fund_account", invalid_address, fund_amount)
+        payload("sim_fundAccount", invalid_address, fund_amount)
     ).json()
     assert has_error_status(fund_invalid_account_result)
     print("fund_invalid_account_result", fund_invalid_account_result)
@@ -69,7 +69,7 @@ def test_accounts_transfers():
 
     fund_amount = 1000
     fund_account_result = post_request_localhost(
-        payload("fund_account", account_1_address, fund_amount)
+        payload("sim_fundAccount", account_1_address, fund_amount)
     ).json()
     wait_for_transaction(fund_account_result["result"])
 
@@ -101,7 +101,7 @@ def test_accounts_burn():
 
     fund_amount = 1000
     fund_account_result = post_request_localhost(
-        payload("fund_account", account_1_address, fund_amount)
+        payload("sim_fundAccount", account_1_address, fund_amount)
     ).json()
     wait_for_transaction(fund_account_result["result"])
 

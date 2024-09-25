@@ -11,10 +11,10 @@ def test_llm_providers():
         "plugin_config": {"api_key_env_var": "OPENAIKEY", "api_url": None},
     }
     # Create a new provider
-    response = post_request_localhost(payload("add_provider", provider)).json()
+    response = post_request_localhost(payload("sim_addProvider", provider)).json()
     assert has_success_status(response)
 
-    provider_id = response["result"]["data"]
+    provider_id = response["result"]
 
     updated_provider = {
         "provider": "openai",
@@ -25,12 +25,12 @@ def test_llm_providers():
     }
     # Uodate it
     response = post_request_localhost(
-        payload("update_provider", provider_id, updated_provider)
+        payload("sim_updateProvider", provider_id, updated_provider)
     ).json()
     assert has_success_status(response)
 
     # Delete it
-    response = post_request_localhost(payload("delete_provider", provider_id)).json()
+    response = post_request_localhost(payload("sim_deleteProvider", provider_id)).json()
     assert has_success_status(response)
 
 
@@ -47,32 +47,32 @@ def test_llm_providers_behavior():
 
     """
     reset_result = post_request_localhost(
-        payload("reset_defaults_llm_providers")
+        payload("sim_resetDefaultsLlmProviders")
     ).json()
     assert has_success_status(reset_result)
 
-    response = post_request_localhost(payload("get_providers_and_models")).json()
+    response = post_request_localhost(payload("sim_getProvidersAndModels")).json()
     assert has_success_status(response)
 
-    default_providers = response["result"]["data"]
+    default_providers = response["result"]
     first_default_provider: dict = default_providers[0]
     del first_default_provider["id"]
     last_provider_id = default_providers[-1]["id"]
 
     # Create a new provider
     response = post_request_localhost(
-        payload("add_provider", first_default_provider)
+        payload("sim_addProvider", first_default_provider)
     ).json()
     assert has_success_status(response)
 
-    provider_id = response["result"]["data"]
+    provider_id = response["result"]
 
     # Uodate it
     response = post_request_localhost(
-        payload("update_provider", last_provider_id, first_default_provider)
+        payload("sim_updateProvider", last_provider_id, first_default_provider)
     ).json()
     assert has_success_status(response)
 
     # Delete it
-    response = post_request_localhost(payload("delete_provider", provider_id)).json()
+    response = post_request_localhost(payload("sim_deleteProvider", provider_id)).json()
     assert has_success_status(response)

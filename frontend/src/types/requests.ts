@@ -4,8 +4,8 @@ export interface JsonRPCRequest {
 }
 
 export interface GetContractStateRequest {
-  contractAddress: string;
-  userAccount: string;
+  to: string;
+  from: string;
   data: string;
 }
 
