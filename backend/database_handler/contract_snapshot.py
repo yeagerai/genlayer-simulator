@@ -25,11 +25,16 @@ class ContractSnapshot:
     def _load_contract_account(self) -> CurrentState:
         """Load and return the current state of the contract from the database."""
 
-        return (
+        result = (
             self.session.query(CurrentState)
             .filter(CurrentState.id == self.contract_address)
-            .one()
+            .one_or_none()
         )
+
+        if result is None:
+            raise Exception(f"Contract {self.contract_address} not found")
+
+        return result
 
     def register_contract(self, contract: dict):
         """Register a new contract in the database."""

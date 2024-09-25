@@ -1,5 +1,6 @@
 # backend/node/genvm/base.py
 
+from functools import partial
 import inspect
 import re
 import pickle
@@ -215,7 +216,13 @@ class GenVM:
         stdout_buffer = io.StringIO()
 
         with redirect_stdout(stdout_buffer), safe_globals(
-            {"contract_runner": self.contract_runner}
+            {
+                "contract_runner": self.contract_runner,
+                "get_external_contract": partial(
+                    get_external_contract_inner,
+                    self.contract_runner.contract_snapshot_factory,
+                ),
+            }
         ):
             local_namespace = {}
             # Execute the code to ensure all classes are defined in the local_namespace
@@ -385,3 +392,32 @@ class GenVM:
             method_to_call = getattr(contract_state, method_name)
 
             return method_to_call(*method_args)
+
+
+class Contract:
+    def __init__(
+        self, contract_snapshot_factory: Callable[[str], ContractSnapshot], address: str
+    ):
+        self.address = address
+
+        self.contract_snapshot = contract_snapshot_factory(address)
+
+    def __getattr__(self, name):
+        def method(*args, **kwargs):
+            if not re.match("get_", name):
+                raise Exception("Method name must start with 'get_'")
+
+            return GenVM.get_contract_data(
+                self.contract_snapshot.contract_code,
+                self.contract_snapshot.encoded_state,
+                name,
+                args,
+            )
+
+        return method
+
+
+def get_external_contract_inner(
+    contract_snapshot_factory, address: str
+):  # TODO: remove this intermediate
+    return Contract(contract_snapshot_factory, address)

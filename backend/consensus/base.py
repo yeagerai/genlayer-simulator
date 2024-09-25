@@ -29,12 +29,6 @@ from backend.node.base import Node
 from backend.node.genvm.types import ExecutionMode, Receipt, Vote
 from backend.protocol_rpc.message_handler.base import MessageHandler
 
-from sqlalchemy.orm import Session
-
-
-def get_contract_snapshot(address: str, session: Session) -> ContractSnapshot:
-    return ContractSnapshot(address, session)
-
 
 def node_factory(
     validator: dict,
