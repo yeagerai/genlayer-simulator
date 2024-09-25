@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 
 # TODO: should ContractSnapshot be a dataclass with just the contract data? Snapshots shouldn't be allowed to be modified, so it doesn't make sense to modify the database
+# TODO: once we have it in the state, we should only allow states in ACCEPTED or FINALIZED status.
 class ContractSnapshot:
     """
     Warning: if you initialize this class with a contract_address:

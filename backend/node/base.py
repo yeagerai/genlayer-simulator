@@ -17,9 +17,7 @@ class Node:
         contract_snapshot: ContractSnapshot,
         validator_mode: ExecutionMode,
         validator: Validator,
-        contract_snapshot_factory: Callable[
-            [str], ContractSnapshot
-        ],  # TODO: should we limit to only contracts in ACCEPTED or FINALIZED?
+        contract_snapshot_factory: Callable[[str], ContractSnapshot],
         leader_receipt: Optional[Receipt] = None,
         msg_handler: MessageHandler = None,
     ):
@@ -27,6 +25,7 @@ class Node:
         self.address = validator.address
         self.leader_receipt = leader_receipt
         self.msg_handler = msg_handler
+        self.contract_snapshot_factory = contract_snapshot_factory
         self.genvm = GenVM(
             contract_snapshot,
             self.validator_mode,
@@ -93,7 +92,12 @@ class Node:
         output_buffer = io.StringIO()
 
         result = GenVM.get_contract_data(
-            code, state, method_name, method_args, output_buffer
+            code,
+            state,
+            method_name,
+            method_args,
+            self.contract_snapshot_factory,
+            output_buffer,
         )
 
         if self.genvm.contract_runner.mode == ExecutionMode.LEADER:

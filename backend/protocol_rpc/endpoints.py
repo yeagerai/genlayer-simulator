@@ -4,8 +4,10 @@ import json
 from functools import partial
 from flask_jsonrpc import JSONRPC
 from sqlalchemy import Table
+from sqlalchemy.orm import Session
 
-from backend.database_handler.db_client import DBClient
+
+from backend.database_handler.contract_snapshot import ContractSnapshot
 from backend.database_handler.llm_providers import LLMProviderRegistry
 from backend.database_handler.models import Base
 from backend.domain.types import LLMProvider, Validator
@@ -43,14 +45,12 @@ def ping() -> str:
 
 
 ####### SIMULATOR ENDPOINTS #######
-def clear_db_tables(db_client: DBClient, tables: list) -> None:
-    with db_client.get_session() as session:
-        for table_name in tables:
-            table = Table(
-                table_name, Base.metadata, autoload=True, autoload_with=session.bind
-            )
-            session.execute(table.delete())
-        session.commit()
+def clear_db_tables(session: Session, tables: list) -> None:
+    for table_name in tables:
+        table = Table(
+            table_name, Base.metadata, autoload=True, autoload_with=session.bind
+        )
+        session.execute(table.delete())
 
 
 def fund_account(
@@ -349,6 +349,7 @@ def get_transaction_by_hash(
 
 
 def call(
+    session: Session,
     accounts_manager: AccountsManager,
     msg_handler: MessageHandler,
     params: dict,
@@ -383,7 +384,7 @@ def call(
         ),
         leader_receipt=None,
         msg_handler=msg_handler,
-        contract_snapshot_factory=None,  # TODO: we might need to create a valid node for reading other contracts
+        contract_snapshot_factory=partial(ContractSnapshot, session=session),
     )
 
     method_args = decoded_data.function_args
@@ -484,7 +485,7 @@ def send_raw_transaction(
 def register_all_rpc_endpoints(
     jsonrpc: JSONRPC,
     msg_handler: MessageHandler,
-    genlayer_db_client: DBClient,
+    request_session: Session,
     accounts_manager: AccountsManager,
     transactions_processor: TransactionsProcessor,
     validators_registry: ValidatorsRegistry,
@@ -494,7 +495,7 @@ def register_all_rpc_endpoints(
 
     register_rpc_endpoint(ping)
     register_rpc_endpoint(
-        partial(clear_db_tables, genlayer_db_client),
+        partial(clear_db_tables, request_session),
         method_name="sim_clearDbTables",
     )
     register_rpc_endpoint(
@@ -584,7 +585,7 @@ def register_all_rpc_endpoints(
         method_name="eth_getTransactionByHash",
     )
     register_rpc_endpoint(
-        partial(call, accounts_manager, msg_handler),
+        partial(call, request_session, accounts_manager, msg_handler),
         method_name="eth_call",
     )
     register_rpc_endpoint(

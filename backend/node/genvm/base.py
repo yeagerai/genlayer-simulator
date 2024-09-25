@@ -219,7 +219,7 @@ class GenVM:
             {
                 "contract_runner": self.contract_runner,
                 "Contract": partial(
-                    Contract,
+                    ExternalContract,
                     self.contract_runner.contract_snapshot_factory,
                 ),
             }
@@ -374,13 +374,21 @@ class GenVM:
         state: str,
         method_name: str,
         method_args: list,
+        contract_snapshot_factory: Callable[[str], ContractSnapshot],
         stdout_stderr_buffer=None,
     ) -> dict:
         decoded_pickled_object = base64.b64decode(state)
 
         with redirect_stdout(stdout_stderr_buffer), redirect_stderr(
             stdout_stderr_buffer
-        ), safe_globals():
+        ), safe_globals(
+            {
+                "Contract": partial(
+                    ExternalContract,
+                    contract_snapshot_factory,
+                )
+            }
+        ):
             local_namespace = {}
             # Execute the code to ensure all classes are defined in the namespace
             exec(code, globals(), local_namespace)
@@ -394,13 +402,14 @@ class GenVM:
             return method_to_call(*method_args)
 
 
-class Contract:
+class ExternalContract:
     def __init__(
         self, contract_snapshot_factory: Callable[[str], ContractSnapshot], address: str
     ):
         self.address = address
 
         self.contract_snapshot = contract_snapshot_factory(address)
+        self.contract_snapshot_factory = contract_snapshot_factory
 
     def __getattr__(self, name):
         def method(*args, **kwargs):
@@ -412,6 +421,7 @@ class Contract:
                 self.contract_snapshot.encoded_state,
                 name,
                 args,
+                self.contract_snapshot_factory,
             )
 
         return method
