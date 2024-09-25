@@ -1,0 +1,205 @@
+version: "1.0"
+services:
+  frontend:
+    image: spheronnetwork/genlayer-frontend:latest
+    expose:
+      - port: 8080
+        as: 8080
+        to:
+          - global: true
+
+  jsonrpc:
+    image: spheronnetwork/genlayer-jsonrpc:latest
+    expose:
+      - port: 4000
+        as: 4000
+        to:
+          - global: false
+          - service: frontend
+    env:
+      - DBHOST=postgres
+      - DBNAME=genlayer_state
+      - DBUSER=postgres
+      - DBPASSWORD=postgres
+      - DBPORT=5432
+      - TOTALVALIDATORS=10
+      - NUMVALIDATORS=4
+      - LOGCONFIG=dev
+      - FLASK_LOG_LEVEL=ERROR
+      - DISABLE_INFO_LOGS_ENDPOINTS=["get_transaction_by_hash","get_contract_schema_for_code","get_contract_schema"]
+      - RPCPROTOCOL=http
+      - RPCHOST=0.0.0.0
+      - RPCPORT=4000
+      - FLASK_SERVER_PORT=4000
+      - RPCDEBUGPORT=4678
+      - GENVMPROTOCOL=http
+      - GENVMHOST=genvm
+      - GENVMPORT=6000
+      - GENVMCONLOC=/tmp
+      - GENVMDEBUG=1
+      - GENVMDEBUGPORT=6678
+      - VSCODEDEBUG=false
+      - OLAMAPROTOCOL=http
+      - OLAMAHOST=ollama
+      - OLAMAPORT=11434
+      - WEBREQUESTPROTOCOL=http
+      - WEBREQUESTHOST=webrequest
+      - WEBREQUESTPORT=5000
+      - OPENAIKEY=<openaikey>
+      - HEURISTAIURL=https://llm-gateway.heurist.xyz
+      - HEURISTAIMODELSURL=https://raw.githubusercontent.com/heurist-network/heurist-models/main/models.json
+      - HEURISTAIAPIKEY=<add_your_heuristai_api_key_here>
+      - PYTHONUNBUFFERED=1
+
+  webrequest:
+    image: spheronnetwork/genlayer-webrequest:latest
+    expose:
+      - port: 5000
+        as: 5000
+        to:
+          - global: false
+          - service: jsonrpc
+    env:
+      - FLASK_SERVER_PORT=5000
+
+  ollama:
+    image: ollama/ollama:0.3.11
+    expose:
+      - port: 11434
+        as: 11434
+        to:
+          - global: false
+          - service: jsonrpc
+
+  postgres:
+    image: postgres:16-alpine
+    expose:
+      - port: 5432
+        as: 5432
+        to:
+          - global: false
+          - service: jsonrpc, database-migration
+    env:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=genlayer_state
+
+  database-migration:
+    image: spheronnetwork/genlayer-database-migration:latest
+    env:
+      - DB_URL=postgresql://postgres:postgres@postgres/genlayer_state
+    command:
+      - sh
+      - -c
+      - alembic upgrade head && tail -f /dev/null
+
+profiles:
+  name: imagegenai
+  duration: 1h
+  mode: provider
+  tier:
+    - community
+  compute:
+    frontend:
+      resources:
+        cpu:
+          units: 4
+        memory:
+          size: 8Gi
+        storage:
+          - size: 20Gi
+    jsonrpc:
+      resources:
+        cpu:
+          units: 4
+        memory:
+          size: 8Gi
+        storage:
+          - size: 20Gi
+    webrequest:
+      resources:
+        cpu:
+          units: 2
+        memory:
+          size: 4Gi
+        storage:
+          - size: 20Gi
+    ollama:
+      resources:
+        cpu:
+          units: 10
+        memory:
+          size: 40Gi
+        storage:
+          - size: 120Gi
+        gpu:
+          units: 1
+          attributes:
+            vendor:
+              nvidia:
+                - model: rtx3090
+    postgres:
+      resources:
+        cpu:
+          units: 2
+        memory:
+          size: 4Gi
+        storage:
+          - size: 20Gi
+    database-migration:
+      resources:
+        cpu:
+          units: 1
+        memory:
+          size: 2Gi
+        storage:
+          - size: 10Gi
+  placement:
+    westcoast:
+      attributes:
+        region: us-east
+      pricing:
+        frontend:
+          token: USDT
+          amount: 1
+        jsonrpc:
+          token: USDT
+          amount: 1
+        webrequest:
+          token: USDT
+          amount: 1
+        ollama:
+          token: USDT
+          amount: 5
+        postgres:
+          token: USDT
+          amount: 1
+        database-migration:
+          token: USDT
+          amount: 0.5
+
+deployment:
+  frontend:
+    westcoast:
+      profile: frontend
+      count: 1
+  jsonrpc:
+    westcoast:
+      profile: jsonrpc
+      count: 1
+  webrequest:
+    westcoast:
+      profile: webrequest
+      count: 1
+  ollama:
+    westcoast:
+      profile: ollama
+      count: 1
+  postgres:
+    westcoast:
+      profile: postgres
+      count: 1
+  database-migration:
+    westcoast:
+      profile: database-migration
+      count: 1
