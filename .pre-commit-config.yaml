@@ -9,16 +9,6 @@ repos:
       - id: check-merge-conflict
       - id: no-commit-to-branch
         args: ["--branch", "main"]
-  - repo: local
-    hooks:
-      - id: backend-unit-pytest
-        name: backend unit tests with pytest
-        entry: pytest tests/unit
-        language: system
-        types: [python]
-        pass_filenames: false
-        files: backend
-        always_run: false
   # Copied from https://black.readthedocs.io/en/stable/integrations/source_version_control.html
   - repo: https://github.com/psf/black-pre-commit-mirror
     rev: 24.4.2

@@ -15,6 +15,7 @@ const inputMap = useInputMap();
 const props = defineProps<{
   method: ContractMethod;
   methodType: 'read' | 'write';
+  leaderOnly: boolean;
 }>();
 
 const isExpanded = ref(false);
@@ -55,6 +56,7 @@ const handleCallWriteMethod = async () => {
   await callWriteMethod({
     method: props.method.name,
     params: Object.values(inputs.value),
+    leaderOnly: props.leaderOnly,
   });
 
   resetInputs();

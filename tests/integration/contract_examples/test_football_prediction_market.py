@@ -19,8 +19,6 @@ from tests.common.response import (
     has_success_status,
 )
 
-from tests.common.accounts import create_new_account
-
 
 def test_football_prediction_market(setup_validators, from_account):
     # Get contract schema

@@ -20,7 +20,7 @@ class TransactionsProcessor:
             "from_address": transaction_data.from_address,
             "to_address": transaction_data.to_address,
             "data": transaction_data.data,
-            "value": float(transaction_data.value),
+            "value": transaction_data.value,
             "type": transaction_data.type,
             "status": transaction_data.status.value,
             "consensus_data": transaction_data.consensus_data,
@@ -30,6 +30,7 @@ class TransactionsProcessor:
             "s": transaction_data.s,
             "v": transaction_data.v,
             "created_at": transaction_data.created_at.isoformat(),
+            "leader_only": transaction_data.leader_only,
         }
 
     @staticmethod
@@ -73,6 +74,7 @@ class TransactionsProcessor:
         data: dict,
         value: float,
         type: int,
+        leader_only: bool,
     ) -> int:
         nonce = (
             self.session.query(Transactions)
@@ -100,21 +102,19 @@ class TransactionsProcessor:
             r=None,
             s=None,
             v=None,
+            leader_only=leader_only,
         )
 
         self.session.add(new_transaction)
 
-        self.session.flush()  # SQLAlchemy will populate all the fields that are set by the database, like the id and created_at fields
+        self.session.flush()  # So that `created_at` gets set
 
-        # Insert transaction audit record into the transactions_audit table
         transaction_audit_record = TransactionsAudit(
             transaction_hash=new_transaction.hash,
             data=self._parse_transaction_data(new_transaction),
         )
 
         self.session.add(transaction_audit_record)
-
-        self.session.commit()
 
         return new_transaction.hash
 

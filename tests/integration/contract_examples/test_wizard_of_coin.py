@@ -19,8 +19,6 @@ from tests.common.response import (
     has_success_status,
 )
 
-from tests.common.accounts import create_new_account
-
 
 def test_wizard_of_coin(setup_validators, from_account):
     # Get contract schema

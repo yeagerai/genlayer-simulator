@@ -9,6 +9,7 @@ from backend.database_handler.transactions_processor import TransactionsProcesso
 def test_chain_snapshot(session: Session):
     pending_transaction_1 = Transactions(
         status=TransactionStatus.PENDING,
+        hash="0x123",
         from_address="0x123",
         to_address="0x456",
         hash="0x123",
@@ -22,10 +23,12 @@ def test_chain_snapshot(session: Session):
         r=None,
         s=None,
         v=None,
+        leader_only=False,
     )
 
     pending_transaction_2 = Transactions(
         status=TransactionStatus.PENDING,
+        hash="0x789",
         from_address="0x789",
         to_address="0xabc",
         hash="0x456",
@@ -39,10 +42,12 @@ def test_chain_snapshot(session: Session):
         r=None,
         s=None,
         v=None,
+        leader_only=False,
     )
 
     finalized_transaction = Transactions(
         status=TransactionStatus.FINALIZED,
+        hash="0xdef",
         from_address="0xdef",
         to_address="0x123",
         hash="0x789",
@@ -56,6 +61,7 @@ def test_chain_snapshot(session: Session):
         r=None,
         s=None,
         v=None,
+        leader_only=False,
     )
 
     session.add(pending_transaction_1)
