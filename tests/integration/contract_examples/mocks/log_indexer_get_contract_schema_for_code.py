@@ -46,7 +46,7 @@ log_indexer_contract_schema = {
             "class": "LogIndexer",
         },
         "exception": None,
-        "message": "Endpoint get_contract_schema_for_code successfully executed",
+        "message": "Success: get_contract_schema_for_code",
         "status": "success",
     },
 }

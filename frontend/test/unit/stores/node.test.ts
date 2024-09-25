@@ -31,17 +31,11 @@ const testValidator2: ValidatorModel = {
 };
 
 const testLog: NodeLog = {
-  date: new Date().toISOString(),
-  message: {
-    function: 'test_function',
-    trace_id: '123456',
-    response: {
-      status: 'success',
-      message: 'Test message',
-      data: {},
-    },
-  },
-  mock: false,
+  scope: 'TestScope',
+  name: 'test_event_name',
+  type: 'info',
+  message: 'Test message',
+  data: { test: true },
 };
 
 vi.mock('@/hooks', () => ({

@@ -1,10 +1,4 @@
-import type {
-  NodeLog,
-  NewValidatorDataModel,
-  ValidatorModel,
-  // RPCResponseEventData, // TODO: add this back
-  // TransactionStatusUpdateEventData, // TODO: add this back
-} from '@/types';
+import type { NodeLog, NewValidatorDataModel, ValidatorModel } from '@/types';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { useContractsStore } from './contracts';

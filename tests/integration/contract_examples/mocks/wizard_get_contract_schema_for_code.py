@@ -24,7 +24,7 @@ wizard_contract_schema = {
             "class": "WizardOfCoin",
         },
         "exception": None,
-        "message": "Endpoint get_contract_schema_for_code successfully executed",
+        "message": "Success: get_contract_schema_for_code",
         "status": "success",
     },
 }

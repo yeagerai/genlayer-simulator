@@ -24,7 +24,7 @@ storage_contract_schema = {
             "class": "Storage",
         },
         "exception": None,
-        "message": "Endpoint get_contract_schema_for_code successfully executed",
+        "message": "Success: get_contract_schema_for_code",
         "status": "success",
     },
 }

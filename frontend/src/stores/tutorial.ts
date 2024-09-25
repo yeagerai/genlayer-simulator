@@ -23,18 +23,6 @@ export const useTutorialStore = defineStore('tutorialStore', () => {
     });
   };
 
-  const addLog = async (message: any) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        nodeStore.logs.push({
-          date: new Date().toISOString(),
-          message,
-        });
-        resolve(0);
-      }, 1500);
-    });
-  };
-
   async function addAndOpenContract() {
     const contractFile = {
       id: mockContractId,
