@@ -276,6 +276,16 @@ class ConsensusAlgorithm:
             }
             contract_snapshot.register_contract(new_contract)
 
+            self.msg_handler.send_message(
+                LogEvent(
+                    "deployed_contract",
+                    EventType.SUCCESS,
+                    EventScope.GENVM,
+                    "Contract deployed",
+                    new_contract,
+                )
+            )
+
         # Update contract state if it is an existing contract
         else:
             contract_snapshot.update_contract_state(leader_receipt.contract_state)
