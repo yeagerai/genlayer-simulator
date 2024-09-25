@@ -32,6 +32,7 @@ def safe_globals(override_globals: dict[str] = None):
     try:
         yield
     finally:
+        globals().clear()
         globals().update(old_globals)
 
 
@@ -50,7 +51,7 @@ class ContractRunner:
         self.eq_outputs = {
             ExecutionMode.LEADER.value: {}
         }  # the eq principle outputs for the leader and validators
-        contract_snapshot_factory = contract_snapshot_factory
+        self.contract_snapshot_factory = contract_snapshot_factory
 
 
 class GenVM:
