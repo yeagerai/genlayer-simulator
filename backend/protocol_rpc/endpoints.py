@@ -301,7 +301,7 @@ def get_contract_schema(
         ),
         leader_receipt=None,
         msg_handler=msg_handler,
-        contract_snapshot_factory=None,  # TODO: we might need to create a valid node for reading other contracts
+        contract_snapshot_factory=None,
     )
     return node.get_contract_schema(contract_account["data"]["code"])
 
@@ -325,7 +325,7 @@ def get_contract_schema_for_code(
         ),
         leader_receipt=None,
         msg_handler=msg_handler,
-        contract_snapshot_factory=None,  # TODO: we might need to create a valid node for reading other contracts
+        contract_snapshot_factory=None,
     )
     return node.get_contract_schema(contract_code)
 
