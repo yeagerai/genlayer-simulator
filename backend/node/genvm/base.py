@@ -218,8 +218,8 @@ class GenVM:
         with redirect_stdout(stdout_buffer), safe_globals(
             {
                 "contract_runner": self.contract_runner,
-                "get_external_contract": partial(
-                    get_external_contract_inner,
+                "Contract": partial(
+                    Contract,
                     self.contract_runner.contract_snapshot_factory,
                 ),
             }
@@ -415,9 +415,3 @@ class Contract:
             )
 
         return method
-
-
-def get_external_contract_inner(
-    contract_snapshot_factory, address: str
-):  # TODO: remove this intermediate
-    return Contract(contract_snapshot_factory, address)
