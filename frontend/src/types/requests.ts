@@ -9,13 +9,6 @@ export interface GetContractStateRequest {
   data: string;
 }
 
-export interface DeployContractRequest {
-  userAccount: string;
-  className: string;
-  code: string;
-  constructorParams: string;
-}
-
 export interface GetContractSchemaRequest {
   code: string;
 }

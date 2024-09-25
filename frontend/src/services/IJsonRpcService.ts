@@ -1,7 +1,6 @@
 import type {
   GetContractStateRequest,
   GetContractStateResult,
-  DeployContractRequest,
   GetDeployedContractSchemaRequest,
   CreateValidatorRequest,
   UpdateValidatorRequest,
@@ -14,7 +13,6 @@ export interface IJsonRpcService {
     request: GetContractStateRequest,
   ): Promise<GetContractStateResult>;
   sendTransaction(singedTransaction: string): Promise<number>;
-  deployContract(request: DeployContractRequest): Promise<number>;
   getContractSchema(request: GetContractSchemaRequest): Promise<any>;
   getDeployedContractSchema(
     request: GetDeployedContractSchemaRequest,

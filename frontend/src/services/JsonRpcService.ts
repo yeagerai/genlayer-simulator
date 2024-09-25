@@ -3,7 +3,6 @@ import type { IJsonRpcService } from './IJsonRpcService';
 import type {
   GetContractStateRequest,
   GetContractStateResult,
-  DeployContractRequest,
   GetContractSchemaRequest,
   GetDeployedContractSchemaRequest,
   CreateValidatorRequest,
@@ -50,19 +49,6 @@ export class JsonRpcService implements IJsonRpcService {
     );
   }
 
-  async deployContract({
-    userAccount,
-    className,
-    code,
-    constructorParams,
-  }: DeployContractRequest): Promise<any> {
-    return this.callRpcMethod<any>(
-      'deploy_intelligent_contract',
-      [userAccount, className, code, constructorParams],
-      'Error deploying contract',
-    );
-  }
-
   async getContractSchema({ code }: GetContractSchemaRequest): Promise<any> {
     return this.callRpcMethod<any>(
       'gen_getContractSchemaForCode',
@@ -83,7 +69,7 @@ export class JsonRpcService implements IJsonRpcService {
 
   async getValidators(): Promise<any> {
     return this.callRpcMethod<any>(
-      'get_all_validators',
+      'sim_getAllValidators',
       [],
       'Error getting validators',
     );
@@ -91,7 +77,7 @@ export class JsonRpcService implements IJsonRpcService {
 
   async getProvidersAndModels(): Promise<any> {
     return this.callRpcMethod<any>(
-      'get_providers_and_models',
+      'sim_getProvidersAndModels',
       [],
       'Error getting providers and models',
     );
@@ -104,7 +90,7 @@ export class JsonRpcService implements IJsonRpcService {
     config,
   }: CreateValidatorRequest): Promise<any> {
     return this.callRpcMethod<any>(
-      'create_validator',
+      'sim_createValidator',
       [stake, provider, model, config],
       'Error creating validator',
     );
@@ -118,7 +104,7 @@ export class JsonRpcService implements IJsonRpcService {
     config,
   }: UpdateValidatorRequest): Promise<any> {
     return this.callRpcMethod<any>(
-      'update_validator',
+      'sim_updateValidator',
       [address, stake, provider, model, config],
       'Error updating validator',
     );
@@ -126,7 +112,7 @@ export class JsonRpcService implements IJsonRpcService {
 
   async deleteValidator({ address }: { address: string }): Promise<any> {
     return this.callRpcMethod<any>(
-      'delete_validator',
+      'sim_deleteValidator',
       [address],
       'Error deleting validator',
     );

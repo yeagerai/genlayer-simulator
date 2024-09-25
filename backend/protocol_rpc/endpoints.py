@@ -58,7 +58,7 @@ def fund_account(
     transactions_processor: TransactionsProcessor,
     account_address: str,
     amount: int,
-) -> int:
+) -> str:
     if not accounts_manager.is_valid_address(account_address):
         raise InvalidAddressError(account_address)
     transaction_hash = transactions_processor.insert_transaction(
@@ -71,7 +71,7 @@ def reset_defaults_llm_providers(llm_provider_registry: LLMProviderRegistry) -> 
     llm_provider_registry.reset_defaults()
 
 
-def get_providers_and_models(llm_provider_registry: LLMProviderRegistry) -> dict:
+def get_providers_and_models(llm_provider_registry: LLMProviderRegistry) -> list[dict]:
     return llm_provider_registry.get_all_dict()
 
 
@@ -281,14 +281,26 @@ def get_contract_schema(
         )
     contract_account = accounts_manager.get_account_or_fail(contract_address)
 
-    node = Node(
+    if not contract_account["data"] or not contract_account["data"]["code"]:
+        raise InvalidAddressError(
+            contract_address,
+            "Contract not deployed.",
+        )
+
+    node = Node(  # Mock node just to get the data from the GenVM
         contract_snapshot=None,
-        address="",
         validator_mode=ExecutionMode.LEADER,
-        stake=0,
-        provider="",
-        model="",
-        config=None,
+        validator=Validator(
+            address="",
+            stake=0,
+            llmprovider=LLMProvider(
+                provider="",
+                model="",
+                config={},
+                plugin="",
+                plugin_config={},
+            ),
+        ),
         leader_receipt=None,
         msg_handler=msg_handler,
     )
@@ -298,14 +310,20 @@ def get_contract_schema(
 def get_contract_schema_for_code(
     msg_handler: MessageHandler, contract_code: str
 ) -> dict:
-    node = Node(
+    node = Node(  # Mock node just to get the data from the GenVM
         contract_snapshot=None,
-        address="",
         validator_mode=ExecutionMode.LEADER,
-        stake=0,
-        provider="",
-        model="",
-        config=None,
+        validator=Validator(
+            address="",
+            stake=0,
+            llmprovider=LLMProvider(
+                provider="",
+                model="",
+                config={},
+                plugin="",
+                plugin_config={},
+            ),
+        ),
         leader_receipt=None,
         msg_handler=msg_handler,
     )
@@ -333,21 +351,20 @@ def get_transaction_by_hash(
 def call(
     accounts_manager: AccountsManager,
     msg_handler: MessageHandler,
-    to_address: str,
-    from_address: str = "",
-    input: str = "",
-    # Future parameters:
-    # gas: int = 0,
-    # gas_price: int = 0,
-    # value: int = 0,
+    params: dict,
+    block_tag: str = "latest",
 ) -> any:
+    to_address = params["to"]
+    from_address = params["from"]
+    data = params["data"]
+
     if not accounts_manager.is_valid_address(from_address):
         raise InvalidAddressError(from_address)
 
     if not accounts_manager.is_valid_address(to_address):
         raise InvalidAddressError(to_address)
 
-    decoded_data = decode_method_call_data(input)
+    decoded_data = decode_method_call_data(data)
 
     contract_account = accounts_manager.get_account_or_fail(to_address)
     node = Node(  # Mock node just to get the data from the GenVM
@@ -387,7 +404,7 @@ def send_raw_transaction(
     transactions_processor: TransactionsProcessor,
     accounts_manager: AccountsManager,
     signed_transaction: str,
-) -> int:
+) -> str:
     # Decode transaction
     decoded_transaction = decode_signed_transaction(signed_transaction)
     print("decoded_transaction", decoded_transaction)
@@ -470,27 +487,35 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint(ping)
     register_rpc_endpoint(
         partial(clear_db_tables, genlayer_db_client),
+        method_name="sim_clearDbTables",
     )
     register_rpc_endpoint(
         partial(fund_account, accounts_manager, transactions_processor),
+        method_name="sim_fundAccount",
     )
     register_rpc_endpoint(
         partial(get_providers_and_models, llm_provider_registry),
+        method_name="sim_getProvidersAndModels",
     )
     register_rpc_endpoint(
         partial(reset_defaults_llm_providers, llm_provider_registry),
+        method_name="sim_resetDefaultsLlmProviders",
     )
     register_rpc_endpoint(
         partial(add_provider, llm_provider_registry),
+        method_name="sim_addProvider",
     )
     register_rpc_endpoint(
         partial(update_provider, llm_provider_registry),
+        method_name="sim_updateProvider",
     )
     register_rpc_endpoint(
         partial(delete_provider, llm_provider_registry),
+        method_name="sim_deleteProvider",
     )
     register_rpc_endpoint(
         partial(create_validator, validators_registry, accounts_manager),
+        method_name="sim_createValidator",
     )
     register_rpc_endpoint(
         partial(
@@ -500,6 +525,7 @@ def register_all_rpc_endpoints(
             llm_provider_registry,
             config,
         ),
+        method_name="sim_createRandomValidator",
     )
     register_rpc_endpoint(
         partial(
@@ -508,21 +534,31 @@ def register_all_rpc_endpoints(
             accounts_manager,
             llm_provider_registry,
         ),
+        method_name="sim_createRandomValidators",
     )
     register_rpc_endpoint(
         partial(update_validator, validators_registry, accounts_manager),
+        method_name="sim_updateValidator",
     )
     register_rpc_endpoint(
         partial(delete_validator, validators_registry, accounts_manager),
+        method_name="sim_deleteValidator",
     )
     register_rpc_endpoint(
         partial(delete_all_validators, validators_registry),
+        method_name="sim_deleteAllValidators",
     )
     register_rpc_endpoint(
         partial(get_all_validators, validators_registry),
+        method_name="sim_getAllValidators",
     )
     register_rpc_endpoint(
         partial(get_validator, validators_registry),
+        method_name="sim_getValidator",
+    )
+    register_rpc_endpoint(
+        partial(count_validators, validators_registry),
+        method_name="sim_countValidators",
     )
     register_rpc_endpoint(
         partial(get_contract_schema, accounts_manager, msg_handler),
@@ -538,7 +574,7 @@ def register_all_rpc_endpoints(
     )
     register_rpc_endpoint(
         partial(get_transaction_by_hash, transactions_processor),
-        method_name="eth_getTransactionById",
+        method_name="eth_getTransactionByHash",
     )
     register_rpc_endpoint(
         partial(call, accounts_manager, msg_handler),
