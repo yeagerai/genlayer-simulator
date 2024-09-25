@@ -4,7 +4,7 @@ import { useNodeStore, useUIStore } from '@/stores';
 import JsonViewer from '@/components/JsonViewer/json-viewer.vue';
 import GhostBtn from '../global/GhostBtn.vue';
 import EmptyListPlaceholder from './EmptyListPlaceholder.vue';
-import { Ban, SearchIcon, X, XCircle } from 'lucide-vue-next';
+import { Ban, SearchIcon, X } from 'lucide-vue-next';
 import LogFilterBtn from '@/components/Simulator/LogFilterBtn.vue';
 import TextInput from '../global/inputs/TextInput.vue';
 

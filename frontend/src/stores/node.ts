@@ -23,9 +23,6 @@ export const useNodeStore = defineStore('nodeStore', () => {
 
   if (!webSocketClient.connected) webSocketClient.connect();
 
-  // TODO: Consider moving most of this to the backend and log everything there as well
-  // TODO: add category to logs
-
   const trackedEvents = [
     'endpoint_call',
     'endpoint_success',
@@ -39,9 +36,9 @@ export const useNodeStore = defineStore('nodeStore', () => {
     'deployed_contract',
     'contract_deployment_failed',
   ];
+
   trackedEvents.forEach((eventName) => {
     webSocketClient.on(eventName, (data: any) => {
-      console.log(eventName, data);
       addLog({
         scope: data.scope,
         name: data.name,

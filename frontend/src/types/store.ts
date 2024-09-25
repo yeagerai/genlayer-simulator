@@ -22,7 +22,7 @@ export interface NodeLog {
   name: string;
   type: 'error' | 'warning' | 'info' | 'success';
   message: string;
-  data: any;
+  data?: any;
   // message: {
   //   function: string;
   //   trace_id: string;

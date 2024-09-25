@@ -150,25 +150,21 @@ export const useTutorialStore = defineStore('tutorialStore', () => {
     contractsStore.addDeployedContract(mockDeployedContract);
 
     nodeStore.logs.push({
-      date: new Date().toISOString(),
-      message: {
-        function: 'deploy_intelligent_contract',
-        trace_id: 'dstukqao9',
-        response: { status: 'info', message: 'Starting...', data: {} },
-      },
+      scope: 'GenVM',
+      name: 'deploying_contract',
+      type: 'info',
+      message: 'Deploying contract',
     });
 
     nodeStore.logs.push({
-      date: new Date().toISOString(),
-      message: {
-        function: 'deploy_intelligent_contract',
-        trace_id: 'dstukqao9',
-        response: {
-          status: 'success',
-          message: '',
-          data: {
-            contract_id: '0x4Fb3673Ab7274ebBA6ff38EDB1ca5Bd0cd06C0FD',
-          },
+      scope: 'GenVM',
+      name: 'deployed_contract',
+      type: 'success',
+      message: 'Deployed contract',
+      data: {
+        id: mockDeployedContract.address,
+        data: {
+          state: mockDeployedContract.defaultState,
         },
       },
     });
