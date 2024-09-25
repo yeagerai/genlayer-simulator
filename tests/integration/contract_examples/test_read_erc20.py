@@ -13,9 +13,10 @@ from tests.common.response import has_success_status
 def test_read_erc20(setup_validators, from_account):
     """
     Tests that recursive contract calls work by:
-    - creating an LLM ERC20 contract
-    - creating a read_erc20 contract that reads the LLM ERC20 contract
-    - creating a read_erc20 contract that reads the previous read_erc20 contract
+    1. creating an LLM ERC20 contract
+    2. creating a read_erc20 contract that reads the LLM ERC20 contract
+    3. creating a read_erc20 contract that reads the previous read_erc20 contract
+    Repeats step 3 a few times.
 
     It's like a linked list, but with contracts.
     """
@@ -43,7 +44,9 @@ def test_read_erc20(setup_validators, from_account):
         "contract_address"
     ]
 
-    for _ in range(2):
+    for i in range(5):
+        print(f"Deploying contract, iteration {i}")
+
         # deploy contract
         call_method_response_deploy, transaction_response_deploy = (
             deploy_intelligent_contract(
