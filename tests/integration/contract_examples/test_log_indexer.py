@@ -18,7 +18,6 @@ from tests.common.response import (
     has_success_status,
 )
 
-from tests.common.accounts import create_new_account
 from tests.common.request import call_contract_method
 
 TOKEN_TOTAL_SUPPLY = 1000
