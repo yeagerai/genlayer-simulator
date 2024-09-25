@@ -4,8 +4,6 @@ import os
 from tests.common.request import (
     call_contract_method,
     deploy_intelligent_contract,
-    payload,
-    post_request_localhost,
 )
 from tests.common.response import has_success_status
 
