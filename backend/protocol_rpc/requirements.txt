@@ -1,9 +1,9 @@
 Flask-JSONRPC==3.0.1
 Flask[async]==3.0.3
 flask-socketio==5.3.7
-Flask-Cors==4.0.0
+Flask-Cors==5.0.0
 psycopg2-binary>=2.9.9
-requests==2.31.0
+requests==2.32.2
 python-dotenv==1.0.1
 asgiref==3.8.1
 pydantic==2.9.2
@@ -17,7 +17,7 @@ anthropic==0.34.2
 SQLAlchemy[asyncio]==2.0.35
 alembic==1.13.2
 eth-account==0.13.3
-eth-utils==4.1.1
+eth-utils==5.0.0
 sentence-transformers==3.1.0
 Flask-SQLAlchemy==3.1.1
 jsf==0.11.2
