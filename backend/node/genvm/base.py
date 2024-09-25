@@ -146,20 +146,20 @@ class GenVM:
                 )
 
             except Exception as e:
-                print("Error deploying contract", e)
                 trace = traceback.format_exc()
-                print(trace)
                 error = e
+                print("Error deploying contract", error)
+                print(trace)
                 execution_result = ExecutionResultStatus.ERROR
                 self.msg_handler.send_message(
                     LogEvent(
                         "contract_deployment_failed",
                         EventType.ERROR,
                         EventScope.GENVM,
-                        "Error deploying contract: " + str(e),
+                        "Error deploying contract: " + str(error),
                         {
-                            "error": str(e),
-                            "traceback": f"\n{traceback.format_exc()}",
+                            "error": str(error),
+                            "traceback": f"\n{trace}",
                         },
                     )
                 )
@@ -168,7 +168,6 @@ class GenVM:
             delattr(module, class_name)
 
         if self.contract_runner.mode == ExecutionMode.LEADER:
-            # Retrieve the captured stdout and stderr
             captured_stdout = stdout_buffer.getvalue()
             self.msg_handler.send_message(
                 LogEvent(
@@ -236,23 +235,22 @@ class GenVM:
                 else:
                     function_to_run(*args)
             except Exception as e:
-                # TODO: get rid of this ?
-                print("\nError running contract", e)
-                print(f"\n{traceback.format_exc()}")
+                trace = traceback.format_exc()
                 error = e
+                print("Error executing method", error)
+                print(trace)
                 execution_result = ExecutionResultStatus.ERROR
-
                 self.msg_handler.send_message(
                     LogEvent(
                         "write_contract_failed",
                         EventType.ERROR,
                         EventScope.GENVM,
-                        "Error executing method " + function_name + ": " + str(e),
+                        "Error executing method " + function_name + ": " + str(error),
                         {
                             "method_name": function_name,
                             "method_args": args,
-                            "error": str(e),
-                            "traceback": f"\n{traceback.format_exc()}",
+                            "error": str(error),
+                            "traceback": f"\n{trace}",
                         },
                     )
                 )
@@ -262,18 +260,7 @@ class GenVM:
             class_name = self._get_contract_class_name(contract_code)
 
         if self.contract_runner.mode == ExecutionMode.LEADER:
-            # TODO: clean this up
-            # Retrieve the captured stdout and stderr
             captured_stdout = stdout_buffer.getvalue()
-            if captured_stdout:
-                pass
-                # socket_message = {
-                #     "function": "intelligent_contract_execution",
-                #     # function_name TODO: ????
-                #     "response": {"status": "info", "message": captured_stdout},
-                # }
-                # self.msg_handler.send_message("genvm_run_contract", captured_stdout)
-                # print("Writing to contract:", captured_stdout)
             self.msg_handler.send_message(
                 LogEvent(
                     "write_contract",
@@ -420,18 +407,8 @@ class GenVM:
             for name in namespace.keys():
                 del globals()[name]
 
-            ## TODO: try for call methods too for better error handling
-
         if self.contract_runner.mode == ExecutionMode.LEADER:
-            # TODO: for some reason, the captured_stdout is empty - is that normal? Maybe only when error?
-            # Retrieve the captured stdout and stderr
             captured_stdout = stdout_buffer.getvalue()
-            # if captured_stdout:
-            # socket_message = {
-            #     "function": "intelligent_contract_execution",
-            #     "response": {"status": "info", "message": captured_stdout},
-            # }
-
             self.msg_handler.send_message(
                 LogEvent(
                     "read_contract",
