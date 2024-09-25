@@ -27,11 +27,11 @@ from backend.domain.types import (
 )
 from backend.node.base import Node
 from backend.node.genvm.types import ExecutionMode, Receipt, Vote
-from backend.protocol_rpc.message_handler.base import (
+from backend.protocol_rpc.message_handler.base import MessageHandler
+from backend.protocol_rpc.message_handler.types import (
     LogEvent,
     EventType,
     EventScope,
-    MessageHandler,
 )
 
 

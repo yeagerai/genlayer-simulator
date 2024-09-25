@@ -1,10 +1,10 @@
-from enum import Enum
 import os
 import json
 from logging.config import dictConfig
-from dataclasses import dataclass
 from loguru import logger
 import sys
+
+from backend.protocol_rpc.message_handler.types import LogEvent
 
 MAX_LOG_MESSAGE_LENGTH = 3000
 
@@ -26,42 +26,6 @@ def setup_logging_config():
         # <white>{time:YYYY-MM-DD HH:mm:ss.SSS}</white>
         format="<level>{level: <8}</level> | {message}",
     )
-
-
-## TODO: make sure all print to terminal as well
-## TODO: print errors and tracebacks to terminal
-
-
-## TODO: move to types files
-class EventType(Enum):
-    DEBUG = "debug"
-    INFO = "info"
-    SUCCESS = "success"
-    ERROR = "error"
-
-
-class EventScope(Enum):
-    RPC = "RPC"
-    GENVM = "GenVM"
-    CONSENSUS = "Consensus"
-
-
-@dataclass
-class LogEvent:
-    name: str
-    type: EventType
-    scope: EventScope
-    message: str
-    data: dict = None
-
-    def to_dict(self):
-        return {
-            "name": self.name,
-            "type": self.type.value,
-            "scope": self.scope.value,
-            "message": self.message,
-            "data": self.data,
-        }
 
 
 class MessageHandler:

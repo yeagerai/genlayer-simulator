@@ -7,11 +7,11 @@ from sqlalchemy.orm import Session
 from .models import TransactionStatus
 from eth_utils import to_bytes, keccak, is_address
 import json
-from backend.protocol_rpc.message_handler.base import (
+from backend.protocol_rpc.message_handler.base import MessageHandler
+from backend.protocol_rpc.message_handler.types import (
     LogEvent,
     EventType,
     EventScope,
-    MessageHandler,
 )
 
 

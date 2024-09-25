@@ -5,11 +5,11 @@ from typing import Callable
 from flask_jsonrpc import JSONRPC
 
 from backend.protocol_rpc.configuration import GlobalConfiguration
-from backend.protocol_rpc.message_handler.base import (
+from backend.protocol_rpc.message_handler.base import MessageHandler
+from backend.protocol_rpc.message_handler.types import (
     LogEvent,
     EventType,
     EventScope,
-    MessageHandler,
 )
 from backend.protocol_rpc.types import EndpointResult, EndpointResultStatus
 

@@ -14,11 +14,11 @@ from backend.node.genvm.equivalence_principle import EquivalencePrinciple
 from backend.node.genvm.code_enforcement import code_enforcement_check
 from backend.node.genvm.std.vector_store import VectorStore
 from backend.node.genvm.types import Receipt, ExecutionResultStatus, ExecutionMode
-from backend.protocol_rpc.message_handler.base import (
-    EventScope,
-    EventType,
+from backend.protocol_rpc.message_handler.base import MessageHandler
+from backend.protocol_rpc.message_handler.types import (
     LogEvent,
-    MessageHandler,
+    EventType,
+    EventScope,
 )
 
 
