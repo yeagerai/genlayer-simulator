@@ -10,7 +10,6 @@ MAX_LOG_MESSAGE_LENGTH = 3000
 
 
 def setup_logging_config():
-    ## TODO: Remove config?
     logging_env = os.environ["LOGCONFIG"]
     file_path = (
         f"backend/protocol_rpc/message_handler/config/logging.{logging_env}.json"
@@ -23,7 +22,6 @@ def setup_logging_config():
     logger.add(
         sys.stdout,
         colorize=True,
-        # <white>{time:YYYY-MM-DD HH:mm:ss.SSS}</white>
         format="<level>{level: <8}</level> | {message}",
     )
 
@@ -44,7 +42,6 @@ class MessageHandler:
 
         log_method = getattr(logger, logging_status)
 
-        # Truncate the message if it exceeds MAX_LOG_MESSAGE_LENGTH
         message = (
             (log_event.message[:MAX_LOG_MESSAGE_LENGTH] + "...")
             if log_event.message is not None
@@ -58,16 +55,13 @@ class MessageHandler:
 
         if log_event.data:
             try:
-                # Try to JSON serialize the data and add it to the log message
                 data_str = json.dumps(log_event.data, default=lambda o: o.__dict__)
                 log_message += f" {gray}{data_str}{reset}"
             except TypeError as e:
-                # If serialization fails, add the string representation of data and the error
                 log_message += (
                     f" {gray}{str(log_event.data)} (serialization error: {e}){reset}"
                 )
 
-        # Log the constructed message using the appropriate logging method
         log_method(log_message)
 
     def send_message(self, log_event: LogEvent):
