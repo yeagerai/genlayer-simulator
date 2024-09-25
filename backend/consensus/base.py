@@ -305,8 +305,6 @@ class ConsensusAlgorithm:
         transactions_processor: TransactionsProcessor,
         accounts_manager: AccountsManager,
     ):
-
-        # TODO: dispatch event
         """
         Executes a native token transfer between Externally Owned Accounts (EOAs).
 
