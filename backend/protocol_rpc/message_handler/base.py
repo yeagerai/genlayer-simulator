@@ -15,34 +15,17 @@ from backend.protocol_rpc.message_handler.types import EventScope, EventType, Lo
 MAX_LOG_MESSAGE_LENGTH = 3000
 
 
-def setup_logging_config():
-    logging_env = os.environ["LOGCONFIG"]
-    file_path = (
-        f"backend/protocol_rpc/message_handler/config/logging.{logging_env}.json"
-    )
-    with open(file_path, "r") as file:
-        logging_config = json.load(file)
-        dictConfig(logging_config)
-
-    logger.remove()
-    logger.add(
-        sys.stdout,
-        colorize=True,
-        format="<level>{level: <8}</level> | {message}",
-    )
-
-
 class MessageHandler:
     def __init__(self, socketio: SocketIO, config: GlobalConfiguration):
         self.socketio = socketio
         self.config = config
         setup_logging_config()
 
-    def socket_emit(self, log_event: LogEvent):
-        self.socketio.emit(log_event.name, log_event.to_dict())
-
     def log_endpoint_info(self, func):
         return log_endpoint_info_wrapper(self, self.config)(func)
+
+    def socket_emit(self, log_event: LogEvent):
+        self.socketio.emit(log_event.name, log_event.to_dict())
 
     def log_message(self, log_event: LogEvent):
         logging_status = log_event.type.value
@@ -132,3 +115,20 @@ def log_endpoint_info_wrapper(msg_handler: MessageHandler, config: GlobalConfigu
         return wrapper
 
     return decorator
+
+
+def setup_logging_config():
+    logging_env = os.environ["LOGCONFIG"]
+    file_path = (
+        f"backend/protocol_rpc/message_handler/config/logging.{logging_env}.json"
+    )
+    with open(file_path, "r") as file:
+        logging_config = json.load(file)
+        dictConfig(logging_config)
+
+    logger.remove()
+    logger.add(
+        sys.stdout,
+        colorize=True,
+        format="<level>{level: <8}</level> | {message}",
+    )
