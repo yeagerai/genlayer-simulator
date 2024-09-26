@@ -9,7 +9,7 @@ import sys
 import traceback
 import io
 from contextlib import contextmanager, redirect_stderr, redirect_stdout
-from typing import Callable
+from typing import Any, Callable
 
 from backend.database_handler.contract_snapshot import ContractSnapshot
 from backend.node.genvm.equivalence_principle import EquivalencePrinciple
@@ -382,7 +382,7 @@ class GenVM:
         method_args: list,
         contract_snapshot_factory: Callable[[str], ContractSnapshot],
         stdout_stderr_buffer=None,
-    ) -> dict:
+    ) -> Any:
         decoded_pickled_object = base64.b64decode(state)
 
         with redirect_stdout(stdout_stderr_buffer), redirect_stderr(

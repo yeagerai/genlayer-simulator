@@ -2,6 +2,7 @@
 import random
 import json
 from functools import partial
+from typing import Any
 from flask_jsonrpc import JSONRPC
 from sqlalchemy import Table
 from sqlalchemy.orm import Session
@@ -353,7 +354,7 @@ def call(
     msg_handler: MessageHandler,
     params: dict,
     block_tag: str = "latest",
-) -> any:
+) -> Any:
     to_address = params["to"]
     from_address = params["from"]
     data = params["data"]
