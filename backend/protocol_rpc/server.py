@@ -44,7 +44,7 @@ def create_app():
         app, "/api", enable_web_browsable_api=True
     )  # check it out at http://localhost:4000/api/browse/#/
     socketio = SocketIO(app, cors_allowed_origins="*")
-    msg_handler = MessageHandler(app, socketio)
+    msg_handler = MessageHandler(app, socketio, config=GlobalConfiguration())
     genlayer_db_client = DBClient(database_name_seed)
     transactions_processor = TransactionsProcessor(sqlalchemy_db.session)
     accounts_manager = AccountsManager(sqlalchemy_db.session)
@@ -89,7 +89,6 @@ register_all_rpc_endpoints(
     transactions_processor,
     validators_registry,
     llm_provider_registry,
-    config=GlobalConfiguration(),
 )
 
 
