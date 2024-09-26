@@ -16,7 +16,6 @@ from backend.node.create_nodes.providers import (
     validate_provider,
 )
 from backend.node.genvm.llms import get_llm_plugin
-from backend.protocol_rpc.configuration import GlobalConfiguration
 from backend.protocol_rpc.message_handler.base import MessageHandler
 from backend.database_handler.accounts_manager import AccountsManager
 from backend.database_handler.validators_registry import ValidatorsRegistry

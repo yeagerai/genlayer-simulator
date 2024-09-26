@@ -40,7 +40,7 @@ def test_read_erc20(setup_validators, from_account):
         print(f"Deploying contract, iteration {i}")
 
         # deploy contract
-        last_contract_address = transaction_response_deploy = (
+        last_contract_address, transaction_response_deploy = (
             deploy_intelligent_contract(
                 from_account,
                 contract_code,

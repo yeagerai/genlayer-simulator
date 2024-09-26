@@ -163,6 +163,13 @@ class ConsensusAlgorithm:
 
         # Select Leader and validators
         all_validators = snapshot.get_all_validators()
+        if not all_validators:
+            print(
+                "No validators found for transaction, waiting for next round: ",
+                transaction,
+            )
+            return
+
         involved_validators = get_validators_for_transaction(
             all_validators, DEFAULT_VALIDATORS_COUNT
         )

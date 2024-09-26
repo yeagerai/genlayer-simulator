@@ -39,7 +39,7 @@ def create_app():
         },  # recommended in https://docs.sqlalchemy.org/en/20/orm/session_basics.html#when-do-i-construct-a-session-when-do-i-commit-it-and-when-do-i-close-it
     )
 
-    engine = create_engine(db_uri, echo=True)
+    engine = create_engine(db_uri, echo=True, pool_size=50, max_overflow=50)
 
     # Flask
     app = Flask("jsonrpc_api")
