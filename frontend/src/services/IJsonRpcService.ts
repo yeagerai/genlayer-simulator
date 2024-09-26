@@ -12,7 +12,7 @@ export interface IJsonRpcService {
   getContractState(
     request: GetContractStateRequest,
   ): Promise<GetContractStateResult>;
-  sendTransaction(singedTransaction: string): Promise<number>;
+  sendTransaction(signedTransaction: string): Promise<string>;
   getContractSchema(request: GetContractSchemaRequest): Promise<any>;
   getDeployedContractSchema(
     request: GetDeployedContractSchemaRequest,
@@ -22,5 +22,5 @@ export interface IJsonRpcService {
   createValidator(request: CreateValidatorRequest): Promise<any>;
   updateValidator(request: UpdateValidatorRequest): Promise<any>;
   deleteValidator(request: DeleteValidatorRequest): Promise<any>;
-  getTransactionByHash(txId: string): Promise<any>;
+  getTransactionByHash(hash: string): Promise<any>;
 }
