@@ -1,10 +1,19 @@
 import os
 import json
+from functools import wraps
 from logging.config import dictConfig
+import traceback
 from loguru import logger
 import sys
 
 from backend.protocol_rpc.message_handler.types import LogEvent
+from flask import Flask
+from flask_socketio import SocketIO
+
+from backend.protocol_rpc.configuration import GlobalConfiguration
+from backend.protocol_rpc.message_handler.types import FormattedResponse
+from backend.protocol_rpc.types import EndpointResult, EndpointResultStatus
+from backend.protocol_rpc.message_handler.types import EventScope, EventType, LogEvent
 
 MAX_LOG_MESSAGE_LENGTH = 3000
 
@@ -27,12 +36,16 @@ def setup_logging_config():
 
 
 class MessageHandler:
-    def __init__(self, socketio):
+    def __init__(self, app: Flask, socketio: SocketIO, config: GlobalConfiguration):
         self.socketio = socketio
+        self.config = config
         setup_logging_config()
 
     def socket_emit(self, log_event: LogEvent):
         self.socketio.emit(log_event.name, log_event.to_dict())
+
+    def log_endpoint_info(self, func):
+        return log_endpoint_info_wrapper(self, self.config)(func)
 
     def log_message(self, log_event: LogEvent):
         logging_status = log_event.type.value
@@ -67,3 +80,58 @@ class MessageHandler:
     def send_message(self, log_event: LogEvent):
         self.log_message(log_event)
         self.socket_emit(log_event)
+
+
+def log_endpoint_info_wrapper(msg_handler: MessageHandler, config: GlobalConfiguration):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            shouldPrintInfoLogs = (
+                func.__name__ not in config.get_disabled_info_logs_endpoints()
+            )
+
+            if shouldPrintInfoLogs:
+                msg_handler.send_message(
+                    LogEvent(
+                        "endpoint_call",
+                        EventType.INFO,
+                        EventScope.RPC,
+                        "Endpoint called: " + func.__name__,
+                        {"endpoint_name": func.__name__, "args": args},
+                    )
+                )
+            try:
+                result = func(*args, **kwargs)
+                if shouldPrintInfoLogs:
+                    msg_handler.send_message(
+                        LogEvent(
+                            "endpoint_success",
+                            EventType.SUCCESS,
+                            EventScope.RPC,
+                            "Endpoint responded: " + func.__name__,
+                            {
+                                "endpoint_name": func.__name__,
+                                "result": result,
+                            },
+                        )
+                    )
+                return result
+            except Exception as e:
+                msg_handler.send_message(
+                    LogEvent(
+                        "endpoint_error",
+                        EventType.ERROR,
+                        EventScope.RPC,
+                        f"Error executing endpoint {func.__name__ }: {str(e)}",
+                        {
+                            "endpoint_name": func.__name__,
+                            "error": str(e),
+                            "traceback": traceback.format_exc(),
+                        },
+                    )
+                )
+                raise e
+
+        return wrapper
+
+    return decorator

@@ -66,11 +66,7 @@ export function useContractQueries() {
       code: contract.value?.content ?? '',
     });
 
-    if (result?.status === 'error') {
-      throw new Error(result?.message || 'Error fetching contract schema');
-    }
-
-    schema.value = result?.data;
+    schema.value = result;
 
     return schema.value;
   }
@@ -98,42 +94,29 @@ export function useContractQueries() {
         data,
       });
       const result = await rpcClient.sendTransaction(signed);
+      const tx: TransactionItem = {
+        contractAddress: '',
+        localContractId: contract.value?.id ?? '',
+        hash: result,
+        type: 'deploy',
+        status: 'PENDING',
+        data: {},
+      };
 
-      if (result?.status === 'success') {
-        const tx: TransactionItem = {
-          contractAddress: result?.data.contract_address,
-          localContractId: contract.value?.id ?? '',
-          hash: result.data.transaction_hash,
-          type: 'deploy',
-          status: 'PENDING',
-          data: {},
-        };
+      notify({
+        title: 'Started deploying contract',
+        type: 'success',
+      });
 
-        notify({
-          title: 'Started deploying contract',
-          type: 'success',
-        });
+      trackEvent('deployed_contract', {
+        contract_name: contract.value?.name || '',
+      });
 
-        trackEvent('deployed_contract', {
-          contract_name: contract.value?.name || '',
-        });
-
-        transactionsStore.clearTransactionsForContract(
-          contract.value?.id ?? '',
-        );
-        transactionsStore.addTransaction(tx);
-
-        return tx;
-      } else {
-        throw new Error(
-          typeof result?.message === 'string'
-            ? result.message
-            : 'Error Deploying the contract',
-        );
-      }
+      transactionsStore.clearTransactionsForContract(contract.value?.id ?? '');
+      transactionsStore.addTransaction(tx);
+      return tx;
     } catch (error) {
       isDeploying.value = false;
-      console.error(error);
       notify({
         type: 'error',
         title: 'Error deploying contract',
@@ -167,12 +150,7 @@ export function useContractQueries() {
       address: deployedContract.value?.address ?? '',
     });
 
-    if (result?.status === 'error') {
-      console.error(result.message);
-      throw new Error('Error fetching contract abi');
-    }
-
-    return result?.data;
+    return result;
   }
 
   async function callReadMethod(method: string, methodArguments: string[]) {
@@ -182,17 +160,12 @@ export function useContractQueries() {
       const encodedData = wallet.encodeTransactionData(data);
 
       const result = await rpcClient.getContractState({
-        contractAddress: address.value || '',
-        userAccount: accountsStore.currentUserAddress,
+        to: address.value || '',
+        from: accountsStore.currentUserAddress,
         data: encodedData,
       });
 
-      if (result?.status === 'error') {
-        console.error(result.message);
-        throw new Error(result.message);
-      }
-
-      return result?.data;
+      return result;
     } catch (error) {
       console.error(error);
       throw new Error('Error getting the contract state');
@@ -223,24 +196,18 @@ export function useContractQueries() {
       });
 
       const result = await rpcClient.sendTransaction(signed);
-
-      if (result?.status === 'success') {
-        transactionsStore.addTransaction({
-          contractAddress: address.value || '',
-          localContractId: contract.value?.id || '',
-          hash: (result?.data as any).transaction_hash,
-          type: 'method',
-          status: 'PENDING',
-          data: {},
-        });
-
-        return true;
-      }
+      transactionsStore.addTransaction({
+        contractAddress: address.value || '',
+        localContractId: contract.value?.id || '',
+        hash: result,
+        type: 'method',
+        status: 'PENDING',
+        data: {},
+      });
+      return true;
     } catch (error) {
-      console.error(error);
       throw new Error('Error writing to contract');
     }
-    return false;
   }
 
   return {

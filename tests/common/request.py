@@ -38,9 +38,10 @@ def post_request_localhost(payload: dict):
 
 
 def get_transaction_by_hash(transaction_hash: str):
-    payload_data = payload("get_transaction_by_hash", transaction_hash)
+    payload_data = payload("eth_getTransactionByHash", transaction_hash)
     raw_response = post_request_localhost(payload_data)
-    return raw_response.json()
+    parsed_raw_response = raw_response.json()
+    return parsed_raw_response["result"]
 
 
 def call_contract_method(
@@ -51,9 +52,17 @@ def call_contract_method(
 ):
     params_as_string = json.dumps(method_args)
     encoded_data = encode_transaction_data([method_name, params_as_string])
-    return post_request_localhost(
-        payload("call", contract_address, from_account.address, encoded_data)
+    method_response = post_request_localhost(
+        payload(
+            "eth_call",
+            {
+                "to": contract_address,
+                "from": from_account.address,
+                "data": encoded_data,
+            },
+        )
     ).json()
+    return method_response["result"]
 
 
 def send_transaction(
@@ -81,22 +90,20 @@ def deploy_intelligent_contract(
 
 
 def send_raw_transaction(signed_transaction: str):
-    payload_data = payload("send_raw_transaction", signed_transaction)
+    payload_data = payload("eth_sendRawTransaction", signed_transaction)
     raw_response = post_request_localhost(payload_data)
     call_method_response = raw_response.json()
-    if not call_method_response["result"]:
-        raise ValueError("No result found in the call_method_response")
-    transaction_hash = call_method_response["result"]["data"]["transaction_hash"]
+    transaction_hash = call_method_response["result"]
 
     transaction_response = wait_for_transaction(transaction_hash)
-    return (call_method_response, transaction_response)
+    return (call_method_response["result"], transaction_response)
 
 
 def wait_for_transaction(transaction_hash: str, interval: int = 10, retries: int = 15):
     attempts = 0
     while attempts < retries:
         transaction_response = get_transaction_by_hash(str(transaction_hash))
-        status = transaction_response["result"]["data"]["status"]
+        status = transaction_response["status"]
         if status == "FINALIZED":
             return transaction_response
         time.sleep(interval)
