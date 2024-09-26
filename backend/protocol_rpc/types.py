@@ -37,9 +37,11 @@ class DecodedTransaction:
 class DecodedMethodCallData:
     function_name: str
     function_args: str
+    leader_only: bool = False
 
 
 @dataclass
 class DecodedDeploymentData:
     contract_code: str
     constructor_args: str
+    leader_only: bool = False

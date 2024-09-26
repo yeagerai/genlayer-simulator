@@ -74,7 +74,7 @@ def fund_account(
     if not accounts_manager.is_valid_address(account_address):
         raise InvalidAddressError(account_address)
     transaction_hash = transactions_processor.insert_transaction(
-        None, account_address, None, amount, 0
+        None, account_address, None, amount, 0, False
     )
     return {"transaction_hash": transaction_hash}
 
@@ -448,6 +448,7 @@ def send_raw_transaction(
     transaction_data = {}
     result = {}
     transaction_type = None
+    leader_only = False
     if not decoded_transaction.data:
         # Sending value transaction
         transaction_type = 0
@@ -467,6 +468,7 @@ def send_raw_transaction(
         result["contract_address"] = new_contract_address
         to_address = None
         transaction_type = 1
+        leader_only = decoded_data.leader_only
     else:
         # Contract Call
         if not accounts_manager.is_valid_address(to_address):
@@ -479,10 +481,16 @@ def send_raw_transaction(
             "function_args": decoded_data.function_args,
         }
         transaction_type = 2
+        leader_only = decoded_data.leader_only
 
     # Insert transaction into the database
     transaction_hash = transactions_processor.insert_transaction(
-        from_address, to_address, transaction_data, value, transaction_type
+        from_address,
+        to_address,
+        transaction_data,
+        value,
+        transaction_type,
+        leader_only,
     )
     result["transaction_hash"] = transaction_hash
 

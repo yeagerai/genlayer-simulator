@@ -10,6 +10,10 @@ import TextAreaInput from '@/components/global/inputs/TextAreaInput.vue';
 import FieldError from '@/components/global/fields/FieldError.vue';
 import { type ContractMethod } from '@/types';
 
+const props = defineProps<{
+  leaderOnly: boolean;
+}>();
+
 const { contract, contractSchemaQuery, deployContract, isDeploying } =
   useContractQueries();
 const inputMap = useInputMap();
@@ -62,7 +66,7 @@ const handleDeployContract = async () => {
     constructorParams = mapInputs(inputParams.value);
   }
 
-  await deployContract({ constructorParams });
+  await deployContract(constructorParams, props.leaderOnly);
 
   emit('deployed-contract');
 };

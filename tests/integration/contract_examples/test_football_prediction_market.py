@@ -19,13 +19,8 @@ from tests.common.response import (
     has_success_status,
 )
 
-from tests.common.accounts import create_new_account
 
-
-def test_football_prediction_market(setup_validators):
-    # Account Setup
-    from_account = create_new_account()
-
+def test_football_prediction_market(setup_validators, from_account):
     # Get contract schema
     contract_code = open("examples/contracts/football_prediction_market.py", "r").read()
     result_schema = post_request_localhost(

@@ -19,15 +19,8 @@ from tests.common.response import (
     has_success_status,
 )
 
-from tests.common.accounts import create_new_account
 
-
-def test_wizard_of_coin(setup_validators):
-    print("test_wizard_of_coin")
-
-    # Account Setup
-    from_account = create_new_account()
-
+def test_wizard_of_coin(setup_validators, from_account):
     # Get contract schema
     contract_code = open("examples/contracts/wizard_of_coin.py", "r").read()
     result_schema = post_request_localhost(
@@ -38,9 +31,7 @@ def test_wizard_of_coin(setup_validators):
 
     # Deploy Contract
     call_method_response_deploy, transaction_response_deploy = (
-        deploy_intelligent_contract(
-            from_account, contract_code, f'{{"have_coin": true}}'
-        )
+        deploy_intelligent_contract(from_account, contract_code, '{"have_coin": true}')
     )
     assert has_success_status(transaction_response_deploy)
     contract_address = call_method_response_deploy["result"]["data"]["contract_address"]

@@ -3,12 +3,12 @@ services:
     build:
       context: ./
       dockerfile: ./docker/Dockerfile.frontend
+      target: ${FRONTEND_BUILD_TARGET:-final}
     ports:
-      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+      - "${FRONTEND_PORT}:8080"
     volumes:
       - ./examples:/app/src/assets/examples
-      - ./frontend:/app/frontend
-    entrypoint: ["npm", "run", "dev"]
+      - ./frontend/src:/app/src
     depends_on:
       - jsonrpc
     expose:
@@ -53,7 +53,7 @@ services:
       - "${WEBREQUESTPORT}"
 
   ollama:
-    image: ollama/ollama:0.2.1
+    image: ollama/ollama:0.3.11
     ports:
       - 11434:11434
     volumes:
