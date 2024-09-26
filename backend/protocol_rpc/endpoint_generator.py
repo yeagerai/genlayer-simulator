@@ -9,7 +9,7 @@ from functools import partial, wraps
 from backend.protocol_rpc.message_handler.base import MessageHandler
 
 
-def get_json_rpc_method_name(function: Callable, method_name: str = None):
+def get_json_rpc_method_name(function: Callable, method_name: str | None = None):
     if method_name is None:
         if isinstance(function, partial):
             return function.func.__name__

@@ -1,7 +1,7 @@
 export interface JsonRPCResponse<T> {
   id: string;
   jsonrpc: string;
-  result: T | T[];
+  result: T;
   error?: {
     code: number;
     message: string;

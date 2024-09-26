@@ -486,7 +486,6 @@ def register_all_rpc_endpoints(
     transactions_processor: TransactionsProcessor,
     validators_registry: ValidatorsRegistry,
     llm_provider_registry: LLMProviderRegistry,
-    config: GlobalConfiguration,
 ):
     register_rpc_endpoint = partial(generate_rpc_endpoint, jsonrpc, msg_handler)
 

@@ -89,7 +89,6 @@ register_all_rpc_endpoints(
     transactions_processor,
     validators_registry,
     llm_provider_registry,
-    config=GlobalConfiguration(),
 )
 
 

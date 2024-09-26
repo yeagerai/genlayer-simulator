@@ -5,14 +5,64 @@ import os
 import json
 from functools import wraps, partial
 from logging.config import dictConfig
+from flask import Flask
+from flask_socketio import SocketIO
 
+from backend.protocol_rpc.configuration import GlobalConfiguration
 from backend.protocol_rpc.message_handler.types import FormattedResponse
 from backend.protocol_rpc.types import EndpointResult, EndpointResultStatus
 
 MAX_LOG_MESSAGE_LENGTH = 3000
 
 
-def log_endpoint_info_wrapper(msg_handler, config):
+class MessageHandler:
+
+    status_mappings = {
+        "debug": "info",
+        "info": "info",
+        "success": "info",
+        "error": "error",
+    }
+
+    def __init__(self, app: Flask, socketio: SocketIO, config: GlobalConfiguration):
+        self.app = app
+        self.socketio = socketio
+        self.config = config
+        setup_logging_config()
+
+    def log_endpoint_info(self, func):
+        return log_endpoint_info_wrapper(self, self.config)(func)
+
+    def socket_emit(self, message):
+        self.socketio.emit("status_update", {"message": message})
+
+    def log_message(self, function_name, result: EndpointResult):
+        logging_status = self.status_mappings[result.status.value]
+        if hasattr(self.app.logger, logging_status):
+            log_method = getattr(self.app.logger, logging_status)
+            result_string = str(result)
+            function_result = (
+                (result_string[:MAX_LOG_MESSAGE_LENGTH] + "...")
+                if result_string is not None
+                and len(result_string) > MAX_LOG_MESSAGE_LENGTH
+                else result_string
+            )
+            log_method(function_name + ": " + function_result)
+        else:
+            raise Exception(f"Logger does not have the method {result.status}")
+
+    def send_message(
+        self,
+        function_name: str,
+        result: EndpointResult,
+    ):
+        self.log_message(function_name, result)
+
+        formatted_response = format_response(function_name, result)
+        self.socket_emit(formatted_response.to_json())
+
+
+def log_endpoint_info_wrapper(msg_handler: MessageHandler, config: GlobalConfiguration):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -66,50 +116,3 @@ def format_response(function_name: str, result: EndpointResult) -> FormattedResp
         random.choice(string.digits + string.ascii_lowercase) for _ in range(9)
     )
     return FormattedResponse(function_name, trace_id, result)
-
-
-class MessageHandler:
-
-    status_mappings = {
-        "debug": "info",
-        "info": "info",
-        "success": "info",
-        "error": "error",
-    }
-
-    def __init__(self, app, socketio, config):
-        self.app = app
-        self.socketio = socketio
-        self.config = config
-        setup_logging_config()
-
-    def log_endpoint_info(self, func):
-        return log_endpoint_info_wrapper(self, self.config)(func)
-
-    def socket_emit(self, message):
-        self.socketio.emit("status_update", {"message": message})
-
-    def log_message(self, function_name, result: EndpointResult):
-        logging_status = self.status_mappings[result.status.value]
-        if hasattr(self.app.logger, logging_status):
-            log_method = getattr(self.app.logger, logging_status)
-            result_string = str(result)
-            function_result = (
-                (result_string[:MAX_LOG_MESSAGE_LENGTH] + "...")
-                if result_string is not None
-                and len(result_string) > MAX_LOG_MESSAGE_LENGTH
-                else result_string
-            )
-            log_method(function_name + ": " + function_result)
-        else:
-            raise Exception(f"Logger does not have the method {result.status}")
-
-    def send_message(
-        self,
-        function_name: str,
-        result: EndpointResult,
-    ):
-        self.log_message(function_name, result)
-
-        formatted_response = format_response(function_name, result)
-        self.socket_emit(formatted_response.to_json())
