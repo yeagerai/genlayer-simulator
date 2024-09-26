@@ -14,7 +14,7 @@ def test_async_init(setup_validators, from_account):
 
     contract_code = open(contract_file, "r").read()
 
-    transaction_hash, transaction_response_deploy = deploy_intelligent_contract(
+    _, transaction_response_deploy = deploy_intelligent_contract(
         from_account,
         contract_code,
         "{}",
