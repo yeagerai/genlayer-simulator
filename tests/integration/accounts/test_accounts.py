@@ -19,21 +19,7 @@ from tests.common.accounts import create_new_account
 def test_accounts_funding():
     account = create_new_account()
     new_account_address = account.address
-
-    # Test fund_account
     fund_amount = 1000
-    fund_account_result = post_request_localhost(
-        payload("sim_fundAccount", new_account_address, fund_amount)
-    ).json()
-    assert has_success_status(fund_account_result)
-    wait_for_transaction(fund_account_result["result"])
-
-    # Verify balance after funding
-    get_balance_after_fund_result = post_request_localhost(
-        payload("eth_getBalance", new_account_address)
-    ).json()
-    assert has_success_status(get_balance_after_fund_result)
-    assert get_balance_after_fund_result["result"] == fund_amount
 
     # Test fund_account with invalid address
     invalid_address = "0xinvalid_address"
@@ -47,6 +33,20 @@ def test_accounts_funding():
         "Incorrect address format. Please provide a valid address."
         in fund_invalid_account_result["error"]["message"]
     )
+
+    # Test fund_account
+    fund_account_result = post_request_localhost(
+        payload("sim_fundAccount", new_account_address, fund_amount)
+    ).json()
+    assert has_success_status(fund_account_result)
+    wait_for_transaction(fund_account_result["result"])
+
+    # Verify balance after funding
+    get_balance_after_fund_result = post_request_localhost(
+        payload("eth_getBalance", new_account_address)
+    ).json()
+    assert has_success_status(get_balance_after_fund_result)
+    assert get_balance_after_fund_result["result"] == fund_amount
 
     # Test get_balance with invalid address
     get_balance_invalid_result = post_request_localhost(
