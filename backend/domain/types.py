@@ -76,6 +76,28 @@ class Transaction:
     r: int | None = None
     s: int | None = None
     v: int | None = None
+    leader_only: bool = (
+        False  # Flag to indicate if this transaction should be processed only by the leader. Used for fast and cheap execution of transactions.
+    )
+
+    def to_dict(self):
+        return {
+            "hash": self.hash,
+            "status": self.status.value,
+            "type": self.type.value,
+            "from_address": self.from_address,
+            "to_address": self.to_address,
+            "input_data": self.input_data,
+            "data": self.data,
+            "consensus_data": self.consensus_data,
+            "nonce": self.nonce,
+            "value": self.value,
+            "gaslimit": self.gaslimit,
+            "r": self.r,
+            "s": self.s,
+            "v": self.v,
+            "leader_only": self.leader_only,
+        }
 
 
 def transaction_from_dict(input: dict) -> Transaction:
@@ -94,4 +116,5 @@ def transaction_from_dict(input: dict) -> Transaction:
         r=input.get("r"),
         s=input.get("s"),
         v=input.get("v"),
+        leader_only=input.get("leader_only", False),
     )

@@ -6,6 +6,10 @@ import { type ContractMethod } from '@/types';
 import ContractMethodItem from '@/components/Simulator/ContractMethodItem.vue';
 import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
 
+const props = defineProps<{
+  leaderOnly: boolean;
+}>();
+
 const { contractAbiQuery } = useContractQueries();
 
 const { data, isPending, isError, error, isRefetching } = contractAbiQuery;
@@ -36,6 +40,7 @@ const readMethods = computed(() => {
         :key="method.name"
         :method="method"
         methodType="read"
+        :leaderOnly="props.leaderOnly"
       />
 
       <EmptyListPlaceholder v-if="readMethods.length === 0">
