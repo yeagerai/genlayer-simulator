@@ -7,12 +7,6 @@ from flask_jsonrpc.exceptions import JSONRPCError
 from functools import partial, wraps
 
 from backend.protocol_rpc.message_handler.base import MessageHandler
-from backend.protocol_rpc.message_handler.types import (
-    LogEvent,
-    EventType,
-    EventScope,
-)
-from backend.protocol_rpc.types import EndpointResult, EndpointResultStatus
 
 
 def get_json_rpc_method_name(function: Callable, method_name: str | None = None):

@@ -7,12 +7,9 @@ from loguru import logger
 import sys
 
 from backend.protocol_rpc.message_handler.types import LogEvent
-from flask import Flask
 from flask_socketio import SocketIO
 
 from backend.protocol_rpc.configuration import GlobalConfiguration
-from backend.protocol_rpc.message_handler.types import FormattedResponse
-from backend.protocol_rpc.types import EndpointResult, EndpointResultStatus
 from backend.protocol_rpc.message_handler.types import EventScope, EventType, LogEvent
 
 MAX_LOG_MESSAGE_LENGTH = 3000
@@ -36,7 +33,7 @@ def setup_logging_config():
 
 
 class MessageHandler:
-    def __init__(self, app: Flask, socketio: SocketIO, config: GlobalConfiguration):
+    def __init__(self, socketio: SocketIO, config: GlobalConfiguration):
         self.socketio = socketio
         self.config = config
         setup_logging_config()
