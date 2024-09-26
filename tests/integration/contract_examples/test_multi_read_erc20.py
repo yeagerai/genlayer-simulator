@@ -33,50 +33,38 @@ def test_multi_read_erc20(setup_validators):
     contract_code = open("examples/contracts/llm_erc20.py", "r").read()
 
     ## Deploy first LLM ERC20 Contract
-    call_method_response_deploy, transaction_response_deploy = (
-        deploy_intelligent_contract(
-            from_account_doge,
-            contract_code,
-            json.dumps({"total_supply": TOKEN_TOTAL_SUPPLY}),
-        )
+    _, transaction_response_deploy = deploy_intelligent_contract(
+        from_account_doge,
+        contract_code,
+        json.dumps({"total_supply": TOKEN_TOTAL_SUPPLY}),
     )
     assert has_success_status(transaction_response_deploy)
 
-    doge_contract_address = call_method_response_deploy["result"]["data"][
-        "contract_address"
-    ]
+    doge_contract_address = transaction_response_deploy["data"]["contract_address"]
 
     ## Deploy second LLM ERC20 Contract
 
-    call_method_response_deploy, transaction_response_deploy = (
-        deploy_intelligent_contract(
-            from_account_shiba,
-            contract_code,
-            json.dumps({"total_supply": TOKEN_TOTAL_SUPPLY}),
-        )
+    _, transaction_response_deploy = deploy_intelligent_contract(
+        from_account_shiba,
+        contract_code,
+        json.dumps({"total_supply": TOKEN_TOTAL_SUPPLY}),
     )
     assert has_success_status(transaction_response_deploy)
 
-    shiba_contract_address = call_method_response_deploy["result"]["data"][
-        "contract_address"
-    ]
+    shiba_contract_address = transaction_response_deploy["data"]["contract_address"]
 
     # Deploy Multi Read ERC20 Contract
     contract_file = os.path.join(current_directory, "multi_read_erc20.py")
     contract_code = open(contract_file, "r").read()
 
-    call_method_response_deploy, transaction_response_deploy = (
-        deploy_intelligent_contract(
-            from_account_doge,
-            contract_code,
-            json.dumps({}),
-        )
+    _, transaction_response_deploy = deploy_intelligent_contract(
+        from_account_doge,
+        contract_code,
+        json.dumps({}),
     )
     assert has_success_status(transaction_response_deploy)
 
-    multi_read_address = call_method_response_deploy["result"]["data"][
-        "contract_address"
-    ]
+    multi_read_address = transaction_response_deploy["data"]["contract_address"]
 
     # update balances for doge account
     _, transaction_response_call = send_transaction(
@@ -96,9 +84,7 @@ def test_multi_read_erc20(setup_validators):
         [],
     )
 
-    assert has_success_status(call_method_response_get_balances)
-
-    assert call_method_response_get_balances["result"]["data"] == {
+    assert call_method_response_get_balances == {
         from_account_doge.address: {
             doge_contract_address: TOKEN_TOTAL_SUPPLY,
             shiba_contract_address: 0,
@@ -123,9 +109,7 @@ def test_multi_read_erc20(setup_validators):
         [],
     )
 
-    assert has_success_status(call_method_response_get_balances)
-
-    assert call_method_response_get_balances["result"]["data"] == {
+    assert call_method_response_get_balances == {
         from_account_doge.address: {
             doge_contract_address: TOKEN_TOTAL_SUPPLY,
             shiba_contract_address: 0,
