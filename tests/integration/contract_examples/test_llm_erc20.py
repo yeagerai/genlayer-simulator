@@ -39,12 +39,11 @@ def test_llm_erc20(setup_validators):
     assert_dict_exact(result_schema, llm_erc20_contract_schema)
 
     # Deploy Contract
-    _, transaction_response_deploy = deploy_intelligent_contract(
+    contract_address, transaction_response_deploy = deploy_intelligent_contract(
         from_account_a, contract_code, f'{{"total_supply": "{TOKEN_TOTAL_SUPPLY}"}}'
     )
 
     assert has_success_status(transaction_response_deploy)
-    contract_address = transaction_response_deploy["data"]["contract_address"]
 
     ########################################
     ######### GET Initial State ############
@@ -57,7 +56,7 @@ def test_llm_erc20(setup_validators):
     ########################################
     #### TRANSFER from User A to User B ####
     ########################################
-    _, transaction_response_call_1 = send_transaction(
+    transaction_response_call_1 = send_transaction(
         from_account_a,
         contract_address,
         "transfer",

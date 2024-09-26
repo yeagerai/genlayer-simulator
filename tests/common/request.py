@@ -68,8 +68,8 @@ def call_contract_method(
 def send_transaction(
     account: Account,
     contract_address: str,
-    method_name: str,
-    method_args: list,
+    method_name: str | None,
+    method_args: list | None,
     value: int = 0,
 ):
     call_data = (
@@ -83,10 +83,12 @@ def send_transaction(
 
 def deploy_intelligent_contract(
     account: Account, contract_code: str, constructor_params: str
-):
+) -> tuple[str, dict]:
     deploy_data = [contract_code, constructor_params]
     signed_transaction = sign_transaction(account, deploy_data)
-    return send_raw_transaction(signed_transaction)
+    result = send_raw_transaction(signed_transaction)
+    contract_address = result["data"]["contract_address"]
+    return contract_address, result
 
 
 def send_raw_transaction(signed_transaction: str):
@@ -96,7 +98,7 @@ def send_raw_transaction(signed_transaction: str):
     transaction_hash = call_method_response["result"]
 
     transaction_response = wait_for_transaction(transaction_hash)
-    return (call_method_response["result"], transaction_response)
+    return transaction_response
 
 
 def wait_for_transaction(transaction_hash: str, interval: int = 10, retries: int = 15):

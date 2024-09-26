@@ -26,27 +26,21 @@ def test_read_erc20(setup_validators, from_account):
     contract_code = open("examples/contracts/llm_erc20.py", "r").read()
 
     # Deploy Contract
-    call_method_response_deploy, transaction_response_deploy = (
-        deploy_intelligent_contract(
-            from_account,
-            contract_code,
-            json.dumps({"total_supply": TOKEN_TOTAL_SUPPLY}),
-        )
+    last_contract_address, transaction_response_deploy = deploy_intelligent_contract(
+        from_account,
+        contract_code,
+        json.dumps({"total_supply": TOKEN_TOTAL_SUPPLY}),
     )
     assert has_success_status(transaction_response_deploy)
 
     # Read ERC20
     contract_code = open(contract_file, "r").read()
 
-    last_contract_address = call_method_response_deploy["result"]["data"][
-        "contract_address"
-    ]
-
     for i in range(5):
         print(f"Deploying contract, iteration {i}")
 
         # deploy contract
-        call_method_response_deploy, transaction_response_deploy = (
+        last_contract_address = transaction_response_deploy = (
             deploy_intelligent_contract(
                 from_account,
                 contract_code,
@@ -55,10 +49,6 @@ def test_read_erc20(setup_validators, from_account):
         )
         assert has_success_status(transaction_response_deploy)
 
-        last_contract_address = call_method_response_deploy["result"]["data"][
-            "contract_address"
-        ]
-
         # check balance
         contract_state = call_contract_method(
             last_contract_address,
@@ -66,5 +56,4 @@ def test_read_erc20(setup_validators, from_account):
             "get_balance_of",
             [from_account.address],
         )
-        assert has_success_status(contract_state)
-        assert contract_state["result"]["data"] == TOKEN_TOTAL_SUPPLY
+        assert contract_state == TOKEN_TOTAL_SUPPLY

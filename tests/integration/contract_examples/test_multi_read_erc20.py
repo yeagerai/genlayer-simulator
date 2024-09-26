@@ -33,41 +33,35 @@ def test_multi_read_erc20(setup_validators):
     contract_code = open("examples/contracts/llm_erc20.py", "r").read()
 
     ## Deploy first LLM ERC20 Contract
-    _, transaction_response_deploy = deploy_intelligent_contract(
+    doge_contract_address, transaction_response_deploy = deploy_intelligent_contract(
         from_account_doge,
         contract_code,
         json.dumps({"total_supply": TOKEN_TOTAL_SUPPLY}),
     )
     assert has_success_status(transaction_response_deploy)
 
-    doge_contract_address = transaction_response_deploy["data"]["contract_address"]
-
     ## Deploy second LLM ERC20 Contract
 
-    _, transaction_response_deploy = deploy_intelligent_contract(
+    shiba_contract_address, transaction_response_deploy = deploy_intelligent_contract(
         from_account_shiba,
         contract_code,
         json.dumps({"total_supply": TOKEN_TOTAL_SUPPLY}),
     )
     assert has_success_status(transaction_response_deploy)
 
-    shiba_contract_address = transaction_response_deploy["data"]["contract_address"]
-
     # Deploy Multi Read ERC20 Contract
     contract_file = os.path.join(current_directory, "multi_read_erc20.py")
     contract_code = open(contract_file, "r").read()
 
-    _, transaction_response_deploy = deploy_intelligent_contract(
+    multi_read_address, transaction_response_deploy = deploy_intelligent_contract(
         from_account_doge,
         contract_code,
         json.dumps({}),
     )
     assert has_success_status(transaction_response_deploy)
 
-    multi_read_address = transaction_response_deploy["data"]["contract_address"]
-
     # update balances for doge account
-    _, transaction_response_call = send_transaction(
+    transaction_response_call = send_transaction(
         from_account_doge,
         multi_read_address,
         "update_token_balances",
@@ -92,7 +86,7 @@ def test_multi_read_erc20(setup_validators):
     }
 
     # update balances for shiba account
-    _, transaction_response_call = send_transaction(
+    transaction_response_call = send_transaction(
         from_account_shiba,
         multi_read_address,
         "update_token_balances",
