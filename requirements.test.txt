@@ -1,3 +1,4 @@
 eth-account==0.13.3
 psycopg2==2.9.9
 pytest==8.3.3
+pytest-xdist==3.6.1
