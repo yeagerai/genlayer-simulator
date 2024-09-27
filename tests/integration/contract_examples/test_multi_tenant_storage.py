@@ -1,5 +1,6 @@
 import json
 import os
+import time
 
 from tests.common.accounts import create_new_account
 from tests.common.request import (
@@ -12,16 +13,16 @@ from tests.common.response import has_success_status
 
 def test_multi_tenant_storage(setup_validators):
     """
-    This test verifies the functionality of a multi-read ERC20 contract. It deploys two separate ERC20 token contracts
-    (referred to as 'doge' and 'shiba') and a multi-read ERC20 contract. The test aims to:
+    This test verifies the functionality of a multi-tenant storage contract. It deploys two separate storage contracts
+    and a multi-tenant storage contract that manages them. The test aims to:
 
-    1. Deploy two different ERC20 token contracts with a total supply of 1000 tokens each.
-    2. Deploy a multi-read ERC20 contract that can interact with multiple ERC20 tokens.
-    3. Test the ability of the multi-read contract to update and retrieve token balances for multiple ERC20 tokens
-       and multiple accounts simultaneously.
-    4. Ensure the multi-read contract correctly maintains and reports balances for different account-token combinations.
+    1. Deploy two different storage contracts with initial storage values.
+    2. Deploy a multi-tenant storage contract that can interact with multiple storage contracts.
+    3. Test the ability of the multi-tenant contract to update and retrieve storage values for multiple users
+       across different storage contracts.
+    4. Ensure the multi-tenant contract correctly assigns users to storage contracts and manages their data.
 
-    This test demonstrates the integration contract to contract reads
+    This test demonstrates contract-to-contract interactions and multi-tenant data management.
     """
     main_account = create_new_account()
     user_account_a = create_new_account()
@@ -93,16 +94,26 @@ def test_multi_tenant_storage(setup_validators):
 
     assert has_success_status(transaction_response_call)
 
-    # TODO: we might need to wait for the transactions to be processed before getting the storages
-    # get all storages
-    storages = call_contract_method(
-        main_account,
-        multi_tenant_storage_address,
-        "get_all_storages",
-        [],
-    )
+    # wait for transactions to be processed
+    for attempt in range(10):
+        print(f"Attempt {attempt}")
 
-    assert storages == {
-        first_storage_contract_address: "user_a_storage",
-        second_storage_contract_address: "user_b_storage",
-    }
+        # get all storages
+        storages = call_contract_method(
+            multi_tenant_storage_address,
+            main_account,
+            "get_all_storages",
+            [],
+        )
+        print(f"Storages: {storages}")
+
+        if storages == {
+            first_storage_contract_address: "user_a_storage",
+            second_storage_contract_address: "user_b_storage",
+        }:
+            break
+
+        time.sleep(5)
+
+    else:
+        assert False, f"Storages don't match: {storages}"
