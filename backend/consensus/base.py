@@ -240,6 +240,14 @@ class ConsensusAlgorithm:
 
         else:  # this block is executed if the loop above is not broken
             print("Consensus not reached for transaction: ", transaction)
+            self.msg_handler.send_message(
+                LogEvent(
+                    "consensus_failed",
+                    EventType.ERROR,
+                    EventScope.CONSENSUS,
+                    "Failed to reach consensus",
+                )
+            )
             self.dispatch_transaction_status_update(
                 transactions_processor, transaction.hash, TransactionStatus.UNDETERMINED
             )
@@ -259,10 +267,10 @@ class ConsensusAlgorithm:
 
         self.msg_handler.send_message(
             LogEvent(
-                "consensus_data_updated",
-                EventType.INFO,
+                "consensus_reached",
+                EventType.SUCCESS,
                 EventScope.CONSENSUS,
-                "Updated consensus data",
+                "Reached consensus",
                 consensus_data,
             )
         )
