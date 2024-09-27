@@ -22,7 +22,7 @@ export const TransactionsListenerPlugin = {
       if (transactionsStore.processingQueue.length > 0) {
         for (const item of transactionsStore.processingQueue) {
           const tx = await transactionsStore.getTransaction(item.hash);
-          if (!tx?.data) {
+          if (!tx) {
             // Remove the transaction from the processing queue and storage if not found
             transactionsStore.processingQueue =
               transactionsStore.processingQueue.filter(
@@ -31,27 +31,25 @@ export const TransactionsListenerPlugin = {
             transactionsStore.removeTransaction(item);
           } else {
             const currentTx = transactionsStore.processingQueue.find(
-              (t) => t.hash === tx?.data?.hash,
+              (t) => t.hash === tx?.hash,
             );
-            transactionsStore.updateTransaction(tx?.data);
+            transactionsStore.updateTransaction(tx);
             transactionsStore.processingQueue =
               transactionsStore.processingQueue.filter(
-                (t) => t.hash !== tx?.data?.hash,
+                (t) => t.hash !== tx?.hash,
               );
             // if finalized and is contract add to the contract store dpeloyed
-            if (
-              tx?.data?.status === 'FINALIZED' &&
-              currentTx?.type === 'deploy'
-            ) {
+            if (tx?.status === 'FINALIZED' && currentTx?.type === 'deploy') {
               if (ENABLE_LOGS) {
                 console.log('New deployed contract', currentTx);
               }
 
               contractsStore.addDeployedContract({
                 contractId: currentTx.localContractId,
-                address: currentTx.contractAddress,
+                address: tx.data.contract_address,
                 defaultState: '{}',
               });
+              currentTx.data.contractAddress = tx.data.contractAddress;
             }
           }
         }

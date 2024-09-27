@@ -1,61 +1,51 @@
 # rpc/endpoint_generator.py
-import traceback
-from functools import partial, wraps
+
+import inspect
 from typing import Callable
 from flask_jsonrpc import JSONRPC
+from flask_jsonrpc.exceptions import JSONRPCError
+from functools import partial, wraps
 
-from backend.protocol_rpc.configuration import GlobalConfiguration
 from backend.protocol_rpc.message_handler.base import MessageHandler
-from backend.protocol_rpc.types import EndpointResult, EndpointResultStatus
+
+
+def get_json_rpc_method_name(function: Callable, method_name: str | None = None):
+    if method_name is None:
+        if isinstance(function, partial):
+            return function.func.__name__
+        else:
+            return function.__name__
+    return method_name
+
+
+def get_function_annotations(function: Callable) -> Callable:
+    original_function_annotations = (
+        function.func.__annotations__
+        if isinstance(function, partial)
+        else function.__annotations__
+    )
+    return {k: v for k, v in original_function_annotations.items()}
 
 
 def generate_rpc_endpoint(
     jsonrpc: JSONRPC,
     msg_handler: MessageHandler,
-    config: GlobalConfiguration,
-    function: Callable,
+    partial_function: Callable,
+    method_name: str = None,
 ) -> Callable:
-    @jsonrpc.method(function.__name__)
-    @wraps(function)
-    def endpoint(*args, **kwargs) -> dict[str]:
-        shouldPrintInfoLogs = (
-            function.__name__ not in config.get_disabled_info_logs_endpoints()
-        )
-        send_message = partial(msg_handler.send_message, function.__name__)
-        if shouldPrintInfoLogs:
-            send_message(EndpointResult(EndpointResultStatus.INFO, "Starting..."))
+    json_rpc_method_name = get_json_rpc_method_name(partial_function, method_name)
+    partial_function.__name__ = json_rpc_method_name
+    partial_function.__annotations__ = get_function_annotations(partial_function)
 
+    @wraps(partial_function)
+    def endpoint(*endpoint_args, **endpoint_kwargs):
         try:
-            function_result = function(*args, **kwargs)
-            result = EndpointResult(
-                EndpointResultStatus.SUCCESS,
-                f"Endpoint {function.__name__} successfully executed",
-                function_result,
-            )
-            if shouldPrintInfoLogs:
-                send_message(result)
-            return result.to_json()
+            result = partial_function(*endpoint_args, **endpoint_kwargs)
+            return result
         except Exception as e:
-            result = EndpointResult(
-                EndpointResultStatus.ERROR,
-                f"Error executing endpoint {function.__name__}: {str(e)}",
-                {"traceback": traceback.format_exc()},
-                e,
-            )
-            send_message(result)
-            return result.to_json()
+            raise JSONRPCError(code=-32000, message=str(e))
+
+    endpoint = msg_handler.log_endpoint_info(endpoint)
+    endpoint = jsonrpc.method(json_rpc_method_name)(endpoint)
 
     return endpoint
-
-
-def generate_rpc_endpoint_for_partial(
-    partial_generator: Callable, function: Callable, *args
-) -> Callable:
-    partial_function = partial(function, *args)
-    partial_function.__name__ = function.__name__
-    partial_function.__annotations__ = {
-        k: v
-        for k, v in function.__annotations__.items()
-        if k not in list(function.__annotations__)[: len(args)]
-    }
-    return partial_generator(partial_function)

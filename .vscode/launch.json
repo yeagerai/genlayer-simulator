@@ -2,6 +2,14 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Frontend: Launch Chrome",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:8080",
+      "webRoot": "${workspaceFolder}/frontend/src",
+      "sourceMaps": true
+    },
+    {
       "name": "JsonRPC: Remote Attach",
       "type": "debugpy",
       "request": "attach",
