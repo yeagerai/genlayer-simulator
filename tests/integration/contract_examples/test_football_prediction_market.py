@@ -30,18 +30,17 @@ def test_football_prediction_market(setup_validators, from_account):
     assert_dict_exact(result_schema, football_prediction_market_contract_schema)
 
     # Deploy Contract
-    _, transaction_response_deploy = deploy_intelligent_contract(
+    contract_address, transaction_response_deploy = deploy_intelligent_contract(
         from_account,
         contract_code,
         f'{{"game_date": "2024-06-26", "team1": "Georgia", "team2": "Portugal"}}',
     )
     assert has_success_status(transaction_response_deploy)
-    contract_address = transaction_response_deploy["data"]["contract_address"]
 
     ########################################
     ############# RESOLVE match ############
     ########################################
-    _, transaction_response_call_1 = send_transaction(
+    transaction_response_call_1 = send_transaction(
         from_account,
         contract_address,
         "resolve",

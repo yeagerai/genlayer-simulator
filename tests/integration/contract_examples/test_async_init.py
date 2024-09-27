@@ -14,23 +14,14 @@ def test_async_init(setup_validators, from_account):
 
     contract_code = open(contract_file, "r").read()
 
-    call_method_response_deploy, transaction_response_deploy = (
-        deploy_intelligent_contract(
-            from_account,
-            contract_code,
-            "{}",
-        )
+    contract_address, transaction_response_deploy = deploy_intelligent_contract(
+        from_account,
+        contract_code,
+        "{}",
     )
     assert has_success_status(transaction_response_deploy)
 
-    contract_address = call_method_response_deploy["result"]["data"]["contract_address"]
-
-    contract_state = call_contract_method(
-        contract_address, from_account, "get_result", []
-    )
-    assert has_success_status(contract_state)
-
-    result = contract_state["result"]["data"]
+    result = call_contract_method(contract_address, from_account, "get_result", [])
 
     assert isinstance(result, str)
     assert result != ""

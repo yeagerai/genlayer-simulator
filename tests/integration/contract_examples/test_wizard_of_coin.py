@@ -30,14 +30,13 @@ def test_wizard_of_coin(setup_validators, from_account):
     assert_dict_exact(result_schema, wizard_contract_schema)
 
     # Deploy Contract
-    _, transaction_response_deploy = deploy_intelligent_contract(
+    contract_address, transaction_response_deploy = deploy_intelligent_contract(
         from_account, contract_code, f'{{"have_coin": true}}'
     )
     assert has_success_status(transaction_response_deploy)
-    contract_address = transaction_response_deploy["data"]["contract_address"]
 
     # Call Contract Function
-    _, transaction_response_call_1 = send_transaction(
+    transaction_response_call_1 = send_transaction(
         from_account,
         contract_address,
         "ask_for_coin",

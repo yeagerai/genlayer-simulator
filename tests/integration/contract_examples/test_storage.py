@@ -34,12 +34,11 @@ def test_storage(setup_validators, from_account):
     assert_dict_exact(result_schema, storage_contract_schema)
 
     # Deploy Contract
-    _, transaction_response_deploy = deploy_intelligent_contract(
+    contract_address, transaction_response_deploy = deploy_intelligent_contract(
         from_account, contract_code, f'{{"initial_storage": "{INITIAL_STATE}"}}'
     )
 
     assert has_success_status(transaction_response_deploy)
-    contract_address = transaction_response_deploy["data"]["contract_address"]
 
     # Get Initial State
     contract_state_1 = call_contract_method(
@@ -48,7 +47,7 @@ def test_storage(setup_validators, from_account):
     assert contract_state_1 == INITIAL_STATE
 
     # Update State
-    _, transaction_response_call_1 = send_transaction(
+    transaction_response_call_1 = send_transaction(
         from_account, contract_address, "update_storage", [UPDATED_STATE]
     )
 
