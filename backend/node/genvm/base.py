@@ -177,7 +177,7 @@ class GenVM:
                 self.msg_handler.send_message(
                     LogEvent(
                         "deploying_contract",
-                        EventType.INFO,
+                        EventType.SUCCESS,
                         EventScope.GENVM,
                         "Deploying contract",
                         {
