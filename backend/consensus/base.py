@@ -112,7 +112,7 @@ class ConsensusAlgorithm:
                             tg.create_task(
                                 self.exec_transaction(
                                     transaction,
-                                    TransactionsProcessor(session, self.msg_handler),
+                                    TransactionsProcessor(session),
                                     ChainSnapshot(session),
                                     AccountsManager(session),
                                     lambda contract_address, session=session: ContractSnapshot(
@@ -171,8 +171,8 @@ class ConsensusAlgorithm:
 
         for validators in rotate(involved_validators):
             # Update transaction status
-            transactions_processor.update_transaction_status(
-                transaction.hash, TransactionStatus.PROPOSING
+            self.dispatch_transaction_status_update(
+                transactions_processor, transaction.hash, TransactionStatus.PROPOSING
             )
 
             [leader, *remaining_validators] = validators
@@ -197,8 +197,8 @@ class ConsensusAlgorithm:
             leader_receipt = await leader_node.exec_transaction(transaction)
             votes = {leader["address"]: leader_receipt.vote.value}
             # Update transaction status
-            transactions_processor.update_transaction_status(
-                transaction.hash, TransactionStatus.COMMITTING
+            self.dispatch_transaction_status_update(
+                transactions_processor, transaction.hash, TransactionStatus.COMMITTING
             )
 
             # Create Validators
@@ -224,9 +224,8 @@ class ConsensusAlgorithm:
 
             for i, validation_result in enumerate(validation_results):
                 votes[validator_nodes[i].address] = validation_result.vote.value
-            transactions_processor.update_transaction_status(
-                transaction.hash,
-                TransactionStatus.REVEALING,
+            self.dispatch_transaction_status_update(
+                transactions_processor, transaction.hash, TransactionStatus.REVEALING
             )
 
             if (
@@ -241,13 +240,13 @@ class ConsensusAlgorithm:
 
         else:  # this block is executed if the loop above is not broken
             print("Consensus not reached for transaction: ", transaction)
-            transactions_processor.update_transaction_status(
-                transaction.hash, TransactionStatus.UNDETERMINED
+            self.dispatch_transaction_status_update(
+                transactions_processor, transaction.hash, TransactionStatus.UNDETERMINED
             )
             return
 
-        transactions_processor.update_transaction_status(
-            transaction.hash, TransactionStatus.ACCEPTED
+        self.dispatch_transaction_status_update(
+            transactions_processor, transaction.hash, TransactionStatus.ACCEPTED
         )
 
         final = False
@@ -293,6 +292,10 @@ class ConsensusAlgorithm:
         else:
             contract_snapshot.update_contract_state(leader_receipt.contract_state)
 
+        self.dispatch_transaction_status_update(
+            transactions_processor, transaction.hash, TransactionStatus.FINALIZED
+        )
+
         # Finalize transaction
         transactions_processor.set_transaction_result(
             transaction.hash,
@@ -327,8 +330,10 @@ class ConsensusAlgorithm:
 
             # If the sender does not have enough balance, set the transaction status to UNDETERMINED
             if from_balance < transaction.value:
-                transactions_processor.update_transaction_status(
-                    transaction.hash, TransactionStatus.UNDETERMINED
+                self.dispatch_transaction_status_update(
+                    transactions_processor,
+                    transaction.hash,
+                    TransactionStatus.UNDETERMINED,
                 )
                 return
 
@@ -346,9 +351,31 @@ class ConsensusAlgorithm:
                 transaction.to_address, to_balance + transaction.value
             )
 
-        transactions_processor.update_transaction_status(
-            transaction.hash, TransactionStatus.FINALIZED
+        self.dispatch_transaction_status_update(
+            transactions_processor, transaction.hash, TransactionStatus.FINALIZED
         )
+
+    def dispatch_transaction_status_update(
+        self,
+        transactions_processor: TransactionsProcessor,
+        transaction_hash: str,
+        new_status: TransactionStatus,
+    ):
+        transactions_processor.update_transaction_status(transaction_hash, new_status)
+
+        if self.msg_handler:
+            self.msg_handler.send_message(
+                LogEvent(
+                    "transaction_status_updated",
+                    EventType.INFO,
+                    EventScope.CONSENSUS,
+                    f"{str(new_status.value)} {str(transaction_hash)}",
+                    {
+                        "hash": str(transaction_hash),
+                        "new_status": str(new_status.value),
+                    },
+                )
+            )
 
 
 def rotate(nodes: list) -> Iterator[list]:
