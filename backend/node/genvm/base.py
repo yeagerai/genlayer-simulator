@@ -172,6 +172,7 @@ class GenVM:
 
             if captured_stdout:
                 print(captured_stdout)
+                self.send_stdout(captured_stdout, self.msg_handler)
 
             if execution_result == ExecutionResultStatus.SUCCESS:
                 self.msg_handler.send_message(
@@ -269,6 +270,7 @@ class GenVM:
 
             if captured_stdout:
                 print(captured_stdout)
+                self.send_stdout(captured_stdout, self.msg_handler)
 
             if execution_result == ExecutionResultStatus.SUCCESS:
                 self.msg_handler.send_message(
@@ -391,6 +393,19 @@ class GenVM:
 
         return abi
 
+    @staticmethod
+    def send_stdout(stdout: str, msg_handler: MessageHandler) -> str:
+        for line in stdout.splitlines():
+            msg_handler.send_message(
+                LogEvent(
+                    "contract_stdout",
+                    EventType.INFO,
+                    EventScope.GENVM,
+                    line,
+                ),
+                log_to_terminal=False,
+            )
+
     def get_contract_data(
         self, code: str, state: str, method_name: str, method_args: list
     ) -> dict:
@@ -422,6 +437,7 @@ class GenVM:
 
             if captured_stdout:
                 print(captured_stdout)
+                self.send_stdout(captured_stdout, self.msg_handler)
 
             self.msg_handler.send_message(
                 LogEvent(
