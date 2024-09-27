@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
+from typing import Iterable, Optional
 
 
 class Vote(Enum):
@@ -19,6 +19,13 @@ class ExecutionResultStatus(Enum):
 
 
 @dataclass
+class PendingTransaction:
+    address: str  # Address of the contract to call
+    method_name: str
+    args: list[str]
+
+
+@dataclass
 class Receipt:
     class_name: str
     method: str
@@ -31,6 +38,7 @@ class Receipt:
     execution_result: ExecutionResultStatus
     error: Optional[Exception] = None
     vote: Optional[Vote] = None
+    pending_transactions: Iterable[PendingTransaction] = ()
 
     def to_dict(self):
         return {
@@ -45,4 +53,8 @@ class Receipt:
             "node_config": self.node_config,
             "eq_outputs": self.eq_outputs,
             "error": str(self.error) if self.error else None,
+            "pending_transactions": [
+                pending_transaction.__dict__
+                for pending_transaction in self.pending_transactions
+            ],
         }
