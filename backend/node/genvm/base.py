@@ -169,18 +169,23 @@ class GenVM:
 
         if self.contract_runner.mode == ExecutionMode.LEADER:
             captured_stdout = stdout_buffer.getvalue()
-            self.msg_handler.send_message(
-                LogEvent(
-                    "deploying_contract",
-                    EventType.INFO,
-                    EventScope.GENVM,
-                    "Deploying contract",
-                    {
-                        "constructor_args": constructor_args,
-                        "output": captured_stdout,
-                    },
+
+            if captured_stdout:
+                print(captured_stdout)
+
+            if execution_result == ExecutionResultStatus.SUCCESS:
+                self.msg_handler.send_message(
+                    LogEvent(
+                        "deploying_contract",
+                        EventType.INFO,
+                        EventScope.GENVM,
+                        "Deploying contract",
+                        {
+                            "constructor_args": constructor_args,
+                            "output": captured_stdout,
+                        },
+                    )
                 )
-            )
 
         return self._generate_receipt(
             class_name,
@@ -261,19 +266,24 @@ class GenVM:
 
         if self.contract_runner.mode == ExecutionMode.LEADER:
             captured_stdout = stdout_buffer.getvalue()
-            self.msg_handler.send_message(
-                LogEvent(
-                    "write_contract",
-                    EventType.INFO,
-                    EventScope.GENVM,
-                    "Execute method: " + function_name,
-                    {
-                        "method_name": function_name,
-                        "method_args": args,
-                        "output": captured_stdout,
-                    },
+
+            if captured_stdout:
+                print(captured_stdout)
+
+            if execution_result == ExecutionResultStatus.SUCCESS:
+                self.msg_handler.send_message(
+                    LogEvent(
+                        "write_contract",
+                        EventType.INFO,
+                        EventScope.GENVM,
+                        "Execute method: " + function_name,
+                        {
+                            "method_name": function_name,
+                            "method_args": args,
+                            "output": captured_stdout,
+                        },
+                    )
                 )
-            )
 
         return self._generate_receipt(
             class_name,
@@ -409,6 +419,10 @@ class GenVM:
 
         if self.contract_runner.mode == ExecutionMode.LEADER:
             captured_stdout = stdout_buffer.getvalue()
+
+            if captured_stdout:
+                print(captured_stdout)
+
             self.msg_handler.send_message(
                 LogEvent(
                     "read_contract",
