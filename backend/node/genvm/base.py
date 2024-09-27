@@ -1,5 +1,6 @@
 # backend/node/genvm/base.py
 
+from functools import partial
 import inspect
 import re
 import pickle
@@ -7,7 +8,8 @@ import base64
 import sys
 import traceback
 import io
-from contextlib import contextmanager, redirect_stdout
+from contextlib import contextmanager, redirect_stderr, redirect_stdout
+from typing import Any, Callable
 
 from backend.database_handler.contract_snapshot import ContractSnapshot
 from backend.node.genvm.equivalence_principle import EquivalencePrinciple
@@ -18,7 +20,7 @@ from backend.protocol_rpc.message_handler.base import MessageHandler
 
 
 @contextmanager
-def safe_globals():
+def safe_globals(override_globals: dict[str] = None):
     old_globals = globals().copy()
     globals().update(
         {
@@ -26,14 +28,22 @@ def safe_globals():
             "VectorStore": VectorStore,
         }
     )
+    if override_globals:
+        globals().update(override_globals)
     try:
         yield
     finally:
+        globals().clear()
         globals().update(old_globals)
 
 
 class ContractRunner:
-    def __init__(self, mode: ExecutionMode, node_config: dict):
+    def __init__(
+        self,
+        mode: ExecutionMode,
+        node_config: dict,
+        contract_snapshot_factory: Callable[[str], ContractSnapshot],
+    ):
         self.mode = mode  # if the node is acting as "validator" or "leader"
         self.node_config = node_config  # provider, model, config, stake
         self.from_address = None  # the address of the transaction sender
@@ -42,6 +52,7 @@ class ContractRunner:
         self.eq_outputs = {
             ExecutionMode.LEADER.value: {}
         }  # the eq principle outputs for the leader and validators
+        self.contract_snapshot_factory = contract_snapshot_factory
 
 
 class GenVM:
@@ -52,12 +63,15 @@ class GenVM:
         snapshot: ContractSnapshot,
         validator_mode: str,
         validator: dict,
+        contract_snapshot_factory: Callable[[str], ContractSnapshot],
         msg_handler: MessageHandler = None,
     ):
         self.snapshot = snapshot
         self.validator_mode = validator_mode
         self.msg_handler = msg_handler
-        self.contract_runner = ContractRunner(validator_mode, validator)
+        self.contract_runner = ContractRunner(
+            validator_mode, validator, contract_snapshot_factory
+        )
 
     @staticmethod
     def _get_contract_class_name(contract_code: str) -> str:
@@ -102,11 +116,24 @@ class GenVM:
         execution_result = ExecutionResultStatus.SUCCESS
         error = None
 
+        self.eq_principle.contract_runner = self.contract_runner
+        if self.contract_runner.mode == ExecutionMode.VALIDATOR:
+            self.contract_runner.eq_outputs[ExecutionMode.LEADER.value] = (
+                leader_receipt.eq_outputs[ExecutionMode.LEADER.value]
+            )
+
         # Buffers to capture stdout and stderr
         stdout_buffer = io.StringIO()
 
-        with redirect_stdout(stdout_buffer), safe_globals():
-            globals()["contract_runner"] = self.contract_runner
+        with redirect_stdout(stdout_buffer), safe_globals(
+            {
+                "contract_runner": self.contract_runner,
+                "Contract": partial(
+                    ExternalContract,
+                    self.contract_runner.contract_snapshot_factory,
+                ),
+            }
+        ):
             local_namespace = {}
             exec(code_to_deploy, globals(), local_namespace)
 
@@ -115,12 +142,6 @@ class GenVM:
             # Ensure the class and other necessary elements are in the global local_namespace if needed
             for name, value in local_namespace.items():
                 globals()[name] = value
-
-            self.eq_principle.contract_runner = self.contract_runner
-            if self.contract_runner.mode == ExecutionMode.VALIDATOR:
-                self.contract_runner.eq_outputs[ExecutionMode.LEADER.value] = (
-                    leader_receipt.eq_outputs[ExecutionMode.LEADER.value]
-                )
 
             module = sys.modules[__name__]
             setattr(module, class_name, contract_class)
@@ -190,29 +211,35 @@ class GenVM:
         execution_result = ExecutionResultStatus.SUCCESS
         error = None
 
+        self.eq_principle.contract_runner = self.contract_runner
+
+        if self.contract_runner.mode == ExecutionMode.VALIDATOR:
+            self.contract_runner.eq_outputs[ExecutionMode.LEADER.value] = (
+                leader_receipt.eq_outputs[ExecutionMode.LEADER.value]
+            )
+
         # Buffers to capture stdout and stderr
         stdout_buffer = io.StringIO()
 
-        with redirect_stdout(stdout_buffer), safe_globals():
-            globals()["contract_runner"] = self.contract_runner
+        with redirect_stdout(stdout_buffer), safe_globals(
+            {
+                "contract_runner": self.contract_runner,
+                "Contract": partial(
+                    ExternalContract,
+                    self.contract_runner.contract_snapshot_factory,
+                ),
+            }
+        ):
             local_namespace = {}
             # Execute the code to ensure all classes are defined in the local_namespace
             exec(contract_code, globals(), local_namespace)
 
             # Ensure the class and other necessary elements are in the global local_namespace if needed
-            for name, value in local_namespace.items():
-                globals()[name] = value
-
-            self.eq_principle.contract_runner = self.contract_runner
+            globals().update(local_namespace)
 
             contract_encoded_state = self.snapshot.encoded_state
             decoded_pickled_object = base64.b64decode(contract_encoded_state)
             current_contract = pickle.loads(decoded_pickled_object)
-
-            if self.contract_runner.mode == ExecutionMode.VALIDATOR:
-                self.contract_runner.eq_outputs[ExecutionMode.LEADER.value] = (
-                    leader_receipt.eq_outputs[ExecutionMode.LEADER.value]
-                )
 
             function_to_run = getattr(current_contract, function_name, None)
 
@@ -347,40 +374,60 @@ class GenVM:
 
         return abi
 
+    @staticmethod
     def get_contract_data(
-        self, code: str, state: str, method_name: str, method_args: list
-    ) -> dict:
-        namespace = {}
+        code: str,
+        state: str,
+        method_name: str,
+        method_args: list,
+        contract_snapshot_factory: Callable[[str], ContractSnapshot],
+        stdout_stderr_buffer=None,
+    ) -> Any:
+        decoded_pickled_object = base64.b64decode(state)
 
-        # Buffers to capture stdout and stderr
-        stdout_buffer = io.StringIO()
-
-        with redirect_stdout(stdout_buffer), safe_globals():
+        with redirect_stdout(stdout_stderr_buffer), redirect_stderr(
+            stdout_stderr_buffer
+        ), safe_globals(
+            {
+                "Contract": partial(
+                    ExternalContract,
+                    contract_snapshot_factory,
+                )
+            }
+        ):
+            local_namespace = {}
             # Execute the code to ensure all classes are defined in the namespace
-            exec(code, globals(), namespace)
+            exec(code, globals(), local_namespace)
 
             # Ensure the class and other necessary elements are in the global namespace if needed
-            for name, value in namespace.items():
-                globals()[name] = value
+            globals().update(local_namespace)
 
-            decoded_pickled_object = base64.b64decode(state)
             contract_state = pickle.loads(decoded_pickled_object)
-
             method_to_call = getattr(contract_state, method_name)
-            result = method_to_call(*method_args)
 
-            # Clean up
-            for name in namespace.keys():
-                del globals()[name]
+            return method_to_call(*method_args)
 
-        if self.contract_runner.mode == ExecutionMode.LEADER:
-            # Retrieve the captured stdout and stderr
-            captured_stdout = stdout_buffer.getvalue()
-            if captured_stdout:
-                socket_message = {
-                    "function": "intelligent_contract_execution",
-                    "response": {"status": "info", "message": captured_stdout},
-                }
-                self.msg_handler.socket_emit(socket_message)
 
-        return result
+class ExternalContract:
+    def __init__(
+        self, contract_snapshot_factory: Callable[[str], ContractSnapshot], address: str
+    ):
+        self.address = address
+
+        self.contract_snapshot = contract_snapshot_factory(address)
+        self.contract_snapshot_factory = contract_snapshot_factory
+
+    def __getattr__(self, name):
+        def method(*args, **kwargs):
+            if not re.match("get_", name):
+                raise Exception("Method name must start with 'get_'")
+
+            return GenVM.get_contract_data(
+                self.contract_snapshot.contract_code,
+                self.contract_snapshot.encoded_state,
+                name,
+                args,
+                self.contract_snapshot_factory,
+            )
+
+        return method

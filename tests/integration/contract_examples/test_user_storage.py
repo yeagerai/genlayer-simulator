@@ -43,12 +43,11 @@ def test_user_storage(setup_validators):
 
     # Deploy Contract
     # Deploy Contract
-    _, transaction_response_deploy = deploy_intelligent_contract(
+    contract_address, transaction_response_deploy = deploy_intelligent_contract(
         from_account_a, contract_code, "{}"
     )
 
     assert has_success_status(transaction_response_deploy)
-    contract_address = transaction_response_deploy["data"]["contract_address"]
 
     ########################################
     ######### GET Initial State ############
@@ -61,7 +60,7 @@ def test_user_storage(setup_validators):
     ########################################
     ########## ADD User A State ############
     ########################################
-    _, transaction_response_call_1 = send_transaction(
+    transaction_response_call_1 = send_transaction(
         from_account_a, contract_address, "update_storage", [INITIAL_STATE_USER_A]
     )
     assert has_success_status(transaction_response_call_1)
@@ -87,7 +86,7 @@ def test_user_storage(setup_validators):
     ########################################
     ########## ADD User B State ############
     ########################################
-    _, transaction_response_call_2 = send_transaction(
+    transaction_response_call_2 = send_transaction(
         from_account_b, contract_address, "update_storage", [INITIAL_STATE_USER_B]
     )
     assert has_success_status(transaction_response_call_2)
@@ -105,7 +104,7 @@ def test_user_storage(setup_validators):
     #########################################
     ######### UPDATE User A State ###########
     #########################################
-    _, transaction_response_call_3 = send_transaction(
+    transaction_response_call_3 = send_transaction(
         from_account_a, contract_address, "update_storage", [UPDATED_STATE_USER_A]
     )
     assert has_success_status(transaction_response_call_3)

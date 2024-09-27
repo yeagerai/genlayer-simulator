@@ -2,10 +2,13 @@
 import random
 import json
 from functools import partial
+from typing import Any
 from flask_jsonrpc import JSONRPC
 from sqlalchemy import Table
+from sqlalchemy.orm import Session
 
-from backend.database_handler.db_client import DBClient
+
+from backend.database_handler.contract_snapshot import ContractSnapshot
 from backend.database_handler.llm_providers import LLMProviderRegistry
 from backend.database_handler.models import Base
 from backend.domain.types import LLMProvider, Validator
@@ -14,7 +17,6 @@ from backend.node.create_nodes.providers import (
     validate_provider,
 )
 from backend.node.genvm.llms import get_llm_plugin
-from backend.protocol_rpc.configuration import GlobalConfiguration
 from backend.protocol_rpc.message_handler.base import MessageHandler
 from backend.database_handler.accounts_manager import AccountsManager
 from backend.database_handler.validators_registry import ValidatorsRegistry
@@ -43,14 +45,12 @@ def ping() -> str:
 
 
 ####### SIMULATOR ENDPOINTS #######
-def clear_db_tables(db_client: DBClient, tables: list) -> None:
-    with db_client.get_session() as session:
-        for table_name in tables:
-            table = Table(
-                table_name, Base.metadata, autoload=True, autoload_with=session.bind
-            )
-            session.execute(table.delete())
-        session.commit()
+def clear_db_tables(session: Session, tables: list) -> None:
+    for table_name in tables:
+        table = Table(
+            table_name, Base.metadata, autoload=True, autoload_with=session.bind
+        )
+        session.execute(table.delete())
 
 
 def fund_account(
@@ -301,6 +301,7 @@ def get_contract_schema(
         ),
         leader_receipt=None,
         msg_handler=msg_handler,
+        contract_snapshot_factory=None,
     )
     return node.get_contract_schema(contract_account["data"]["code"])
 
@@ -324,6 +325,7 @@ def get_contract_schema_for_code(
         ),
         leader_receipt=None,
         msg_handler=msg_handler,
+        contract_snapshot_factory=None,
     )
     return node.get_contract_schema(contract_code)
 
@@ -347,11 +349,12 @@ def get_transaction_by_hash(
 
 
 def call(
+    session: Session,
     accounts_manager: AccountsManager,
     msg_handler: MessageHandler,
     params: dict,
     block_tag: str = "latest",
-) -> any:
+) -> Any:
     to_address = params["to"]
     from_address = params["from"] if "from" in params else None
     data = params["data"]
@@ -381,6 +384,7 @@ def call(
         ),
         leader_receipt=None,
         msg_handler=msg_handler,
+        contract_snapshot_factory=partial(ContractSnapshot, session=session),
     )
 
     method_args = decoded_data.function_args
@@ -481,7 +485,7 @@ def send_raw_transaction(
 def register_all_rpc_endpoints(
     jsonrpc: JSONRPC,
     msg_handler: MessageHandler,
-    genlayer_db_client: DBClient,
+    request_session: Session,
     accounts_manager: AccountsManager,
     transactions_processor: TransactionsProcessor,
     validators_registry: ValidatorsRegistry,
@@ -491,7 +495,7 @@ def register_all_rpc_endpoints(
 
     register_rpc_endpoint(ping)
     register_rpc_endpoint(
-        partial(clear_db_tables, genlayer_db_client),
+        partial(clear_db_tables, request_session),
         method_name="sim_clearDbTables",
     )
     register_rpc_endpoint(
@@ -581,7 +585,7 @@ def register_all_rpc_endpoints(
         method_name="eth_getTransactionByHash",
     )
     register_rpc_endpoint(
-        partial(call, accounts_manager, msg_handler),
+        partial(call, request_session, accounts_manager, msg_handler),
         method_name="eth_call",
     )
     register_rpc_endpoint(

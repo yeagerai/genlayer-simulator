@@ -34,11 +34,10 @@ def test_log_indexer(setup_validators, from_account):
     assert_dict_exact(result_schema, log_indexer_contract_schema)
 
     # Deploy Contract
-    _, transaction_response_deploy = deploy_intelligent_contract(
+    contract_address, transaction_response_deploy = deploy_intelligent_contract(
         from_account, contract_code, "{}"
     )
     assert has_success_status(transaction_response_deploy)
-    contract_address = transaction_response_deploy["data"]["contract_address"]
 
     # ##########################################
     # ##### Get closest vector when empty ######
@@ -51,7 +50,7 @@ def test_log_indexer(setup_validators, from_account):
     # ########################################
     # ############## Add log 0 ###############
     # ########################################
-    _, transaction_response_add_log_0 = send_transaction(
+    transaction_response_add_log_0 = send_transaction(
         from_account,
         contract_address,
         "add_log",
@@ -80,7 +79,7 @@ def test_log_indexer(setup_validators, from_account):
     # ########################################
     # ############## Add log 1 ###############
     # ########################################
-    _, transaction_response_add_log_1 = send_transaction(
+    transaction_response_add_log_1 = send_transaction(
         from_account,
         contract_address,
         "add_log",
@@ -99,7 +98,7 @@ def test_log_indexer(setup_validators, from_account):
     # ########################################
     # ########### Update log 0 ##############
     # ########################################
-    _, transaction_response_update_log_0 = send_transaction(
+    transaction_response_update_log_0 = send_transaction(
         from_account,
         contract_address,
         "update_log",
@@ -119,7 +118,7 @@ def test_log_indexer(setup_validators, from_account):
     # ########################################
     # ########### Remove log 0 ##############
     # ########################################
-    _, transaction_response_remove_log_0 = send_transaction(
+    transaction_response_remove_log_0 = send_transaction(
         from_account,
         contract_address,
         "remove_log",
@@ -141,7 +140,7 @@ def test_log_indexer(setup_validators, from_account):
     # ########################################
 
     # Add third log
-    _, transaction_response_add_log_2 = send_transaction(
+    transaction_response_add_log_2 = send_transaction(
         from_account,
         contract_address,
         "add_log",

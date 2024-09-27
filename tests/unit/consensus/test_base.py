@@ -1,4 +1,5 @@
 from collections import defaultdict
+from typing import Callable
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -132,6 +133,7 @@ async def test_exec_transaction():
         contract_snapshot: ContractSnapshot,
         receipt: Receipt | None,
         msg_handler: MessageHandler,
+        contract_snapshot_factory: Callable[[str], ContractSnapshot],
     ):
         mock = Mock(Node)
 
@@ -240,6 +242,7 @@ async def test_exec_transaction_no_consensus():
         contract_snapshot: ContractSnapshot,
         receipt: Receipt | None,
         msg_handler: MessageHandler,
+        contract_snapshot_factory: Callable[[str], ContractSnapshot],
     ):
         mock = Mock(Node)
 
@@ -348,6 +351,7 @@ async def test_exec_transaction_one_disagreement():
         contract_snapshot: ContractSnapshot,
         receipt: Receipt | None,
         msg_handler: MessageHandler,
+        contract_snapshot_factory: Callable[[str], ContractSnapshot],
     ):
         mock = Mock(Node)
 

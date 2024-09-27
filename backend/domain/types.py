@@ -71,7 +71,7 @@ class Transaction:
     data: dict | None = None
     consensus_data: dict | None = None
     nonce: int | None = None
-    value: decimal.Decimal | None = None
+    value: int | None = None
     gaslimit: int | None = None
     r: int | None = None
     s: int | None = None
