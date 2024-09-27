@@ -22,7 +22,7 @@ class ExecutionResultStatus(Enum):
 class PendingTransaction:
     address: str  # Address of the contract to call
     method_name: str
-    args: list[str]
+    args: list
 
 
 @dataclass

@@ -5,6 +5,7 @@ DEFAULT_CONSENSUS_SLEEP_TIME = 5
 
 import asyncio
 from collections import deque
+import json
 import traceback
 from typing import Callable, Iterator
 
@@ -106,8 +107,9 @@ class ConsensusAlgorithm:
                         # https://docs.sqlalchemy.org/en/20/orm/session_basics.html#is-the-session-thread-safe-is-asyncsession-safe-to-share-in-concurrent-tasks
                         transaction = await queue.get()
                         with self.get_session() as session:
-                            tg.create_task(
-                                self.exec_transaction(
+
+                            async def exec_transaction_with_session_handling():
+                                await self.exec_transaction(
                                     transaction,
                                     TransactionsProcessor(session),
                                     ChainSnapshot(session),
@@ -116,7 +118,9 @@ class ConsensusAlgorithm:
                                         contract_address, session
                                     ),
                                 )
-                            )
+                                session.commit()
+
+                            tg.create_task(exec_transaction_with_session_handling())
 
             except Exception as e:
                 print("Error running consensus", e)
@@ -294,7 +298,7 @@ class ConsensusAlgorithm:
                 pending_transaction.address,
                 {
                     "function_name": pending_transaction.method_name,
-                    "function_args": pending_transaction.args,
+                    "function_args": json.dumps(pending_transaction.args),
                 },
                 value=0,  # No value gets transferred?
                 type=TransactionType.RUN_CONTRACT.value,
