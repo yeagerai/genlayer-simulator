@@ -57,8 +57,9 @@ class MessageHandler:
 
         log_method(log_message)
 
-    def send_message(self, log_event: LogEvent):
-        self.log_message(log_event)
+    def send_message(self, log_event: LogEvent, log_to_terminal: bool = True):
+        if log_to_terminal:
+            self.log_message(log_event)
         self.socket_emit(log_event)
 
 
