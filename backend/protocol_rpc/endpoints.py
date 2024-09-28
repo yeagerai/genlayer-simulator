@@ -356,10 +356,10 @@ def call(
     block_tag: str = "latest",
 ) -> Any:
     to_address = params["to"]
-    from_address = params["from"]
+    from_address = params["from"] if "from" in params else None
     data = params["data"]
 
-    if not accounts_manager.is_valid_address(from_address):
+    if from_address and not accounts_manager.is_valid_address(from_address):
         raise InvalidAddressError(from_address)
 
     if not accounts_manager.is_valid_address(to_address):
