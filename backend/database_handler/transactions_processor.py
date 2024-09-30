@@ -84,7 +84,9 @@ class TransactionsProcessor:
         #     nonce = self.get_transaction_count(from_address)
 
         # TODO: constraints
-        # - Ensure nonce is unique or allow overwriting with higher gas like eth?
+        # - What increseases the tx count? when tx is pending? final?
+        # - Ensure nonce is unique
+        # - Allow overwriting with higher gas
         # - So far the db constraints prevent duplicate nonce; maybe we should catch it more gracefully / earlier
         # - Prevent skipping a nonce index
 
