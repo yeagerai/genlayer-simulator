@@ -35,6 +35,11 @@ class TransactionsProcessor:
             "created_at": transaction_data.created_at.isoformat(),
             "leader_only": transaction_data.leader_only,
             "client_session_id": transaction_data.client_session_id,
+            "triggered_by": transaction_data.triggered_by,
+            "triggered_transactions": [
+                transaction.hash
+                for transaction in transaction_data.triggered_transactions
+            ],
         }
 
     @staticmethod
@@ -80,6 +85,7 @@ class TransactionsProcessor:
         type: int,
         leader_only: bool,
         client_session_id: str | None,
+        triggered_by_hash: str | None = None,
     ) -> int:
         nonce = (
             self.session.query(Transactions)
@@ -109,6 +115,7 @@ class TransactionsProcessor:
             v=None,
             leader_only=leader_only,
             client_session_id=client_session_id,
+            triggered_by_hash=triggered_by_hash,
         )
 
         self.session.add(new_transaction)
