@@ -6,12 +6,12 @@ DEFAULT_CONSENSUS_SLEEP_TIME = 5
 import asyncio
 from collections import deque
 import traceback
-from typing import Any, Callable, Iterator
+from typing import Callable, Iterator
 
+from sqlalchemy.orm import Session
 from backend.consensus.vrf import get_validators_for_transaction
 from backend.database_handler.chain_snapshot import ChainSnapshot
 from backend.database_handler.contract_snapshot import ContractSnapshot
-from backend.database_handler.db_client import DBClient
 from backend.database_handler.transactions_processor import (
     TransactionsProcessor,
     TransactionStatus,
@@ -41,6 +41,7 @@ def node_factory(
     contract_snapshot: ContractSnapshot,
     leader_receipt: Receipt | None,
     msg_handler: MessageHandler,
+    contract_snapshot_factory: Callable[[str], ContractSnapshot],
 ) -> Node:
     return Node(
         contract_snapshot=contract_snapshot,
@@ -58,16 +59,17 @@ def node_factory(
                 plugin_config=validator["plugin_config"],
             ),
         ),
+        contract_snapshot_factory=contract_snapshot_factory,
     )
 
 
 class ConsensusAlgorithm:
     def __init__(
         self,
-        dbclient: DBClient,
+        get_session: Callable[[], Session],
         msg_handler: MessageHandler,
     ):
-        self.dbclient = dbclient
+        self.get_session = get_session
         self.msg_handler = msg_handler
         self.queues: dict[str, asyncio.Queue] = {}
 
@@ -79,7 +81,7 @@ class ConsensusAlgorithm:
 
     async def _crawl_snapshot(self):
         while True:
-            with self.dbclient.get_session() as session:
+            with self.get_session() as session:
                 chain_snapshot = ChainSnapshot(session)
                 pending_transactions = chain_snapshot.get_pending_transactions()
                 for transaction in pending_transactions:
@@ -108,7 +110,7 @@ class ConsensusAlgorithm:
                         # sessions cannot be shared between coroutines, we need to create a new session for each coroutine
                         # https://docs.sqlalchemy.org/en/20/orm/session_basics.html#is-the-session-thread-safe-is-asyncsession-safe-to-share-in-concurrent-tasks
                         transaction = await queue.get()
-                        with self.dbclient.get_session() as session:
+                        with self.get_session() as session:
                             tg.create_task(
                                 self.exec_transaction(
                                     transaction,
@@ -140,6 +142,7 @@ class ConsensusAlgorithm:
                 ContractSnapshot,
                 Receipt | None,
                 MessageHandler,
+                Callable[[str], ContractSnapshot],
             ],
             Node,
         ] = node_factory,
@@ -165,6 +168,13 @@ class ConsensusAlgorithm:
 
         # Select Leader and validators
         all_validators = snapshot.get_all_validators()
+        if not all_validators:
+            print(
+                "No validators found for transaction, waiting for next round: ",
+                transaction,
+            )
+            return
+
         involved_validators = get_validators_for_transaction(
             all_validators, DEFAULT_VALIDATORS_COUNT
         )
@@ -191,6 +201,7 @@ class ConsensusAlgorithm:
                 contract_snapshot,
                 None,
                 self.msg_handler,
+                contract_snapshot_factory,
             )
 
             # Leader executes transaction
@@ -209,6 +220,7 @@ class ConsensusAlgorithm:
                     contract_snapshot,
                     leader_receipt,
                     self.msg_handler,
+                    contract_snapshot_factory,
                 )
                 for validator in remaining_validators
             ]
