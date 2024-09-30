@@ -99,7 +99,7 @@ def decode_method_call_data(data: str) -> DecodedMethodCallData:
     try:
         data_decoded = rlp.decode(data_bytes, MethodCallTransactionPayload)
     except rlp.exceptions.DeserializationError as e:
-        print("Error decoding method call data, falling back to default:", e)
+        print("WARN | falling back to default decode method call data:", e)
         data_decoded = rlp.decode(data_bytes, MethodCallTransactionPayloadDefault)
 
     leader_only = getattr(data_decoded, "leader_only", False)
