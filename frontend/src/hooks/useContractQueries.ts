@@ -92,6 +92,7 @@ export function useContractQueries() {
       const signed = await wallet.signTransaction({
         privateKey: accountsStore.currentPrivateKey,
         data,
+        // nonce: accountsStore.nonce ?? undefined,
       });
       const result = await rpcClient.sendTransaction(signed);
       const tx: TransactionItem = {
@@ -189,9 +190,16 @@ export function useContractQueries() {
       const data = [method, methodParamsAsString, leaderOnly];
       const to = (address.value as Address) || null;
 
+      const transactionCount = await accountsStore.getTransactionCount();
+      console.log({ transactionCount });
+
+      const nonce = transactionCount + 1;
+      console.log({ nonce });
+
       const signed = await wallet.signTransaction({
         privateKey: accountsStore.currentPrivateKey,
         data,
+        nonce,
         to,
       });
 

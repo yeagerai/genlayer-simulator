@@ -74,13 +74,19 @@ class TransactionsProcessor:
         data: dict,
         value: float,
         type: int,
+        nonce: int,
         leader_only: bool,
     ) -> int:
-        nonce = (
-            self.session.query(Transactions)
-            .filter(Transactions.from_address == from_address)
-            .count()
-        )
+        print("count:", self.get_transaction_count(from_address))
+        print("nonce:", nonce)
+        # TODO: Do we need to keep this fallback?
+        # if not nonce:
+        #     nonce = self.get_transaction_count(from_address)
+
+        # TODO: constraints
+        # - Ensure nonce is unique or allow overwriting with higher gas like eth?
+        # - So far the db constraints prevent duplicate nonce; maybe we should catch it more gracefully / earlier
+        # - Prevent skipping a nonce index
 
         hash = self._generate_transaction_hash(
             from_address, to_address, data, value, type, nonce
@@ -155,3 +161,11 @@ class TransactionsProcessor:
             TransactionStatus.FINALIZED.value,
         )
         self.session.commit()
+
+    def get_transaction_count(self, address: str) -> int:
+        nonce = (
+            self.session.query(Transactions)
+            .filter(Transactions.from_address == address)
+            .count()
+        )
+        return nonce

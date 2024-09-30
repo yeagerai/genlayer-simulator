@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useContractsStore, useTransactionsStore } from '@/stores';
+import {
+  useAccountsStore,
+  useContractsStore,
+  useTransactionsStore,
+} from '@/stores';
 import { TrashIcon } from '@heroicons/vue/24/solid';
 import TransactionItem from './TransactionItem.vue';
 import PageSection from './PageSection.vue';
 import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
 
 const contractsStore = useContractsStore();
+const accountsStore = useAccountsStore();
 const transactionsStore = useTransactionsStore();
 
 const transactions = computed(() => {
@@ -38,7 +43,10 @@ const handleClearTransactions = () => {
 
 <template>
   <PageSection data-testid="latest-transactions">
-    <template #title>Transactions</template>
+    <template #title
+      >Transactions ({{ accountsStore.transactionCount }})</template
+    >
+
     <template #actions
       ><GhostBtn
         v-if="transactions.length > 0"

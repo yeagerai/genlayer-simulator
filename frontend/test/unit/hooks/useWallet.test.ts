@@ -29,10 +29,12 @@ describe('useWallet', () => {
     expect(result.address).toBe(testAddress);
   });
 
+  // TODO: update for nonces
   it('it should sign a transaction and verify the signature and deduce the address', async () => {
     const signedTransaction = await wallet.signTransaction({
       privateKey: testPrivateKey,
       data: testData,
+      nonce: 0,
     });
     expect(signedTransaction).toBe(testSignedTransaction);
 

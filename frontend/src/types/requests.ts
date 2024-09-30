@@ -35,3 +35,7 @@ export interface UpdateValidatorRequest {
 export interface DeleteValidatorRequest {
   address: string;
 }
+
+export interface GetTransactionCountRequest {
+  address: string;
+}
