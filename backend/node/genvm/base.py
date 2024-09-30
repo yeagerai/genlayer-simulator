@@ -466,29 +466,29 @@ class GenVM:
             method_to_call = getattr(contract_state, method_name)
             result = method_to_call(*method_args)
 
-        if self.contract_runner.mode == ExecutionMode.LEADER:
-            captured_stdout = stdout_buffer.getvalue()
+            if self.contract_runner.mode == ExecutionMode.LEADER:
+                captured_stdout = stdout_buffer.getvalue()
 
-            if captured_stdout:
-                print(captured_stdout)
-                self.send_stdout(captured_stdout, self.msg_handler)
+                if captured_stdout:
+                    print(captured_stdout)
+                    self.send_stdout(captured_stdout, self.msg_handler)
 
-            self.msg_handler.send_message(
-                LogEvent(
-                    "read_contract",
-                    EventType.INFO,
-                    EventScope.GENVM,
-                    "Call method: " + method_name,
-                    {
-                        "method_name": method_name,
-                        "method_args": method_args,
-                        "result": result,
-                        "output": captured_stdout,
-                    },
+                self.msg_handler.send_message(
+                    LogEvent(
+                        "read_contract",
+                        EventType.INFO,
+                        EventScope.GENVM,
+                        "Call method: " + method_name,
+                        {
+                            "method_name": method_name,
+                            "method_args": method_args,
+                            "result": result,
+                            "output": captured_stdout,
+                        },
+                    )
                 )
-            )
 
-        return result
+            return result
 
 
 class ExternalContract:
