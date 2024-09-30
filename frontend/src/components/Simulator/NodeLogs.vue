@@ -193,9 +193,7 @@ const resetFilters = () => {
               {{ scope }}
             </button>
 
-            <div :class="colorMap[type]">
-              {{ message }}
-            </div>
+            <pre :class="colorMap[type]">{{ message }}</pre>
 
             <JsonViewer
               class="ml-2"
