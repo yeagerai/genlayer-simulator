@@ -24,10 +24,10 @@ class MessageHandler:
     def log_endpoint_info(self, func):
         return log_endpoint_info_wrapper(self, self.config)(func)
 
-    def socket_emit(self, log_event: LogEvent):
+    def _socket_emit(self, log_event: LogEvent):
         self.socketio.emit(log_event.name, log_event.to_dict())
 
-    def log_message(self, log_event: LogEvent):
+    def _log_message(self, log_event: LogEvent):
         logging_status = log_event.type.value
 
         if not hasattr(logger, logging_status):
@@ -59,8 +59,8 @@ class MessageHandler:
 
     def send_message(self, log_event: LogEvent, log_to_terminal: bool = True):
         if log_to_terminal:
-            self.log_message(log_event)
-        self.socket_emit(log_event)
+            self._log_message(log_event)
+        self._socket_emit(log_event)
 
 
 def log_endpoint_info_wrapper(msg_handler: MessageHandler, config: GlobalConfiguration):
