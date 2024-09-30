@@ -357,10 +357,11 @@ class ConsensusAlgorithm:
                     "function_name": pending_transaction.method_name,
                     "function_args": json.dumps(pending_transaction.args),
                 },
-                value=0,  # No value gets transferred?
+                value=0,  # we only handle EOA transfers at the moment, so no value gets transferred
                 type=TransactionType.RUN_CONTRACT.value,
                 leader_only=transaction.leader_only,  # Cascade
                 client_session_id=transaction.client_session_id,
+                triggered_by_hash=transaction.hash,
             )
 
     @staticmethod

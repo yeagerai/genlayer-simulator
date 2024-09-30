@@ -35,11 +35,7 @@ class TransactionsProcessor:
             "created_at": transaction_data.created_at.isoformat(),
             "leader_only": transaction_data.leader_only,
             "client_session_id": transaction_data.client_session_id,
-            "triggered_by": transaction_data.triggered_by,
-            "triggered_transactions": [
-                transaction.hash
-                for transaction in transaction_data.triggered_transactions
-            ],
+            "triggered_by": transaction_data.triggered_by_hash,
         }
 
     @staticmethod
