@@ -15,7 +15,12 @@ from backend.database_handler.contract_snapshot import ContractSnapshot
 from backend.node.genvm.equivalence_principle import EquivalencePrinciple
 from backend.node.genvm.code_enforcement import code_enforcement_check
 from backend.node.genvm.std.vector_store import VectorStore
-from backend.node.genvm.types import Receipt, ExecutionResultStatus, ExecutionMode
+from backend.node.genvm.types import (
+    PendingTransaction,
+    Receipt,
+    ExecutionResultStatus,
+    ExecutionMode,
+)
 from backend.protocol_rpc.message_handler.base import MessageHandler
 
 
@@ -72,6 +77,7 @@ class GenVM:
         self.contract_runner = ContractRunner(
             validator_mode, validator, contract_snapshot_factory
         )
+        self.pending_transactions: list[PendingTransaction] = []
 
     @staticmethod
     def _get_contract_class_name(contract_code: str) -> str:
@@ -101,6 +107,7 @@ class GenVM:
             eq_outputs=self.contract_runner.eq_outputs,
             execution_result=execution_result,
             error=error,
+            pending_transactions=self.pending_transactions,
         )
 
     async def deploy_contract(
@@ -131,6 +138,7 @@ class GenVM:
                 "Contract": partial(
                     ExternalContract,
                     self.contract_runner.contract_snapshot_factory,
+                    lambda x: self.pending_transactions.append(x),
                 ),
             }
         ):
@@ -227,6 +235,7 @@ class GenVM:
                 "Contract": partial(
                     ExternalContract,
                     self.contract_runner.contract_snapshot_factory,
+                    lambda x: self.pending_transactions.append(x),
                 ),
             }
         ):
@@ -392,6 +401,7 @@ class GenVM:
                 "Contract": partial(
                     ExternalContract,
                     contract_snapshot_factory,
+                    None,  # TODO: should read methods be allowed to add new transactions?
                 )
             }
         ):
@@ -410,24 +420,34 @@ class GenVM:
 
 class ExternalContract:
     def __init__(
-        self, contract_snapshot_factory: Callable[[str], ContractSnapshot], address: str
+        self,
+        contract_snapshot_factory: Callable[[str], ContractSnapshot],
+        schedule_pending_transaction: Callable[[PendingTransaction], None],
+        address: str,
     ):
         self.address = address
 
         self.contract_snapshot = contract_snapshot_factory(address)
         self.contract_snapshot_factory = contract_snapshot_factory
+        self.schedule_pending_transaction = schedule_pending_transaction
 
     def __getattr__(self, name):
         def method(*args, **kwargs):
-            if not re.match("get_", name):
-                raise Exception("Method name must start with 'get_'")
+            if re.match("get_", name):
+                return GenVM.get_contract_data(
+                    self.contract_snapshot.contract_code,
+                    self.contract_snapshot.encoded_state,
+                    name,
+                    args,
+                    self.contract_snapshot_factory,
+                )
+            else:
+                self.schedule_pending_transaction(
+                    PendingTransaction(
+                        address=self.address, method_name=name, args=args
+                    )
+                )
 
-            return GenVM.get_contract_data(
-                self.contract_snapshot.contract_code,
-                self.contract_snapshot.encoded_state,
-                name,
-                args,
-                self.contract_snapshot_factory,
-            )
+            return None
 
         return method
