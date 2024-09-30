@@ -144,6 +144,7 @@ class GenVM:
                     ExternalContract,
                     self.contract_runner.contract_snapshot_factory,
                     lambda x: self.pending_transactions.append(x),
+                    self,
                 ),
             }
         ):
@@ -255,6 +256,7 @@ class GenVM:
                     ExternalContract,
                     self.contract_runner.contract_snapshot_factory,
                     lambda x: self.pending_transactions.append(x),
+                    self,
                 ),
             }
         ):
@@ -448,19 +450,20 @@ class GenVM:
         method_name: str,
         method_args: list,
         contract_snapshot_factory: Callable[[str], ContractSnapshot],
-        stdout_stderr_buffer=None,
     ) -> Any:
         result = None
         decoded_pickled_object = base64.b64decode(state)
+        output_buffer = io.StringIO()
 
-        with redirect_stdout(stdout_stderr_buffer), redirect_stderr(
-            stdout_stderr_buffer
+        with redirect_stdout(output_buffer), redirect_stderr(
+            output_buffer
         ), safe_globals(
             {
                 "Contract": partial(
                     ExternalContract,
                     contract_snapshot_factory,
                     None,  # TODO: should read methods be allowed to add new transactions?
+                    self,
                 )
             }
         ):
@@ -475,13 +478,13 @@ class GenVM:
             method_to_call = getattr(contract_state, method_name)
             result = method_to_call(*method_args)
 
+            captured_stdout = output_buffer.getvalue()
+
+            if captured_stdout:
+                print(captured_stdout)
+                self.send_stdout(captured_stdout, self.msg_handler)
+
             if self.contract_runner.mode == ExecutionMode.LEADER:
-                captured_stdout = stdout_stderr_buffer.getvalue()
-
-                if captured_stdout:
-                    print(captured_stdout)
-                    self.send_stdout(captured_stdout, self.msg_handler)
-
                 self.msg_handler.send_message(
                     LogEvent(
                         "read_contract",
@@ -505,10 +508,11 @@ class ExternalContract:
         self,
         contract_snapshot_factory: Callable[[str], ContractSnapshot],
         schedule_pending_transaction: Callable[[PendingTransaction], None],
+        genvm: GenVM,
         address: str,
     ):
         self.address = address
-
+        self.genvm = genvm
         self.contract_snapshot = contract_snapshot_factory(address)
         self.contract_snapshot_factory = contract_snapshot_factory
         self.schedule_pending_transaction = schedule_pending_transaction
@@ -516,7 +520,7 @@ class ExternalContract:
     def __getattr__(self, name):
         def method(*args, **kwargs):
             if re.match("get_", name):
-                return GenVM.get_contract_data(
+                return self.genvm.get_contract_data(
                     self.contract_snapshot.contract_code,
                     self.contract_snapshot.encoded_state,
                     name,
