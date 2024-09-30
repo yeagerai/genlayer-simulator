@@ -422,16 +422,15 @@ class GenVM:
 
     @staticmethod
     def send_stdout(stdout: str, msg_handler: MessageHandler) -> str:
-        for line in stdout.splitlines():
-            msg_handler.send_message(
-                LogEvent(
-                    "contract_stdout",
-                    EventType.INFO,
-                    EventScope.GENVM,
-                    line,
-                ),
-                log_to_terminal=False,
-            )
+        msg_handler.send_message(
+            LogEvent(
+                "contract_stdout",
+                EventType.INFO,
+                EventScope.GENVM,
+                stdout,
+            ),
+            log_to_terminal=False,
+        )
 
     def get_contract_data(
         self,
