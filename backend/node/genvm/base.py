@@ -467,7 +467,7 @@ class GenVM:
             result = method_to_call(*method_args)
 
             if self.contract_runner.mode == ExecutionMode.LEADER:
-                captured_stdout = stdout_buffer.getvalue()
+                captured_stdout = stdout_stderr_buffer.getvalue()
 
                 if captured_stdout:
                     print(captured_stdout)
