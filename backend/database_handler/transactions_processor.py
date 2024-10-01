@@ -36,6 +36,10 @@ class TransactionsProcessor:
             "leader_only": transaction_data.leader_only,
             "client_session_id": transaction_data.client_session_id,
             "triggered_by": transaction_data.triggered_by_hash,
+            "triggered_transactions": [
+                transaction.hash
+                for transaction in transaction_data.triggered_transactions
+            ],
         }
 
     @staticmethod
@@ -152,7 +156,6 @@ class TransactionsProcessor:
         )
 
         transaction.status = new_status
-        self.session.commit()
 
     def set_transaction_result(self, transaction_hash: str, consensus_data: dict):
         transaction = (
@@ -162,4 +165,8 @@ class TransactionsProcessor:
         transaction.status = TransactionStatus.FINALIZED
         transaction.consensus_data = consensus_data
 
-        self.session.commit()
+        print(
+            "Updating transaction status",
+            transaction_hash,
+            TransactionStatus.FINALIZED.value,
+        )

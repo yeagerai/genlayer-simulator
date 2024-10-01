@@ -1,4 +1,4 @@
-from typing import Optional, Set
+from typing import List, Optional
 
 from sqlalchemy import (
     BigInteger,
@@ -109,7 +109,7 @@ class Transactions(Base):
         back_populates="triggered_transactions",
         default=None,
     )
-    triggered_transactions: Mapped[Set["Transactions"]] = relationship(
+    triggered_transactions: Mapped[List["Transactions"]] = relationship(
         "Transactions",
         back_populates="triggered_by",
         init=False,
