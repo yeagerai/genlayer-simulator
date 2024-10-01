@@ -35,7 +35,7 @@ export class RpcClient implements IRpcClient {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-session-id': webSocketClient.id,
+        'x-session-id': webSocketClient.id ?? '',
       },
       body: JSON.stringify(data),
     });
