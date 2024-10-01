@@ -260,9 +260,10 @@ class AnthropicPlugin:
                 buffer += event.delta.text
                 if return_streaming_channel is not None:
                     await return_streaming_channel.put(event.text)
-                match = re.search(regex, buffer)
-                if match:
-                    return match.group(0)
+                if regex:
+                    match = re.search(regex, buffer)
+                    if match:
+                        return match.group(0)
             elif event.type == "content_block_stop":
                 break
 
