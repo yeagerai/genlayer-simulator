@@ -111,8 +111,9 @@ def test_ollama_plugin():
     assert result != None and result != "" and isinstance(result, str)
 
 
-def test_anthropic_plugin():
-    plugin_config = {"api_key_env_var": "ANTROPIC_API_KEY", "api_url": None}
+@pytest.mark.asyncio
+async def test_anthropic_plugin():
+    plugin_config = {"api_key_env_var": "ANTHROPIC_API_KEY", "api_url": None}
     node_config = {
         "provider": "anthropic",
         "model": "claude-3-5-sonnet-20240620",
@@ -121,13 +122,11 @@ def test_anthropic_plugin():
     }
 
     plugin = AnthropicPlugin(plugin_config)
-    result = asyncio.run(
-        plugin.call(
-            node_config=node_config,
-            prompt="Once upon a time",
-            regex=None,
-            return_streaming_channel=None,
-        )
+    result = await plugin.call(
+        node_config=node_config,
+        prompt="Once upon a time",
+        regex=None,
+        return_streaming_channel=None,
     )
 
     print(result)
