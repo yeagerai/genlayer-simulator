@@ -256,8 +256,8 @@ class AnthropicPlugin:
             ],  # max_tokens, temperature, top_k, top_p, timeout, stop_sequences
         )
         async for event in stream:
-            if event.type == "text":
-                buffer += event.text
+            if event.type == "content_block_delta":
+                buffer += event.delta.text
                 if return_streaming_channel is not None:
                     await return_streaming_channel.put(event.text)
                 match = re.search(regex, buffer)
