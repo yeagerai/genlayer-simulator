@@ -44,9 +44,6 @@ class TransactionsProcessorMock:
     def set_transaction_result(self, transaction_hash: str, consensus_data: dict):
         transaction = self.get_transaction_by_hash(transaction_hash)
         transaction["consensus_data"] = consensus_data
-        status = TransactionStatus.FINALIZED
-        transaction["status"] = status
-        self.updated_transaction_status_history[transaction_hash].append(status)
 
 
 class SnapshotMock:
