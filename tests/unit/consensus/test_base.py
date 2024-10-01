@@ -165,7 +165,9 @@ async def test_exec_transaction():
         [transaction_to_dict(transaction)]
     )
 
-    await ConsensusAlgorithm(None, None).exec_transaction(
+    msg_handler_mock = Mock(MessageHandler)
+
+    await ConsensusAlgorithm(None, msg_handler_mock).exec_transaction(
         transaction=transaction,
         transactions_processor=transactions_processor,
         snapshot=SnapshotMock(nodes),
@@ -274,7 +276,9 @@ async def test_exec_transaction_no_consensus():
         [transaction_to_dict(transaction)]
     )
 
-    await ConsensusAlgorithm(None, None).exec_transaction(
+    msg_handler_mock = Mock(MessageHandler)
+
+    await ConsensusAlgorithm(None, msg_handler_mock).exec_transaction(
         transaction=transaction,
         transactions_processor=transactions_processor,
         snapshot=SnapshotMock(nodes),
@@ -389,7 +393,9 @@ async def test_exec_transaction_one_disagreement():
         [transaction_to_dict(transaction)]
     )
 
-    await ConsensusAlgorithm(None, None).exec_transaction(
+    msg_handler_mock = Mock(MessageHandler)
+
+    await ConsensusAlgorithm(None, msg_handler_mock).exec_transaction(
         transaction=transaction,
         transactions_processor=transactions_processor,
         snapshot=SnapshotMock(nodes),
