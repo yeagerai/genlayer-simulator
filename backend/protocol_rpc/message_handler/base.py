@@ -25,7 +25,7 @@ class MessageHandler:
         return log_endpoint_info_wrapper(self, self.config)(func)
 
     def _socket_emit(self, log_event: LogEvent):
-        self.socketio.emit(log_event.name, log_event.to_dict())
+        self.socketio.emit(log_event.name, log_event.to_dict(), to=log_event.client_id)
 
     def _log_message(self, log_event: LogEvent):
         logging_status = log_event.type.value
