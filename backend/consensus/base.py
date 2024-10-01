@@ -392,10 +392,11 @@ class ConsensusAlgorithm:
 
             # If the sender does not have enough balance, set the transaction status to UNDETERMINED
             if from_balance < transaction.value:
-                MessageHandler.dispatch_transaction_status_update(
+                ConsensusAlgorithm.dispatch_transaction_status_update(
                     transactions_processor,
                     transaction.hash,
                     TransactionStatus.UNDETERMINED,
+                    msg_handler,
                 )
                 return
 
