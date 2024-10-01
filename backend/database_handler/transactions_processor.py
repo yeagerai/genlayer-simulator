@@ -85,7 +85,9 @@ class TransactionsProcessor:
         type: int,
         leader_only: bool,
         client_session_id: str | None,
-        triggered_by_hash: str | None = None,
+        triggered_by_hash: (
+            str | None
+        ) = None,  # If filled, the transaction must be present in the database (committed)
     ) -> str:
         nonce = (
             self.session.query(Transactions)
@@ -93,12 +95,12 @@ class TransactionsProcessor:
             .count()
         )
 
-        hash = self._generate_transaction_hash(
+        transaction_hash = self._generate_transaction_hash(
             from_address, to_address, data, value, type, nonce
         )
 
         new_transaction = Transactions(
-            hash=hash,
+            hash=transaction_hash,
             from_address=from_address,
             to_address=to_address,
             data=data,
