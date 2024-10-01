@@ -3,22 +3,24 @@ import { nextTick, ref, watch, computed, type ComputedRef } from 'vue';
 import { useNodeStore, useUIStore } from '@/stores';
 import JsonViewer from '@/components/JsonViewer/json-viewer.vue';
 import GhostBtn from '../global/GhostBtn.vue';
-import { NoSymbolIcon } from '@heroicons/vue/24/solid';
 import EmptyListPlaceholder from './EmptyListPlaceholder.vue';
+import { Ban, SearchIcon, X } from 'lucide-vue-next';
+import LogFilterBtn from '@/components/Simulator/LogFilterBtn.vue';
+import TextInput from '../global/inputs/TextInput.vue';
 
 const nodeStore = useNodeStore();
 const uiStore = useUIStore();
 const scrollContainer = ref<HTMLDivElement>();
 
 type ColorMapType = {
-  [key: string]: string; // Add index signature
+  [key: string]: string;
 };
+
 const colorMap: ComputedRef<ColorMapType> = computed(() => ({
-  contractLog: uiStore.mode === 'light' ? 'text-black' : 'text-white',
-  info: 'text-blue-500',
-  error: 'text-red-500',
+  info: 'text-blue-400',
+  error: 'text-red-400',
   warning: 'text-yellow-500',
-  success: 'text-green-500',
+  success: 'text-green-400',
 }));
 
 watch(nodeStore.logs, () => {
@@ -29,21 +31,144 @@ watch(nodeStore.logs, () => {
     });
   });
 });
+
+const scopes = ref(['RPC', 'GenVM', 'Consensus']);
+const statuses = ref(['info', 'success', 'error']);
+
+const selectedScopes = ref(scopes.value);
+const selectedStatuses = ref(['info', 'success', 'error']);
+
+const toggleCategory = (category: string) => {
+  if (selectedScopes.value.includes(category)) {
+    selectedScopes.value = selectedScopes.value.filter((c) => c !== category);
+  } else {
+    selectedScopes.value.push(category);
+  }
+};
+
+const toggleStatus = (status: string) => {
+  if (selectedStatuses.value.includes(status)) {
+    selectedStatuses.value = selectedStatuses.value.filter((s) => s !== status);
+  } else {
+    selectedStatuses.value.push(status);
+  }
+};
+
+const filteredLogs = computed(() => {
+  return nodeStore.logs.filter((log) => {
+    const categoryMatch =
+      selectedScopes.value.length === 0 ||
+      selectedScopes.value.includes(log.scope);
+
+    const statusMatch =
+      selectedStatuses.value.length === 0 ||
+      selectedStatuses.value.includes(log.type);
+
+    const searchLower = nodeStore.searchFilter.toLowerCase();
+    const searchMatch =
+      log.message.toLowerCase().includes(searchLower) ||
+      log.scope.toLowerCase().includes(searchLower) ||
+      log.name.toLowerCase().includes(searchLower) ||
+      JSON.stringify(log.data).toLowerCase().includes(searchLower);
+
+    return categoryMatch && statusMatch && searchMatch;
+  });
+});
+
+const isolateCategory = (category: string) => {
+  if (
+    selectedScopes.value.includes(category) &&
+    selectedScopes.value.length == 1
+  ) {
+    selectedScopes.value = scopes.value;
+  } else {
+    selectedScopes.value = [category];
+  }
+};
+
+const isAnyFilterActive = computed(() => {
+  return (
+    nodeStore.searchFilter.length > 0 ||
+    selectedScopes.value.length !== scopes.value.length ||
+    selectedStatuses.value.length !== statuses.value.length
+  );
+});
+
+const resetFilters = () => {
+  nodeStore.searchFilter = '';
+  selectedScopes.value = scopes.value;
+  selectedStatuses.value = statuses.value;
+};
 </script>
 
 <template>
   <div class="flex h-full w-full flex-col">
     <div
-      class="flex flex-row items-center justify-between gap-1 border-b bg-white p-1 pl-2 dark:border-b-zinc-700 dark:bg-zinc-800"
+      class="flex flex-row items-center gap-1 border-b bg-white px-2 py-1 dark:border-b-zinc-700 dark:bg-zinc-800"
     >
-      Logs
-      <GhostBtn
-        @click="nodeStore.clearLogs"
-        v-tooltip="{ content: 'Clear Logs', placement: 'left' }"
-        class="opacity-50"
-      >
-        <NoSymbolIcon class="h-4 w-4" />
-      </GhostBtn>
+      <span class="text-sm">Logs</span>
+
+      <div class="flex grow flex-row items-center gap-2">
+        <div class="grow"></div>
+
+        <div class="relative flex max-w-[300px] grow">
+          <div
+            class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-1"
+          >
+            <SearchIcon class="h-3 w-3 text-gray-500" aria-hidden="true" />
+          </div>
+
+          <TextInput
+            id="searchLogs"
+            name="searchLogs"
+            type="text"
+            v-model="nodeStore.searchFilter"
+            placeholder="Filter by hash, method, etc."
+            class="rounded py-1 pl-5 pr-5 text-xs"
+          />
+
+          <div
+            v-if="nodeStore.searchFilter.length > 0"
+            @click="nodeStore.searchFilter = ''"
+            class="absolute inset-y-0 right-0 flex cursor-pointer items-center p-1 opacity-50 hover:opacity-100"
+          >
+            <X class="h-3 w-3 text-gray-300" aria-hidden="true" />
+          </div>
+        </div>
+
+        <div class="flex flex-row gap-1">
+          <LogFilterBtn
+            v-for="scope in scopes"
+            :key="scope"
+            :active="selectedScopes.includes(scope)"
+            :icon="scope"
+            @click="toggleCategory(scope)"
+          >
+            {{ scope }}
+          </LogFilterBtn>
+        </div>
+
+        <div class="flex flex-row gap-1">
+          <LogFilterBtn
+            v-for="status in statuses"
+            :key="status"
+            :active="selectedStatuses.includes(status)"
+            :icon="status"
+            @click="toggleStatus(status)"
+            :class="colorMap[status]"
+          >
+            {{ status }}
+          </LogFilterBtn>
+        </div>
+
+        <GhostBtn
+          @click="nodeStore.clearLogs"
+          v-tooltip="{ content: 'Clear Logs', placement: 'top' }"
+          class="opacity-50"
+        >
+          <Ban :size="14" />
+        </GhostBtn>
+      </div>
     </div>
 
     <div
@@ -51,62 +176,53 @@ watch(nodeStore.logs, () => {
       class="flex h-full w-full cursor-text flex-col overflow-y-auto bg-slate-50 dark:bg-zinc-900"
     >
       <div
-        v-show="nodeStore.logs.length > 0"
-        class="relative flex flex-col overflow-y-auto scroll-smooth p-1 pr-8"
+        v-show="filteredLogs.length > 0"
+        class="relative flex flex-col overflow-y-auto scroll-smooth"
         ref="scrollContainer"
       >
         <div
-          v-for="({ message, date }, index) in nodeStore.logs"
+          v-for="({ scope, type, message, data }, index) in filteredLogs"
           :key="index"
-          class="flex items-center"
+          class="flex flex-row border-b border-gray-200 px-1 py-1 font-mono text-[10px] first-line:items-center hover:bg-white dark:border-zinc-800 dark:hover:bg-zinc-800"
         >
-          <div
-            class="flex items-start"
-            :class="colorMap[message?.response?.status] || 'text-black-500'"
-          >
-            <div class="flex text-xs font-light">
-              <span class="flex w-8 flex-col items-center">{{
-                index + 1
-              }}</span>
-              {{ date }} ::
-            </div>
-            <div
-              v-if="typeof message === 'string'"
-              class="ml-1 flex flex-1 text-xs"
+          <div class="flex flex-row items-start gap-1">
+            <button
+              class="rounded border bg-white px-[3px] py-[1px] dark:border-zinc-700 dark:bg-zinc-800"
+              @click="isolateCategory(scope)"
             >
-              "{{ message }}
-            </div>
-            <div v-else class="ml-1 flex flex-1 text-xs">
-              {{ message.function }}
-              {{
-                message?.response?.message
-                  ? ` ===> ${message.response.message}`
-                  : ''
-              }}
-              <div
-                class="ml-2 flex text-xs"
-                v-if="typeof message.response?.data === 'string'"
-              >
-                {{ message.response?.data || '' }}
-              </div>
-              <JsonViewer
-                class="ml-2"
-                v-if="message.response?.data"
-                :value="message.response?.data"
-                :theme="uiStore.mode === 'light' ? 'light' : 'dark'"
-                :expand="false"
-                sort
-              />
-            </div>
+              {{ scope }}
+            </button>
+
+            <pre :class="colorMap[type]">{{ message }}</pre>
+
+            <JsonViewer
+              class="ml-2"
+              v-if="data"
+              :value="data"
+              :theme="uiStore.mode === 'light' ? 'light' : 'dark'"
+              :expand="false"
+              sort
+            />
           </div>
         </div>
       </div>
 
       <div
-        v-show="nodeStore.logs.length < 1"
+        v-show="filteredLogs.length < 1"
         class="grid h-full w-full place-items-center"
       >
-        <EmptyListPlaceholder> No logs found. </EmptyListPlaceholder>
+        <div>
+          <EmptyListPlaceholder>
+            No logs found.
+            <button
+              v-if="isAnyFilterActive"
+              class="text-center underline"
+              @click="resetFilters"
+            >
+              Reset filters
+            </button>
+          </EmptyListPlaceholder>
+        </div>
       </div>
     </div>
   </div>

@@ -22,6 +22,11 @@ from backend.node.genvm.types import (
     ExecutionMode,
 )
 from backend.protocol_rpc.message_handler.base import MessageHandler
+from backend.protocol_rpc.message_handler.types import (
+    LogEvent,
+    EventType,
+    EventScope,
+)
 
 
 @contextmanager
@@ -139,6 +144,7 @@ class GenVM:
                     ExternalContract,
                     self.contract_runner.contract_snapshot_factory,
                     lambda x: self.pending_transactions.append(x),
+                    self,
                 ),
             }
         ):
@@ -170,33 +176,47 @@ class GenVM:
                 )
 
             except Exception as e:
-                print("Error deploying contract", e)
                 trace = traceback.format_exc()
-                print(trace)
                 error = e
+                print("Error deploying contract", error)
+                print(trace)
                 execution_result = ExecutionResultStatus.ERROR
-                self.msg_handler.socket_emit(
-                    {
-                        "function": "intelligent_contract_execution",
-                        "response": {
-                            "status": "error",
-                            "message": f"{str(e)} ;; {trace}",
+                self.msg_handler.send_message(
+                    LogEvent(
+                        "contract_deployment_failed",
+                        EventType.ERROR,
+                        EventScope.GENVM,
+                        "Error deploying contract: " + str(error),
+                        {
+                            "error": str(error),
+                            "traceback": f"\n{trace}",
                         },
-                    }
+                    )
                 )
 
             ## Clean up
             delattr(module, class_name)
 
         if self.contract_runner.mode == ExecutionMode.LEADER:
-            # Retrieve the captured stdout and stderr
             captured_stdout = stdout_buffer.getvalue()
+
             if captured_stdout:
-                socket_message = {
-                    "function": "intelligent_contract_execution",
-                    "response": {"status": "info", "message": captured_stdout},
-                }
-                self.msg_handler.socket_emit(socket_message)
+                print(captured_stdout)
+                self.send_stdout(captured_stdout, self.msg_handler)
+
+            if execution_result == ExecutionResultStatus.SUCCESS:
+                self.msg_handler.send_message(
+                    LogEvent(
+                        "deploying_contract",
+                        EventType.SUCCESS,
+                        EventScope.GENVM,
+                        "Deploying contract",
+                        {
+                            "constructor_args": constructor_args,
+                            "output": captured_stdout,
+                        },
+                    )
+                )
 
         return self._generate_receipt(
             class_name,
@@ -236,6 +256,7 @@ class GenVM:
                     ExternalContract,
                     self.contract_runner.contract_snapshot_factory,
                     lambda x: self.pending_transactions.append(x),
+                    self,
                 ),
             }
         ):
@@ -258,24 +279,51 @@ class GenVM:
                 else:
                     function_to_run(*args)
             except Exception as e:
-                print("\nError running contract", e)
-                print(f"\n{traceback.format_exc()}")
+                trace = traceback.format_exc()
                 error = e
+                print("Error executing method", error)
+                print(trace)
                 execution_result = ExecutionResultStatus.ERROR
+                self.msg_handler.send_message(
+                    LogEvent(
+                        "write_contract_failed",
+                        EventType.ERROR,
+                        EventScope.GENVM,
+                        "Error executing method " + function_name + ": " + str(error),
+                        {
+                            "method_name": function_name,
+                            "method_args": args,
+                            "error": str(error),
+                            "traceback": f"\n{trace}",
+                        },
+                    )
+                )
 
             pickled_object = pickle.dumps(current_contract)
             encoded_pickled_object = base64.b64encode(pickled_object).decode("utf-8")
             class_name = self._get_contract_class_name(contract_code)
 
         if self.contract_runner.mode == ExecutionMode.LEADER:
-            # Retrieve the captured stdout and stderr
             captured_stdout = stdout_buffer.getvalue()
+
             if captured_stdout:
-                socket_message = {
-                    "function": "intelligent_contract_execution",
-                    "response": {"status": "info", "message": captured_stdout},
-                }
-                self.msg_handler.socket_emit(socket_message)
+                print(captured_stdout)
+                self.send_stdout(captured_stdout, self.msg_handler)
+
+            if execution_result == ExecutionResultStatus.SUCCESS:
+                self.msg_handler.send_message(
+                    LogEvent(
+                        "write_contract",
+                        EventType.INFO,
+                        EventScope.GENVM,
+                        "Execute method: " + function_name,
+                        {
+                            "method_name": function_name,
+                            "method_args": args,
+                            "output": captured_stdout,
+                        },
+                    )
+                )
 
         return self._generate_receipt(
             class_name,
@@ -384,24 +432,38 @@ class GenVM:
         return abi
 
     @staticmethod
+    def send_stdout(stdout: str, msg_handler: MessageHandler) -> str:
+        msg_handler.send_message(
+            LogEvent(
+                "contract_stdout",
+                EventType.INFO,
+                EventScope.GENVM,
+                stdout,
+            ),
+            log_to_terminal=False,
+        )
+
     def get_contract_data(
+        self,
         code: str,
         state: str,
         method_name: str,
         method_args: list,
         contract_snapshot_factory: Callable[[str], ContractSnapshot],
-        stdout_stderr_buffer=None,
     ) -> Any:
+        result = None
         decoded_pickled_object = base64.b64decode(state)
+        output_buffer = io.StringIO()
 
-        with redirect_stdout(stdout_stderr_buffer), redirect_stderr(
-            stdout_stderr_buffer
+        with redirect_stdout(output_buffer), redirect_stderr(
+            output_buffer
         ), safe_globals(
             {
                 "Contract": partial(
                     ExternalContract,
                     contract_snapshot_factory,
                     None,  # TODO: should read methods be allowed to add new transactions?
+                    self,
                 )
             }
         ):
@@ -414,8 +476,31 @@ class GenVM:
 
             contract_state = pickle.loads(decoded_pickled_object)
             method_to_call = getattr(contract_state, method_name)
+            result = method_to_call(*method_args)
 
-            return method_to_call(*method_args)
+            captured_stdout = output_buffer.getvalue()
+
+            if captured_stdout:
+                print(captured_stdout)
+                self.send_stdout(captured_stdout, self.msg_handler)
+
+            if self.contract_runner.mode == ExecutionMode.LEADER:
+                self.msg_handler.send_message(
+                    LogEvent(
+                        "read_contract",
+                        EventType.INFO,
+                        EventScope.GENVM,
+                        "Call method: " + method_name,
+                        {
+                            "method_name": method_name,
+                            "method_args": method_args,
+                            "result": result,
+                            "output": captured_stdout,
+                        },
+                    )
+                )
+
+            return result
 
 
 class ExternalContract:
@@ -423,10 +508,11 @@ class ExternalContract:
         self,
         contract_snapshot_factory: Callable[[str], ContractSnapshot],
         schedule_pending_transaction: Callable[[PendingTransaction], None],
+        genvm: GenVM,
         address: str,
     ):
         self.address = address
-
+        self.genvm = genvm
         self.contract_snapshot = contract_snapshot_factory(address)
         self.contract_snapshot_factory = contract_snapshot_factory
         self.schedule_pending_transaction = schedule_pending_transaction
@@ -434,7 +520,7 @@ class ExternalContract:
     def __getattr__(self, name):
         def method(*args, **kwargs):
             if re.match("get_", name):
-                return GenVM.get_contract_data(
+                return self.genvm.get_contract_data(
                     self.contract_snapshot.contract_code,
                     self.contract_snapshot.encoded_state,
                     name,

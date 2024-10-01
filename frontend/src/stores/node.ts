@@ -9,44 +9,45 @@ export const useNodeStore = defineStore('nodeStore', () => {
   const rpcClient = useRpcClient();
   const webSocketClient = useWebSocketClient();
   const logs = ref<NodeLog[]>([]);
-  const listenWebsocket = ref<boolean>(true);
   const contractsStore = useContractsStore();
   const nodeProviders = ref<Record<string, string[]>>({});
-  // state
   const validators = ref<ValidatorModel[]>([]);
   const isLoadingValidatorData = ref<boolean>(true);
+  const searchFilter = ref<string>('');
 
   if (!webSocketClient.connected) webSocketClient.connect();
-  webSocketClient.on('status_update', (event) => {
-    if (listenWebsocket.value) {
-      if (event.message?.function !== 'get_transaction_by_hash') {
-        if (event.message?.function === 'intelligent_contract_execution') {
-          const executionLogs: string[] =
-            event.message.response.message.split('\n\n');
-          executionLogs
-            .filter((log: string) => log.trim().length > 0)
-            .forEach((log: string) => {
-              logs.value.push({
-                date: new Date().toISOString(),
-                message: {
-                  function: 'Intelligent Contract Execution Log',
-                  trace_id: String(Math.random() * 100),
-                  response: {
-                    status: 'contractLog',
-                    message: log,
-                  },
-                },
-              });
-            });
-        } else {
-          logs.value.push({
-            date: new Date().toISOString(),
-            message: event.message,
-          });
-        }
-      }
-    }
+
+  const trackedEvents = [
+    'endpoint_call',
+    'endpoint_success',
+    'endpoint_error',
+    'transaction_status_updated',
+    'consensus_reached',
+    'consensus_failed',
+    'contract_stdout',
+    'read_contract',
+    'write_contract',
+    'write_contract_failed',
+    'deploying_contract',
+    'deployed_contract',
+    'contract_deployment_failed',
+  ];
+
+  trackedEvents.forEach((eventName) => {
+    webSocketClient.on(eventName, (data: any) => {
+      addLog({
+        scope: data.scope,
+        name: data.name,
+        type: data.type,
+        message: data.message,
+        data: data.data,
+      });
+    });
   });
+
+  function addLog(log: NodeLog) {
+    logs.value.push(log);
+  }
 
   async function getValidatorsData() {
     isLoadingValidatorData.value = true;
@@ -153,11 +154,11 @@ export const useNodeStore = defineStore('nodeStore', () => {
 
   return {
     logs,
-    listenWebsocket,
     validators,
     nodeProviders,
     contractsToDelete,
     isLoadingValidatorData,
+    searchFilter,
 
     getValidatorsData,
     createNewValidator,
