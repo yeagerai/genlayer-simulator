@@ -17,7 +17,10 @@ from backend.node.create_nodes.providers import (
     validate_provider,
 )
 from backend.node.genvm.llms import get_llm_plugin
-from backend.protocol_rpc.message_handler.base import MessageHandler
+from backend.protocol_rpc.message_handler.base import (
+    MessageHandler,
+    get_client_session_id,
+)
 from backend.database_handler.accounts_manager import AccountsManager
 from backend.database_handler.validators_registry import ValidatorsRegistry
 
@@ -39,10 +42,6 @@ from backend.node.base import Node
 from backend.node.genvm.types import ExecutionMode
 
 from flask import request
-
-
-def get_client_session_id() -> str:
-    return request.headers.get("X-Session-Id")
 
 
 ####### HELPER ENDPOINTS #######

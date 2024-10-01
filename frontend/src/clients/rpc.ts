@@ -13,6 +13,16 @@ export class RpcClient implements IRpcClient {
     params,
   }: JsonRPCRequest): Promise<JsonRPCResponse<T>> {
     const webSocketClient = useWebSocketClient();
+    // Wait for the websocket client to connect
+    await new Promise<void>((resolve) => {
+      if (webSocketClient.connected) {
+        resolve();
+      } else {
+        webSocketClient.on('connect', () => {
+          resolve();
+        });
+      }
+    });
 
     const requestId = uuidv4();
     const data = {
@@ -25,7 +35,7 @@ export class RpcClient implements IRpcClient {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-session-id': webSocketClient.id || '',
+        'x-session-id': webSocketClient.id,
       },
       body: JSON.stringify(data),
     });

@@ -17,6 +17,11 @@ from backend.protocol_rpc.message_handler.types import EventScope, EventType, Lo
 MAX_LOG_MESSAGE_LENGTH = 3000
 
 
+# TODO: this should probably live in another module
+def get_client_session_id() -> str:
+    return request.headers.get("x-session-id")
+
+
 class MessageHandler:
     def __init__(self, socketio: SocketIO, config: GlobalConfiguration):
         self.socketio = socketio
@@ -36,7 +41,9 @@ class MessageHandler:
         self.socketio.emit(
             log_event.name,
             log_event.to_dict(),
-            to=log_event.client_session_id or self.client_session_id,
+            to=log_event.client_session_id
+            or self.client_session_id
+            or get_client_session_id(),
         )
 
     def _log_message(self, log_event: LogEvent):
@@ -91,9 +98,6 @@ def log_endpoint_info_wrapper(msg_handler: MessageHandler, config: GlobalConfigu
                         EventScope.RPC,
                         "Endpoint called: " + func.__name__,
                         {"endpoint_name": func.__name__, "args": args},
-                        client_session_id=request.headers.get(
-                            "X-Session-Id"
-                        ),  # TODO: use get_client_session_id()
                     )
                 )
             try:
@@ -109,7 +113,6 @@ def log_endpoint_info_wrapper(msg_handler: MessageHandler, config: GlobalConfigu
                                 "endpoint_name": func.__name__,
                                 "result": result,
                             },
-                            client_session_id=request.headers.get("X-Session-Id"),
                         )
                     )
                 return result
@@ -125,7 +128,6 @@ def log_endpoint_info_wrapper(msg_handler: MessageHandler, config: GlobalConfigu
                             "error": str(e),
                             "traceback": traceback.format_exc(),
                         },
-                        client_session_id=request.headers.get("X-Session-Id"),
                     )
                 )
                 raise e
