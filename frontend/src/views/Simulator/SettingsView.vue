@@ -50,13 +50,13 @@ const handleResetStorage = async () => {
       </template>
 
       <template #actions>
-        <GhostBtn
+        <!-- <GhostBtn
           @click="isNewValidatorModalOpen = true"
           v-tooltip="'New Validator'"
           testId="create-new-validator-btn"
         >
           <PlusIcon class="h-4 w-4" />
-        </GhostBtn>
+        </GhostBtn> -->
       </template>
 
       <ContentLoader v-if="nodeStore.isLoadingValidatorData" />
@@ -78,7 +78,7 @@ const handleResetStorage = async () => {
         </div>
       </div>
 
-      <Btn
+      <!-- <Btn
         v-if="
           !nodeStore.hasAtLeastOneValidator && !nodeStore.isLoadingValidatorData
         "
@@ -86,7 +86,7 @@ const handleResetStorage = async () => {
         :icon="PlusIcon"
       >
         New Validator
-      </Btn>
+      </Btn> -->
 
       <ValidatorModal
         :open="isNewValidatorModalOpen"
