@@ -175,9 +175,8 @@ class GenVM:
                     "utf-8"
                 )
 
-            except Exception as e:
+            except Exception as error:
                 trace = traceback.format_exc()
-                error = e
                 print("Error deploying contract", error)
                 print(trace)
                 execution_result = ExecutionResultStatus.ERROR
@@ -278,9 +277,8 @@ class GenVM:
                     await function_to_run(*args)
                 else:
                     function_to_run(*args)
-            except Exception as e:
+            except Exception as error:
                 trace = traceback.format_exc()
-                error = e
                 print("Error executing method", error)
                 print(trace)
                 execution_result = ExecutionResultStatus.ERROR
