@@ -88,10 +88,10 @@ const handleResetStorage = async () => {
         New Validator
       </Btn> -->
 
-      <ValidatorModal
+      <!-- <ValidatorModal
         :open="isNewValidatorModalOpen"
         @close="isNewValidatorModalOpen = false"
-      />
+      /> -->
     </PageSection>
 
     <PageSection>

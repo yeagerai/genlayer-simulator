@@ -117,11 +117,11 @@ async function handleDeleteValidator() {
     </div>
   </div>
 
-  <ValidatorModal
+  <!-- <ValidatorModal
     :validator="validator"
     :open="isUpdateModalMopen"
     @close="isUpdateModalMopen = false"
-  />
+  /> -->
 </template>
 
 <style scoped>
