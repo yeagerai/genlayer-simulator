@@ -3,6 +3,8 @@ import json
 from functools import wraps
 from logging.config import dictConfig
 import traceback
+
+from flask import request
 from loguru import logger
 import sys
 
@@ -19,13 +21,23 @@ class MessageHandler:
     def __init__(self, socketio: SocketIO, config: GlobalConfiguration):
         self.socketio = socketio
         self.config = config
+        self.client_session_id = None
         setup_logging_config()
+
+    def with_client_session(self, client_session_id: str):
+        new_msg_handler = MessageHandler(self.socketio, self.config)
+        new_msg_handler.client_session_id = client_session_id
+        return new_msg_handler
 
     def log_endpoint_info(self, func):
         return log_endpoint_info_wrapper(self, self.config)(func)
 
     def _socket_emit(self, log_event: LogEvent):
-        self.socketio.emit(log_event.name, log_event.to_dict(), to=log_event.client_id)
+        self.socketio.emit(
+            log_event.name,
+            log_event.to_dict(),
+            to=log_event.client_session_id or self.client_session_id,
+        )
 
     def _log_message(self, log_event: LogEvent):
         logging_status = log_event.type.value
@@ -79,6 +91,9 @@ def log_endpoint_info_wrapper(msg_handler: MessageHandler, config: GlobalConfigu
                         EventScope.RPC,
                         "Endpoint called: " + func.__name__,
                         {"endpoint_name": func.__name__, "args": args},
+                        client_session_id=request.headers.get(
+                            "X-Session-Id"
+                        ),  # TODO: use get_client_session_id()
                     )
                 )
             try:
@@ -94,6 +109,7 @@ def log_endpoint_info_wrapper(msg_handler: MessageHandler, config: GlobalConfigu
                                 "endpoint_name": func.__name__,
                                 "result": result,
                             },
+                            client_session_id=request.headers.get("X-Session-Id"),
                         )
                     )
                 return result
@@ -109,6 +125,7 @@ def log_endpoint_info_wrapper(msg_handler: MessageHandler, config: GlobalConfigu
                             "error": str(e),
                             "traceback": traceback.format_exc(),
                         },
+                        client_session_id=request.headers.get("X-Session-Id"),
                     )
                 )
                 raise e

@@ -34,6 +34,7 @@ class TransactionsProcessor:
             "v": transaction_data.v,
             "created_at": transaction_data.created_at.isoformat(),
             "leader_only": transaction_data.leader_only,
+            "client_session_id": transaction_data.client_session_id,
         }
 
     @staticmethod
@@ -78,6 +79,7 @@ class TransactionsProcessor:
         value: float,
         type: int,
         leader_only: bool,
+        client_session_id: str | None,
     ) -> int:
         nonce = (
             self.session.query(Transactions)
@@ -106,6 +108,7 @@ class TransactionsProcessor:
             s=None,
             v=None,
             leader_only=leader_only,
+            client_session_id=client_session_id,
         )
 
         self.session.add(new_transaction)
