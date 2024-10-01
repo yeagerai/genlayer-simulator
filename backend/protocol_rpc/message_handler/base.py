@@ -19,7 +19,10 @@ MAX_LOG_MESSAGE_LENGTH = 3000
 
 # TODO: this should probably live in another module
 def get_client_session_id() -> str:
-    return request.headers.get("x-session-id")
+    try:
+        return request.headers.get("x-session-id")
+    except RuntimeError:  # when this is called outside of a request
+        return ""
 
 
 class MessageHandler:
