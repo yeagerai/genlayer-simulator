@@ -149,6 +149,7 @@ class TransactionsProcessor:
             self.session.query(Transactions).filter_by(hash=transaction_hash).one()
         )
 
+        transaction.status = TransactionStatus.FINALIZED
         transaction.consensus_data = consensus_data
 
         self.session.commit()
