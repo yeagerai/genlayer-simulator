@@ -24,6 +24,7 @@ def test_transactions_processor(transactions_processor: TransactionsProcessor):
         transaction_type,
         True,
     )
+    transactions_processor.session.commit()
 
     actual_transaction_hash = transactions_processor.insert_transaction(
         from_address,

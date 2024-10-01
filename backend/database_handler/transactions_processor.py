@@ -82,7 +82,7 @@ class TransactionsProcessor:
         leader_only: bool,
         client_session_id: str | None,
         triggered_by_hash: str | None = None,
-    ) -> int:
+    ) -> str:
         nonce = (
             self.session.query(Transactions)
             .filter(Transactions.from_address == from_address)
@@ -111,7 +111,11 @@ class TransactionsProcessor:
             v=None,
             leader_only=leader_only,
             client_session_id=client_session_id,
-            triggered_by_hash=triggered_by_hash,
+            triggered_by=(
+                self.session.query(Transactions).filter_by(hash=triggered_by_hash).one()
+                if triggered_by_hash
+                else None
+            ),
         )
 
         self.session.add(new_transaction)

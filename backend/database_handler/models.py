@@ -99,22 +99,21 @@ class Transactions(Base):
     # Relationship for triggered transactions
     triggered_by_hash: Mapped[Optional[str]] = mapped_column(
         ForeignKey("transactions.hash", name="triggered_by_hash_fkey"),
-        nullable=True,
+        init=False,
     )
 
-    # TODO: this relationship is not working, it's not populating the triggered_by_hash field in the database. Levaing it for future reference
-    # triggered_by: Mapped[Optional["Transactions"]] = relationship(
-    #     "Transactions",
-    #     remote_side=[hash],
-    #     foreign_keys=[triggered_by_hash],
-    #     back_populates="triggered_transactions",
-    #     default=None,
-    # )
-    # triggered_transactions: Mapped[Set["Transactions"]] = relationship(
-    #     "Transactions",
-    #     back_populates="triggered_by",
-    #     init=False,
-    # )
+    triggered_by: Mapped[Optional["Transactions"]] = relationship(
+        "Transactions",
+        remote_side=[hash],
+        foreign_keys=[triggered_by_hash],
+        back_populates="triggered_transactions",
+        default=None,
+    )
+    triggered_transactions: Mapped[Set["Transactions"]] = relationship(
+        "Transactions",
+        back_populates="triggered_by",
+        init=False,
+    )
 
 
 class TransactionsAudit(Base):
