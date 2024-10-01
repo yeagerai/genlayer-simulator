@@ -1,8 +1,8 @@
 import { io } from 'socket.io-client';
 
-export function useWebSocketClient() {
-  const webSocketClient = io(import.meta.env.VITE_WS_SERVER_URL);
+const webSocketClient = io(import.meta.env.VITE_WS_SERVER_URL);
 
+export function useWebSocketClient() {
   webSocketClient.on('connect', () => {
     console.log('webSocketClient.connect', webSocketClient.id);
   });
