@@ -82,14 +82,11 @@ class TransactionsProcessor:
         leader_only: bool,
         client_session_id: str | None,
     ) -> int:
-        print("nonce:", nonce)
+        transaction_count = self.get_transaction_count(from_address)
+        current_nonce = transaction_count + 1
 
-        # TODO: constraints
-        # - What increseases the tx count? when tx is pending? final?
-        # - Ensure nonce is unique
-        # - Allow overwriting with higher gas
-        # - So far the db constraints prevent duplicate nonce; maybe we should catch it more gracefully / earlier
-        # - Prevent skipping a nonce index
+        if nonce != current_nonce:
+            raise Exception("Nonce is not current nonce")
 
         hash = self._generate_transaction_hash(
             from_address, to_address, data, value, type, nonce
@@ -162,9 +159,9 @@ class TransactionsProcessor:
         self.session.commit()
 
     def get_transaction_count(self, address: str) -> int:
-        nonce = (
+        count = (
             self.session.query(Transactions)
             .filter(Transactions.from_address == address)
             .count()
         )
-        return nonce
+        return count
