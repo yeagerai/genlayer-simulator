@@ -37,7 +37,6 @@ export class Web3Client {
     data: Array<unknown>;
     to?: Address;
     value?: bigint;
-    // nonce?: number | undefined; # Use this if we want optional nonces
     nonce: number;
   }): Promise<TransactionSerializedLegacy> {
     const account = this.privateKeyToAccount(privateKey);

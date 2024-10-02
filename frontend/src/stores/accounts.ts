@@ -51,14 +51,12 @@ export const useAccountsStore = defineStore('accountsStore', () => {
     currentPrivateKey.value = privateKey;
   }
 
-  async function getTransactionCount() {
+  async function getCurrentNonce() {
     transactionCount.value = await rpcClient.getTransactionCount({
       address: currentUserAddress.value,
     });
 
-    // TODO: Error handling
-
-    return transactionCount.value || 0;
+    return transactionCount.value + 1;
   }
 
   const displayAddress = computed(() => {
@@ -85,7 +83,7 @@ export const useAccountsStore = defineStore('accountsStore', () => {
     accountFromPrivateKey,
     removeAccount,
     setCurrentAccount,
-    getTransactionCount,
+    getCurrentNonce,
     displayAddress,
   };
 });
