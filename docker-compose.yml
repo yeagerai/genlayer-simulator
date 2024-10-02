@@ -90,8 +90,8 @@ services:
       retries: 3
 
     # If you want your db to persist in dev
-    # volumes:
-    #  - "./data/postgres:/var/lib/postgresql/data"
+    volumes:
+     - "./data/postgres:/var/lib/postgresql/data"
 
   database-migration:
     build:
