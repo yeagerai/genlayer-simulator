@@ -8,7 +8,6 @@ export const useAccountsStore = defineStore('accountsStore', () => {
   const currentPrivateKey = ref<Address | null>(key ? (key as Address) : null);
   const wallet = useWallet();
   const rpcClient = useRpcClient();
-  const transactionCount = ref<number | null>(null);
 
   const currentUserAddress = computed(() => {
     return currentPrivateKey.value
@@ -75,7 +74,6 @@ export const useAccountsStore = defineStore('accountsStore', () => {
   });
 
   return {
-    transactionCount,
     currentUserAddress,
     currentPrivateKey,
     privateKeys,
