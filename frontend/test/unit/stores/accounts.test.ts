@@ -12,6 +12,7 @@ const testKey2 =
 vi.mock('@/hooks', () => ({
   useWallet: vi.fn(),
   useShortAddress: vi.fn(),
+  useRpcClient: vi.fn(), // Add this line to mock useRpcClient
 }));
 
 describe('useAccountsStore', () => {
