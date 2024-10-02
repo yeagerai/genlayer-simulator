@@ -1,3 +1,7 @@
+# TLS certificates:
+ssl/*.crt
+ssl/*.key
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
