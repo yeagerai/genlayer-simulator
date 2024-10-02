@@ -500,10 +500,10 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint = partial(generate_rpc_endpoint, jsonrpc, msg_handler)
 
     register_rpc_endpoint(ping)
-    # register_rpc_endpoint(
-    #     partial(clear_db_tables, request_session),
-    #     method_name="sim_clearDbTables",
-    # )
+    register_rpc_endpoint(
+        partial(clear_db_tables, request_session),
+        method_name="sim_clearDbTables",
+    )
     register_rpc_endpoint(
         partial(fund_account, accounts_manager, transactions_processor),
         method_name="sim_fundAccount",
@@ -512,56 +512,56 @@ def register_all_rpc_endpoints(
         partial(get_providers_and_models, llm_provider_registry),
         method_name="sim_getProvidersAndModels",
     )
-    # register_rpc_endpoint(
-    #     partial(reset_defaults_llm_providers, llm_provider_registry),
-    #     method_name="sim_resetDefaultsLlmProviders",
-    # )
-    # register_rpc_endpoint(
-    #     partial(add_provider, llm_provider_registry),
-    #     method_name="sim_addProvider",
-    # )
-    # register_rpc_endpoint(
-    #     partial(update_provider, llm_provider_registry),
-    #     method_name="sim_updateProvider",
-    # )
-    # register_rpc_endpoint(
-    #     partial(delete_provider, llm_provider_registry),
-    #     method_name="sim_deleteProvider",
-    # )
-    # register_rpc_endpoint(
-    #     partial(create_validator, validators_registry, accounts_manager),
-    #     method_name="sim_createValidator",
-    # )
-    # register_rpc_endpoint(
-    #     partial(
-    #         create_random_validator,
-    #         validators_registry,
-    #         accounts_manager,
-    #         llm_provider_registry,
-    #     ),
-    #     method_name="sim_createRandomValidator",
-    # )
-    # register_rpc_endpoint(
-    #     partial(
-    #         create_random_validators,
-    #         validators_registry,
-    #         accounts_manager,
-    #         llm_provider_registry,
-    #     ),
-    #     method_name="sim_createRandomValidators",
-    # )
-    # register_rpc_endpoint(
-    #     partial(update_validator, validators_registry, accounts_manager),
-    #     method_name="sim_updateValidator",
-    # )
-    # register_rpc_endpoint(
-    #     partial(delete_validator, validators_registry, accounts_manager),
-    #     method_name="sim_deleteValidator",
-    # )
-    # register_rpc_endpoint(
-    #     partial(delete_all_validators, validators_registry),
-    #     method_name="sim_deleteAllValidators",
-    # )
+    register_rpc_endpoint(
+        partial(reset_defaults_llm_providers, llm_provider_registry),
+        method_name="sim_resetDefaultsLlmProviders",
+    )
+    register_rpc_endpoint(
+        partial(add_provider, llm_provider_registry),
+        method_name="sim_addProvider",
+    )
+    register_rpc_endpoint(
+        partial(update_provider, llm_provider_registry),
+        method_name="sim_updateProvider",
+    )
+    register_rpc_endpoint(
+        partial(delete_provider, llm_provider_registry),
+        method_name="sim_deleteProvider",
+    )
+    register_rpc_endpoint(
+        partial(create_validator, validators_registry, accounts_manager),
+        method_name="sim_createValidator",
+    )
+    register_rpc_endpoint(
+        partial(
+            create_random_validator,
+            validators_registry,
+            accounts_manager,
+            llm_provider_registry,
+        ),
+        method_name="sim_createRandomValidator",
+    )
+    register_rpc_endpoint(
+        partial(
+            create_random_validators,
+            validators_registry,
+            accounts_manager,
+            llm_provider_registry,
+        ),
+        method_name="sim_createRandomValidators",
+    )
+    register_rpc_endpoint(
+        partial(update_validator, validators_registry, accounts_manager),
+        method_name="sim_updateValidator",
+    )
+    register_rpc_endpoint(
+        partial(delete_validator, validators_registry, accounts_manager),
+        method_name="sim_deleteValidator",
+    )
+    register_rpc_endpoint(
+        partial(delete_all_validators, validators_registry),
+        method_name="sim_deleteAllValidators",
+    )
     register_rpc_endpoint(
         partial(get_all_validators, validators_registry),
         method_name="sim_getAllValidators",

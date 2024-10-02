@@ -76,22 +76,22 @@ async function handleDeleteValidator() {
     </div>
 
     <div class="hidden flex-row gap-1 group-hover:flex">
-      <!-- <button
+      <button
         @click.stop="isUpdateModalMopen = true"
         v-tooltip="'Update Validator'"
       >
         <PencilSquareIcon
           class="h-5 w-5 p-[2px] text-slate-400 transition-colors hover:text-slate-800 active:scale-90 dark:hover:text-white"
         />
-      </button> -->
+      </button>
 
-      <!-- <button @click.stop="handleCloneValidator" v-tooltip="'Clone Validator'">
+      <button @click.stop="handleCloneValidator" v-tooltip="'Clone Validator'">
         <DocumentDuplicateIcon
           class="h-5 w-5 p-[2px] text-slate-400 transition-colors hover:text-slate-800 active:scale-90 dark:hover:text-white"
         />
-      </button> -->
+      </button>
 
-      <!-- <Transition mode="out-in">
+      <Transition mode="out-in">
         <button
           v-if="!showConfirmDelete"
           data-testid="validator-item-delete"
@@ -113,15 +113,15 @@ async function handleDeleteValidator() {
             class="h-5 w-5 p-[2px] text-red-500 transition-colors hover:text-red-400 active:scale-90"
           />
         </button>
-      </Transition> -->
+      </Transition>
     </div>
   </div>
 
-  <!-- <ValidatorModal
+  <ValidatorModal
     :validator="validator"
     :open="isUpdateModalMopen"
     @close="isUpdateModalMopen = false"
-  /> -->
+  />
 </template>
 
 <style scoped>
