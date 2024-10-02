@@ -1,4 +1,17 @@
 services:
+  nginx:
+    image: nginx:alpine
+    cap_add:
+      - NET_BIND_SERVICE
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - frontend
+
   frontend:
     build:
       context: ./
