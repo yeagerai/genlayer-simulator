@@ -85,8 +85,10 @@ class TransactionsProcessor:
         transaction_count = self.get_transaction_count(from_address)
         current_nonce = transaction_count + 1
 
-        if nonce != current_nonce:
-            raise Exception("Nonce is not current nonce")
+        if from_address and nonce != current_nonce:
+            raise Exception(
+                f"Nonce is not current nonce. Provided: {nonce}, expected: {current_nonce}"
+            )
 
         hash = self._generate_transaction_hash(
             from_address, to_address, data, value, type, nonce
