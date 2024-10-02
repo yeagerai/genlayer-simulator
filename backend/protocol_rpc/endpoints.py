@@ -17,7 +17,10 @@ from backend.node.create_nodes.providers import (
     validate_provider,
 )
 from backend.node.genvm.llms import get_llm_plugin
-from backend.protocol_rpc.message_handler.base import MessageHandler
+from backend.protocol_rpc.message_handler.base import (
+    MessageHandler,
+    get_client_session_id,
+)
 from backend.database_handler.accounts_manager import AccountsManager
 from backend.database_handler.validators_registry import ValidatorsRegistry
 
@@ -37,6 +40,8 @@ from backend.errors.errors import InvalidAddressError, InvalidTransactionError
 from backend.database_handler.transactions_processor import TransactionsProcessor
 from backend.node.base import Node
 from backend.node.genvm.types import ExecutionMode
+
+from flask import request
 
 
 ####### HELPER ENDPOINTS #######
@@ -62,7 +67,7 @@ def fund_account(
     if not accounts_manager.is_valid_address(account_address):
         raise InvalidAddressError(account_address)
     transaction_hash = transactions_processor.insert_transaction(
-        None, account_address, None, amount, 0, False
+        None, account_address, None, amount, 0, False, get_client_session_id()
     )
     return transaction_hash
 
@@ -300,7 +305,7 @@ def get_contract_schema(
             ),
         ),
         leader_receipt=None,
-        msg_handler=msg_handler,
+        msg_handler=msg_handler.with_client_session(get_client_session_id()),
         contract_snapshot_factory=None,
     )
     return node.get_contract_schema(contract_account["data"]["code"])
@@ -324,7 +329,7 @@ def get_contract_schema_for_code(
             ),
         ),
         leader_receipt=None,
-        msg_handler=msg_handler,
+        msg_handler=msg_handler.with_client_session(get_client_session_id()),
         contract_snapshot_factory=None,
     )
     return node.get_contract_schema(contract_code)
@@ -389,7 +394,7 @@ def call(
             ),
         ),
         leader_receipt=None,
-        msg_handler=msg_handler,
+        msg_handler=msg_handler.with_client_session(get_client_session_id()),
         contract_snapshot_factory=partial(ContractSnapshot, session=session),
     )
 
@@ -485,6 +490,7 @@ def send_raw_transaction(
         transaction_type,
         nonce,
         leader_only,
+        get_client_session_id(),
     )
 
     return transaction_hash

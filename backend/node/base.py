@@ -89,26 +89,13 @@ class Node:
     def get_contract_data(
         self, code: str, state: str, method_name: str, method_args: list
     ):
-        output_buffer = io.StringIO()
-
-        result = GenVM.get_contract_data(
+        result = self.genvm.get_contract_data(
             code,
             state,
             method_name,
             method_args,
             self.contract_snapshot_factory,
-            output_buffer,
         )
-
-        if self.genvm.contract_runner.mode == ExecutionMode.LEADER:
-            # Retrieve the captured stdout and stderr
-            captured_out = output_buffer.getvalue()
-            if captured_out:
-                socket_message = {
-                    "function": "intelligent_contract_execution",
-                    "response": {"status": "info", "message": captured_out},
-                }
-                self.msg_handler.socket_emit(socket_message)
 
         return result
 
