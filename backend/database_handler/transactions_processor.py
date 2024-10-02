@@ -82,11 +82,7 @@ class TransactionsProcessor:
         leader_only: bool,
         client_session_id: str | None,
     ) -> int:
-        print("count:", self.get_transaction_count(from_address))
         print("nonce:", nonce)
-        # TODO: Do we need to keep this fallback?
-        # if not nonce:
-        #     nonce = self.get_transaction_count(from_address)
 
         # TODO: constraints
         # - What increseases the tx count? when tx is pending? final?
