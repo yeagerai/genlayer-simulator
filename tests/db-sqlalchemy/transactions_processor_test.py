@@ -14,9 +14,9 @@ def test_transactions_processor(transactions_processor: TransactionsProcessor):
     data = {"key": "value"}
     value = 2.0
     transaction_type = 1
-
+    nonce = 1
     actual_transaction_hash = transactions_processor.insert_transaction(
-        from_address, to_address, data, value, transaction_type, True
+        from_address, to_address, data, value, transaction_type, nonce, True
     )
 
     actual_transaction = transactions_processor.get_transaction_by_hash(
