@@ -2,13 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useWebSocketClient } from '@/hooks/useWebSocketClient';
 import { io, type Socket } from 'socket.io-client';
 
-const mockSocket: Partial<Socket> = {
-  id: 'mocked-socket-id',
-  on: vi.fn(),
-};
+const mockOn = vi.fn();
 
 vi.mock('socket.io-client', () => ({
-  io: vi.fn(() => mockSocket),
+  io: vi.fn(() => ({
+    id: 'mocked-socket-id',
+    on: mockOn,
+  })),
 }));
 
 describe('useWebSocketClient', () => {
@@ -26,30 +26,34 @@ describe('useWebSocketClient', () => {
 
     useWebSocketClient();
 
-    expect(mockSocket.on).toHaveBeenCalledWith('connect', expect.any(Function));
-    expect(mockSocket.on).toHaveBeenCalledWith(
-      'disconnect',
-      expect.any(Function),
-    );
+    expect(mockOn).toHaveBeenCalledWith('connect', expect.any(Function));
+    expect(mockOn).toHaveBeenCalledWith('disconnect', expect.any(Function));
 
-    const connectCallback = (mockSocket.on as any).mock.calls.find(
-      (call: any) => call[0] === 'connect',
+    const connectCallback = mockOn.mock.calls.find(
+      (call) => call[0] === 'connect',
     )[1];
     connectCallback();
     expect(consoleLogSpy).toHaveBeenCalledWith(
       'webSocketClient.connect',
-      mockSocket.id,
+      'mocked-socket-id',
     );
 
-    const disconnectCallback = (mockSocket.on as any).mock.calls.find(
-      (call: any) => call[0] === 'disconnect',
+    const disconnectCallback = mockOn.mock.calls.find(
+      (call) => call[0] === 'disconnect',
     )[1];
     disconnectCallback();
     expect(consoleLogSpy).toHaveBeenCalledWith(
       'webSocketClient.disconnnect',
-      mockSocket.id,
+      'mocked-socket-id',
     );
 
     consoleLogSpy.mockRestore();
+  });
+
+  it('should reuse the existing WebSocket client on subsequent calls', () => {
+    const client1 = useWebSocketClient();
+    const client2 = useWebSocketClient();
+    expect(client1).toBe(client2);
+    expect(mockOn).toHaveBeenCalledTimes(4);
   });
 });
