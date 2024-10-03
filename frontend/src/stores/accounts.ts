@@ -51,11 +51,11 @@ export const useAccountsStore = defineStore('accountsStore', () => {
   }
 
   async function getCurrentNonce() {
-    transactionCount.value = await rpcClient.getTransactionCount({
+    const transactionCount = await rpcClient.getTransactionCount({
       address: currentUserAddress.value,
     });
 
-    return transactionCount.value + 1;
+    return transactionCount + 1;
   }
 
   const displayAddress = computed(() => {
