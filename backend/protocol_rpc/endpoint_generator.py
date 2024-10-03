@@ -41,7 +41,8 @@ def generate_rpc_endpoint(
     def endpoint(*endpoint_args, **endpoint_kwargs):
         try:
             result = partial_function(*endpoint_args, **endpoint_kwargs)
-            return result
+            return _serialize(result)
+
         except Exception as e:
             raise JSONRPCError(code=-32000, message=str(e))
 
@@ -49,3 +50,23 @@ def generate_rpc_endpoint(
     endpoint = jsonrpc.method(json_rpc_method_name)(endpoint)
 
     return endpoint
+
+
+def _serialize(obj):
+    """
+    Serialize the object to a JSON-compatible format.
+    - Convert tuple to list
+    - Serialize dict
+    - Serialize object
+    - Fallback to string
+    """
+    if isinstance(obj, (int, float, str, bool, type(None))):
+        return obj
+    elif isinstance(obj, (list, tuple)):
+        return [_serialize(item) for item in obj]  # Convert tuple to list
+    elif isinstance(obj, dict):
+        return {_serialize(key): _serialize(value) for key, value in obj.items()}
+    elif hasattr(obj, "__dict__"):
+        return _serialize(obj.__dict__)
+    else:  # Fallback
+        return str(obj)
