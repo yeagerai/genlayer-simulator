@@ -92,7 +92,9 @@ class TransactionsProcessor:
             current_nonce = self.get_transaction_count(from_address)
 
             if nonce != current_nonce:
-                raise Exception(f"Nonce is not current nonce. Provided: {nonce}")
+                raise Exception(
+                    f"Unexpected nonce. Provided: {nonce}, expected: {current_nonce}"
+                )
 
         hash = self._generate_transaction_hash(
             from_address, to_address, data, value, type, nonce
