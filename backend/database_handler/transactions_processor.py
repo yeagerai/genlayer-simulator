@@ -84,7 +84,8 @@ class TransactionsProcessor:
         leader_only: bool,
         client_session_id: str | None,
     ) -> int:
-        if not from_address and type is not TransactionType.SEND:
+        # Only allow transactions without from_address for 'fund_account'
+        if not from_address and type is not TransactionType.SEND.value:
             raise Exception("From address is required")
 
         if from_address:
