@@ -43,9 +43,7 @@ const handleClearTransactions = () => {
 
 <template>
   <PageSection data-testid="latest-transactions">
-    <template #title
-      >Transactions ({{ accountsStore.transactionCount }})</template
-    >
+    <template #title>Transactions</template>
 
     <template #actions
       ><GhostBtn
