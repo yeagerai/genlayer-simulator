@@ -359,6 +359,7 @@ class ConsensusAlgorithm:
                 },
                 value=0,  # No value gets transferred?
                 type=TransactionType.RUN_CONTRACT.value,
+                nonce=transaction.nonce,
                 leader_only=transaction.leader_only,  # Cascade
                 client_session_id=transaction.client_session_id,
             )
