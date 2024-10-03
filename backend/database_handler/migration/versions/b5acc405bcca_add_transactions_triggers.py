@@ -1,8 +1,8 @@
 """add transactions triggers
 
-Revision ID: 41e216c8db98
-Revises: 3566595124f6
-Create Date: 2024-09-30 15:12:29.273538
+Revision ID: b5acc405bcca
+Revises: a32f85df2806
+Create Date: 2024-10-03 10:41:45.957685
 
 """
 
@@ -13,8 +13,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "a32f85df2806"
-down_revision: Union[str, None] = "3566595124f6"
+revision: str = "b5acc405bcca"
+down_revision: Union[str, None] = "a32f85df2806"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
