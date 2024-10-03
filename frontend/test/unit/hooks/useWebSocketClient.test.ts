@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useWebSocketClient } from '@/hooks/useWebSocketClient';
-import { io, type Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
 
 const mockOn = vi.fn();
 
