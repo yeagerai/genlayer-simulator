@@ -82,8 +82,7 @@ class TransactionsProcessor:
         leader_only: bool,
         client_session_id: str | None,
     ) -> int:
-        transaction_count = self.get_transaction_count(from_address)
-        current_nonce = transaction_count + 1
+        current_nonce = self.get_transaction_count(from_address)
 
         if from_address and nonce != current_nonce:
             raise Exception(

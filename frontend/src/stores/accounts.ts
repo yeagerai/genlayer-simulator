@@ -55,7 +55,7 @@ export const useAccountsStore = defineStore('accountsStore', () => {
       address: currentUserAddress.value,
     });
 
-    return transactionCount + 1;
+    return transactionCount;
   }
 
   const displayAddress = computed(() => {

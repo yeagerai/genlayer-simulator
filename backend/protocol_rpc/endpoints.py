@@ -67,7 +67,7 @@ def fund_account(
     if not accounts_manager.is_valid_address(account_address):
         raise InvalidAddressError(account_address)
     transaction_hash = transactions_processor.insert_transaction(
-        None, account_address, None, amount, 0, 1, False, get_client_session_id()
+        None, account_address, None, amount, 0, 0, False, get_client_session_id()
     )
     return transaction_hash
 
