@@ -1,6 +1,8 @@
 # consensus/services/transactions_db_service.py
 import rlp
 
+from backend.domain.types import TransactionType
+
 from .models import Transactions, TransactionsAudit
 from sqlalchemy.orm import Session
 
@@ -82,12 +84,14 @@ class TransactionsProcessor:
         leader_only: bool,
         client_session_id: str | None,
     ) -> int:
-        current_nonce = self.get_transaction_count(from_address)
+        if not from_address and type is not TransactionType.SEND:
+            raise Exception("From address is required")
 
-        if from_address and nonce != current_nonce:
-            raise Exception(
-                f"Nonce is not current nonce. Provided: {nonce}, expected: {current_nonce}"
-            )
+        if from_address:
+            current_nonce = self.get_transaction_count(from_address)
+
+            if nonce != current_nonce:
+                raise Exception(f"Nonce is not current nonce. Provided: {nonce}")
 
         hash = self._generate_transaction_hash(
             from_address, to_address, data, value, type, nonce
