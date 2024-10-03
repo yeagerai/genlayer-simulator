@@ -71,7 +71,7 @@ class Transaction:
     data: dict | None = None
     consensus_data: dict | None = None
     nonce: int | None = None
-    value: decimal.Decimal | None = None
+    value: int | None = None
     gaslimit: int | None = None
     r: int | None = None
     s: int | None = None
@@ -79,6 +79,7 @@ class Transaction:
     leader_only: bool = (
         False  # Flag to indicate if this transaction should be processed only by the leader. Used for fast and cheap execution of transactions.
     )
+    client_session_id: str | None = None
 
     def to_dict(self):
         return {
@@ -97,6 +98,7 @@ class Transaction:
             "s": self.s,
             "v": self.v,
             "leader_only": self.leader_only,
+            "client_session_id": self.client_session_id,
         }
 
 
@@ -117,4 +119,5 @@ def transaction_from_dict(input: dict) -> Transaction:
         s=input.get("s"),
         v=input.get("v"),
         leader_only=input.get("leader_only", False),
+        client_session_id=input["client_session_id"],
     )

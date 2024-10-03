@@ -1,4 +1,5 @@
 from collections import defaultdict
+from typing import Callable
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -43,9 +44,6 @@ class TransactionsProcessorMock:
     def set_transaction_result(self, transaction_hash: str, consensus_data: dict):
         transaction = self.get_transaction_by_hash(transaction_hash)
         transaction["consensus_data"] = consensus_data
-        status = TransactionStatus.FINALIZED
-        transaction["status"] = status
-        self.updated_transaction_status_history[transaction_hash].append(status)
 
 
 class SnapshotMock:
@@ -132,6 +130,7 @@ async def test_exec_transaction():
         contract_snapshot: ContractSnapshot,
         receipt: Receipt | None,
         msg_handler: MessageHandler,
+        contract_snapshot_factory: Callable[[str], ContractSnapshot],
     ):
         mock = Mock(Node)
 
@@ -163,7 +162,9 @@ async def test_exec_transaction():
         [transaction_to_dict(transaction)]
     )
 
-    await ConsensusAlgorithm(None, None).exec_transaction(
+    msg_handler_mock = Mock(MessageHandler)
+
+    await ConsensusAlgorithm(None, msg_handler_mock).exec_transaction(
         transaction=transaction,
         transactions_processor=transactions_processor,
         snapshot=SnapshotMock(nodes),
@@ -240,6 +241,7 @@ async def test_exec_transaction_no_consensus():
         contract_snapshot: ContractSnapshot,
         receipt: Receipt | None,
         msg_handler: MessageHandler,
+        contract_snapshot_factory: Callable[[str], ContractSnapshot],
     ):
         mock = Mock(Node)
 
@@ -271,7 +273,9 @@ async def test_exec_transaction_no_consensus():
         [transaction_to_dict(transaction)]
     )
 
-    await ConsensusAlgorithm(None, None).exec_transaction(
+    msg_handler_mock = Mock(MessageHandler)
+
+    await ConsensusAlgorithm(None, msg_handler_mock).exec_transaction(
         transaction=transaction,
         transactions_processor=transactions_processor,
         snapshot=SnapshotMock(nodes),
@@ -348,6 +352,7 @@ async def test_exec_transaction_one_disagreement():
         contract_snapshot: ContractSnapshot,
         receipt: Receipt | None,
         msg_handler: MessageHandler,
+        contract_snapshot_factory: Callable[[str], ContractSnapshot],
     ):
         mock = Mock(Node)
 
@@ -385,7 +390,9 @@ async def test_exec_transaction_one_disagreement():
         [transaction_to_dict(transaction)]
     )
 
-    await ConsensusAlgorithm(None, None).exec_transaction(
+    msg_handler_mock = Mock(MessageHandler)
+
+    await ConsensusAlgorithm(None, msg_handler_mock).exec_transaction(
         transaction=transaction,
         transactions_processor=transactions_processor,
         snapshot=SnapshotMock(nodes),

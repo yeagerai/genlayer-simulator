@@ -3,6 +3,8 @@ from .models import CurrentState
 from sqlalchemy.orm import Session
 
 
+# TODO: should ContractSnapshot be a dataclass with just the contract data? Snapshots shouldn't be allowed to be modified, so it doesn't make sense to modify the database
+# TODO: once we have it in the state, we should only allow states in ACCEPTED or FINALIZED status.
 class ContractSnapshot:
     """
     Warning: if you initialize this class with a contract_address:
@@ -24,11 +26,16 @@ class ContractSnapshot:
     def _load_contract_account(self) -> CurrentState:
         """Load and return the current state of the contract from the database."""
 
-        return (
+        result = (
             self.session.query(CurrentState)
             .filter(CurrentState.id == self.contract_address)
-            .one()
+            .one_or_none()
         )
+
+        if result is None:
+            raise Exception(f"Contract {self.contract_address} not found")
+
+        return result
 
     def register_contract(self, contract: dict):
         """Register a new contract in the database."""

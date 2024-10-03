@@ -5,13 +5,14 @@ DEFAULT_CONSENSUS_SLEEP_TIME = 5
 
 import asyncio
 from collections import deque
+import json
 import traceback
-from typing import Any, Callable, Iterator
+from typing import Callable, Iterator
 
+from sqlalchemy.orm import Session
 from backend.consensus.vrf import get_validators_for_transaction
 from backend.database_handler.chain_snapshot import ChainSnapshot
 from backend.database_handler.contract_snapshot import ContractSnapshot
-from backend.database_handler.db_client import DBClient
 from backend.database_handler.transactions_processor import (
     TransactionsProcessor,
     TransactionStatus,
@@ -28,6 +29,11 @@ from backend.domain.types import (
 from backend.node.base import Node
 from backend.node.genvm.types import ExecutionMode, Receipt, Vote
 from backend.protocol_rpc.message_handler.base import MessageHandler
+from backend.protocol_rpc.message_handler.types import (
+    LogEvent,
+    EventType,
+    EventScope,
+)
 
 
 def node_factory(
@@ -36,6 +42,7 @@ def node_factory(
     contract_snapshot: ContractSnapshot,
     leader_receipt: Receipt | None,
     msg_handler: MessageHandler,
+    contract_snapshot_factory: Callable[[str], ContractSnapshot],
 ) -> Node:
     return Node(
         contract_snapshot=contract_snapshot,
@@ -53,16 +60,17 @@ def node_factory(
                 plugin_config=validator["plugin_config"],
             ),
         ),
+        contract_snapshot_factory=contract_snapshot_factory,
     )
 
 
 class ConsensusAlgorithm:
     def __init__(
         self,
-        dbclient: DBClient,
+        get_session: Callable[[], Session],
         msg_handler: MessageHandler,
     ):
-        self.dbclient = dbclient
+        self.get_session = get_session
         self.msg_handler = msg_handler
         self.queues: dict[str, asyncio.Queue] = {}
 
@@ -74,7 +82,7 @@ class ConsensusAlgorithm:
 
     async def _crawl_snapshot(self):
         while True:
-            with self.dbclient.get_session() as session:
+            with self.get_session() as session:
                 chain_snapshot = ChainSnapshot(session)
                 pending_transactions = chain_snapshot.get_pending_transactions()
                 for transaction in pending_transactions:
@@ -103,9 +111,10 @@ class ConsensusAlgorithm:
                         # sessions cannot be shared between coroutines, we need to create a new session for each coroutine
                         # https://docs.sqlalchemy.org/en/20/orm/session_basics.html#is-the-session-thread-safe-is-asyncsession-safe-to-share-in-concurrent-tasks
                         transaction = await queue.get()
-                        with self.dbclient.get_session() as session:
-                            tg.create_task(
-                                self.exec_transaction(
+                        with self.get_session() as session:
+
+                            async def exec_transaction_with_session_handling():
+                                await self.exec_transaction(
                                     transaction,
                                     TransactionsProcessor(session),
                                     ChainSnapshot(session),
@@ -114,7 +123,9 @@ class ConsensusAlgorithm:
                                         contract_address, session
                                     ),
                                 )
-                            )
+                                session.commit()
+
+                            tg.create_task(exec_transaction_with_session_handling())
 
             except Exception as e:
                 print("Error running consensus", e)
@@ -135,10 +146,14 @@ class ConsensusAlgorithm:
                 ContractSnapshot,
                 Receipt | None,
                 MessageHandler,
+                Callable[[str], ContractSnapshot],
             ],
             Node,
         ] = node_factory,
     ):
+        msg_handler = self.msg_handler.with_client_session(
+            transaction.client_session_id
+        )
         if (
             transactions_processor.get_transaction_by_hash(transaction.hash)["status"]
             != TransactionStatus.PENDING.value
@@ -154,20 +169,30 @@ class ConsensusAlgorithm:
         # If transaction is a transfer, execute it
         # TODO: consider when the transfer involves a contract account, bridging, etc.
         if transaction.type == TransactionType.SEND:
-            return self.execute_transfer(
-                transaction, transactions_processor, accounts_manager
+            return ConsensusAlgorithm.execute_transfer(
+                transaction, transactions_processor, accounts_manager, msg_handler
             )
 
         # Select Leader and validators
         all_validators = snapshot.get_all_validators()
+        if not all_validators:
+            print(
+                "No validators found for transaction, waiting for next round: ",
+                transaction,
+            )
+            return
+
         involved_validators = get_validators_for_transaction(
             all_validators, DEFAULT_VALIDATORS_COUNT
         )
 
         for validators in rotate(involved_validators):
             # Update transaction status
-            transactions_processor.update_transaction_status(
-                transaction.hash, TransactionStatus.PROPOSING
+            ConsensusAlgorithm.dispatch_transaction_status_update(
+                transactions_processor,
+                transaction.hash,
+                TransactionStatus.PROPOSING,
+                msg_handler,
             )
 
             [leader, *remaining_validators] = validators
@@ -185,15 +210,19 @@ class ConsensusAlgorithm:
                 ExecutionMode.LEADER,
                 contract_snapshot,
                 None,
-                self.msg_handler,
+                msg_handler,
+                contract_snapshot_factory,
             )
 
             # Leader executes transaction
             leader_receipt = await leader_node.exec_transaction(transaction)
             votes = {leader["address"]: leader_receipt.vote.value}
             # Update transaction status
-            transactions_processor.update_transaction_status(
-                transaction.hash, TransactionStatus.COMMITTING
+            ConsensusAlgorithm.dispatch_transaction_status_update(
+                transactions_processor,
+                transaction.hash,
+                TransactionStatus.COMMITTING,
+                msg_handler,
             )
 
             # Create Validators
@@ -203,7 +232,8 @@ class ConsensusAlgorithm:
                     ExecutionMode.VALIDATOR,
                     contract_snapshot,
                     leader_receipt,
-                    self.msg_handler,
+                    msg_handler,
+                    contract_snapshot_factory,
                 )
                 for validator in remaining_validators
             ]
@@ -219,9 +249,11 @@ class ConsensusAlgorithm:
 
             for i, validation_result in enumerate(validation_results):
                 votes[validator_nodes[i].address] = validation_result.vote.value
-            transactions_processor.update_transaction_status(
+            ConsensusAlgorithm.dispatch_transaction_status_update(
+                transactions_processor,
                 transaction.hash,
                 TransactionStatus.REVEALING,
+                msg_handler,
             )
 
             if (
@@ -236,13 +268,27 @@ class ConsensusAlgorithm:
 
         else:  # this block is executed if the loop above is not broken
             print("Consensus not reached for transaction: ", transaction)
-            transactions_processor.update_transaction_status(
-                transaction.hash, TransactionStatus.UNDETERMINED
+            msg_handler.send_message(
+                LogEvent(
+                    "consensus_failed",
+                    EventType.ERROR,
+                    EventScope.CONSENSUS,
+                    "Failed to reach consensus",
+                )
+            )
+            ConsensusAlgorithm.dispatch_transaction_status_update(
+                transactions_processor,
+                transaction.hash,
+                TransactionStatus.UNDETERMINED,
+                msg_handler,
             )
             return
 
-        transactions_processor.update_transaction_status(
-            transaction.hash, TransactionStatus.ACCEPTED
+        ConsensusAlgorithm.dispatch_transaction_status_update(
+            transactions_processor,
+            transaction.hash,
+            TransactionStatus.ACCEPTED,
+            msg_handler,
         )
 
         final = False
@@ -252,6 +298,16 @@ class ConsensusAlgorithm:
             leader_receipt=leader_receipt,
             validators=validation_results,
         ).to_dict()
+
+        msg_handler.send_message(
+            LogEvent(
+                "consensus_reached",
+                EventType.SUCCESS,
+                EventScope.CONSENSUS,
+                "Reached consensus",
+                consensus_data,
+            )
+        )
 
         # Register contract if it is a new contract
         if transaction.type == TransactionType.DEPLOY_CONTRACT:
@@ -264,9 +320,26 @@ class ConsensusAlgorithm:
             }
             contract_snapshot.register_contract(new_contract)
 
+            msg_handler.send_message(
+                LogEvent(
+                    "deployed_contract",
+                    EventType.SUCCESS,
+                    EventScope.GENVM,
+                    "Contract deployed",
+                    new_contract,
+                )
+            )
+
         # Update contract state if it is an existing contract
         else:
             contract_snapshot.update_contract_state(leader_receipt.contract_state)
+
+        ConsensusAlgorithm.dispatch_transaction_status_update(
+            transactions_processor,
+            transaction.hash,
+            TransactionStatus.FINALIZED,
+            msg_handler,
+        )
 
         # Finalize transaction
         transactions_processor.set_transaction_result(
@@ -274,11 +347,28 @@ class ConsensusAlgorithm:
             consensus_data,
         )
 
+        # Insert pending transactions generated by contract-to-contract calls
+        pending_transactions_to_insert = leader_receipt.pending_transactions
+        for pending_transaction in pending_transactions_to_insert:
+            transactions_processor.insert_transaction(
+                transaction.to_address,  # new calls are done by the contract
+                pending_transaction.address,
+                {
+                    "function_name": pending_transaction.method_name,
+                    "function_args": json.dumps(pending_transaction.args),
+                },
+                value=0,  # No value gets transferred?
+                type=TransactionType.RUN_CONTRACT.value,
+                leader_only=transaction.leader_only,  # Cascade
+                client_session_id=transaction.client_session_id,
+            )
+
+    @staticmethod
     def execute_transfer(
-        self,
         transaction: Transaction,
         transactions_processor: TransactionsProcessor,
         accounts_manager: AccountsManager,
+        msg_handler: MessageHandler,
     ):
         """
         Executes a native token transfer between Externally Owned Accounts (EOAs).
@@ -302,8 +392,11 @@ class ConsensusAlgorithm:
 
             # If the sender does not have enough balance, set the transaction status to UNDETERMINED
             if from_balance < transaction.value:
-                transactions_processor.update_transaction_status(
-                    transaction.hash, TransactionStatus.UNDETERMINED
+                ConsensusAlgorithm.dispatch_transaction_status_update(
+                    transactions_processor,
+                    transaction.hash,
+                    TransactionStatus.UNDETERMINED,
+                    msg_handler,
                 )
                 return
 
@@ -321,8 +414,33 @@ class ConsensusAlgorithm:
                 transaction.to_address, to_balance + transaction.value
             )
 
-        transactions_processor.update_transaction_status(
-            transaction.hash, TransactionStatus.FINALIZED
+        ConsensusAlgorithm.dispatch_transaction_status_update(
+            transactions_processor,
+            transaction.hash,
+            TransactionStatus.FINALIZED,
+            msg_handler,
+        )
+
+    @staticmethod
+    def dispatch_transaction_status_update(
+        transactions_processor: TransactionsProcessor,
+        transaction_hash: str,
+        new_status: TransactionStatus,
+        msg_handler: MessageHandler,
+    ):
+        transactions_processor.update_transaction_status(transaction_hash, new_status)
+
+        msg_handler.send_message(
+            LogEvent(
+                "transaction_status_updated",
+                EventType.INFO,
+                EventScope.CONSENSUS,
+                f"{str(new_status.value)} {str(transaction_hash)}",
+                {
+                    "hash": str(transaction_hash),
+                    "new_status": str(new_status.value),
+                },
+            )
         )
 
 
