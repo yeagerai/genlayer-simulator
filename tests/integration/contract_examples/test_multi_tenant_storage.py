@@ -7,6 +7,7 @@ from tests.common.request import (
     call_contract_method,
     deploy_intelligent_contract,
     send_transaction,
+    wait_for_transaction,
 )
 from tests.common.response import has_success_status
 
@@ -94,26 +95,21 @@ def test_multi_tenant_storage(setup_validators):
 
     assert has_success_status(transaction_response_call)
 
-    # wait for transactions to be processed
-    for attempt in range(10):
-        print(f"Attempt {attempt}")
+    # wait for triggered transactions to be processed
+    triggered_transactions = transaction_response_call["triggered_transactions"]
 
-        # get all storages
-        storages = call_contract_method(
-            multi_tenant_storage_address,
-            main_account,
-            "get_all_storages",
-            [],
-        )
-        print(f"Storages: {storages}")
+    for triggered_transaction in triggered_transactions:
+        wait_for_transaction(triggered_transaction)
 
-        if storages == {
-            first_storage_contract_address: "user_a_storage",
-            second_storage_contract_address: "user_b_storage",
-        }:
-            break
+    # get all storages
+    storages = call_contract_method(
+        multi_tenant_storage_address,
+        main_account,
+        "get_all_storages",
+        [],
+    )
 
-        time.sleep(5)
-
-    else:
-        assert False, f"Storages don't match: {storages}"
+    assert storages == {
+        first_storage_contract_address: "user_a_storage",
+        second_storage_contract_address: "user_b_storage",
+    }

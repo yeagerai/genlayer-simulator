@@ -35,6 +35,11 @@ class TransactionsProcessor:
             "created_at": transaction_data.created_at.isoformat(),
             "leader_only": transaction_data.leader_only,
             "client_session_id": transaction_data.client_session_id,
+            "triggered_by": transaction_data.triggered_by_hash,
+            "triggered_transactions": [
+                transaction.hash
+                for transaction in transaction_data.triggered_transactions
+            ],
         }
 
     @staticmethod
@@ -80,19 +85,22 @@ class TransactionsProcessor:
         type: int,
         leader_only: bool,
         client_session_id: str | None,
-    ) -> int:
+        triggered_by_hash: (
+            str | None
+        ) = None,  # If filled, the transaction must be present in the database (committed)
+    ) -> str:
         nonce = (
             self.session.query(Transactions)
             .filter(Transactions.from_address == from_address)
             .count()
         )
 
-        hash = self._generate_transaction_hash(
+        transaction_hash = self._generate_transaction_hash(
             from_address, to_address, data, value, type, nonce
         )
 
         new_transaction = Transactions(
-            hash=hash,
+            hash=transaction_hash,
             from_address=from_address,
             to_address=to_address,
             data=data,
@@ -109,6 +117,11 @@ class TransactionsProcessor:
             v=None,
             leader_only=leader_only,
             client_session_id=client_session_id,
+            triggered_by=(
+                self.session.query(Transactions).filter_by(hash=triggered_by_hash).one()
+                if triggered_by_hash
+                else None
+            ),
         )
 
         self.session.add(new_transaction)
@@ -145,7 +158,6 @@ class TransactionsProcessor:
         )
 
         transaction.status = new_status
-        self.session.commit()
 
     def set_transaction_result(self, transaction_hash: str, consensus_data: dict):
         transaction = (
@@ -155,4 +167,8 @@ class TransactionsProcessor:
         transaction.status = TransactionStatus.FINALIZED
         transaction.consensus_data = consensus_data
 
-        self.session.commit()
+        print(
+            "Updating transaction status",
+            transaction_hash,
+            TransactionStatus.FINALIZED.value,
+        )
