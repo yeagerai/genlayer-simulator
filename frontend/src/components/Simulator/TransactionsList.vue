@@ -1,17 +1,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import {
-  useAccountsStore,
-  useContractsStore,
-  useTransactionsStore,
-} from '@/stores';
+import { useContractsStore, useTransactionsStore } from '@/stores';
 import { TrashIcon } from '@heroicons/vue/24/solid';
 import TransactionItem from './TransactionItem.vue';
 import PageSection from './PageSection.vue';
 import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
 
 const contractsStore = useContractsStore();
-const accountsStore = useAccountsStore();
 const transactionsStore = useTransactionsStore();
 
 const transactions = computed(() => {
