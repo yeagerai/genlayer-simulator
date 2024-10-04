@@ -17,21 +17,24 @@ class VectorStore:
         self.vector_data = {}  # Dictionary to store vectors
         self.metadata = {}  # Dictionary to store metadata
         self.model_name = model_name
-        self.next_id = 0
 
-    def add_text(self, text: str, metadata: Any):
+    def add_text(self, vector_id: int, text: str, metadata: Any):
         """
         Add a new text to the store with its metadata.
 
         Args:
             text (str): The text to be added.
             metadata (Any): The metadata.
+            vector_id (int, optional): The ID for the vector. If not provided, a new ID will be generated.
         """
+        if not vector_id:
+            vector_id = max(self.vector_data.keys(), default=0) + 1
+            print(f"generated id: {vector_id}")
+        elif vector_id in self.vector_data:
+            raise ValueError(f"Vector ID {vector_id} already exists")
 
         model = get_model(self.model_name)
         embedding = model.encode([text])[0]
-        vector_id = self.next_id
-        self.next_id += 1
 
         self.texts[vector_id] = text
         self.vector_data[vector_id] = embedding
