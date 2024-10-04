@@ -35,7 +35,7 @@ export default defineConfig(({ mode }) => {
                 changeOrigin: true,
               },
               '/socket.io': {
-                target: env.VITE_WS_SERVER_URL,
+                target: env.VITE_PROXY_WS_SERVER_URL,
                 ws: true,
                 rewriteWsOrigin: true,
               },
