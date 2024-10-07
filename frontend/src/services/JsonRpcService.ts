@@ -85,12 +85,12 @@ export class JsonRpcService implements IJsonRpcService {
     config,
     plugin,
     plugin_config,
-  }: AddProviderRequest): Promise<JsonRpcResult<any>> {
-    const { result } = await this.rpcClient.call({
-      method: 'add_provider',
-      params: [{ provider, model, config, plugin, plugin_config }],
-    });
-    return result;
+  }: AddProviderRequest): Promise<any> {
+    return this.callRpcMethod<any>(
+      'sim_addProvider',
+      [{ provider, model, config, plugin, plugin_config }],
+      'Error deleting provider',
+    );
   }
 
   async updateProvider({
@@ -100,22 +100,20 @@ export class JsonRpcService implements IJsonRpcService {
     config,
     plugin,
     plugin_config,
-  }: UpdateProviderRequest): Promise<JsonRpcResult<any>> {
-    const { result } = await this.rpcClient.call({
-      method: 'update_provider',
-      params: [id, { provider, model, config, plugin, plugin_config }],
-    });
-    return result;
+  }: UpdateProviderRequest): Promise<any> {
+    return this.callRpcMethod<any>(
+      'sim_updateProvider',
+      [id, { provider, model, config, plugin, plugin_config }],
+      'Error deleting provider',
+    );
   }
 
-  async deleteProvider({
-    id,
-  }: DeleteProviderRequest): Promise<JsonRpcResult<any>> {
-    const { result } = await this.rpcClient.call({
-      method: 'delete_provider',
-      params: [id],
-    });
-    return result;
+  async deleteProvider({ id }: DeleteProviderRequest): Promise<any> {
+    return this.callRpcMethod<any>(
+      'sim_deleteProvider',
+      [id],
+      'Error deleting provider',
+    );
   }
 
   async getProvidersAndModels(): Promise<any> {
