@@ -89,7 +89,7 @@ export class JsonRpcService implements IJsonRpcService {
     return this.callRpcMethod<any>(
       'sim_addProvider',
       [{ provider, model, config, plugin, plugin_config }],
-      'Error deleting provider',
+      'Error adding provider',
     );
   }
 
@@ -104,7 +104,7 @@ export class JsonRpcService implements IJsonRpcService {
     return this.callRpcMethod<any>(
       'sim_updateProvider',
       [id, { provider, model, config, plugin, plugin_config }],
-      'Error deleting provider',
+      'Error updating provider',
     );
   }
 

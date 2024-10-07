@@ -146,55 +146,36 @@ export const useNodeStore = defineStore('nodeStore', () => {
     validators.value.push(result);
   }
 
+  // TODO: fix error handling
+
   async function addProvider(providerData: NewProviderDataModel) {
-    const result = await rpcClient.addProvider({
+    await rpcClient.addProvider({
       ...providerData,
       plugin_config: JSON.parse(providerData.plugin_config),
       config: JSON.parse(providerData.config),
     });
-    console.log(result);
-    if (result?.status === 'success') {
-      // nodeProviders.value.push(result.data);
-      getValidatorsData();
-    } else {
-      if (result.exception) {
-        throw new Error(result.exception);
-      } else {
-        throw new Error(result.message);
-      }
-    }
+
+    getValidatorsData();
   }
 
   async function updateProvider(
     provider: ProviderModel,
     newProviderData: NewProviderDataModel,
   ) {
-    const result = await rpcClient.updateProvider({
+    await rpcClient.updateProvider({
       id: provider.id,
       ...newProviderData,
       config: JSON.parse(newProviderData.config),
       plugin_config: JSON.parse(newProviderData.plugin_config),
     });
-    if (result?.status === 'success') {
-      getValidatorsData();
-    } else {
-      if (result.exception) {
-        throw new Error(result.exception);
-      } else {
-        throw new Error(result.message);
-      }
-    }
+
+    getValidatorsData();
   }
 
   async function deleteProvider(id: number) {
-    const result = await rpcClient.deleteProvider({ id });
-    console.log(result);
-    if (result?.status === 'success') {
-      // nodeProviders.value = nodeProviders.value.filter((provider) => provider.id !== id);
-      getValidatorsData();
-    } else {
-      throw new Error('Error adding provider');
-    }
+    await rpcClient.deleteProvider({ id });
+    // nodeProviders.value = nodeProviders.value.filter((provider) => provider.id !== id);
+    getValidatorsData();
   }
 
   const contractsToDelete = computed(() =>
