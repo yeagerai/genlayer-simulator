@@ -29,7 +29,6 @@ class VectorStore:
         """
         if not vector_id and not isinstance(vector_id, int):
             vector_id = max(self.vector_data.keys(), default=0) + 1
-            print(f"generated id: {vector_id}")
         else:
             if vector_id in self.vector_data:
                 raise ValueError(f"Vector ID {vector_id} already exists")
