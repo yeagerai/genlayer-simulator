@@ -86,6 +86,7 @@ class TransactionsProcessor:
         nonce: int,
         leader_only: bool,
         client_session_id: str | None,
+        triggered_by_hash: str | None = None,  # If filled, the tr
     ) -> str:
         current_nonce = self.get_transaction_count(from_address)
 
@@ -93,10 +94,6 @@ class TransactionsProcessor:
             raise Exception(
                 f"Unexpected nonce. Provided: {nonce}, expected: {current_nonce}"
             )
-
-        triggered_by_hash: str | None = (
-            None,
-        )  # If filled, the transaction must be present in the database (committed)
 
         transaction_hash = self._generate_transaction_hash(
             from_address, to_address, data, value, type, nonce
