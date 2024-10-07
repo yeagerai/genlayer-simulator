@@ -79,7 +79,7 @@ const resetInputs = () => {
     switch (input.type) {
       case 'uint256':
       case 'float':
-        defaultValue = '';
+        defaultValue = 0;
         break;
       case 'bool':
         defaultValue = false;
