@@ -86,7 +86,9 @@ class TransactionsProcessor:
         nonce: int,
         leader_only: bool,
         client_session_id: str | None,
-        triggered_by_hash: str | None = None,  # If filled, the tr
+        triggered_by_hash: (
+            str | None
+        ) = None,  # If filled, the transaction must be present in the database (committed)
     ) -> str:
         current_nonce = self.get_transaction_count(from_address)
 
