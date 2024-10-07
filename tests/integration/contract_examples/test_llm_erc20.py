@@ -1,4 +1,5 @@
 # tests/e2e/test_storage.py
+import json
 from tests.common.request import (
     deploy_intelligent_contract,
     send_transaction,
@@ -40,7 +41,7 @@ def test_llm_erc20(setup_validators):
 
     # Deploy Contract
     contract_address, transaction_response_deploy = deploy_intelligent_contract(
-        from_account_a, contract_code, f'{{"total_supply": "{TOKEN_TOTAL_SUPPLY}"}}'
+        from_account_a, contract_code, json.dumps({"total_supply": TOKEN_TOTAL_SUPPLY})
     )
 
     assert has_success_status(transaction_response_deploy)
@@ -51,7 +52,7 @@ def test_llm_erc20(setup_validators):
     contract_state_1 = call_contract_method(
         contract_address, from_account_a, "get_balances", []
     )
-    assert contract_state_1[from_account_a.address] == str(TOKEN_TOTAL_SUPPLY)
+    assert contract_state_1[from_account_a.address] == TOKEN_TOTAL_SUPPLY
 
     ########################################
     #### TRANSFER from User A to User B ####
