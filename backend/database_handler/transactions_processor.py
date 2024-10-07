@@ -1,8 +1,6 @@
 # consensus/services/transactions_db_service.py
 import rlp
 
-from backend.domain.types import TransactionType
-
 from .models import Transactions, TransactionsAudit
 from sqlalchemy.orm import Session
 
