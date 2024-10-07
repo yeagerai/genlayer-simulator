@@ -15,7 +15,7 @@ const isNewValidatorModalOpen = ref(false);
 
 <template>
   <div class="flex max-h-[93vh] w-full flex-col overflow-y-auto">
-    <MainTitle data-testid="validators-page-title">Validators</MainTitle>
+    <MainTitle data-testid="validators-page-title">Your Validators</MainTitle>
 
     <PageSection id="tutorial-validators">
       <template #title>
