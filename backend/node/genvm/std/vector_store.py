@@ -27,11 +27,13 @@ class VectorStore:
             metadata (Any): The metadata.
             vector_id (int, optional): The ID for the vector. If not provided, a new ID will be generated.
         """
-        if not vector_id and not isinstance(vector_id, int):
+        if vector_id is None:
             vector_id = max(self.vector_data.keys(), default=0) + 1
-        else:
-            if vector_id in self.vector_data:
-                raise ValueError(f"Vector ID {vector_id} already exists")
+        elif not isinstance(vector_id, int):
+            raise ValueError("vector_id must be an integer")
+
+        if vector_id in self.vector_data:
+            raise ValueError(f"Vector ID {vector_id} already exists")
 
         model = get_model(self.model_name)
         embedding = model.encode([text])[0]
