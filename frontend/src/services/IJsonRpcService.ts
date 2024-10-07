@@ -9,6 +9,7 @@ import type {
   UpdateValidatorRequest,
   DeleteValidatorRequest,
   GetContractSchemaRequest,
+  GetTransactionCountRequest,
 } from '@/types';
 
 export interface IJsonRpcService {
@@ -29,4 +30,5 @@ export interface IJsonRpcService {
   updateValidator(request: UpdateValidatorRequest): Promise<any>;
   deleteValidator(request: DeleteValidatorRequest): Promise<any>;
   getTransactionByHash(hash: string): Promise<any>;
+  getTransactionCount(address: GetTransactionCountRequest): Promise<number>;
 }

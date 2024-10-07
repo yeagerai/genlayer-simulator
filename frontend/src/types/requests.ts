@@ -60,3 +60,7 @@ export interface UpdateProviderRequest {
 export interface DeleteProviderRequest {
   id: number;
 }
+
+export interface GetTransactionCountRequest {
+  address: string;
+}

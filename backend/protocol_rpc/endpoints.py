@@ -66,8 +66,10 @@ def fund_account(
 ) -> str:
     if not accounts_manager.is_valid_address(account_address):
         raise InvalidAddressError(account_address)
+
+    nonce = transactions_processor.get_transaction_count(None)
     transaction_hash = transactions_processor.insert_transaction(
-        None, account_address, None, amount, 0, False, get_client_session_id()
+        None, account_address, None, amount, 0, nonce, False, get_client_session_id()
     )
     return transaction_hash
 
@@ -350,6 +352,12 @@ def get_balance(
     return account_balance
 
 
+def get_transaction_count(
+    transactions_processor: TransactionsProcessor, address: str
+) -> int:
+    return transactions_processor.get_transaction_count(address)
+
+
 def get_transaction_by_hash(
     transactions_processor: TransactionsProcessor, transaction_hash: str
 ) -> dict:
@@ -438,6 +446,7 @@ def send_raw_transaction(
         raise InvalidTransactionError("Transaction signature verification failed")
 
     to_address = decoded_transaction.to_address
+    nonce = decoded_transaction.nonce
 
     transaction_data = {}
     result = {}
@@ -484,6 +493,7 @@ def send_raw_transaction(
         transaction_data,
         value,
         transaction_type,
+        nonce,
         leader_only,
         get_client_session_id(),
     )
@@ -600,4 +610,8 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint(
         partial(send_raw_transaction, transactions_processor, accounts_manager),
         method_name="eth_sendRawTransaction",
+    )
+    register_rpc_endpoint(
+        partial(get_transaction_count, transactions_processor),
+        method_name="eth_getTransactionCount",
     )

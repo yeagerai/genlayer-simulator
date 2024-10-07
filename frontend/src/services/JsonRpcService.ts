@@ -11,6 +11,7 @@ import type {
   UpdateProviderRequest,
   DeleteProviderRequest,
   TransactionItem,
+  GetTransactionCountRequest,
 } from '@/types';
 
 export class JsonRpcService implements IJsonRpcService {
@@ -166,5 +167,15 @@ export class JsonRpcService implements IJsonRpcService {
       [String(txId)],
       'Error getting transaction by ID',
     ) as Promise<TransactionItem>;
+  }
+
+  async getTransactionCount({
+    address,
+  }: GetTransactionCountRequest): Promise<number> {
+    return this.callRpcMethod<any>(
+      'eth_getTransactionCount',
+      [address],
+      'Error getting transaction count',
+    );
   }
 }
