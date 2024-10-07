@@ -84,17 +84,12 @@ class TransactionsProcessor:
         leader_only: bool,
         client_session_id: str | None,
     ) -> int:
-        # Only allow transactions without from_address for 'fund_account'
-        if not from_address and type is not TransactionType.SEND.value:
-            raise Exception("From address is required")
+        current_nonce = self.get_transaction_count(from_address)
 
-        if from_address:
-            current_nonce = self.get_transaction_count(from_address)
-
-            if nonce != current_nonce:
-                raise Exception(
-                    f"Unexpected nonce. Provided: {nonce}, expected: {current_nonce}"
-                )
+        if nonce != current_nonce:
+            raise Exception(
+                f"Unexpected nonce. Provided: {nonce}, expected: {current_nonce}"
+            )
 
         hash = self._generate_transaction_hash(
             from_address, to_address, data, value, type, nonce
