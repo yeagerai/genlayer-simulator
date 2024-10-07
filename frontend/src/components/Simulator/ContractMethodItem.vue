@@ -19,12 +19,14 @@ const props = defineProps<{
 }>();
 
 const isExpanded = ref(false);
-const inputs = ref<{ [k: string]: any }>({});
+const inputs = ref<{ [k: string]: string }>({});
 const responseMessage = ref('');
 
 const missingParams = computed(() => {
   return props.method.inputs.some(
-    (input: any) => inputs.value[input.name] === '',
+    (input: any) =>
+      typeof inputs.value[input.name] === 'string' &&
+      inputs.value[input.name].trim() === '',
   );
 });
 
@@ -55,7 +57,7 @@ const handleCallReadMethod = async () => {
 const handleCallWriteMethod = async () => {
   await callWriteMethod({
     method: props.method.name,
-    params: Object.values(inputs.value),
+    args: Object.values(inputs.value),
     leaderOnly: props.leaderOnly,
   });
 
@@ -79,13 +81,13 @@ const resetInputs = () => {
     switch (input.type) {
       case 'uint256':
       case 'float':
-        defaultValue = 0;
+        defaultValue = '0';
         break;
       case 'bool':
-        defaultValue = false;
+        defaultValue = 'false';
         break;
       case 'string':
-        defaultValue = '';
+        defaultValue = '""';
         break;
       default:
         defaultValue = '';

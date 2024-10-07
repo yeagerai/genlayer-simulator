@@ -355,8 +355,7 @@ class ConsensusAlgorithm:
                 transaction.to_address,  # new calls are done by the contract
                 pending_transaction.address,
                 {
-                    "function_name": pending_transaction.method_name,
-                    "function_args": json.dumps(pending_transaction.args),
+                    "calldata": pending_transaction.calldata,
                 },
                 value=0,  # we only handle EOA transfers at the moment, so no value gets transferred
                 type=TransactionType.RUN_CONTRACT.value,

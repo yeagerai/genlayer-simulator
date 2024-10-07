@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from .models import TransactionStatus
 from eth_utils import to_bytes, keccak, is_address
 import json
+import base64
 
 
 class TransactionsProcessor:
@@ -43,6 +44,15 @@ class TransactionsProcessor:
         }
 
     @staticmethod
+    def _transaction_data_to_str(data: dict) -> str:
+        def data_encode(d):
+            if isinstance(d, bytes):
+                return str(base64.b64encode(d), encoding="ascii")
+            raise TypeError("Can't encode #{d}")
+
+        return json.dumps(data, default=data_encode)
+
+    @staticmethod
     def _generate_transaction_hash(
         from_address: str,
         to_address: str,
@@ -57,7 +67,8 @@ class TransactionsProcessor:
         to_address_bytes = (
             to_bytes(hexstr=to_address) if is_address(to_address) else None
         )
-        data_bytes = to_bytes(text=json.dumps(data))
+
+        data_bytes = to_bytes(text=TransactionsProcessor._transaction_data_to_str(data))
 
         tx_elements = [
             from_address_bytes,
@@ -105,7 +116,7 @@ class TransactionsProcessor:
             hash=transaction_hash,
             from_address=from_address,
             to_address=to_address,
-            data=data,
+            data=json.loads(self._transaction_data_to_str(data)),
             value=value,
             type=type,
             status=TransactionStatus.PENDING,

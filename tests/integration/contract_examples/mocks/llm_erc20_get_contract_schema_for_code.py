@@ -4,13 +4,13 @@ llm_erc20_contract_schema = {
     "result": {
         "abi": [
             {
-                "inputs": [{"name": "total_supply", "type": "uint256"}],
+                "inputs": [{"name": "total_supply", "type": "int"}],
                 "type": "constructor",
             },
             {
                 "inputs": [{"name": "address", "type": "string"}],
                 "name": "get_balance_of",
-                "outputs": [{"name": "", "type": "uint256"}],
+                "outputs": [{"name": "", "type": "int"}],
                 "type": "function",
             },
             {
@@ -21,7 +21,7 @@ llm_erc20_contract_schema = {
             },
             {
                 "inputs": [
-                    {"name": "amount", "type": "uint256"},
+                    {"name": "amount", "type": "int"},
                     {"name": "to_address", "type": "string"},
                 ],
                 "name": "transfer",

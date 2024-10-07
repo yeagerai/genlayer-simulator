@@ -13,7 +13,7 @@ user_storage_contract_schema = {
             {
                 "inputs": [],
                 "name": "get_complete_storage",
-                "outputs": [{"name": "", "type": "bytes"}],
+                "outputs": [{"name": "", "type": "any"}],
                 "type": "function",
             },
             {

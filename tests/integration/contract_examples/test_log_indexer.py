@@ -35,7 +35,7 @@ def test_log_indexer(setup_validators, from_account):
 
     # Deploy Contract
     contract_address, transaction_response_deploy = deploy_intelligent_contract(
-        from_account, contract_code, "{}"
+        from_account, contract_code, []
     )
     assert has_success_status(transaction_response_deploy)
 
