@@ -17,7 +17,7 @@ def test_async_init(setup_validators, from_account):
     contract_address, transaction_response_deploy = deploy_intelligent_contract(
         from_account,
         contract_code,
-        "{}",
+        [],
     )
     assert has_success_status(transaction_response_deploy)
 

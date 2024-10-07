@@ -9,6 +9,13 @@ import type {
 } from 'viem';
 import type { Address } from '@/types';
 
+export type TransactionDataElement =
+  | string
+  | number
+  | bigint
+  | boolean
+  | Uint8Array;
+
 export class Web3Client {
   privateKeyToAccount(privateKey: Address) {
     return _privateKeyToAccount(privateKey);
@@ -18,7 +25,7 @@ export class Web3Client {
     return _generatePrivateKey();
   }
 
-  encodeTransactionData(params: any[]) {
+  encodeTransactionData(params: TransactionDataElement[]) {
     return toRlp(params.map((param) => toHex(param)));
   }
 
@@ -34,7 +41,7 @@ export class Web3Client {
     nonce,
   }: {
     privateKey: Address;
-    data: Array<unknown>;
+    data: TransactionDataElement[];
     to?: Address;
     value?: bigint;
     nonce: number;

@@ -50,6 +50,6 @@ def random_validator_config(
     providers_to_use = list(filter(filter_by_available, providers_to_use))
 
     if not providers_to_use:
-        raise Exception("No providers avaliable.")
+        raise Exception("No providers available.")
 
     return list(rng.choice(providers_to_use, amount))

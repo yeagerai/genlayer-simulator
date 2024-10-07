@@ -5,8 +5,7 @@ from eth_account._utils.legacy_transactions import Transaction
 
 
 def encode_transaction_data(data: list) -> str:
-    params_bytes = [bytes(param, "utf-8") for param in data]
-    serialized_data = rlp.encode(params_bytes)
+    serialized_data = rlp.encode(data)
     return to_hex(serialized_data)
 
 
