@@ -33,6 +33,7 @@ describe('useWallet', () => {
     const signedTransaction = await wallet.signTransaction({
       privateKey: testPrivateKey,
       data: testData,
+      nonce: 0,
     });
     expect(signedTransaction).toBe(testSignedTransaction);
 

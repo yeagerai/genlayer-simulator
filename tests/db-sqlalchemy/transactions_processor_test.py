@@ -14,6 +14,7 @@ def test_transactions_processor(transactions_processor: TransactionsProcessor):
     data = {"key": "value"}
     value = 2.0
     transaction_type = 1
+    nonce = 0
 
     # Used to test the triggered_by field
     first_transaction_hash = transactions_processor.insert_transaction(
@@ -22,6 +23,7 @@ def test_transactions_processor(transactions_processor: TransactionsProcessor):
         data,
         value,
         transaction_type,
+        nonce,
         True,
     )
     transactions_processor.session.commit()
@@ -32,6 +34,7 @@ def test_transactions_processor(transactions_processor: TransactionsProcessor):
         data,
         value,
         transaction_type,
+        nonce,
         True,
         first_transaction_hash,
     )

@@ -1,12 +1,13 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import type { Address } from '@/types';
-import { useWallet } from '@/hooks';
+import { useWallet, useRpcClient } from '@/hooks';
 
 export const useAccountsStore = defineStore('accountsStore', () => {
   const key = localStorage.getItem('accountsStore.currentPrivateKey');
   const currentPrivateKey = ref<Address | null>(key ? (key as Address) : null);
   const wallet = useWallet();
+  const rpcClient = useRpcClient();
 
   const currentUserAddress = computed(() => {
     return currentPrivateKey.value
@@ -49,6 +50,14 @@ export const useAccountsStore = defineStore('accountsStore', () => {
     currentPrivateKey.value = privateKey;
   }
 
+  async function getCurrentNonce() {
+    const transactionCount = await rpcClient.getTransactionCount({
+      address: currentUserAddress.value,
+    });
+
+    return transactionCount;
+  }
+
   const displayAddress = computed(() => {
     try {
       if (!currentPrivateKey.value) {
@@ -72,6 +81,7 @@ export const useAccountsStore = defineStore('accountsStore', () => {
     accountFromPrivateKey,
     removeAccount,
     setCurrentAccount,
+    getCurrentNonce,
     displayAddress,
   };
 });
