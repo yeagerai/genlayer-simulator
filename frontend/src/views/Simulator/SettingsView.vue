@@ -10,7 +10,7 @@ import SimulatorSection from '@/components/Simulator/settings/SimulatorSection.v
     <MainTitle data-testid="settings-page-title">Settings</MainTitle>
 
     <AccountSection />
-    <ProviderSection />
     <SimulatorSection />
+    <ProviderSection />
   </div>
 </template>
