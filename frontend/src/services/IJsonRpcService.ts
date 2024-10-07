@@ -1,10 +1,6 @@
 import type {
   GetContractStateRequest,
-  JsonRPCRequest,
-  JsonRPCResponse,
-  JsonRpcResult,
   GetContractStateResult,
-  DeployContractRequest,
   GetDeployedContractSchemaRequest,
   AddProviderRequest,
   UpdateProviderRequest,
@@ -13,31 +9,24 @@ import type {
   UpdateValidatorRequest,
   DeleteValidatorRequest,
   GetContractSchemaRequest,
-  GetProvidersAndModelsData,
 } from '@/types';
 
 export interface IJsonRpcService {
-  call(request: JsonRPCRequest): Promise<JsonRPCResponse<any>>;
   getContractState(
     request: GetContractStateRequest,
-  ): Promise<JsonRpcResult<GetContractStateResult>>;
-  sendTransaction(singedTransaction: string): Promise<JsonRpcResult<any>>;
-  deployContract(request: DeployContractRequest): Promise<JsonRpcResult<any>>;
-  getContractSchema(
-    request: GetContractSchemaRequest,
-  ): Promise<JsonRpcResult<any>>;
+  ): Promise<GetContractStateResult>;
+  sendTransaction(signedTransaction: string): Promise<string>;
+  getContractSchema(request: GetContractSchemaRequest): Promise<any>;
   getDeployedContractSchema(
     request: GetDeployedContractSchemaRequest,
-  ): Promise<JsonRpcResult<any>>;
-  getValidators(): Promise<JsonRpcResult<any>>;
-  getProvidersAndModels(): Promise<JsonRpcResult<GetProvidersAndModelsData>>;
-
-  addProvider(request: AddProviderRequest): Promise<JsonRpcResult<any>>;
-  updateProvider(request: UpdateProviderRequest): Promise<JsonRpcResult<any>>;
-  deleteProvider(request: DeleteProviderRequest): Promise<JsonRpcResult<any>>;
-
-  createValidator(request: CreateValidatorRequest): Promise<JsonRpcResult<any>>;
-  updateValidator(request: UpdateValidatorRequest): Promise<JsonRpcResult<any>>;
-  deleteValidator(request: DeleteValidatorRequest): Promise<JsonRpcResult<any>>;
-  getTransactionByHash(hash: string): Promise<JsonRpcResult<any>>;
+  ): Promise<any>;
+  getValidators(): Promise<any[]>;
+  getProvidersAndModels(): Promise<any[]>;
+  addProvider(request: AddProviderRequest): Promise<any>;
+  updateProvider(request: UpdateProviderRequest): Promise<any>;
+  deleteProvider(request: DeleteProviderRequest): Promise<any>;
+  createValidator(request: CreateValidatorRequest): Promise<any>;
+  updateValidator(request: UpdateValidatorRequest): Promise<any>;
+  deleteValidator(request: DeleteValidatorRequest): Promise<any>;
+  getTransactionByHash(hash: string): Promise<any>;
 }

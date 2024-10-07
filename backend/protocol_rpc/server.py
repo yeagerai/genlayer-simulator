@@ -9,13 +9,14 @@ from flask_jsonrpc import JSONRPC
 from flask_socketio import SocketIO
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 from backend.database_handler.llm_providers import LLMProviderRegistry
 from backend.protocol_rpc.configuration import GlobalConfiguration
 from backend.protocol_rpc.message_handler.base import MessageHandler
 from backend.protocol_rpc.endpoints import register_all_rpc_endpoints
 from dotenv import load_dotenv
 
-from backend.database_handler.db_client import DBClient, get_db_name
 from backend.database_handler.transactions_processor import TransactionsProcessor
 from backend.database_handler.validators_registry import ValidatorsRegistry
 from backend.database_handler.accounts_manager import AccountsManager
@@ -23,8 +24,12 @@ from backend.consensus.base import ConsensusAlgorithm
 from backend.database_handler.models import Base
 
 
-def create_app():
+def get_db_name(database: str) -> str:
+    return "genlayer_state" if database == "genlayer" else database
 
+
+def create_app():
+    # DataBase
     database_name_seed = "genlayer"
     db_uri = f"postgresql+psycopg2://{environ.get('DBUSER')}:{environ.get('DBPASSWORD')}@{environ.get('DBHOST')}/{get_db_name(database_name_seed)}"
     sqlalchemy_db = SQLAlchemy(
@@ -34,6 +39,9 @@ def create_app():
         },  # recommended in https://docs.sqlalchemy.org/en/20/orm/session_basics.html#when-do-i-construct-a-session-when-do-i-commit-it-and-when-do-i-close-it
     )
 
+    engine = create_engine(db_uri, echo=True, pool_size=50, max_overflow=50)
+
+    # Flask
     app = Flask("jsonrpc_api")
     app.config["SQLALCHEMY_DATABASE_URI"] = db_uri
     app.config["SQLALCHEMY_ECHO"] = True
@@ -44,20 +52,21 @@ def create_app():
         app, "/api", enable_web_browsable_api=True
     )  # check it out at http://localhost:4000/api/browse/#/
     socketio = SocketIO(app, cors_allowed_origins="*")
-    msg_handler = MessageHandler(app, socketio)
-    genlayer_db_client = DBClient(database_name_seed)
+    # Handlers
+    msg_handler = MessageHandler(socketio, config=GlobalConfiguration())
     transactions_processor = TransactionsProcessor(sqlalchemy_db.session)
     accounts_manager = AccountsManager(sqlalchemy_db.session)
     validators_registry = ValidatorsRegistry(sqlalchemy_db.session)
     llm_provider_registry = LLMProviderRegistry(sqlalchemy_db.session)
-
-    consensus = ConsensusAlgorithm(genlayer_db_client, msg_handler)
+    consensus = ConsensusAlgorithm(
+        lambda: Session(engine, expire_on_commit=False), msg_handler
+    )
     return (
         app,
         jsonrpc,
         socketio,
         msg_handler,
-        genlayer_db_client,
+        sqlalchemy_db.session,
         accounts_manager,
         transactions_processor,
         validators_registry,
@@ -73,7 +82,7 @@ load_dotenv()
     jsonrpc,
     socketio,
     msg_handler,
-    genlayer_db_client,
+    request_session,
     accounts_manager,
     transactions_processor,
     validators_registry,
@@ -84,12 +93,11 @@ load_dotenv()
 register_all_rpc_endpoints(
     jsonrpc,
     msg_handler,
-    genlayer_db_client,
+    request_session,
     accounts_manager,
     transactions_processor,
     validators_registry,
     llm_provider_registry,
-    config=GlobalConfiguration(),
 )
 
 

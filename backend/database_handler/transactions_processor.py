@@ -10,7 +10,10 @@ import json
 
 
 class TransactionsProcessor:
-    def __init__(self, session: Session):
+    def __init__(
+        self,
+        session: Session,
+    ):
         self.session = session
 
     @staticmethod
@@ -20,7 +23,7 @@ class TransactionsProcessor:
             "from_address": transaction_data.from_address,
             "to_address": transaction_data.to_address,
             "data": transaction_data.data,
-            "value": float(transaction_data.value),
+            "value": transaction_data.value,
             "type": transaction_data.type,
             "status": transaction_data.status.value,
             "consensus_data": transaction_data.consensus_data,
@@ -30,6 +33,13 @@ class TransactionsProcessor:
             "s": transaction_data.s,
             "v": transaction_data.v,
             "created_at": transaction_data.created_at.isoformat(),
+            "leader_only": transaction_data.leader_only,
+            "client_session_id": transaction_data.client_session_id,
+            "triggered_by": transaction_data.triggered_by_hash,
+            "triggered_transactions": [
+                transaction.hash
+                for transaction in transaction_data.triggered_transactions
+            ],
         }
 
     @staticmethod
@@ -73,19 +83,24 @@ class TransactionsProcessor:
         data: dict,
         value: float,
         type: int,
-    ) -> int:
+        leader_only: bool,
+        client_session_id: str | None,
+        triggered_by_hash: (
+            str | None
+        ) = None,  # If filled, the transaction must be present in the database (committed)
+    ) -> str:
         nonce = (
             self.session.query(Transactions)
             .filter(Transactions.from_address == from_address)
             .count()
         )
 
-        hash = self._generate_transaction_hash(
+        transaction_hash = self._generate_transaction_hash(
             from_address, to_address, data, value, type, nonce
         )
 
         new_transaction = Transactions(
-            hash=hash,
+            hash=transaction_hash,
             from_address=from_address,
             to_address=to_address,
             data=data,
@@ -100,21 +115,25 @@ class TransactionsProcessor:
             r=None,
             s=None,
             v=None,
+            leader_only=leader_only,
+            client_session_id=client_session_id,
+            triggered_by=(
+                self.session.query(Transactions).filter_by(hash=triggered_by_hash).one()
+                if triggered_by_hash
+                else None
+            ),
         )
 
         self.session.add(new_transaction)
 
-        self.session.flush()  # SQLAlchemy will populate all the fields that are set by the database, like the id and created_at fields
+        self.session.flush()  # So that `created_at` gets set
 
-        # Insert transaction audit record into the transactions_audit table
         transaction_audit_record = TransactionsAudit(
             transaction_hash=new_transaction.hash,
             data=self._parse_transaction_data(new_transaction),
         )
 
         self.session.add(transaction_audit_record)
-
-        self.session.commit()
 
         return new_transaction.hash
 
@@ -139,7 +158,6 @@ class TransactionsProcessor:
         )
 
         transaction.status = new_status
-        self.session.commit()
 
     def set_transaction_result(self, transaction_hash: str, consensus_data: dict):
         transaction = (
@@ -154,4 +172,3 @@ class TransactionsProcessor:
             transaction_hash,
             TransactionStatus.FINALIZED.value,
         )
-        self.session.commit()

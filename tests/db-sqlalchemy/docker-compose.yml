@@ -30,3 +30,4 @@ services:
       postgrestest:
         condition: service_healthy
     container_name: genlayer_simulator_db_tests
+    # command: ["-svv", "transactions_processor_test.py"] # Uncomment to run your particular test

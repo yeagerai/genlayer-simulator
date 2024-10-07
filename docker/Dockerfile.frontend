@@ -1,13 +1,16 @@
-FROM node:21.7.3-alpine3.20 AS builder
+FROM node:21.7.3-alpine3.20 AS base
 
 WORKDIR /app
 COPY ./frontend/package*.json .
-RUN npm ci --cache /tmp/empty-cache && \
-    npm cache clean --force && \
-    rm -rf /tmp/empty-cache
+RUN --mount=type=cache,target=/root/.npm npm ci
 COPY ./frontend .
 COPY ./examples src/assets/examples
 COPY ./.env .
+
+FROM base AS dev
+ENTRYPOINT ["npm", "run", "dev"]
+
+FROM base AS builder
 RUN npm run build
 
 FROM alpine:latest AS final

@@ -19,36 +19,28 @@ from tests.common.response import (
     has_success_status,
 )
 
-from tests.common.accounts import create_new_account
 
-
-def test_football_prediction_market(setup_validators):
-    # Account Setup
-    from_account = create_new_account()
-
+def test_football_prediction_market(setup_validators, from_account):
     # Get contract schema
     contract_code = open("examples/contracts/football_prediction_market.py", "r").read()
     result_schema = post_request_localhost(
-        payload("get_contract_schema_for_code", contract_code)
+        payload("gen_getContractSchemaForCode", contract_code)
     ).json()
     assert has_success_status(result_schema)
     assert_dict_exact(result_schema, football_prediction_market_contract_schema)
 
     # Deploy Contract
-    call_method_response_deploy, transaction_response_deploy = (
-        deploy_intelligent_contract(
-            from_account,
-            contract_code,
-            f'{{"game_date": "2024-06-26", "team1": "Georgia", "team2": "Portugal"}}',
-        )
+    contract_address, transaction_response_deploy = deploy_intelligent_contract(
+        from_account,
+        contract_code,
+        f'{{"game_date": "2024-06-26", "team1": "Georgia", "team2": "Portugal"}}',
     )
     assert has_success_status(transaction_response_deploy)
-    contract_address = call_method_response_deploy["result"]["data"]["contract_address"]
 
     ########################################
     ############# RESOLVE match ############
     ########################################
-    _, transaction_response_call_1 = send_transaction(
+    transaction_response_call_1 = send_transaction(
         from_account,
         contract_address,
         "resolve",

@@ -28,9 +28,13 @@ describe('useInputMap composable', () => {
     expect(component).toBe(BooleanField);
   });
 
-  it('should throw an error for an unknown type', () => {
-    expect(() => getComponent('unknown')).toThrowError(
-      'Component not found for input type: unknown',
-    );
+  it('should default to string for an empty type', () => {
+    const component = getComponent('');
+    expect(component).toBe(StringField);
+  });
+
+  it('should default to string for an unknown type', () => {
+    const component = getComponent('unknown');
+    expect(component).toBe(StringField);
   });
 });

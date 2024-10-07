@@ -15,7 +15,10 @@ export const useInputMap = () => {
     const component = InputTypesMap[type];
 
     if (!component) {
-      throw new Error(`Component not found for input type: ${type}`);
+      console.warn(
+        `Component not found for input type: ${type}, defaulting to string`,
+      );
+      return StringField;
     }
 
     return component;

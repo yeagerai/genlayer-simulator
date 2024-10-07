@@ -5,11 +5,13 @@ import TransactionStatusBadge from '@/components/Simulator/TransactionStatusBadg
 import { useTimeAgo } from '@vueuse/core';
 import ModalSection from '@/components/Simulator/ModalSection.vue';
 import JsonViewer from '@/components/JsonViewer/json-viewer.vue';
-import { useUIStore } from '@/stores';
+import { useUIStore, useNodeStore } from '@/stores';
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/vue/16/solid';
 import CopyTextButton from '../global/CopyTextButton.vue';
+import { FilterIcon } from 'lucide-vue-next';
 
 const uiStore = useUIStore();
+const nodeStore = useNodeStore();
 
 const props = defineProps<{
   transaction: TransactionItem;
@@ -36,21 +38,21 @@ const leaderReceipt = computed(() => {
 });
 
 const shortHash = computed(() => {
-  return props.transaction.hash?.slice(0, 8);
+  return props.transaction.hash?.slice(0, 6);
 });
 </script>
 
 <template>
   <div
-    class="flex cursor-pointer flex-row items-center justify-between gap-2 rounded p-0.5 pl-1 hover:bg-gray-100 dark:hover:bg-zinc-700"
+    class="group flex cursor-pointer flex-row items-center justify-between gap-2 rounded p-0.5 pl-1 hover:bg-gray-100 dark:hover:bg-zinc-700"
     @click="isDetailsModalOpen = true"
   >
-    <div class="truncate text-xs text-gray-500 dark:text-gray-400">
+    <div class="flex flex-row text-xs text-gray-500 dark:text-gray-400">
       <span class="font-mono">{{ shortHash }}</span>
       <span class="font-normal">...</span>
     </div>
 
-    <div class="grow truncate text-left text-xs font-medium">
+    <div class="grow truncate text-left text-[11px] font-medium">
       {{
         transaction.type === 'method'
           ? transaction.data.data?.function_name
@@ -58,10 +60,28 @@ const shortHash = computed(() => {
       }}
     </div>
 
+    <div class="hidden flex-row items-center gap-1 group-hover:flex">
+      <CopyTextButton
+        :text="transaction.hash"
+        v-tooltip="'Copy transaction hash'"
+        class="h-4 w-4"
+      />
+
+      <button
+        @click.stop="nodeStore.searchFilter = transaction.hash"
+        class="active:scale-90"
+      >
+        <FilterIcon
+          v-tooltip="'Filter logs by hash'"
+          class="h-4 w-4 text-gray-400 outline-none transition-all hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
+        />
+      </button>
+    </div>
+
     <div class="flex items-center justify-between gap-2 p-1">
       <Loader :size="15" v-if="transaction.status !== 'FINALIZED'" />
 
-      <TransactionStatusBadge class="px-[4px] py-[1px] text-[10px]">
+      <TransactionStatusBadge class="px-[4px] py-[1px] text-[9px]">
         {{ transaction.status }}
       </TransactionStatusBadge>
     </div>

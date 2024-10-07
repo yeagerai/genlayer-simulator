@@ -1,14 +1,143 @@
-import traceback
-import random
-import string
 import os
 import json
+from functools import wraps
 from logging.config import dictConfig
+import traceback
 
-from backend.protocol_rpc.message_handler.types import FormattedResponse
-from backend.protocol_rpc.types import EndpointResult
+from flask import request
+from loguru import logger
+import sys
+
+from backend.protocol_rpc.message_handler.types import LogEvent
+from flask_socketio import SocketIO
+
+from backend.protocol_rpc.configuration import GlobalConfiguration
+from backend.protocol_rpc.message_handler.types import EventScope, EventType, LogEvent
 
 MAX_LOG_MESSAGE_LENGTH = 3000
+
+
+# TODO: this should probably live in another module
+def get_client_session_id() -> str:
+    try:
+        return request.headers.get("x-session-id")
+    except RuntimeError:  # when this is called outside of a request
+        return ""
+
+
+class MessageHandler:
+    def __init__(self, socketio: SocketIO, config: GlobalConfiguration):
+        self.socketio = socketio
+        self.config = config
+        self.client_session_id = None
+        setup_logging_config()
+
+    def with_client_session(self, client_session_id: str):
+        new_msg_handler = MessageHandler(self.socketio, self.config)
+        new_msg_handler.client_session_id = client_session_id
+        return new_msg_handler
+
+    def log_endpoint_info(self, func):
+        return log_endpoint_info_wrapper(self, self.config)(func)
+
+    def _socket_emit(self, log_event: LogEvent):
+        self.socketio.emit(
+            log_event.name,
+            log_event.to_dict(),
+            to=log_event.client_session_id
+            or self.client_session_id
+            or get_client_session_id(),
+        )
+
+    def _log_message(self, log_event: LogEvent):
+        logging_status = log_event.type.value
+
+        if not hasattr(logger, logging_status):
+            logging_status = "info"
+
+        log_method = getattr(logger, logging_status)
+
+        message = (
+            (log_event.message[:MAX_LOG_MESSAGE_LENGTH] + "...")
+            if log_event.message is not None
+            and len(log_event.message) > MAX_LOG_MESSAGE_LENGTH
+            else log_event.message
+        )
+
+        log_message = f"[{log_event.scope.value}] {message}"
+        gray = "\033[38;5;245m"
+        reset = "\033[0m"
+
+        if log_event.data:
+            try:
+                data_str = json.dumps(log_event.data, default=lambda o: o.__dict__)
+                log_message += f" {gray}{data_str}{reset}"
+            except TypeError as e:
+                log_message += (
+                    f" {gray}{str(log_event.data)} (serialization error: {e}){reset}"
+                )
+
+        log_method(log_message)
+
+    def send_message(self, log_event: LogEvent, log_to_terminal: bool = True):
+        if log_to_terminal:
+            self._log_message(log_event)
+        self._socket_emit(log_event)
+
+
+def log_endpoint_info_wrapper(msg_handler: MessageHandler, config: GlobalConfiguration):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            shouldPrintInfoLogs = (
+                func.__name__ not in config.get_disabled_info_logs_endpoints()
+            )
+
+            if shouldPrintInfoLogs:
+                msg_handler.send_message(
+                    LogEvent(
+                        "endpoint_call",
+                        EventType.INFO,
+                        EventScope.RPC,
+                        "Endpoint called: " + func.__name__,
+                        {"endpoint_name": func.__name__, "args": args},
+                    )
+                )
+            try:
+                result = func(*args, **kwargs)
+                if shouldPrintInfoLogs:
+                    msg_handler.send_message(
+                        LogEvent(
+                            "endpoint_success",
+                            EventType.SUCCESS,
+                            EventScope.RPC,
+                            "Endpoint responded: " + func.__name__,
+                            {
+                                "endpoint_name": func.__name__,
+                                "result": result,
+                            },
+                        )
+                    )
+                return result
+            except Exception as e:
+                msg_handler.send_message(
+                    LogEvent(
+                        "endpoint_error",
+                        EventType.ERROR,
+                        EventScope.RPC,
+                        f"Error executing endpoint {func.__name__ }: {str(e)}",
+                        {
+                            "endpoint_name": func.__name__,
+                            "error": str(e),
+                            "traceback": traceback.format_exc(),
+                        },
+                    )
+                )
+                raise e
+
+        return wrapper
+
+    return decorator
 
 
 def setup_logging_config():
@@ -20,52 +149,9 @@ def setup_logging_config():
         logging_config = json.load(file)
         dictConfig(logging_config)
 
-
-def format_response(function_name: str, result: EndpointResult) -> FormattedResponse:
-    trace_id = "".join(
-        random.choice(string.digits + string.ascii_lowercase) for _ in range(9)
+    logger.remove()
+    logger.add(
+        sys.stdout,
+        colorize=True,
+        format="<level>{level: <8}</level> | {message}",
     )
-    return FormattedResponse(function_name, trace_id, result)
-
-
-class MessageHandler:
-
-    status_mappings = {
-        "debug": "info",
-        "info": "info",
-        "success": "info",
-        "error": "error",
-    }
-
-    def __init__(self, app, socketio):
-        self.app = app
-        self.socketio = socketio
-        setup_logging_config()
-
-    def socket_emit(self, message):
-        self.socketio.emit("status_update", {"message": message})
-
-    def log_message(self, function_name, result: EndpointResult):
-        logging_status = self.status_mappings[result.status.value]
-        if hasattr(self.app.logger, logging_status):
-            log_method = getattr(self.app.logger, logging_status)
-            result_string = str(result)
-            function_result = (
-                (result_string[:MAX_LOG_MESSAGE_LENGTH] + "...")
-                if result_string is not None
-                and len(result_string) > MAX_LOG_MESSAGE_LENGTH
-                else result_string
-            )
-            log_method(function_name + ": " + function_result)
-        else:
-            raise Exception(f"Logger does not have the method {result.status}")
-
-    def send_message(
-        self,
-        function_name: str,
-        result: EndpointResult,
-    ):
-        self.log_message(function_name, result)
-
-        formatted_response = format_response(function_name, result)
-        self.socket_emit(formatted_response.to_json())

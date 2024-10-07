@@ -1,12 +1,12 @@
-from typing import Optional
+from typing import List, Optional
 
 from sqlalchemy import (
     BigInteger,
+    Boolean,
     CheckConstraint,
     DateTime,
     Enum,
     Integer,
-    Numeric,
     PrimaryKeyConstraint,
     String,
     func,
@@ -14,9 +14,14 @@ from sqlalchemy import (
     ForeignKey,
 )
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, MappedAsDataclass
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    Mapped,
+    mapped_column,
+    MappedAsDataclass,
+    relationship,
+)
 import datetime
-import decimal
 import enum
 
 
@@ -59,6 +64,7 @@ class Transactions(Base):
     __table_args__ = (
         CheckConstraint("type = ANY (ARRAY[0, 1, 2])", name="transactions_type_check"),
         PrimaryKeyConstraint("hash", name="transactions_pkey"),
+        CheckConstraint("value >= 0", name="value_unsigned_int"),
     )
 
     hash: Mapped[str] = mapped_column(String(66), primary_key=True, unique=True)
@@ -76,15 +82,38 @@ class Transactions(Base):
     data: Mapped[Optional[dict]] = mapped_column(JSONB)
     consensus_data: Mapped[Optional[dict]] = mapped_column(JSONB)
     nonce: Mapped[Optional[int]] = mapped_column(Integer)
-    value: Mapped[Optional[decimal.Decimal]] = mapped_column(Numeric)
+    value: Mapped[Optional[int]] = mapped_column(Integer)
     type: Mapped[Optional[int]] = mapped_column(Integer)
     gaslimit: Mapped[Optional[int]] = mapped_column(BigInteger)
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(
         DateTime(True), server_default=func.current_timestamp(), init=False
     )
+    client_session_id: Mapped[Optional[str]] = mapped_column(
+        String(255)
+    )  # Used to identify the client session that is subscribed to this transaction's events
+    leader_only: Mapped[bool] = mapped_column(Boolean)
     r: Mapped[Optional[int]] = mapped_column(Integer)
     s: Mapped[Optional[int]] = mapped_column(Integer)
     v: Mapped[Optional[int]] = mapped_column(Integer)
+
+    # Relationship for triggered transactions
+    triggered_by_hash: Mapped[Optional[str]] = mapped_column(
+        ForeignKey("transactions.hash", name="triggered_by_hash_fkey"),
+        init=False,
+    )
+
+    triggered_by: Mapped[Optional["Transactions"]] = relationship(
+        "Transactions",
+        remote_side=[hash],
+        foreign_keys=[triggered_by_hash],
+        back_populates="triggered_transactions",
+        default=None,
+    )
+    triggered_transactions: Mapped[List["Transactions"]] = relationship(
+        "Transactions",
+        back_populates="triggered_by",
+        init=False,
+    )
 
 
 class TransactionsAudit(Base):

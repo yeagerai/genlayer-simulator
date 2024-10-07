@@ -2,6 +2,14 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Frontend: Launch Chrome",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:8080",
+      "webRoot": "${workspaceFolder}/frontend/src",
+      "sourceMaps": true
+    },
+    {
       "name": "JsonRPC: Remote Attach",
       "type": "debugpy",
       "request": "attach",
@@ -18,20 +26,11 @@
       "justMyCode": true
     },
     {
-      "name": "GenVM: Remote Attach",
-      "type": "debugpy",
-      "request": "attach",
-      "pathMappings": [
-        {
-          "localRoot": "${workspaceFolder}",
-          "remoteRoot": "/app"
-        }
-      ],
-      "connect": {
-        "port": 6678,
-        "host": "localhost"
-      },
-      "justMyCode": true
+      "type": "chrome",
+      "request": "launch",
+      "name": "vuejs: chrome",
+      "url": "http://localhost:8080",
+      "webRoot": "${workspaceFolder}/frontend/src"
     },
     {
       "name": "SQLAlchemy tests: Remote Attach",

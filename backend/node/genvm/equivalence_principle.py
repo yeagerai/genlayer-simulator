@@ -111,9 +111,7 @@ async def call_llm_with_principle(prompt, eq_principle, comparative=True):
     return final_result["output"]
 
 
-async def get_webpage_with_principle(
-    url, eq_principle, comparative=True, format: str = "text"
-):
+async def get_webpage_with_principle(url, eq_principle, format: str = "text"):
     final_result = {}
     async with EquivalencePrinciple(
         result=final_result,

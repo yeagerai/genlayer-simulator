@@ -12,4 +12,4 @@ COPY ${TEST_PATH} .
 
 COPY backend /app/backend
 
-CMD ["pytest", "-v"]
+ENTRYPOINT ["pytest", "-svv"]
