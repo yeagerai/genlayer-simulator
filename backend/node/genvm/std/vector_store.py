@@ -1,6 +1,6 @@
 # backend/node/genvm/std/vector_store.py
 
-from typing import Any
+from typing import Any, Optional
 import numpy as np
 from backend.node.genvm.std.models import get_model
 
@@ -18,7 +18,7 @@ class VectorStore:
         self.metadata = {}  # Dictionary to store metadata
         self.model_name = model_name
 
-    def add_text(self, vector_id: int, text: str, metadata: Any):
+    def add_text(self, text: str, metadata: Any, vector_id: Optional[int] = None):
         """
         Add a new text to the store with its metadata.
 
@@ -27,11 +27,12 @@ class VectorStore:
             metadata (Any): The metadata.
             vector_id (int, optional): The ID for the vector. If not provided, a new ID will be generated.
         """
-        if not vector_id:
+        if not vector_id and not isinstance(vector_id, int):
             vector_id = max(self.vector_data.keys(), default=0) + 1
             print(f"generated id: {vector_id}")
-        elif vector_id in self.vector_data:
-            raise ValueError(f"Vector ID {vector_id} already exists")
+        else:
+            if vector_id in self.vector_data:
+                raise ValueError(f"Vector ID {vector_id} already exists")
 
         model = get_model(self.model_name)
         embedding = model.encode([text])[0]
