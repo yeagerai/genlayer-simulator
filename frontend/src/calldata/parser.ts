@@ -136,9 +136,11 @@ function applyString(n: Token<TokenKind.Str>): string {
   });
 }
 
+/// unites all non-recursive non-terminals
 const TERM = rule<TokenKind, CalldataEncodable>();
 const ARR = rule<TokenKind, Array<CalldataEncodable>>();
 const MAP = rule<TokenKind, Map<string, CalldataEncodable>>();
+/// any valid calldata
 const EXPR = rule<TokenKind, CalldataEncodable>();
 
 const FETCH_STR = rule<TokenKind, string>();

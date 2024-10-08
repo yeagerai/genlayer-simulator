@@ -48,8 +48,7 @@ function encodeNum(to: number[], data: bigint) {
   }
 }
 
-function compareString(l: Uint8Array, r: Uint8Array): number {
-  // FIXME it is incorrect for non ascii!
+function compareString(l: number[], r: number[]): number {
   for (let index = 0; index < l.length && index < r.length; index++) {
     const cur = l[index] - r[index];
     if (cur !== 0) {
@@ -60,22 +59,26 @@ function compareString(l: Uint8Array, r: Uint8Array): number {
 }
 
 function encodeMap(to: number[], arr: Iterable<[string, CalldataEncodable]>) {
-  const newEntries = Array.from(
+  // unicode code points array, utf8 encoded array, item
+  const newEntries: [number[], Uint8Array, CalldataEncodable][] = Array.from(
     arr,
-    ([k, v]): [Uint8Array, CalldataEncodable] => [
+    ([k, v]): [number[], Uint8Array, CalldataEncodable] => [
+      Array.from(k, (x) => x.codePointAt(0)!),
       new TextEncoder().encode(k),
       v,
     ],
   );
-  newEntries.sort(([k1, _v1], [k2, _v2]) => compareString(k1, k2));
+  newEntries.sort((v1, v2) => compareString(v1[0], v2[0]));
   for (let i = 1; i < newEntries.length; i++) {
     if (compareString(newEntries[i - 1][0], newEntries[i][0]) === 0) {
-      throw new Error('duplicate key');
+      throw new Error(
+        `duplicate key '${new TextDecoder().decode(newEntries[i][1])}'`,
+      );
     }
   }
 
   encodeNumWithType(to, BigInt(newEntries.length), TYPE_MAP);
-  for (const [k, v] of newEntries) {
+  for (const [_k, k, v] of newEntries) {
     writeNum(to, BigInt(k.length));
     for (const c of k) {
       to.push(c);

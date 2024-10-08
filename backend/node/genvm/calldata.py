@@ -155,3 +155,44 @@ def decode(mem0) -> Any:  # type: ignore
     if len(mem) != 0:
         raise Exception(f"unparsed end {bytes(mem[:5])!r}... (decoded {res})")
     return res
+
+
+def to_str(d: Any) -> str:
+    buf: list[str] = []
+
+    def impl(d: Any) -> None:
+        if d is None:
+            buf.append("null")
+        elif d is True:
+            buf.append("true")
+        elif d is False:
+            buf.append("false")
+        elif isinstance(d, str):
+            buf.append(f"{d!r}")
+        elif isinstance(d, bytes):
+            buf.append("b#")
+            buf.append(d.hex())
+        elif isinstance(d, int):
+            buf.append(str(d))
+        elif isinstance(d, Address):
+            buf.append("addr#")
+            buf.append(d.as_bytes.hex())
+        elif isinstance(d, dict):
+            buf.append("{")
+            for k, v in d.items():
+                buf.append(f"{k!r}")
+                buf.append(":")
+                impl(v)
+                buf.append(",")
+            buf.append("}")
+        elif isinstance(d, list):
+            buf.append("[")
+            for v in d:
+                impl(v)
+                buf.append(",")
+            buf.append("]")
+        else:
+            raise Exception(f"can't encode {d} to calldata")
+
+    impl(d)
+    return "".join(buf)
