@@ -52,7 +52,7 @@ const modelGroups = computed(() => {
     </div>
 
     <ProviderModal
-      :open="isNewProviderModalOpen"
+      :open="true || isNewProviderModalOpen"
       @close="isNewProviderModalOpen = false"
     />
   </PageSection>

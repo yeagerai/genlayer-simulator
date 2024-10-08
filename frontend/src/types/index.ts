@@ -27,11 +27,11 @@ export interface ProviderModel {
   id: number;
   provider: string;
   model: string;
-  // config: Record<string, any>;
-  config: string;
+  config: Record<string, any>;
+  // config: string;
   plugin: string;
-  // plugin_config: Record<string, any>;
-  plugin_config: string;
+  plugin_config: Record<string, any>;
+  // plugin_config: string;
   is_available: boolean;
   is_model_available: boolean;
 }
@@ -39,13 +39,11 @@ export interface ProviderModel {
 export interface NewProviderDataModel {
   provider: string;
   model: string;
-  // config: Record<string, any>;
-  config: string;
+  config: Record<string, any>;
+  // config: object;
   plugin: string;
-  plugin_config: string;
-  // plugin_config: Record<string, any>;
-  // api_key_env_var: string;
-  // api_url: string | null;
+  // plugin_config: object;
+  plugin_config: Record<string, any>;
 }
 
 export interface ContractMethod {

@@ -11,11 +11,9 @@ import FieldError from '@/components/global/fields/FieldError.vue';
 import FieldLabel from '@/components/global/fields/FieldLabel.vue';
 import { useEventTracking } from '@/hooks';
 import CopyTextButton from '../global/CopyTextButton.vue';
-import { uniqBy } from 'lodash-es';
+// import { uniqBy } from 'lodash-es';
 import Alert from '../global/Alert.vue';
-// TODO: make sure this import is legit
-import providersSchema from '../../../../backend/node/create_nodes/providers_schema.json';
-
+import JsonForm from './JsonForm.vue';
 const nodeStore = useNodeStore();
 const { trackEvent } = useEventTracking();
 const emit = defineEmits(['close']);
@@ -159,70 +157,8 @@ const tryInitValues = () => {
     <template #title v-if="isCreateMode">New Provider</template>
     <template #title v-else>Provider #{{ provider?.id }}</template>
 
-    <div>
-      <FieldLabel for="provider">Provider:</FieldLabel>
-      <TextInput
-        id="provider"
-        name="provider"
-        v-model="newProviderData.provider"
-        required
-        testId="input-provider"
-        :placeholder="
-          providersSchema.properties.provider.examples.join(', ') + '...'
-        "
-      />
-    </div>
-
-    <div>
-      <FieldLabel for="model">Model:</FieldLabel>
-      <TextInput
-        id="model"
-        name="model"
-        v-model="newProviderData.model"
-        required
-        testId="input-model"
-        placeholder="gpt-4o-mini, llama3-70b..."
-      />
-    </div>
-
-    <div>
-      <FieldLabel for="plugin">Plugin:</FieldLabel>
-      <SelectInput
-        id="plugin"
-        name="plugin"
-        v-model="newProviderData.plugin"
-        :options="providersSchema.properties.plugin.enum"
-        required
-        testId="input-plugin"
-      />
-    </div>
-
-    <div>
-      <FieldLabel for="plugin-config">Plugin Config:</FieldLabel>
-      <TextAreaInput
-        id="plugin-config"
-        name="plugin-config"
-        :rows="5"
-        :cols="60"
-        v-model="newProviderData.plugin_config"
-        :invalid="!isPluginConfigValid"
-      />
-      <FieldError v-if="!isConfigValid">Please enter valid JSON.</FieldError>
-    </div>
-
-    <div>
-      <FieldLabel for="config">Config:</FieldLabel>
-      <TextAreaInput
-        id="config"
-        name="config"
-        :rows="5"
-        :cols="60"
-        v-model="newProviderData.config"
-        :invalid="!isConfigValid"
-      />
-      <FieldError v-if="!isConfigValid">Please enter valid JSON.</FieldError>
-    </div>
-
+    <JsonForm />
+    <!--
     <Alert error v-if="error" type="error">{{ error }}</Alert>
 
     <Btn
@@ -243,6 +179,6 @@ const tryInitValues = () => {
       :loading="isLoading"
     >
       Save
-    </Btn>
+    </Btn> -->
   </Modal>
 </template>
