@@ -28,7 +28,11 @@ from backend.protocol_rpc.message_handler.types import (
     EventScope,
 )
 
-from .calldata import decode as calldata_decode, encode as calldata_encode
+from .calldata import (
+    decode as calldata_decode,
+    encode as calldata_encode,
+    to_str as calldata_repr,
+)
 
 
 @contextmanager
@@ -47,6 +51,15 @@ def safe_globals(override_globals: dict[str] = None):
     finally:
         globals().clear()
         globals().update(old_globals)
+
+
+_FAKE_DECODED_DATA = object()
+
+
+def _calldata_to_str(raw: bytes, decoded):
+    if decoded is _FAKE_DECODED_DATA:
+        return str(base64.b64encode(raw), encoding="ascii")
+    return calldata_repr(decoded)
 
 
 class ContractRunner:
@@ -137,6 +150,8 @@ class GenVM:
         # Buffers to capture stdout and stderr
         stdout_buffer = io.StringIO()
 
+        calldata = _FAKE_DECODED_DATA
+
         with redirect_stdout(stdout_buffer), safe_globals(
             {
                 "contract_runner": self.contract_runner,
@@ -218,9 +233,7 @@ class GenVM:
                         EventScope.GENVM,
                         "Deploying contract",
                         {
-                            "calldata": str(
-                                base64.b64encode(calldata_raw), encoding="ascii"
-                            ),
+                            "calldata": _calldata_to_str(calldata_raw, calldata),
                             "output": captured_stdout,
                         },
                     )
@@ -254,6 +267,8 @@ class GenVM:
 
         # Buffers to capture stdout and stderr
         stdout_buffer = io.StringIO()
+
+        calldata = _FAKE_DECODED_DATA
 
         with redirect_stdout(stdout_buffer), safe_globals(
             {
@@ -305,9 +320,7 @@ class GenVM:
                         EventScope.GENVM,
                         "Error executing method " + method_name + ": " + str(error),
                         {
-                            "calldata": str(
-                                base64.b64encode(calldata_raw), encoding="ascii"
-                            ),
+                            "calldata": _calldata_to_str(calldata_raw, calldata),
                             "error": str(error),
                             "traceback": f"\n{trace}",
                         },
@@ -333,9 +346,7 @@ class GenVM:
                         EventScope.GENVM,
                         "Execute method: " + method_name,
                         {
-                            "calldata": str(
-                                base64.b64encode(calldata_raw), encoding="ascii"
-                            ),
+                            "calldata": _calldata_to_str(calldata_raw, calldata),
                             "output": captured_stdout,
                         },
                     )
@@ -511,9 +522,7 @@ class GenVM:
                         EventScope.GENVM,
                         "Call method: " + method_name,
                         {
-                            "calldata": str(
-                                base64.b64encode(calldata_raw), encoding="ascii"
-                            ),
+                            "calldata": calldata_repr(calldata),
                             "result": result,
                             "output": captured_stdout,
                         },
