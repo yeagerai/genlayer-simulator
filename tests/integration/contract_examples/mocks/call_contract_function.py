@@ -2,14 +2,13 @@ call_contract_function_response = {
     "consensus_data": {
         "final": bool,
         "leader_receipt": {
-            "args": list,
             "class_name": str,
+            "calldata": str,
             "contract_state": str,
             "eq_outputs": {"leader": dict},
             "error": str | None,
             "execution_result": str,
             "gas_used": int,
-            "method": str,
             "mode": str,
             "node_config": {
                 "address": str,
@@ -27,8 +26,7 @@ call_contract_function_response = {
     },
     "created_at": str,
     "data": {
-        "function_args": str,  # TODO: can we make this a list?
-        "function_name": str,
+        "calldata": str,
     },
     "from_address": str,
     "hash": str,

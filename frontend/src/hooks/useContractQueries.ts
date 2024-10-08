@@ -10,6 +10,7 @@ import { useDebounceFn } from '@vueuse/core';
 import { notify } from '@kyvg/vue3-notification';
 import { useMockContractData } from './useMockContractData';
 import { useEventTracking, useRpcClient, useWallet } from '@/hooks';
+import * as calldata from '@/calldata';
 
 const schema = ref<any>();
 
@@ -74,7 +75,8 @@ export function useContractQueries() {
   const isDeploying = ref(false);
 
   async function deployContract(
-    constructorParams: { [k: string]: string },
+    method: string,
+    args: calldata.CalldataEncodable[],
     leaderOnly: boolean,
   ) {
     isDeploying.value = true;
@@ -83,10 +85,9 @@ export function useContractQueries() {
       if (!contract.value || !accountsStore.currentPrivateKey) {
         throw new Error('Error Deploying the contract');
       }
-      const constructorParamsAsString = JSON.stringify(constructorParams);
       const data = [
         contract.value?.content ?? '',
-        constructorParamsAsString,
+        calldata.encode({ method, args }),
         leaderOnly,
       ];
 
@@ -157,10 +158,11 @@ export function useContractQueries() {
     return result;
   }
 
-  async function callReadMethod(method: string, methodArguments: string[]) {
+  async function callReadMethod(method: string, args: string[]) {
     try {
-      const methodParamsAsString = JSON.stringify(methodArguments);
-      const data = [method, methodParamsAsString];
+      const data = [
+        calldata.encode({ method, args: args.map(calldata.parse) }),
+      ];
       const encodedData = wallet.encodeTransactionData(data);
 
       const result = await rpcClient.getContractState({
@@ -178,19 +180,21 @@ export function useContractQueries() {
 
   async function callWriteMethod({
     method,
-    params,
+    args,
     leaderOnly,
   }: {
     method: string;
-    params: any[];
+    args: string[];
     leaderOnly: boolean;
   }) {
     try {
       if (!accountsStore.currentPrivateKey) {
         throw new Error('Error Deploying the contract');
       }
-      const methodParamsAsString = JSON.stringify(params);
-      const data = [method, methodParamsAsString, leaderOnly];
+      const data = [
+        calldata.encode({ method, args: args.map(calldata.parse) }),
+        leaderOnly,
+      ];
       const to = (address.value as Address) || null;
 
       const nonce = await accountsStore.getCurrentNonce();

@@ -33,7 +33,7 @@ def test_football_prediction_market(setup_validators, from_account):
     contract_address, transaction_response_deploy = deploy_intelligent_contract(
         from_account,
         contract_code,
-        f'{{"game_date": "2024-06-26", "team1": "Georgia", "team2": "Portugal"}}',
+        ["2024-06-26", "Georgia", "Portugal"],
     )
     assert has_success_status(transaction_response_deploy)
 

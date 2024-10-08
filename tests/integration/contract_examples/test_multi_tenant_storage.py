@@ -39,7 +39,7 @@ def test_multi_tenant_storage(setup_validators):
         deploy_intelligent_contract(
             main_account,
             contract_code,
-            json.dumps({"initial_storage": "initial_storage_a"}),
+            ["initial_storage_a"],
         )
     )
     assert has_success_status(transaction_response_deploy)
@@ -50,7 +50,7 @@ def test_multi_tenant_storage(setup_validators):
         deploy_intelligent_contract(
             main_account,
             contract_code,
-            json.dumps({"initial_storage": "initial_storage_b"}),
+            ["initial_storage_b"],
         )
     )
     assert has_success_status(transaction_response_deploy)
@@ -63,14 +63,12 @@ def test_multi_tenant_storage(setup_validators):
         deploy_intelligent_contract(
             main_account,
             contract_code,
-            json.dumps(
-                {
-                    "storage_contracts": [
-                        first_storage_contract_address,
-                        second_storage_contract_address,
-                    ]
-                }
-            ),
+            [
+                [
+                    first_storage_contract_address,
+                    second_storage_contract_address,
+                ]
+            ],
         )
     )
     assert has_success_status(transaction_response_deploy)

@@ -142,9 +142,8 @@ async def test_exec_transaction():
             return_value=Receipt(
                 vote=Vote.AGREE,
                 class_name="",
-                args=[],
+                calldata=b"",
                 mode=mode,
-                method="",
                 gas_used=0,
                 contract_state="",
                 node_config={},
@@ -253,9 +252,8 @@ async def test_exec_transaction_no_consensus():
             return_value=Receipt(
                 vote=Vote.DISAGREE,
                 class_name="",
-                args=[],
+                calldata=b"",
                 mode=mode,
-                method="",
                 gas_used=0,
                 contract_state="",
                 node_config={},
@@ -369,9 +367,8 @@ async def test_exec_transaction_one_disagreement():
                     else Vote.DISAGREE
                 ),
                 class_name="",
-                args=[],
+                calldata=b"",
                 mode=mode,
-                method="",
                 gas_used=0,
                 contract_state="",
                 node_config={},

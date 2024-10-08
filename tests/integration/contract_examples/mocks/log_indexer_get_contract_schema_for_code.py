@@ -7,7 +7,7 @@ log_indexer_contract_schema = {
             {
                 "inputs": [
                     {"name": "log", "type": "string"},
-                    {"name": "log_id", "type": "uint256"},
+                    {"name": "log_id", "type": "int"},
                 ],
                 "name": "add_log",
                 "outputs": [],
@@ -16,26 +16,26 @@ log_indexer_contract_schema = {
             {
                 "inputs": [{"name": "text", "type": "string"}],
                 "name": "get_closest_vector",
-                "outputs": [{"name": "", "type": "bytes"}],
+                "outputs": [{"name": "", "type": "any"}],
                 "type": "function",
             },
             {
-                "inputs": [{"name": "id", "type": "uint256"}],
+                "inputs": [{"name": "id", "type": "int"}],
                 "name": "get_vector_metadata",
                 "outputs": [],
                 "type": "function",
             },
             {
-                "inputs": [{"name": "id", "type": "uint256"}],
+                "inputs": [{"name": "id", "type": "int"}],
                 "name": "remove_log",
                 "outputs": [],
                 "type": "function",
             },
             {
                 "inputs": [
-                    {"name": "id", "type": "uint256"},
+                    {"name": "id", "type": "int"},
                     {"name": "log", "type": "string"},
-                    {"name": "log_id", "type": "uint256"},
+                    {"name": "log_id", "type": "int"},
                 ],
                 "name": "update_log",
                 "outputs": [],

@@ -41,7 +41,7 @@ def test_llm_erc20(setup_validators):
 
     # Deploy Contract
     contract_address, transaction_response_deploy = deploy_intelligent_contract(
-        from_account_a, contract_code, json.dumps({"total_supply": TOKEN_TOTAL_SUPPLY})
+        from_account_a, contract_code, [TOKEN_TOTAL_SUPPLY]
     )
 
     assert has_success_status(transaction_response_deploy)
