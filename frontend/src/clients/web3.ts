@@ -31,11 +31,13 @@ export class Web3Client {
     data,
     to = undefined,
     value = 0n,
+    nonce,
   }: {
     privateKey: Address;
     data: Array<unknown>;
     to?: Address;
     value?: bigint;
+    nonce: number;
   }): Promise<TransactionSerializedLegacy> {
     const account = this.privateKeyToAccount(privateKey);
     const encodedData = this.encodeTransactionData(data);
@@ -43,6 +45,7 @@ export class Web3Client {
       data: encodedData,
       to,
       value,
+      nonce,
       type: 'legacy',
     });
   }

@@ -39,6 +39,7 @@ const handleClearTransactions = () => {
 <template>
   <PageSection data-testid="latest-transactions">
     <template #title>Transactions</template>
+
     <template #actions
       ><GhostBtn
         v-if="transactions.length > 0"

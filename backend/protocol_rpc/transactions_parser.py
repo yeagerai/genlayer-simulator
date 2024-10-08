@@ -64,6 +64,7 @@ def decode_signed_transaction(raw_transaction: str) -> DecodedTransaction | None
             if signed_transaction_as_dict["to"]
             else None
         )
+        nonce = signed_transaction_as_dict["nonce"]
         value = signed_transaction_as_dict["value"]
         data = (
             signed_transaction_as_dict["data"].hex()
@@ -75,6 +76,7 @@ def decode_signed_transaction(raw_transaction: str) -> DecodedTransaction | None
             to_address=to_address,
             data=data,
             type=signed_transaction_as_dict.get("type", 0),
+            nonce=nonce,
             value=value,
         )
 

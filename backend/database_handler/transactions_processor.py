@@ -83,17 +83,19 @@ class TransactionsProcessor:
         data: dict,
         value: float,
         type: int,
+        nonce: int,
         leader_only: bool,
         client_session_id: str | None,
         triggered_by_hash: (
             str | None
         ) = None,  # If filled, the transaction must be present in the database (committed)
     ) -> str:
-        nonce = (
-            self.session.query(Transactions)
-            .filter(Transactions.from_address == from_address)
-            .count()
-        )
+        current_nonce = self.get_transaction_count(from_address)
+
+        if nonce != current_nonce:
+            raise Exception(
+                f"Unexpected nonce. Provided: {nonce}, expected: {current_nonce}"
+            )
 
         transaction_hash = self._generate_transaction_hash(
             from_address, to_address, data, value, type, nonce
@@ -172,3 +174,11 @@ class TransactionsProcessor:
             transaction_hash,
             TransactionStatus.FINALIZED.value,
         )
+
+    def get_transaction_count(self, address: str) -> int:
+        count = (
+            self.session.query(Transactions)
+            .filter(Transactions.from_address == address)
+            .count()
+        )
+        return count
