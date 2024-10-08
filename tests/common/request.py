@@ -98,7 +98,10 @@ def deploy_intelligent_contract(
     account: Account, contract_code: str, method_args: list
 ) -> tuple[str, dict]:
     nonce = get_transaction_count(account.address)
-    deploy_data = [contract_code, calldata.encode({"method": "__init__", "args": method_args}),]
+    deploy_data = [
+        contract_code,
+        calldata.encode({"method": "__init__", "args": method_args}),
+    ]
     signed_transaction = sign_transaction(account, deploy_data, nonce=nonce)
     result = send_raw_transaction(signed_transaction)
     contract_address = result["data"]["contract_address"]

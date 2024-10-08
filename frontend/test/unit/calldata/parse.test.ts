@@ -74,4 +74,18 @@ describe('calldata parsing tests', () => {
       calldata.encode(asLit),
     );
   });
+
+  it('string escapes', () => {
+    expect(calldata.parse('"\\\\"')).toEqual('\\');
+    expect(calldata.parse('"\\n"')).toEqual('\n');
+
+    expect(() => calldata.parse('"\\a"')).toThrow();
+  });
+
+  it('errors', () => {
+    expect(() => calldata.parse('b#1')).toThrow();
+    expect(() => calldata.parse('0xz')).toThrow();
+    expect(() => calldata.parse('0o8')).toThrow();
+    expect(() => calldata.parse('addr#1234')).toThrow();
+  });
 });

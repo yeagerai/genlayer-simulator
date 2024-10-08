@@ -16,11 +16,11 @@ export type CalldataEncodable =
   | number
   | bigint
   | string
-  | Uint8Array
+  | Uint8Array /// bytes
   | Address
   | Array<CalldataEncodable>
   | Map<string, CalldataEncodable>
-  | { [key: string]: CalldataEncodable };
+  | { [key: string]: CalldataEncodable }; /// also a "map"
 
 export type MethodDescription = {
   method: string;

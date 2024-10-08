@@ -1,3 +1,21 @@
+/// This file introduces text format for calldata. It is quite similar to json, but has two more types: bytes and addresses
+/// Literals: null, true, false
+/// Numbers: 0, 0xff, 0o77, 89, -11 (integers of arbitrary size)
+/// Strings: "double quote", 'single quote', they support escapes: '\\', '\n', '\r', '\"', '\"'
+///   all strings must be valid (no unpaired surrogates, as js is utf16)
+/// Bytes: b#00ff (hex encoded, no quotes)
+/// Address: addr#3030303030303030303030303030303030303030303030303030303030303030 (32 bytes)
+/// Arrays: [], ['x'], ['trailing',]
+/// Maps: {}, { lit: 123 }, { "str": 456 }
+/// After encoding strings will be encoded as utf8, Map keys will be sorted
+
+/// More complex examples (left is js ;; right is calldata-str)
+/// new Uint8Array([0xff]) ;; b#ff
+/// 1n ;; 1
+/// -1n ;; -1
+/// "123" ;; "123"
+/// { "a": 123 } ;; { "a": 123 }
+
 import type { Token, Parser } from 'typescript-parsec';
 import {
   buildLexer,
