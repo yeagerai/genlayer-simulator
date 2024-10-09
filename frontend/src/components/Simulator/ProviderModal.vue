@@ -426,7 +426,7 @@ const showConfig = computed(() => {
     </div>
 
     <div v-if="showPluginConfig">
-      <FieldLabel>Plugin Config:</FieldLabel>
+      <FieldLabel>Provider Config:</FieldLabel>
 
       <div v-for="key in Object.keys(newProviderData.plugin_config)">
         {{ key }}:
@@ -448,7 +448,7 @@ const showConfig = computed(() => {
     </div>
 
     <div v-if="showConfig">
-      <FieldLabel>Config:</FieldLabel>
+      <FieldLabel>Default Validator Config:</FieldLabel>
       <!-- <textarea name="" id="" v-model="newProviderData.config"></textarea> -->
       <div class="rounded-md bg-white p-2">
         <vue-json-pretty
