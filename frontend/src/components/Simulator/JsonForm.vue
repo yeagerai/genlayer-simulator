@@ -45,6 +45,7 @@ console.log(schema);
 const validate = ajv.compile(schema);
 const errors = ref<any[]>([]);
 const pluginOptions = ref<string[]>([]);
+const modelOptions = ref<string[]>([]);
 
 onMounted(() => {
   pluginOptions.value = schema.properties.plugin.enum;
@@ -65,11 +66,22 @@ onMounted(() => {
 //   };
 // });
 
+// 1. If provider == "ollama" then plugin must be "ollama"
+// 2. If provider == "heuristai" then plugin = "openai" AND model is restricted to specific options
+// 3. If provider == "openai" then plugin = "openai" AND model is limited to specific GPT versions
+// 4. If provider == "anthropic" then plugin = "anthropic" AND model is restricted to Claude versions
+
+// 5. If plugin == "ollama" then define specific plugin_config and config options
+// 6. If plugin == "openai" then set plugin_config (API key, URL) and config (temperature, max_tokens)
+// 7. If plugin == "anthropic" then configure plugin_config (API key, URL) and config (various generation parameters)
+
 const validateData = async () => {
-  console.log('validateData', newProviderData.plugin);
+  console.log('validateData', newProviderData.plugin_config);
   const res = validate(newProviderData);
+  console.log(res);
   // console.log('validateData', newProviderData, res, validate);
   if (res) {
+    errors.value = [];
     console.log('valid');
   } else {
     errors.value = validate.errors || [];
@@ -79,12 +91,30 @@ const validateData = async () => {
   }
 };
 
-const onChangeProvider = (value: string) => {
-  // console.log('onChangeProvider', value);
+const onChangeProvider = (provider: string) => {
+  console.log('onChangeProvider', provider);
+
+  schema.allOf.forEach((rule) => {
+    if (rule.if?.properties?.provider?.const === provider) {
+      console.log('rule', rule);
+
+      if (rule.then?.properties?.plugin?.const) {
+        newProviderData.plugin = rule.then?.properties?.plugin?.const;
+      }
+      if (rule.then?.properties?.model?.enum) {
+        modelOptions.value = rule.then?.properties?.model?.enum;
+        newProviderData.model = rule.then?.properties?.model?.enum[0];
+      }
+    }
+  });
 };
 
 const onChangeModel = (value: string) => {
   // console.log('onChangeModel', value);
+};
+
+const onChangeField = () => {
+  validateData();
 };
 
 const onChangePlugin = async (plugin: string) => {
@@ -148,8 +178,9 @@ function setDefaultConfig(plugin: string, schema: SchemaConfig): void {
   let pluginConfigSchema: SchemaProperty | undefined;
 
   schema.allOf.forEach((rule) => {
+    console.log('rule', rule);
+
     if (rule.if?.properties?.plugin?.const === plugin) {
-      console.log('rule', rule);
       configSchema = extractDefaults(
         rule.then.properties.config?.properties || {},
       );
@@ -188,13 +219,15 @@ const showConfig = computed(() => {
       v-model="newProviderData.provider"
       required
       testId="input-provider"
-      @input="onChangeProvider"
+      @update:modelValue="onChangeProvider"
+      :placeholder="'ex: ' + schema.properties.provider.examples.join(', ')"
     />
   </div>
 
   <div>
     <FieldLabel for="model">Model:</FieldLabel>
     <TextInput
+      v-if="modelOptions.length === 0"
       id="model"
       name="model"
       v-model="newProviderData.model"
@@ -202,6 +235,16 @@ const showConfig = computed(() => {
       testId="input-model"
       placeholder=""
       @input="onChangeModel"
+    />
+    <SelectInput
+      v-if="modelOptions.length > 0"
+      id="plugin"
+      name="plugin"
+      v-model="newProviderData.plugin"
+      :options="schema.properties.plugin.enum"
+      required
+      testId="input-model"
+      @update:modelValue="onChangeModel"
     />
   </div>
 
@@ -220,14 +263,24 @@ const showConfig = computed(() => {
 
   <div v-if="showPluginConfig">
     <FieldLabel>Plugin Config:</FieldLabel>
+
+    <div v-for="key in Object.keys(newProviderData.plugin_config)">
+      {{ key }}:
+      <input
+        type="text"
+        v-model="newProviderData.plugin_config[key]"
+        @input="onChangeField"
+      />
+    </div>
     <!-- <textarea name="" id="" v-model="newProviderData.plugin_config"></textarea> -->
-    <div class="rounded-md bg-white p-2">
+    <!-- <div class="rounded-md bg-white p-2">
       <vue-json-pretty
         v-model:data="newProviderData.plugin_config"
         :editable="true"
         editableTrigger="click"
       />
-    </div>
+    </div> -->
+    {{ newProviderData.plugin_config }}
   </div>
 
   <div v-if="showConfig">
@@ -242,7 +295,7 @@ const showConfig = computed(() => {
     </div>
   </div>
 
-  <div v-for="error in validate.errors">
+  <div v-for="error in errors">
     {{ error.instancePath }}: {{ error.message }}
   </div>
 
