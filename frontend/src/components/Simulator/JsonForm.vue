@@ -23,6 +23,8 @@ import NumberInput from '@/components/global/inputs/NumberInput.vue';
 import TextAreaInput from '@/components/global/inputs/TextAreaInput.vue';
 import FieldError from '@/components/global/fields/FieldError.vue';
 import FieldLabel from '@/components/global/fields/FieldLabel.vue';
+import GhostBtn from '../global/GhostBtn.vue';
+import { init } from '@jsonforms/core';
 
 const ajv = new Ajv2020({
   allErrors: true,
@@ -46,81 +48,9 @@ const validate = ajv.compile(schema);
 const errors = ref<any[]>([]);
 const pluginOptions = ref<string[]>([]);
 const modelOptions = ref<string[]>([]);
-
-onMounted(() => {
-  pluginOptions.value = schema.properties.plugin.enum;
-  const initialPlugin = pluginOptions.value[0];
-
-  if (initialPlugin) {
-    newProviderData.plugin = initialPlugin;
-    onChangePlugin(initialPlugin);
-  }
-});
-// const preparedData = computed(() => {
-//   const parsedConfig = JSON.parse(newProviderData.config);
-//   const parsedPluginConfig = JSON.parse(newProviderData.plugin_config);
-//   return {
-//     ...newProviderData,
-//     config: parsedConfig,
-//     plugin_config: parsedPluginConfig,
-//   };
-// });
-
-// 1. If provider == "ollama" then plugin must be "ollama"
-// 2. If provider == "heuristai" then plugin = "openai" AND model is restricted to specific options
-// 3. If provider == "openai" then plugin = "openai" AND model is limited to specific GPT versions
-// 4. If provider == "anthropic" then plugin = "anthropic" AND model is restricted to Claude versions
-
-// 5. If plugin == "ollama" then define specific plugin_config and config options
-// 6. If plugin == "openai" then set plugin_config (API key, URL) and config (temperature, max_tokens)
-// 7. If plugin == "anthropic" then configure plugin_config (API key, URL) and config (various generation parameters)
-
-const validateData = async () => {
-  console.log('validateData', newProviderData.plugin_config);
-  const res = validate(newProviderData);
-  console.log(res);
-  // console.log('validateData', newProviderData, res, validate);
-  if (res) {
-    errors.value = [];
-    console.log('valid');
-  } else {
-    errors.value = validate.errors || [];
-    console.log('not valid');
-
-    // console.log(validate.errors);
-  }
-};
-
-const onChangeProvider = (provider: string) => {
-  console.log('onChangeProvider', provider);
-
-  schema.allOf.forEach((rule) => {
-    if (rule.if?.properties?.provider?.const === provider) {
-      console.log('rule', rule);
-
-      if (rule.then?.properties?.plugin?.const) {
-        newProviderData.plugin = rule.then?.properties?.plugin?.const;
-      }
-      if (rule.then?.properties?.model?.enum) {
-        modelOptions.value = rule.then?.properties?.model?.enum;
-        newProviderData.model = rule.then?.properties?.model?.enum[0];
-      }
-    }
-  });
-};
-
-const onChangeModel = (value: string) => {
-  // console.log('onChangeModel', value);
-};
-
-const onChangeField = () => {
-  validateData();
-};
-
-const onChangePlugin = async (plugin: string) => {
-  setDefaultConfig(plugin, schema as SchemaConfig);
-  validateData();
-};
+const isPluginLocked = ref(false);
+const customProvider = ref(false);
+const providerOptions = ref<string[]>([]);
 
 interface SchemaProperty {
   type?: string;
@@ -150,6 +80,131 @@ interface SchemaConfig {
     };
   }[];
 }
+
+onMounted(() => {
+  initProvider();
+
+  checkRules();
+  // pluginOptions.value = schema.properties.plugin.enum;
+  // const initialPlugin = pluginOptions.value[0];
+
+  // if (initialPlugin) {
+  //   newProviderData.plugin = initialPlugin;
+  //   onChangePlugin(initialPlugin);
+  // }
+});
+
+const initProvider = () => {
+  providerOptions.value = schema.properties.provider.examples;
+  const initialProvider = 'openai';
+  newProviderData.provider = initialProvider;
+};
+
+// 1. If provider == "ollama" then plugin must be "ollama"
+// 2. If provider == "heuristai" then plugin = "openai" AND model is restricted to specific options
+// 3. If provider == "openai" then plugin = "openai" AND model is limited to specific GPT versions
+// 4. If provider == "anthropic" then plugin = "anthropic" AND model is restricted to Claude versions
+
+// 5. If plugin == "ollama" then define specific plugin_config and config options
+// 6. If plugin == "openai" then set plugin_config (API key, URL) and config (temperature, max_tokens)
+// 7. If plugin == "anthropic" then configure plugin_config (API key, URL) and config (various generation parameters)
+
+function extractDefaults(
+  properties: Record<string, SchemaProperty>,
+): Record<string, any> {
+  const defaults: Record<string, any> = {};
+  // console.log('properties', properties);
+  Object.keys(properties).forEach((key) => {
+    const prop = properties[key];
+    // console.log('prop', prop);
+    if ('default' in prop) {
+      // console.log('found default', key);
+      defaults[key] = prop.default;
+    } else if (prop.type === 'object' && prop.properties) {
+      // console.log('extracting defaults for', key);
+      defaults[key] = extractDefaults(prop.properties);
+    } else {
+      defaults[key] = null;
+    }
+  });
+  return defaults;
+}
+
+const checkRules = () => {
+  console.log('checkRules');
+  isPluginLocked.value = false;
+  modelOptions.value = [];
+  newProviderData.model = '';
+
+  schema.allOf.forEach((rule) => {
+    // Provider rules
+    if (rule.if?.properties?.provider?.const === newProviderData.provider) {
+      if (rule.then?.properties?.plugin?.const) {
+        console.log('plugin locked');
+        newProviderData.plugin = rule.then?.properties?.plugin?.const;
+        isPluginLocked.value = true;
+      }
+
+      if (rule.then?.properties?.model?.enum) {
+        modelOptions.value = rule.then?.properties?.model?.enum;
+        console.log(rule.then?.properties?.model?.enum[0]);
+        newProviderData.model = rule.then?.properties?.model?.enum[0];
+        // re-check
+      }
+    }
+
+    // Plugin rules
+    if (rule.if?.properties?.plugin?.const === newProviderData.plugin) {
+      const pluginConfigProperties =
+        rule.then?.properties?.plugin_config?.properties || {};
+      const pluginConfig = extractDefaults(pluginConfigProperties);
+      newProviderData.plugin_config = pluginConfig ? { ...pluginConfig } : {};
+
+      const configProperties = rule.then?.properties?.config?.properties || {};
+      const config = extractDefaults(configProperties);
+      newProviderData.config = config ? { ...config } : {};
+    }
+  });
+};
+
+const toggleCustomProvider = () => {
+  customProvider.value = !customProvider.value;
+  if (customProvider.value) {
+    newProviderData.provider = '';
+  } else {
+    initProvider();
+  }
+  checkRules();
+};
+
+const validateData = async () => {
+  console.log('validateData', newProviderData.plugin_config);
+  const res = validate(newProviderData);
+  console.log(res);
+  // console.log('validateData', newProviderData, res, validate);
+  if (res) {
+    errors.value = [];
+    console.log('valid');
+  } else {
+    errors.value = validate.errors || [];
+    console.log('not valid');
+
+    // console.log(validate.errors);
+  }
+};
+
+const onChangeModel = (value: string) => {
+  // console.log('onChangeModel', value);
+};
+
+const onChangeField = () => {
+  validateData();
+};
+
+const onChangePlugin = async (plugin: string) => {
+  setDefaultConfig(plugin, schema as SchemaConfig);
+  validateData();
+};
 
 function setDefaultConfig(plugin: string, schema: SchemaConfig): void {
   // Helper function to extract default values from the schema properties
@@ -212,14 +267,36 @@ const showConfig = computed(() => {
 
 <template>
   <div>
-    <FieldLabel for="provider">Provider:</FieldLabel>
+    <div class="flex justify-between">
+      <FieldLabel for="provider">Provider:</FieldLabel>
+
+      <button
+        @click="toggleCustomProvider"
+        class="mr-1 text-xs opacity-50 hover:opacity-70"
+      >
+        {{ customProvider ? 'Use preset' : 'Custom provider' }}
+      </button>
+    </div>
+
     <TextInput
       id="provider"
+      v-if="customProvider"
       name="provider"
       v-model="newProviderData.provider"
       required
       testId="input-provider"
-      @update:modelValue="onChangeProvider"
+      @update:modelValue="checkRules"
+      :placeholder="'ex: ' + schema.properties.provider.examples.join(', ')"
+    />
+    <SelectInput
+      v-else
+      id="provider"
+      name="provider"
+      v-model="newProviderData.provider"
+      required
+      :options="providerOptions"
+      testId="input-provider"
+      @update:modelValue="checkRules"
       :placeholder="'ex: ' + schema.properties.provider.examples.join(', ')"
     />
   </div>
@@ -240,8 +317,8 @@ const showConfig = computed(() => {
       v-if="modelOptions.length > 0"
       id="plugin"
       name="plugin"
-      v-model="newProviderData.plugin"
-      :options="schema.properties.plugin.enum"
+      v-model="newProviderData.model"
+      :options="modelOptions"
       required
       testId="input-model"
       @update:modelValue="onChangeModel"
@@ -255,6 +332,7 @@ const showConfig = computed(() => {
       name="plugin"
       v-model="newProviderData.plugin"
       :options="schema.properties.plugin.enum"
+      :disabled="isPluginLocked"
       required
       testId="input-plugin"
       @update:modelValue="onChangePlugin"
