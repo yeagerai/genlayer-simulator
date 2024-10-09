@@ -67,18 +67,19 @@ export const useNodeStore = defineStore('nodeStore', () => {
       ]);
       validators.value = validatorsResult;
       nodeProviders.value = modelsResult;
+      console.log('modelsResult', modelsResult);
 
-      nodeProviders.value = modelsResult.reduce(
-        (acc: Record<string, string[]>, llmprovider: any) => {
-          const provider = llmprovider.provider;
-          if (!acc[provider]) {
-            acc[provider] = [];
-          }
-          acc[provider].push(llmprovider.model);
-          return acc;
-        },
-        {},
-      );
+      // nodeProviders.value = modelsResult.reduce(
+      //   (acc: Record<string, string[]>, llmprovider: any) => {
+      //     const provider = llmprovider.provider;
+      //     if (!acc[provider]) {
+      //       acc[provider] = [];
+      //     }
+      //     acc[provider].push(llmprovider.model);
+      //     return acc;
+      //   },
+      //   {},
+      // );
     } catch (error) {
       console.error(error);
       notify({
@@ -151,8 +152,8 @@ export const useNodeStore = defineStore('nodeStore', () => {
   async function addProvider(providerData: NewProviderDataModel) {
     await rpcClient.addProvider({
       ...providerData,
-      plugin_config: JSON.parse(providerData.plugin_config),
-      config: JSON.parse(providerData.config),
+      // plugin_config: JSON.parse(providerData.plugin_config),
+      // config: JSON.parse(providerData.config),
     });
 
     getValidatorsData();
@@ -165,8 +166,8 @@ export const useNodeStore = defineStore('nodeStore', () => {
     await rpcClient.updateProvider({
       id: provider.id,
       ...newProviderData,
-      config: JSON.parse(newProviderData.config),
-      plugin_config: JSON.parse(newProviderData.plugin_config),
+      // config: JSON.parse(newProviderData.config),
+      // plugin_config: JSON.parse(newProviderData.plugin_config),
     });
 
     getValidatorsData();

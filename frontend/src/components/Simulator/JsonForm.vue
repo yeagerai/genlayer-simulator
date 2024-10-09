@@ -26,6 +26,7 @@ import FieldLabel from '@/components/global/fields/FieldLabel.vue';
 import GhostBtn from '../global/GhostBtn.vue';
 import { init } from '@jsonforms/core';
 
+// TODO: delete this file
 const ajv = new Ajv2020({
   allErrors: true,
   verbose: true,
@@ -378,6 +379,7 @@ const showConfig = computed(() => {
   </div>
 
   <button @click="validateData">Validate</button>
+
 </template>
 
 <style lang="css">
