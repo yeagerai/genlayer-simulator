@@ -18,6 +18,7 @@ import {
   ref,
   onMounted,
   nextTick,
+  watch,
 } from 'vue';
 import Ajv2020 from 'ajv/dist/2020';
 // import addFormats from 'ajv-formats';
@@ -275,10 +276,17 @@ const onChangeField = () => {
   validateData();
 };
 
-const onChangePlugin = async (plugin: string) => {
-  setDefaultConfig(plugin, schema as SchemaConfig);
-  validateData();
-};
+watch(
+  () => newProviderData.plugin,
+  (plugin: string) => {
+    setDefaultConfig(plugin, schema as SchemaConfig);
+    validateData();
+  },
+);
+// const onChangePlugin = async (plugin: string) => {
+//   setDefaultConfig(plugin, schema as SchemaConfig);
+//   validateData();
+// };
 
 function setDefaultConfig(plugin: string, schema: SchemaConfig): void {
   // Helper function to extract default values from the schema properties
@@ -403,7 +411,7 @@ const showConfig = computed(() => {
       />
     </div>
 
-    <div>
+    <div v-if="!isPluginLocked">
       <FieldLabel for="plugin">Plugin:</FieldLabel>
       <SelectInput
         id="plugin"
