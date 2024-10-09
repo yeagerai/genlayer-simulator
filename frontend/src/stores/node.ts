@@ -57,6 +57,11 @@ export const useNodeStore = defineStore('nodeStore', () => {
     logs.value.push(log);
   }
 
+  async function resetProviders() {
+    await rpcClient.resetDefaultsLlmProviders();
+    getValidatorsData();
+  }
+
   async function getValidatorsData() {
     isLoadingValidatorData.value = true;
 
@@ -224,6 +229,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
     searchFilter,
 
     getValidatorsData,
+    resetProviders,
     createNewValidator,
     cloneValidator,
     deleteValidator,

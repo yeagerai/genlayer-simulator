@@ -124,6 +124,14 @@ export class JsonRpcService implements IJsonRpcService {
     );
   }
 
+  async resetDefaultsLlmProviders(): Promise<any> {
+    return this.callRpcMethod<any>(
+      'sim_resetDefaultsLlmProviders',
+      [],
+      'Error resetting default LLM providers',
+    );
+  }
+
   async createValidator({
     stake,
     provider,

@@ -7,9 +7,12 @@ import { uniqBy } from 'lodash-es';
 import GhostBtn from '@/components/global/GhostBtn.vue';
 import ProviderItem from '@/components/Simulator/ProviderItem.vue';
 import ProviderModal from '@/components/Simulator/ProviderModal.vue';
+import { DatabaseBackup } from 'lucide-vue-next';
 
 const nodeStore = useNodeStore();
 const isNewProviderModalOpen = ref(false);
+const isResetProvidersModalOpen = ref(false);
+const isResetting = ref(false);
 
 const modelGroups = computed(() => {
   return uniqBy(nodeStore.nodeProviders, 'provider').map((provider: any) => ({
@@ -19,6 +22,12 @@ const modelGroups = computed(() => {
     ),
   }));
 });
+
+const handleResetProviders = async () => {
+  isResetting.value = true;
+  await nodeStore.resetProviders();
+  isResetting.value = false;
+};
 </script>
 
 <template>
@@ -55,5 +64,30 @@ const modelGroups = computed(() => {
       :open="isNewProviderModalOpen"
       @close="isNewProviderModalOpen = false"
     />
+
+    <Btn
+      v-if="nodeStore.nodeProviders.length > 0"
+      @click="isResetProvidersModalOpen = true"
+      :icon="DatabaseBackup"
+      secondary
+    >
+      Reset Providers
+    </Btn>
+
+    <ConfirmationModal
+      :open="isResetProvidersModalOpen"
+      @confirm="handleResetProviders"
+      @close="isResetProvidersModalOpen = false"
+      buttonText="Reset Providers"
+      buttonTestId="btn-reset-providers"
+      :dangerous="true"
+      :confirming="isResetting"
+    >
+      <template #title>Reset Provider Configs</template>
+      <template #description
+        >Are you sure? All providers and models will be reset to the default
+        values.</template
+      >
+    </ConfirmationModal>
   </PageSection>
 </template>
