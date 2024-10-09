@@ -9,6 +9,7 @@ import {
   markRaw,
   reactive,
   ref,
+  onMounted,
   nextTick,
 } from 'vue';
 import Ajv2020 from 'ajv/dist/2020';
@@ -43,7 +44,17 @@ console.log(schema);
 
 const validate = ajv.compile(schema);
 const errors = ref<any[]>([]);
+const pluginOptions = ref<string[]>([]);
 
+onMounted(() => {
+  pluginOptions.value = schema.properties.plugin.enum;
+  const initialPlugin = pluginOptions.value[0];
+
+  if (initialPlugin) {
+    newProviderData.plugin = initialPlugin;
+    onChangePlugin(initialPlugin);
+  }
+});
 // const preparedData = computed(() => {
 //   const parsedConfig = JSON.parse(newProviderData.config);
 //   const parsedPluginConfig = JSON.parse(newProviderData.plugin_config);
