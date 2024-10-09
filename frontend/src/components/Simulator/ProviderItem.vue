@@ -52,7 +52,7 @@ async function handleDeleteProvider() {
   >
     <div class="flex grow flex-row truncate">
       <span
-        class="truncate text-sm font-semibold"
+        class="truncate text-xs font-medium"
         data-testid="provider-item-model"
       >
         {{ provider.model }}
@@ -61,7 +61,7 @@ async function handleDeleteProvider() {
       <ExclamationTriangleIcon
         v-if="!provider.is_available || !provider.is_model_available"
         v-tooltip="'Configuration error'"
-        class="h-5 w-5 shrink-0 p-[2px] text-yellow-500"
+        class="h-4 w-4 shrink-0 p-[2px] text-yellow-500"
       />
     </div>
 
@@ -71,7 +71,7 @@ async function handleDeleteProvider() {
         v-tooltip="'Update Provider'"
       >
         <PencilSquareIcon
-          class="h-5 w-5 p-[2px] text-slate-400 transition-colors hover:text-slate-800 active:scale-90 dark:hover:text-white"
+          class="h-4 w-4 p-[2px] text-slate-400 transition-colors hover:text-slate-800 active:scale-90 dark:hover:text-white"
         />
       </button>
 
@@ -85,7 +85,7 @@ async function handleDeleteProvider() {
           v-tooltip="'Delete Provider'"
         >
           <TrashIcon
-            class="h-5 w-5 p-[2px] text-slate-400 transition-colors hover:text-slate-800 active:scale-90 dark:hover:text-white"
+            class="h-4 w-4 p-[2px] text-slate-400 transition-colors hover:text-slate-800 active:scale-90 dark:hover:text-white"
           />
         </button>
 
@@ -96,7 +96,7 @@ async function handleDeleteProvider() {
           v-tooltip="'Confirm deletion'"
         >
           <CheckCircleIcon
-            class="h-5 w-5 p-[2px] text-red-500 transition-colors hover:text-red-400 active:scale-90"
+            class="h-4 w-4 p-[2px] text-red-500 transition-colors hover:text-red-400 active:scale-90"
           />
         </button>
       </Transition>

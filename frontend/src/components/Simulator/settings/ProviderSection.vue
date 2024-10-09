@@ -8,6 +8,7 @@ import GhostBtn from '@/components/global/GhostBtn.vue';
 import ProviderItem from '@/components/Simulator/ProviderItem.vue';
 import ProviderModal from '@/components/Simulator/ProviderModal.vue';
 import { DatabaseBackup } from 'lucide-vue-next';
+import { notify } from '@kyvg/vue3-notification';
 
 const nodeStore = useNodeStore();
 const isNewProviderModalOpen = ref(false);
@@ -25,8 +26,24 @@ const modelGroups = computed(() => {
 
 const handleResetProviders = async () => {
   isResetting.value = true;
-  await nodeStore.resetProviders();
-  isResetting.value = false;
+
+  try {
+    await nodeStore.resetProviders();
+
+    notify({
+      title: 'Successfully reset providers',
+      type: 'success',
+    });
+  } catch (error) {
+    console.error(error);
+    notify({
+      title: 'Could not reset providers',
+      type: 'error',
+    });
+  } finally {
+    isResetting.value = false;
+    isResetProvidersModalOpen.value = false;
+  }
 };
 </script>
 
@@ -45,7 +62,10 @@ const handleResetProviders = async () => {
     </template>
 
     <div v-for="group in modelGroups" :key="group.provider">
-      {{ group.provider }} :
+      <div class="mb-1 text-xs font-semibold opacity-50">
+        {{ group.provider }}
+      </div>
+      <!-- {{ group.models.some((model) => !model.is_available) }} -->
 
       <div
         class="overflow-hidden rounded-md border border-gray-300 dark:border-gray-800"
