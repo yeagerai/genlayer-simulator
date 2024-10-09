@@ -3,7 +3,14 @@ import providerSchema from '../../../../backend/node/create_nodes/providers_sche
 // import { JsonForms } from '@jsonforms/vue';
 // import { createAjv } from '@jsonforms/core';
 import { vanillaRenderers } from '@jsonforms/vue-vanilla';
-import { computed, defineComponent, markRaw, reactive, ref } from 'vue';
+import {
+  computed,
+  defineComponent,
+  markRaw,
+  reactive,
+  ref,
+  nextTick,
+} from 'vue';
 import Ajv2020 from 'ajv/dist/2020';
 // import addFormats from 'ajv-formats';
 import { type ProviderModel, type NewProviderDataModel } from '@/types';
@@ -47,11 +54,16 @@ const errors = ref<any[]>([]);
 //   };
 // });
 
-const validateData = () => {
-  if (validate(newProviderData)) {
+const validateData = async () => {
+  console.log('validateData', newProviderData.plugin);
+  const res = validate(newProviderData);
+  // console.log('validateData', newProviderData, res, validate);
+  if (res) {
     console.log('valid');
   } else {
     errors.value = validate.errors || [];
+    console.log('not valid');
+
     // console.log(validate.errors);
   }
 };
@@ -64,8 +76,9 @@ const onChangeModel = (value: string) => {
   // console.log('onChangeModel', value);
 };
 
-const onChangePlugin = (event: any) => {
-  setDefaultConfig(event.target.value, schema as SchemaConfig);
+const onChangePlugin = async (plugin: string) => {
+  setDefaultConfig(plugin, schema as SchemaConfig);
+  validateData();
 };
 
 interface SchemaProperty {
@@ -190,7 +203,7 @@ const showConfig = computed(() => {
       :options="schema.properties.plugin.enum"
       required
       testId="input-plugin"
-      @input="onChangePlugin"
+      @update:modelValue="onChangePlugin"
     />
   </div>
 
@@ -215,7 +228,6 @@ const showConfig = computed(() => {
         :editable="true"
         editableTrigger="click"
       />
-      {{ newProviderData.config }}
     </div>
   </div>
 
@@ -227,16 +239,21 @@ const showConfig = computed(() => {
 </template>
 
 <style lang="css">
-.vjs-tree * {
+/* .vjs-tree * {
   font-size: 12px;
 }
 .vjs-tree input {
   outline: none;
   border: none !important;
   padding: 0 !important;
-  &:focus {
-    border: 2px solid red;
-    outline: none;
-  }
+  background-color: transparent !important;
+  display: inline!important;
 }
+.vjs-tree input:focus {
+  background-color: white !important;
+  padding: 2px !important;
+  border: 2px solid red !important;
+  display: inline-block!important;
+
+} */
 </style>
