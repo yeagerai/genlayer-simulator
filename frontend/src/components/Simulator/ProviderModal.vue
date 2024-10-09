@@ -42,6 +42,8 @@ const props = defineProps<{
   provider?: ProviderModel;
 }>();
 
+// TODO: test state across modals (reset errors on open?)
+
 const isCreateMode = computed(() => !props.provider);
 
 async function handleCreateProvider() {
@@ -100,7 +102,7 @@ async function handleUpdateProvider(provider: ProviderModel) {
 }
 
 const ajv = new Ajv2020({
-  allErrors: true,
+  allErrors: false,
   verbose: true,
   strict: true,
   // ...options,
@@ -339,8 +341,8 @@ const showConfig = computed(() => {
 
 <template>
   <Modal @close="emit('close')" @onOpen="tryInitValues">
-    <template #title v-if="isCreateMode">New Provider</template>
-    <template #title v-else>Provider #{{ provider?.id }}</template>
+    <template #title v-if="isCreateMode">New Provider Config</template>
+    <template #title v-else>Provider Config #{{ provider?.id }}</template>
 
     <div>
       <div class="flex justify-between">
@@ -449,7 +451,8 @@ const showConfig = computed(() => {
       </div>
     </div>
 
-    <div v-for="error in errors">
+    <div v-for="error in errors" class="text-xs text-red-500">
+      <!-- {{ error }} -->
       {{ error.instancePath }}: {{ error.message }}
     </div>
 

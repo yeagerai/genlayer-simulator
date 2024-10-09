@@ -379,7 +379,6 @@ const showConfig = computed(() => {
   </div>
 
   <button @click="validateData">Validate</button>
-
 </template>
 
 <style lang="css">

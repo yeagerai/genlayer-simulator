@@ -23,12 +23,12 @@ const modelGroups = computed(() => {
 
 <template>
   <PageSection>
-    <template #title>Providers</template>
+    <template #title>Provider Configs</template>
 
     <template #actions>
       <GhostBtn
         @click="isNewProviderModalOpen = true"
-        v-tooltip="'New Provider'"
+        v-tooltip="'New Config'"
         testId="create-new-validator-btn"
       >
         <PlusIcon class="h-4 w-4" />
@@ -45,7 +45,7 @@ const modelGroups = computed(() => {
         <div class="divide-y divide-gray-200 dark:divide-gray-800"></div>
         <ProviderItem
           v-for="model in group.models"
-          :key="model"
+          :key="model.id"
           :provider="model"
         />
       </div>
