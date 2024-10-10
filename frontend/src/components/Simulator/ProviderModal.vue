@@ -60,22 +60,10 @@ async function handleCreateProvider() {
       type: 'success',
     });
 
-    // TODO:
-    // trackEvent('created_provider', {
-    //   provider_provider: newProviderData.value.provider,
-    //   provider_model: newProviderData.value.model,
-    //   provider_stake: newProviderData.value.stake,
-    // });
-
     emit('close');
   } catch (err) {
     console.error(err);
     error.value = (err as Error)?.message;
-    // notify({
-    //   title: 'Error',
-    //   text: (err as Error)?.message || 'Error adding provider',
-    //   type: 'error',
-    // });
   } finally {
     isLoading.value = false;
   }
@@ -94,18 +82,13 @@ async function handleUpdateProvider(provider: ProviderModel) {
   } catch (err) {
     console.error(err);
     error.value = (err as Error)?.message;
-    // notify({
-    //   title: 'Error',
-    //   text: (error as Error)?.message || 'Error udpating the provider',
-    //   type: 'error',
-    // });
   } finally {
     isLoading.value = false;
   }
 }
 
 const ajv = new Ajv2020({
-  allErrors: false,
+  allErrors: true,
   verbose: true,
   strict: true,
   // ...options,
@@ -220,8 +203,9 @@ function extractDefaults(
     const prop = properties[key];
     // console.log('prop', prop);
     if ('default' in prop) {
-      // console.log('found default', key);
+      console.log('found default', key);
       defaults[key] = prop.default;
+      console.log(prop.default);
     } else if (prop.type === 'object' && prop.properties) {
       // console.log('extracting defaults for', key);
       defaults[key] = extractDefaults(prop.properties);
@@ -303,14 +287,6 @@ const validateData = async () => {
   }
 };
 
-const onChangeModel = (value: string) => {
-  // console.log('onChangeModel', value);
-};
-
-const onChangeField = () => {
-  validateData();
-};
-
 watch(newProviderData, (to, from) => {
   if (to.plugin !== from.plugin) {
     console.log('onChangePlugin', to.plugin);
@@ -318,11 +294,6 @@ watch(newProviderData, (to, from) => {
   }
   validateData();
 });
-
-// const onChangePlugin = async (plugin: string) => {
-//   setDefaultConfig(plugin, schema as SchemaConfig);
-//   validateData();
-// };
 
 function setDefaultConfig(plugin: string, schema: SchemaConfig): void {
   // Helper function to extract default values from the schema properties
@@ -370,16 +341,24 @@ function setDefaultConfig(plugin: string, schema: SchemaConfig): void {
   newProviderData.plugin_config = pluginConfigSchema ?? {};
 }
 
-const onChangePluginConfig = (value: any) => {
-  // console.log('onChangePluginConfig', value);
-};
-
 const showPluginConfig = computed(() => {
   return !!newProviderData.plugin;
 });
 
 const showConfig = computed(() => {
   return !!newProviderData.plugin;
+});
+
+const fieldError = computed(() => (prefix: string, key: string) => {
+  const matchingError = errors.value.find(
+    (error) => error.instancePath === `/${prefix}/${key}`,
+  );
+
+  if (matchingError) {
+    return matchingError.message;
+  } else {
+    return null;
+  }
 });
 </script>
 
@@ -431,7 +410,6 @@ const showConfig = computed(() => {
         required
         testId="input-model"
         placeholder=""
-        @input="onChangeModel"
       />
       <SelectInput
         v-if="modelOptions.length > 0"
@@ -441,12 +419,12 @@ const showConfig = computed(() => {
         :options="modelOptions"
         required
         testId="input-model"
-        @update:modelValue="onChangeModel"
       />
     </div>
 
     <div v-if="!isPluginLocked">
       <FieldLabel for="plugin">Plugin:</FieldLabel>
+
       <SelectInput
         id="plugin"
         name="plugin"
@@ -468,6 +446,7 @@ const showConfig = computed(() => {
           :name="key"
           :property="property"
           v-model="newProviderData.plugin_config[key]"
+          :error="fieldError('plugin_config', key)"
         />
       </div>
     </div>
@@ -482,17 +461,14 @@ const showConfig = computed(() => {
           :name="key"
           :property="property"
           v-model="newProviderData.config[key]"
+          :error="fieldError('config', key)"
         />
       </div>
     </div>
 
-    <!-- <vue-json-pretty v-model:data="newProviderData" :theme="uiStore.mode" /> -->
-
-    <div v-for="error in errors" class="text-xs text-red-500">
+    <!-- <div v-for="error in errors" class="text-xs text-red-500">
       {{ error.instancePath }}: {{ error.message }}
-    </div>
-
-    <button @click="validateData">Validate</button>
+    </div> -->
 
     <Alert error v-if="error" type="error">{{ error }}</Alert>
 

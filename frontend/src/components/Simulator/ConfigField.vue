@@ -4,6 +4,7 @@ import TextInput from '@/components/global/inputs/TextInput.vue';
 import SelectInput from '@/components/global/inputs/SelectInput.vue';
 import type { NewProviderDataModel } from '@/types';
 import { computed } from 'vue';
+import { CircleHelp } from 'lucide-vue-next';
 interface SchemaProperty {
   type?: string | string[];
   default?: any;
@@ -16,6 +17,7 @@ interface SchemaProperty {
 const props = defineProps<{
   name: string;
   property: SchemaProperty;
+  error?: string;
 }>();
 
 const model = defineModel();
@@ -41,45 +43,86 @@ const isSelect = computed(() => {
 const isSupported = computed(() => {
   return isNumber.value || isString.value || isSelect.value;
 });
+
+const tooltip = computed(() => {
+  let text = [];
+  if (props.property.type) {
+    text.push(`Type: ${props.property.type}`);
+  }
+  if (props.property.minimum !== undefined) {
+    text.push(`Min: ${props.property.minimum}`);
+  }
+  if (props.property.maximum !== undefined) {
+    text.push(`Max: ${props.property.maximum}`);
+  }
+  if (props.property.multipleOf !== undefined) {
+    text.push(`Multiple of: ${props.property.multipleOf}`);
+  }
+  return text.join(' <br/> ');
+});
 </script>
 
 <template>
-  <div
-    v-if="isSupported"
-    class="flex flex-row items-center justify-between gap-2"
-  >
-    <div class="font-mono">{{ name }}</div>
-    <div class="mr-1 flex flex-row items-center gap-1 text-xs opacity-50">
-      <div v-if="property.type">Type: {{ property.type }}</div>
-      <div v-if="property.minimum">Min: {{ property.minimum }}</div>
-      <div v-if="property.maximum">Max: {{ property.maximum }}</div>
-      <div v-if="property.multipleOf">
-        Multiple of: {{ property.multipleOf }}
+  <div v-if="isSupported" class="mb-2 grid grid-cols-3 items-center gap-2">
+    <div class="col-span-1">
+      <div
+        class="flex flex-row items-center gap-2 font-mono text-xs font-medium"
+      >
+        {{ name }}
+        <!-- <CircleHelp
+          v-if="tooltip"
+          v-tooltip="tooltip"
+          :size="10"
+          class="opacity-50"
+        /> -->
       </div>
+      <div v-if="error" class="text-xs text-red-500">{{ error }}</div>
+    </div>
+
+    <div class="col-span-2">
+      <NumberInput
+        v-if="isNumber"
+        v-model="model"
+        :id="name"
+        :name="name"
+        :min="property.minimum"
+        :max="property.maximum"
+        :step="property.multipleOf"
+        :invalid="!!error"
+        v-tooltip.right="{
+          content: tooltip,
+          html: true,
+          triggers: ['focus'],
+          hideTriggers: ['focus'],
+        }"
+      />
+
+      <!-- TODO: array -->
+
+      <TextInput
+        v-if="isString"
+        v-model="model"
+        :id="name"
+        :name="name"
+        :invalid="!!error"
+        v-tooltip.right="{
+          content: tooltip,
+          html: true,
+          triggers: ['focus'],
+          hideTriggers: ['focus'],
+        }"
+      />
+
+      <SelectInput
+        v-if="isSelect"
+        v-model="model"
+        :id="name"
+        :name="name"
+        :options="property.enum || []"
+        :invalid="!!error"
+      />
     </div>
   </div>
-
-  <NumberInput
-    v-if="isNumber"
-    v-model="model"
-    :id="name"
-    :name="name"
-    :min="property.minimum"
-    :max="property.maximum"
-    :step="property.multipleOf"
-  />
-
-  <!-- TODO: array -->
-
-  <TextInput v-if="isString" v-model="model" :id="name" :name="name" />
-
-  <SelectInput
-    v-if="isSelect"
-    v-model="model"
-    :id="name"
-    :name="name"
-    :options="property.enum || []"
-  />
 </template>
 
 <style lang="css">
