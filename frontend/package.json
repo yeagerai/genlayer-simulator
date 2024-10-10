@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@globalhive/vuejs-tour": "^1.6.0",
-    "@headlessui/vue": "^1.7.22",
+    "@headlessui/vue": "^1.7.23",
     "@heroicons/vue": "^2.1.3",
     "@jsonforms/core": "^3.4.0",
     "@jsonforms/vue": "^3.4.0",
