@@ -68,7 +68,7 @@ async function handleDeleteProvider() {
     <div class="hidden flex-row gap-1 group-hover:flex">
       <button
         @click.stop="isUpdateModalMopen = true"
-        v-tooltip="'Update Provider'"
+        v-tooltip="'Update Config'"
       >
         <PencilSquareIcon
           class="h-4 w-4 p-[2px] text-slate-400 transition-colors hover:text-slate-800 active:scale-90 dark:hover:text-white"
@@ -82,7 +82,7 @@ async function handleDeleteProvider() {
           v-if="!showConfirmDelete"
           data-testid="provider-item-delete"
           @click.stop="showConfirmDelete = true"
-          v-tooltip="'Delete Provider'"
+          v-tooltip="'Delete Config'"
         >
           <TrashIcon
             class="h-4 w-4 p-[2px] text-slate-400 transition-colors hover:text-slate-800 active:scale-90 dark:hover:text-white"
