@@ -203,9 +203,7 @@ function extractDefaults(
     const prop = properties[key];
     // console.log('prop', prop);
     if ('default' in prop) {
-      console.log('found default', key);
       defaults[key] = prop.default;
-      console.log(prop.default);
     } else if (prop.type === 'object' && prop.properties) {
       // console.log('extracting defaults for', key);
       defaults[key] = extractDefaults(prop.properties);
@@ -272,18 +270,12 @@ const toggleCustomProvider = () => {
 };
 
 const validateData = async () => {
-  console.log('validateData', newProviderData.plugin_config);
+  // console.log('validateData', newProviderData.plugin_config);
   const res = validate(newProviderData);
-  console.log(res);
-  // console.log('validateData', newProviderData, res, validate);
   if (res) {
     errors.value = [];
-    console.log('valid');
   } else {
     errors.value = validate.errors || [];
-    console.log('not valid');
-
-    // console.log(validate.errors);
   }
 };
 
@@ -318,8 +310,6 @@ function setDefaultConfig(plugin: string, schema: SchemaConfig): void {
   let pluginConfigSchema: SchemaProperty | undefined;
 
   schema.allOf.forEach((rule) => {
-    console.log('rule', rule);
-
     if (rule.if?.properties?.plugin?.const === plugin) {
       configSchema = extractDefaults(
         rule.then.properties.config?.properties || {},
@@ -331,7 +321,7 @@ function setDefaultConfig(plugin: string, schema: SchemaConfig): void {
   });
 
   console.log({ configSchema });
-  console.log({ pluginConfigSchema });
+  // console.log({ pluginConfigSchema });
 
   newProviderData.config = configSchema ?? {};
   newProviderData.plugin_config = pluginConfigSchema ?? {};
