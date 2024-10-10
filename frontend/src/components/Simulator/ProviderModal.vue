@@ -45,7 +45,11 @@ const props = defineProps<{
   provider?: ProviderModel;
 }>();
 
+// TODO: more tooltips on base fields for user education
+// TODO: maybe reorder
+// TODO: when switching to ollama, model field value is not reset
 // TODO: test state across modals (reset errors on open?)
+// TODO: add unicity constraint on provider+model+plugin in postgres
 
 const isCreateMode = computed(() => !props.provider);
 
