@@ -244,6 +244,8 @@ const checkRules = () => {
         console.log(rule.then?.properties?.model?.enum[0]);
         newProviderData.model = rule.then?.properties?.model?.enum[0];
         // re-check
+      } else {
+        newProviderData.model = '';
       }
     }
 
