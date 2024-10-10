@@ -41,7 +41,13 @@ const isSelect = computed(() => {
 });
 
 const isSupported = computed(() => {
-  return isNumber.value || isString.value || isSelect.value;
+  const supportedField = isNumber.value || isString.value || isSelect.value;
+
+  if (!supportedField) {
+    console.warn('unsupported field', props.name, props.property);
+  }
+
+  return supportedField;
 });
 
 const tooltip = computed(() => {
