@@ -2,9 +2,8 @@
 import NumberInput from '@/components/global/inputs/NumberInput.vue';
 import TextInput from '@/components/global/inputs/TextInput.vue';
 import SelectInput from '@/components/global/inputs/SelectInput.vue';
-import type { NewProviderDataModel } from '@/types';
 import { computed } from 'vue';
-import { CircleHelp } from 'lucide-vue-next';
+
 interface SchemaProperty {
   type?: string | string[];
   default?: any;
@@ -63,18 +62,12 @@ const tooltip = computed(() => {
 </script>
 
 <template>
-  <div v-if="isSupported" class="mb-2 grid grid-cols-3 items-center gap-2">
+  <div v-if="isSupported" class="my-2 grid grid-cols-3 items-center gap-2">
     <div class="col-span-1">
       <div
         class="flex flex-row items-center gap-2 font-mono text-xs font-medium"
       >
         {{ name }}
-        <!-- <CircleHelp
-          v-if="tooltip"
-          v-tooltip="tooltip"
-          :size="10"
-          class="opacity-50"
-        /> -->
       </div>
       <div v-if="error" class="text-xs text-red-500">{{ error }}</div>
     </div>
