@@ -288,10 +288,6 @@ const validateData = async () => {
 };
 
 watch(newProviderData, (to, from) => {
-  if (to.plugin !== from.plugin) {
-    console.log('onChangePlugin', to.plugin);
-    setDefaultConfig(to.plugin, schema as SchemaConfig);
-  }
   validateData();
 });
 
@@ -433,6 +429,7 @@ const fieldError = computed(() => (prefix: string, key: string) => {
         :disabled="isPluginLocked"
         required
         testId="input-plugin"
+        @update:modelValue="checkRules"
       />
     </div>
 
