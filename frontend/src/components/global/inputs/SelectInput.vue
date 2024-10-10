@@ -3,7 +3,7 @@ defineProps<{
   name: string;
   testId?: string;
   invalid?: boolean;
-  options: Array<string | Option>;
+  options: Array<string | Option | number>;
 }>();
 
 interface Option {
@@ -30,15 +30,35 @@ const model = defineModel();
   >
     <option
       v-for="option in options"
-      :key="typeof option === 'string' ? option : option.value"
-      :value="typeof option === 'string' ? option : option.value"
-      :selected="(typeof option === 'string' ? option : option.value) === model"
-      :disabled="typeof option === 'string' ? false : option.disabled || false"
+      :key="
+        typeof option === 'string' || typeof option === 'number'
+          ? option
+          : option.value
+      "
+      :value="
+        typeof option === 'string' || typeof option === 'number'
+          ? option
+          : option.value
+      "
+      :selected="
+        (typeof option === 'string' || typeof option === 'number'
+          ? option
+          : option.value) === model
+      "
+      :disabled="
+        typeof option === 'string' || typeof option === 'number'
+          ? false
+          : option.disabled || false
+      "
       v-tooltip="'test'"
     >
-      {{ typeof option === 'string' ? option : option.label }}
       {{
-        typeof option === 'string'
+        typeof option === 'string' || typeof option === 'number'
+          ? option
+          : option.label
+      }}
+      {{
+        typeof option === 'string' || typeof option === 'number'
           ? ''
           : option.disabled
             ? '(missing configuration)'

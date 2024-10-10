@@ -33,6 +33,7 @@ import FieldError from '@/components/global/fields/FieldError.vue';
 import FieldLabel from '@/components/global/fields/FieldLabel.vue';
 import { init } from '@jsonforms/core';
 import { useUIStore } from '@/stores';
+import ConfigField from '@/components/Simulator/ConfigField.vue';
 
 const uiStore = useUIStore();
 const nodeStore = useNodeStore();
@@ -231,6 +232,9 @@ function extractDefaults(
   return defaults;
 }
 
+const pluginConfigProperties = ref<Record<string, any>>({});
+const configProperties = ref<Record<string, any>>({});
+
 const checkRules = () => {
   console.log('checkRules');
   isPluginLocked.value = false;
@@ -259,13 +263,13 @@ const checkRules = () => {
 
     // Plugin rules
     if (rule.if?.properties?.plugin?.const === newProviderData.plugin) {
-      const pluginConfigProperties =
+      pluginConfigProperties.value =
         rule.then?.properties?.plugin_config?.properties || {};
-      const pluginConfig = extractDefaults(pluginConfigProperties);
+      const pluginConfig = extractDefaults(pluginConfigProperties.value);
       newProviderData.plugin_config = pluginConfig ? { ...pluginConfig } : {};
 
-      const configProperties = rule.then?.properties?.config?.properties || {};
-      const config = extractDefaults(configProperties);
+      configProperties.value = rule.then?.properties?.config?.properties || {};
+      const config = extractDefaults(configProperties.value);
       newProviderData.config = config ? { ...config } : {};
     }
   });
@@ -307,13 +311,14 @@ const onChangeField = () => {
   validateData();
 };
 
-watch(
-  () => newProviderData.plugin,
-  (plugin: string) => {
-    setDefaultConfig(plugin, schema as SchemaConfig);
-    validateData();
-  },
-);
+watch(newProviderData, (to, from) => {
+  if (to.plugin !== from.plugin) {
+    console.log('onChangePlugin', to.plugin);
+    setDefaultConfig(to.plugin, schema as SchemaConfig);
+  }
+  validateData();
+});
+
 // const onChangePlugin = async (plugin: string) => {
 //   setDefaultConfig(plugin, schema as SchemaConfig);
 //   validateData();
@@ -456,53 +461,38 @@ const showConfig = computed(() => {
     <div v-if="showPluginConfig">
       <FieldLabel>Provider Config:</FieldLabel>
 
-      <!-- <div v-for="key in Object.keys(newProviderData.plugin_config)">
-        {{ key }}:
-        <input
-          type="text"
+      <div class="rounded-md bg-black bg-opacity-10 p-4">
+        <ConfigField
+          v-for="(property, key) in pluginConfigProperties"
+          :key="key"
+          :name="key"
+          :property="property"
           v-model="newProviderData.plugin_config[key]"
-          @input="onChangeField"
-        />
-      </div> -->
-      <!-- <textarea name="" id="" v-model="newProviderData.plugin_config"></textarea> -->
-      <div
-        class="rounded-md border border-gray-300 bg-white p-2 dark:border-zinc-600 dark:bg-zinc-800"
-      >
-        <vue-json-pretty
-          v-model:data="newProviderData.plugin_config"
-          :editable="true"
-          editableTrigger="click"
-          :theme="uiStore.mode"
-          @selectedChange="console.log('change')"
         />
       </div>
     </div>
 
     <div v-if="showConfig">
       <FieldLabel>Default Validator Config:</FieldLabel>
-      <!-- <textarea name="" id="" v-model="newProviderData.config"></textarea> -->
 
-      <div
-        class="rounded-md border border-gray-300 bg-white p-2 dark:border-zinc-600 dark:bg-zinc-800"
-      >
-        <vue-json-pretty
-          ref="jsonTree"
-          v-model:data="newProviderData.config"
-          :editable="true"
-          editableTrigger="click"
-          :theme="uiStore.mode"
-          @click="console.log(jsonTree)"
-          @onValueChange="console.log('VALUE CHANGED', $event)"
+      <div class="rounded-md bg-black bg-opacity-10 p-4">
+        <ConfigField
+          v-for="(property, key) in configProperties"
+          :key="key"
+          :name="key"
+          :property="property"
+          v-model="newProviderData.config[key]"
         />
       </div>
     </div>
 
+    <!-- <vue-json-pretty v-model:data="newProviderData" :theme="uiStore.mode" /> -->
+
     <div v-for="error in errors" class="text-xs text-red-500">
-      <!-- {{ error }} -->
       {{ error.instancePath }}: {{ error.message }}
     </div>
 
-    <!-- <button @click="validateData">Validate</button> -->
+    <button @click="validateData">Validate</button>
 
     <Alert error v-if="error" type="error">{{ error }}</Alert>
 

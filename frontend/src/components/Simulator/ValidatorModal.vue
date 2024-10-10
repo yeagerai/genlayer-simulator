@@ -19,6 +19,7 @@ import Alert from '../global/Alert.vue';
 
 // TODO: populate default config ?
 // TODO: don't auto select invalid models/providers
+// TODO: add config schema here
 
 const nodeStore = useNodeStore();
 const { trackEvent } = useEventTracking();
