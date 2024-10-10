@@ -1,4 +1,4 @@
-FROM python:3.12.6-slim AS base
+FROM python:3.13.0-slim AS base
 
 ARG path=/app
 WORKDIR $path
