@@ -31,9 +31,10 @@ import NumberInput from '@/components/global/inputs/NumberInput.vue';
 import TextAreaInput from '@/components/global/inputs/TextAreaInput.vue';
 import FieldError from '@/components/global/fields/FieldError.vue';
 import FieldLabel from '@/components/global/fields/FieldLabel.vue';
-import GhostBtn from '../global/GhostBtn.vue';
 import { init } from '@jsonforms/core';
+import { useUIStore } from '@/stores';
 
+const uiStore = useUIStore();
 const nodeStore = useNodeStore();
 const { trackEvent } = useEventTracking();
 const emit = defineEmits(['close']);
@@ -117,8 +118,9 @@ const newProviderData = reactive<NewProviderDataModel>({
   plugin_config: {},
 });
 
-const schema = markRaw(providerSchema);
+const defaultProvider = 'openai';
 
+const schema = markRaw(providerSchema);
 const validate = ajv.compile(schema);
 const errors = ref<any[]>([]);
 const pluginOptions = ref<string[]>([]);
@@ -155,11 +157,32 @@ interface SchemaConfig {
     };
   }[];
 }
-
 const tryInitValues = () => {
-  initProvider();
+  errors.value = [];
+  providerOptions.value = schema.properties.provider.examples;
+
+  if (props.provider) {
+    const initialProviderOption = providerOptions.value.find(
+      (option) => option === props.provider?.provider,
+    );
+
+    if (!initialProviderOption) {
+      customProvider.value = true;
+    }
+
+    newProviderData.provider = props.provider.provider;
+    newProviderData.model = props.provider.model;
+    newProviderData.plugin = props.provider.plugin;
+    newProviderData.plugin_config = props.provider.plugin_config;
+    newProviderData.config = props.provider.config;
+  } else {
+    providerOptions.value = schema.properties.provider.examples;
+    newProviderData.provider = defaultProvider;
+  }
 
   checkRules();
+
+  // pluginOptions.value = schema.properties.plugin.enum;
   // pluginOptions.value = schema.properties.plugin.enum;
   // const initialPlugin = pluginOptions.value[0];
 
@@ -169,12 +192,15 @@ const tryInitValues = () => {
   // }
 };
 
-const initProvider = () => {
-  providerOptions.value = schema.properties.provider.examples;
-  const initialProvider = 'openai';
-  newProviderData.provider = initialProvider;
-};
+const jsonTree = ref<any>();
+const triggerBlur = () => {
+  const inputElement = jsonTree.value.$el.querySelector('input');
+  console.log('triggerBlur', inputElement);
 
+  if (inputElement) {
+    inputElement.blur(); // This will manually trigger the blur event
+  }
+};
 // 1. If provider == "ollama" then plugin must be "ollama"
 // 2. If provider == "heuristai" then plugin = "openai" AND model is restricted to specific options
 // 3. If provider == "openai" then plugin = "openai" AND model is limited to specific GPT versions
@@ -209,7 +235,10 @@ const checkRules = () => {
   console.log('checkRules');
   isPluginLocked.value = false;
   modelOptions.value = [];
-  newProviderData.model = '';
+
+  // if (!customProvider.value) {
+  //   newProviderData.model = '';
+  // }
 
   schema.allOf.forEach((rule) => {
     // Provider rules
@@ -246,9 +275,11 @@ const toggleCustomProvider = () => {
   customProvider.value = !customProvider.value;
   if (customProvider.value) {
     newProviderData.provider = '';
+    newProviderData.model = '';
   } else {
-    initProvider();
+    newProviderData.provider = defaultProvider;
   }
+
   checkRules();
 };
 
@@ -348,7 +379,7 @@ const showConfig = computed(() => {
 </script>
 
 <template>
-  <Modal @close="emit('close')" @onOpen="tryInitValues">
+  <Modal @close="emit('close')" @onOpen="tryInitValues" wide>
     <template #title v-if="isCreateMode">New Provider Config</template>
     <template #title v-else>Provider Config #{{ provider?.id }}</template>
 
@@ -360,7 +391,7 @@ const showConfig = computed(() => {
           @click="toggleCustomProvider"
           class="mr-1 text-xs opacity-50 hover:opacity-70"
         >
-          {{ customProvider ? 'Use preset' : 'Custom provider' }}
+          {{ customProvider ? 'Use preset' : 'Use custom provider' }}
         </button>
       </div>
 
@@ -372,7 +403,6 @@ const showConfig = computed(() => {
         required
         testId="input-provider"
         @update:modelValue="checkRules"
-        :placeholder="'ex: ' + schema.properties.provider.examples.join(', ')"
       />
       <SelectInput
         v-else
@@ -383,7 +413,6 @@ const showConfig = computed(() => {
         :options="providerOptions"
         testId="input-provider"
         @update:modelValue="checkRules"
-        :placeholder="'ex: ' + schema.properties.provider.examples.join(', ')"
       />
     </div>
 
@@ -421,40 +450,49 @@ const showConfig = computed(() => {
         :disabled="isPluginLocked"
         required
         testId="input-plugin"
-        @update:modelValue="onChangePlugin"
       />
     </div>
 
     <div v-if="showPluginConfig">
       <FieldLabel>Provider Config:</FieldLabel>
 
-      <div v-for="key in Object.keys(newProviderData.plugin_config)">
+      <!-- <div v-for="key in Object.keys(newProviderData.plugin_config)">
         {{ key }}:
         <input
           type="text"
           v-model="newProviderData.plugin_config[key]"
           @input="onChangeField"
         />
-      </div>
+      </div> -->
       <!-- <textarea name="" id="" v-model="newProviderData.plugin_config"></textarea> -->
-      <!-- <div class="rounded-md bg-white p-2">
-      <vue-json-pretty
-        v-model:data="newProviderData.plugin_config"
-        :editable="true"
-        editableTrigger="click"
-      />
-    </div> -->
-      {{ newProviderData.plugin_config }}
+      <div
+        class="rounded-md border border-gray-300 bg-white p-2 dark:border-zinc-600 dark:bg-zinc-800"
+      >
+        <vue-json-pretty
+          v-model:data="newProviderData.plugin_config"
+          :editable="true"
+          editableTrigger="click"
+          :theme="uiStore.mode"
+          @selectedChange="console.log('change')"
+        />
+      </div>
     </div>
 
     <div v-if="showConfig">
       <FieldLabel>Default Validator Config:</FieldLabel>
       <!-- <textarea name="" id="" v-model="newProviderData.config"></textarea> -->
-      <div class="rounded-md bg-white p-2">
+
+      <div
+        class="rounded-md border border-gray-300 bg-white p-2 dark:border-zinc-600 dark:bg-zinc-800"
+      >
         <vue-json-pretty
+          ref="jsonTree"
           v-model:data="newProviderData.config"
           :editable="true"
           editableTrigger="click"
+          :theme="uiStore.mode"
+          @click="console.log(jsonTree)"
+          @onValueChange="console.log('VALUE CHANGED', $event)"
         />
       </div>
     </div>
@@ -464,7 +502,7 @@ const showConfig = computed(() => {
       {{ error.instancePath }}: {{ error.message }}
     </div>
 
-    <button @click="validateData">Validate</button>
+    <!-- <button @click="validateData">Validate</button> -->
 
     <Alert error v-if="error" type="error">{{ error }}</Alert>
 
