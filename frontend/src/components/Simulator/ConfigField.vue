@@ -11,6 +11,7 @@ interface SchemaProperty {
   maximum?: number;
   multipleOf?: number;
   enum?: any[];
+  $comment?: string;
 }
 
 const props = defineProps<{
@@ -45,9 +46,12 @@ const isSupported = computed(() => {
 
 const tooltip = computed(() => {
   let text = [];
-  if (props.property.type) {
-    text.push(`Type: ${props.property.type}`);
+  if (props.property.$comment) {
+    text.push(props.property.$comment);
   }
+  // if (props.property.type) {
+  //   text.push(`Type: ${props.property.type}`);
+  // }
   if (props.property.minimum !== undefined) {
     text.push(`Min: ${props.property.minimum}`);
   }
