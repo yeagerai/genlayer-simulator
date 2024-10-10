@@ -12,6 +12,7 @@ interface SchemaProperty {
   multipleOf?: number;
   enum?: any[];
   $comment?: string;
+  minLength?: number; // TODO:
 }
 
 const props = defineProps<{
@@ -100,7 +101,7 @@ const tooltip = computed(() => {
         }"
       />
 
-      <!-- TODO: array -->
+      <!-- TODO: array ? -->
 
       <TextInput
         v-if="isString"
@@ -108,6 +109,7 @@ const tooltip = computed(() => {
         :id="name"
         :name="name"
         :invalid="!!error"
+        :minlength="property.minLength"
         v-tooltip.right="{
           content: tooltip,
           html: true,

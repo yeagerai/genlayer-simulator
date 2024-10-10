@@ -1,43 +1,17 @@
 <script setup lang="ts">
 import { useNodeStore } from '@/stores';
 import { notify } from '@kyvg/vue3-notification';
-import { useEventTracking } from '@/hooks';
-import CopyTextButton from '../global/CopyTextButton.vue';
-// import { uniqBy } from 'lodash-es';
 import Alert from '../global/Alert.vue';
-// import JsonForm from './JsonForm.vue';
 import providerSchema from '../../../../backend/node/create_nodes/providers_schema.json';
-// import { JsonForms } from '@jsonforms/vue';
-// import { createAjv } from '@jsonforms/core';
-import { vanillaRenderers } from '@jsonforms/vue-vanilla';
-import {
-  computed,
-  defineComponent,
-  markRaw,
-  reactive,
-  ref,
-  onMounted,
-  nextTick,
-  watch,
-} from 'vue';
+import { computed, markRaw, reactive, ref, watch } from 'vue';
 import Ajv2020 from 'ajv/dist/2020';
-// import addFormats from 'ajv-formats';
 import { type ProviderModel, type NewProviderDataModel } from '@/types';
-import VueJsonPretty from 'vue-json-pretty';
-import 'vue-json-pretty/lib/styles.css';
 import TextInput from '@/components/global/inputs/TextInput.vue';
 import SelectInput from '@/components/global/inputs/SelectInput.vue';
-import NumberInput from '@/components/global/inputs/NumberInput.vue';
-import TextAreaInput from '@/components/global/inputs/TextAreaInput.vue';
-import FieldError from '@/components/global/fields/FieldError.vue';
 import FieldLabel from '@/components/global/fields/FieldLabel.vue';
-import { init } from '@jsonforms/core';
-import { useUIStore } from '@/stores';
 import ConfigField from '@/components/Simulator/ConfigField.vue';
 
-const uiStore = useUIStore();
 const nodeStore = useNodeStore();
-const { trackEvent } = useEventTracking();
 const emit = defineEmits(['close']);
 const error = ref('');
 const isLoading = ref(false);
@@ -46,10 +20,10 @@ const props = defineProps<{
 }>();
 
 // TODO: more tooltips on base fields for user education
-// TODO: maybe reorder
-// TODO: when switching to ollama, model field value is not reset
+// TODO: maybe reorder some fields?
 // TODO: test state across modals (reset errors on open?)
 // TODO: add unicity constraint on provider+model+plugin in postgres
+// TODO: map empty strings to null in the JSON for the urls
 
 const isCreateMode = computed(() => !props.provider);
 
