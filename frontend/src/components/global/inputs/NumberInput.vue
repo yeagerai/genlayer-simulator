@@ -39,7 +39,7 @@ const handleKeydown = (event: KeyboardEvent) => {
     :data-testid="testId"
     class="input-style"
     :class="[
-      'invalid:ring-red-600/80 hoverinvalid:ring-red-600',
+      'hoverinvalid:ring-red-600 invalid:ring-red-600/80',
       invalid && 'ring-red-600/80 hover:ring-red-600',
       !invalid &&
         'ring-gray-400/60 hover:ring-gray-400 dark:ring-zinc-500/60 dark:hover:ring-zinc-500',
@@ -47,6 +47,5 @@ const handleKeydown = (event: KeyboardEvent) => {
     ]"
     @input="handleChange"
     @keydown="handleKeydown"
-    
   />
 </template>
