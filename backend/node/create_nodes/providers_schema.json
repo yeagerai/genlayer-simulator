@@ -191,7 +191,8 @@
                 "default": 0
               },
               "stop": {
-                "const": ""
+                "const": "",
+                "default": ""
               },
               "tfs_z": {
                 "type": "number",
@@ -254,7 +255,8 @@
             "properties": {
               "api_key_env_var": {
                 "type": "string",
-                "$comment": "Environment variable that contains the API key"
+                "$comment": "Environment variable that contains the API key",
+                "default": "OPENAIKEY"
               },
               "api_url": {
                 "type": ["string", "null"],
@@ -300,7 +302,8 @@
             "properties": {
               "api_key_env_var": {
                 "type": "string",
-                "$comment": "Environment variable that contains the API key"
+                "$comment": "Environment variable that contains the API key",
+                "default": "ANTHROPIC_API_KEY"
               },
               "api_url": {
                 "type": ["string", "null"],
