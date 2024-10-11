@@ -22,9 +22,9 @@ const props = defineProps<{
 }>();
 const isConfigExpanded = ref(false);
 // TODO: more tooltips on base fields for user education
-// TODO: maybe reorder some fields?
-// TODO: unit tests
-// TODO: e2e tests
+// TODO: unit tests - pass + add
+// TODO: e2e tests - pass + add
+// TODO: update tutorial - fix + add?
 
 const isCreateMode = computed(() => !props.provider);
 
@@ -54,7 +54,7 @@ async function handleUpdateProvider(provider: ProviderModel) {
   try {
     await nodeStore.updateProvider(provider, newProviderData);
     notify({
-      title: `Updated ${provider.model}`,
+      title: `Updated provider`,
       type: 'success',
     });
     emit('close');
@@ -192,14 +192,13 @@ function extractDefaults(
   properties: Record<string, SchemaProperty>,
 ): Record<string, any> {
   const defaults: Record<string, any> = {};
-  // console.log('properties', properties);
+
   Object.keys(properties).forEach((key) => {
     const prop = properties[key];
-    // console.log('prop', prop);
+
     if ('default' in prop) {
       defaults[key] = prop.default;
     } else if (prop.type === 'object' && prop.properties) {
-      // console.log('extracting defaults for', key);
       defaults[key] = extractDefaults(prop.properties);
     } else {
       defaults[key] = null;
@@ -212,7 +211,6 @@ const pluginConfigProperties = ref<Record<string, any>>({});
 const configProperties = ref<Record<string, any>>({});
 
 const checkRules = () => {
-  console.log('checkRules');
   isPluginLocked.value = false;
   modelOptions.value = [];
 
@@ -220,7 +218,6 @@ const checkRules = () => {
     // Provider rules
     if (rule.if?.properties?.provider?.const === newProviderData.provider) {
       if (rule.then?.properties?.plugin?.const) {
-        console.log('plugin locked');
         newProviderData.plugin = rule.then?.properties?.plugin?.const;
         isPluginLocked.value = true;
       }
@@ -251,12 +248,16 @@ const checkRules = () => {
     if (rule.if?.properties?.plugin?.const === newProviderData.plugin) {
       pluginConfigProperties.value =
         rule.then?.properties?.plugin_config?.properties || {};
-      const pluginConfig = extractDefaults(pluginConfigProperties.value);
-      newProviderData.plugin_config = pluginConfig ? { ...pluginConfig } : {};
-
       configProperties.value = rule.then?.properties?.config?.properties || {};
-      const config = extractDefaults(configProperties.value);
-      newProviderData.config = config ? { ...config } : {};
+
+      // TODO: double-check this condition (maybe need to handle it somewhere else)
+      if (isCreateMode.value) {
+        const pluginConfig = extractDefaults(pluginConfigProperties.value);
+        newProviderData.plugin_config = pluginConfig ? { ...pluginConfig } : {};
+
+        const config = extractDefaults(configProperties.value);
+        newProviderData.config = config ? { ...config } : {};
+      }
     }
   });
 };
