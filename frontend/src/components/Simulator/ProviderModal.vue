@@ -329,6 +329,7 @@ const validateData = async () => {
 };
 
 watch(newProviderData, (to, from) => {
+  error.value = '';
   validateData();
 });
 
