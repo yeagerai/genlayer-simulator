@@ -137,7 +137,9 @@ const modelOptions = computed(() => {
       const isDisabled = !provider?.is_model_available;
       return {
         value: provider.model,
-        label: isDisabled ? `${provider.model} (missing configuration)` : provider.model,
+        label: isDisabled
+          ? `${provider.model} (missing configuration)`
+          : provider.model,
         disabled: !provider?.is_model_available,
       };
     });

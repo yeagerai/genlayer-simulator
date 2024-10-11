@@ -210,15 +210,6 @@ const tryInitValues = () => {
   // }
 };
 
-const jsonTree = ref<any>();
-const triggerBlur = () => {
-  const inputElement = jsonTree.value.$el.querySelector('input');
-  console.log('triggerBlur', inputElement);
-
-  if (inputElement) {
-    inputElement.blur(); // This will manually trigger the blur event
-  }
-};
 // 1. If provider == "ollama" then plugin must be "ollama"
 // 2. If provider == "heuristai" then plugin = "openai" AND model is restricted to specific options
 // 3. If provider == "openai" then plugin = "openai" AND model is limited to specific GPT versions
@@ -255,10 +246,6 @@ const checkRules = () => {
   console.log('checkRules');
   isPluginLocked.value = false;
   modelOptions.value = [];
-
-  // if (!customProvider.value) {
-  //   newProviderData.model = '';
-  // }
 
   schema.allOf.forEach((rule) => {
     // Provider rules
