@@ -21,19 +21,35 @@ const props = defineProps<{
   error?: string;
 }>();
 
-const model = defineModel();
+const mapToNullIfEmpty = computed(() => {
+  return (
+    Array.isArray(props.property.type) && props.property.type.includes('null')
+  );
+});
+
+const model = defineModel({
+  set(value) {
+    if (mapToNullIfEmpty.value && value === '') {
+      return null;
+    }
+    return value;
+  },
+});
 
 const isNumber = computed(
-  () => props.property.type === 'number' || props.property.type === 'integer',
+  () =>
+    props.property.type === 'number' ||
+    props.property.type === 'integer' ||
+    (Array.isArray(props.property.type) &&
+      (props.property.type.includes('number') ||
+        props.property.type.includes('integer'))),
 );
 
 const isString = computed(() => {
   return (
     props.property.type === 'string' ||
-    (props.property.type &&
-      props.property.type.length &&
-      props.property.type.includes('string') &&
-      props.property.type.includes('null'))
+    (Array.isArray(props.property.type) &&
+      props.property.type.includes('string'))
   );
 });
 
