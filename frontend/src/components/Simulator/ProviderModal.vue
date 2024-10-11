@@ -11,6 +11,7 @@ import TextInput from '@/components/global/inputs/TextInput.vue';
 import SelectInput from '@/components/global/inputs/SelectInput.vue';
 import FieldLabel from '@/components/global/fields/FieldLabel.vue';
 import ConfigField from '@/components/Simulator/ConfigField.vue';
+import { Eye, EyeOff } from 'lucide-vue-next';
 
 const nodeStore = useNodeStore();
 const emit = defineEmits(['close']);
@@ -19,14 +20,11 @@ const isLoading = ref(false);
 const props = defineProps<{
   provider?: ProviderModel;
 }>();
-
+const isConfigExpanded = ref(false);
 // TODO: more tooltips on base fields for user education
 // TODO: maybe reorder some fields?
-// TODO: test state across modals (reset errors on open?)
-// TODO: map empty strings to null in the JSON for the urls
 // TODO: unit tests
 // TODO: e2e tests
-
 
 const isCreateMode = computed(() => !props.provider);
 
@@ -163,28 +161,6 @@ interface SchemaProperty {
   enum?: any[];
 }
 
-interface SchemaConfig {
-  allOf: {
-    if: {
-      properties: {
-        plugin?: { const: string };
-      };
-    };
-    then: {
-      properties: {
-        config?: {
-          type: string;
-          properties: Record<string, SchemaProperty>;
-        };
-        plugin_config?: {
-          type: string;
-          properties: Record<string, SchemaProperty>;
-        };
-      };
-    };
-  }[];
-}
-
 const tryInitValues = () => {
   errors.value = [];
   providerOptions.value = schema.properties.provider.examples;
@@ -210,25 +186,7 @@ const tryInitValues = () => {
   }
 
   checkRules();
-
-  // pluginOptions.value = schema.properties.plugin.enum;
-  // pluginOptions.value = schema.properties.plugin.enum;
-  // const initialPlugin = pluginOptions.value[0];
-
-  // if (initialPlugin) {
-  //   newProviderData.plugin = initialPlugin;
-  //   onChangePlugin(initialPlugin);
-  // }
 };
-
-// 1. If provider == "ollama" then plugin must be "ollama"
-// 2. If provider == "heuristai" then plugin = "openai" AND model is restricted to specific options
-// 3. If provider == "openai" then plugin = "openai" AND model is limited to specific GPT versions
-// 4. If provider == "anthropic" then plugin = "anthropic" AND model is restricted to Claude versions
-
-// 5. If plugin == "ollama" then define specific plugin_config and config options
-// 6. If plugin == "openai" then set plugin_config (API key, URL) and config (temperature, max_tokens)
-// 7. If plugin == "anthropic" then configure plugin_config (API key, URL) and config (various generation parameters)
 
 function extractDefaults(
   properties: Record<string, SchemaProperty>,
@@ -284,7 +242,6 @@ const checkRules = () => {
         } else {
           newProviderData.model = rule.then?.properties?.model?.enum[0];
         }
-        // re-check
       } else {
         newProviderData.model = '';
       }
@@ -351,6 +308,13 @@ const fieldError = computed(() => (prefix: string, key: string) => {
     return null;
   }
 });
+
+const configurationError = computed(() => {
+  return (
+    props.provider &&
+    (!props.provider?.is_available || !props.provider?.is_model_available)
+  );
+});
 </script>
 
 <template>
@@ -358,87 +322,113 @@ const fieldError = computed(() => (prefix: string, key: string) => {
     <template #title v-if="isCreateMode">New Provider Config</template>
     <template #title v-else>Provider Config #{{ provider?.id }}</template>
 
+    <template #info v-if="provider">
+      <div class="flex flex-row items-start gap-6 text-sm">
+        <div class="text-left">
+          <span class="opacity-50">Provider:</span><br />
+          {{ provider.provider }}
+        </div>
+        <div class="text-left">
+          <span class="opacity-50">Model:</span><br />
+          {{ provider.model }}
+        </div>
+        <div class="text-left">
+          <span class="opacity-50">Plugin:</span><br />
+          {{ provider.plugin }}
+        </div>
+      </div>
+    </template>
+
+    <Alert warning v-if="configurationError"
+      >There is a problem with this configuration. Make sure your API keys/urls
+      environment variables are properly set.
+    </Alert>
+
     <Alert error v-if="!validate">Could not compile provider schema</Alert>
 
     <template v-else>
-      <div>
-        <div class="flex justify-between">
-          <FieldLabel for="provider">Provider:</FieldLabel>
+      <template v-if="isCreateMode">
+        <div>
+          <div class="flex justify-between">
+            <FieldLabel for="provider">Provider:</FieldLabel>
 
-          <button
-            @click="toggleCustomProvider"
-            class="mr-1 text-xs opacity-50 hover:opacity-70"
-          >
-            {{ customProvider ? 'Use preset' : 'Use custom provider' }}
-          </button>
+            <button
+              @click="toggleCustomProvider"
+              class="mr-1 text-xs opacity-50 hover:opacity-70"
+            >
+              {{ customProvider ? 'Use preset' : 'Use custom provider' }}
+            </button>
+          </div>
+
+          <TextInput
+            id="provider"
+            v-if="customProvider"
+            name="provider"
+            v-model="newProviderData.provider"
+            required
+            testId="input-provider"
+            @update:modelValue="checkRules"
+          />
+          <SelectInput
+            v-else
+            id="provider"
+            name="provider"
+            v-model="newProviderData.provider"
+            required
+            :options="providerOptions"
+            testId="input-provider"
+            @update:modelValue="checkRules"
+          />
         </div>
 
-        <TextInput
-          id="provider"
-          v-if="customProvider"
-          name="provider"
-          v-model="newProviderData.provider"
-          required
-          testId="input-provider"
-          @update:modelValue="checkRules"
-        />
-        <SelectInput
-          v-else
-          id="provider"
-          name="provider"
-          v-model="newProviderData.provider"
-          required
-          :options="providerOptions"
-          testId="input-provider"
-          @update:modelValue="checkRules"
-        />
-      </div>
+        <div>
+          <FieldLabel for="model">Model:</FieldLabel>
+          <TextInput
+            v-if="modelOptions.length === 0"
+            id="model"
+            name="model"
+            v-model="newProviderData.model"
+            required
+            testId="input-model"
+            placeholder=""
+          />
+          <SelectInput
+            v-if="modelOptions.length > 0"
+            id="plugin"
+            name="plugin"
+            v-model="newProviderData.model"
+            :options="availableModelOptions"
+            required
+            testId="input-model"
+          />
+        </div>
 
-      <div>
-        <FieldLabel for="model">Model:</FieldLabel>
-        <TextInput
-          v-if="modelOptions.length === 0"
-          id="model"
-          name="model"
-          v-model="newProviderData.model"
-          required
-          testId="input-model"
-          placeholder=""
-        />
-        <SelectInput
-          v-if="modelOptions.length > 0"
-          id="plugin"
-          name="plugin"
-          v-model="newProviderData.model"
-          :options="availableModelOptions"
-          required
-          testId="input-model"
-        />
-      </div>
+        <div v-if="!isPluginLocked">
+          <FieldLabel for="plugin">Plugin:</FieldLabel>
 
-      <div v-if="!isPluginLocked">
-        <FieldLabel for="plugin">Plugin:</FieldLabel>
+          <SelectInput
+            id="plugin"
+            name="plugin"
+            v-model="newProviderData.plugin"
+            :options="availablePluginOptions"
+            :disabled="isPluginLocked"
+            required
+            testId="input-plugin"
+            @update:modelValue="checkRules"
+          />
+        </div>
 
-        <SelectInput
-          id="plugin"
-          name="plugin"
-          v-model="newProviderData.plugin"
-          :options="availablePluginOptions"
-          :disabled="isPluginLocked"
-          required
-          testId="input-plugin"
-          @update:modelValue="checkRules"
-        />
-      </div>
-
-      <Alert warning v-if="isCreateMode && configAlreadyExists">
-        A config with this provider and model already exists.
-      </Alert>
+        <Alert warning v-if="configAlreadyExists">
+          A config with this provider and model already exists.
+        </Alert>
+      </template>
 
       <div v-if="showPluginConfig">
         <FieldLabel>Provider Config:</FieldLabel>
 
-        <div class="rounded-md bg-black bg-opacity-10 p-4">
+        <div
+          class="flex flex-col gap-2 rounded-md bg-black bg-opacity-10 px-2 py-2"
+        >
           <ConfigField
             v-for="(property, key) in pluginConfigProperties"
             :key="key"
@@ -451,9 +441,23 @@ const fieldError = computed(() => (prefix: string, key: string) => {
       </div>
 
       <div v-if="showConfig">
-        <FieldLabel>Default Validator Config:</FieldLabel>
+        <div class="flex flex-row items-center gap-2">
+          <FieldLabel>Default Validator Config:</FieldLabel>
 
-        <div class="rounded-md bg-black bg-opacity-10 p-4">
+          <GhostBtn
+            @click="isConfigExpanded = !isConfigExpanded"
+            class="text-xs"
+          >
+            <Eye v-if="!isConfigExpanded" :size="14" />
+            <EyeOff v-else :size="14" />
+            {{ isConfigExpanded ? 'Hide' : 'Show' }}
+          </GhostBtn>
+        </div>
+
+        <div
+          v-show="isConfigExpanded"
+          class="flex flex-col gap-2 rounded-md bg-black bg-opacity-10 px-2 py-2"
+        >
           <ConfigField
             v-for="(property, key) in configProperties"
             :key="key"

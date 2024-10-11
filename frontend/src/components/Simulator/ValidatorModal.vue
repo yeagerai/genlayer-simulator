@@ -17,9 +17,7 @@ import CopyTextButton from '../global/CopyTextButton.vue';
 import { uniqBy } from 'lodash-es';
 import Alert from '../global/Alert.vue';
 
-// TODO: populate default config ?
 // TODO: don't auto select invalid models/providers
-// TODO: add config schema here
 
 const nodeStore = useNodeStore();
 const { trackEvent } = useEventTracking();
@@ -153,6 +151,11 @@ const handleChangeProvider = () => {
   );
   newValidatorData.value.model =
     availableModels.length > 0 ? availableModels[0] : '';
+  const config = nodeStore.nodeProviders.find(
+    (provider: ProviderModel) =>
+      provider.model === newValidatorData.value.model,
+  )?.config;
+  newValidatorData.value.config = JSON.stringify(config, null, 2);
 };
 
 const handleChangeModel = () => {
@@ -170,6 +173,11 @@ const tryInitValues = () => {
   if (!props.validator) {
     try {
       newValidatorData.value.provider = nodeStore.nodeProviders[0].provider;
+      newValidatorData.value.config = JSON.stringify(
+        nodeStore.nodeProviders[0].config,
+        null,
+        2,
+      );
       handleChangeProvider();
     } catch (err) {
       console.error('Could not initialize values', err);
@@ -195,15 +203,30 @@ const tryInitValues = () => {
     </Alert>
 
     <template #info v-if="!isCreateMode">
+      <div class="flex grow flex-col">
+        <span
+          class="truncate text-xs font-semibold text-gray-400"
+          data-testid="validator-item-provider"
+        >
+          {{ validator?.provider }}
+        </span>
+        <span
+          class="truncate text-sm font-semibold"
+          data-testid="validator-item-model"
+        >
+          {{ validator?.model }}
+        </span>
+      </div>
+
       <div
-        class="flex flex-row items-center gap-1 font-mono text-xs font-normal"
+        class="mt-2 flex flex-row items-center gap-1 font-mono text-xs font-normal"
       >
         {{ validator?.address }}
         <CopyTextButton :text="validator?.address || ''" />
       </div>
     </template>
 
-    <div>
+    <div v-if="isCreateMode">
       <FieldLabel for="provider">Provider:</FieldLabel>
       <SelectInput
         name="provider"
@@ -217,7 +240,7 @@ const tryInitValues = () => {
       />
     </div>
 
-    <div>
+    <div v-if="isCreateMode">
       <FieldLabel for="model">Model:</FieldLabel>
       <SelectInput
         name="model"
@@ -275,7 +298,7 @@ const tryInitValues = () => {
     <Btn
       v-if="isCreateMode"
       @click="handleCreateValidator"
-      :disabled="!validatorModelValid"
+      :disabled="!validatorModelValid || !isConfigValid"
       testId="btn-create-validator"
       :loading="isLoading"
     >
@@ -285,7 +308,7 @@ const tryInitValues = () => {
     <Btn
       v-if="!isCreateMode && validator"
       @click="handleUpdateValidator(validator)"
-      :disabled="!validatorModelValid"
+      :disabled="!validatorModelValid || !isConfigValid"
       testId="btn-update-validator"
       :loading="isLoading"
     >

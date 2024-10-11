@@ -40,9 +40,7 @@ export interface NewProviderDataModel {
   provider: string;
   model: string;
   config: Record<string, any>;
-  // config: object;
   plugin: string;
-  // plugin_config: object;
   plugin_config: Record<string, any>;
 }
 

@@ -12,7 +12,6 @@ interface SchemaProperty {
   multipleOf?: number;
   enum?: any[];
   $comment?: string;
-  minLength?: number; // TODO:
 }
 
 const props = defineProps<{
@@ -89,7 +88,7 @@ const tooltip = computed(() => {
 </script>
 
 <template>
-  <div v-if="isSupported" class="my-2 grid grid-cols-3 items-center gap-2">
+  <div v-if="isSupported" class="grid grid-cols-3 items-center gap-2">
     <div class="col-span-1">
       <div
         class="flex flex-row items-center gap-2 font-mono text-xs font-medium"
@@ -125,7 +124,6 @@ const tooltip = computed(() => {
         :id="name"
         :name="name"
         :invalid="!!error"
-        :minlength="property.minLength"
         v-tooltip.right="{
           content: tooltip,
           html: true,
