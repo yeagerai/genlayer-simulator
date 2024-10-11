@@ -24,6 +24,9 @@ const props = defineProps<{
 // TODO: maybe reorder some fields?
 // TODO: test state across modals (reset errors on open?)
 // TODO: map empty strings to null in the JSON for the urls
+// TODO: unit tests
+// TODO: e2e tests
+
 
 const isCreateMode = computed(() => !props.provider);
 
@@ -328,50 +331,6 @@ watch(newProviderData, (to, from) => {
   error.value = '';
   validateData();
 });
-
-function setDefaultConfig(plugin: string, schema: SchemaConfig): void {
-  // Helper function to extract default values from the schema properties
-  function extractDefaults(
-    properties: Record<string, SchemaProperty>,
-  ): Record<string, any> {
-    const defaults: Record<string, any> = {};
-    // console.log('properties', properties);
-    Object.keys(properties).forEach((key) => {
-      const prop = properties[key];
-      // console.log('prop', prop);
-      if ('default' in prop) {
-        // console.log('found default', key);
-        defaults[key] = prop.default;
-      } else if (prop.type === 'object' && prop.properties) {
-        // console.log('extracting defaults for', key);
-        defaults[key] = extractDefaults(prop.properties);
-      } else {
-        defaults[key] = null;
-      }
-    });
-    return defaults;
-  }
-
-  let configSchema: SchemaProperty | undefined;
-  let pluginConfigSchema: SchemaProperty | undefined;
-
-  schema.allOf.forEach((rule) => {
-    if (rule.if?.properties?.plugin?.const === plugin) {
-      configSchema = extractDefaults(
-        rule.then.properties.config?.properties || {},
-      );
-      pluginConfigSchema = extractDefaults(
-        rule.then.properties.plugin_config?.properties || {},
-      );
-    }
-  });
-
-  console.log({ configSchema });
-  // console.log({ pluginConfigSchema });
-
-  newProviderData.config = configSchema ?? {};
-  newProviderData.plugin_config = pluginConfigSchema ?? {};
-}
 
 const showPluginConfig = computed(() => {
   return !!newProviderData.plugin;
