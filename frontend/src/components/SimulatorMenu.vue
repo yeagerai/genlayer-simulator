@@ -2,13 +2,11 @@
 import {
   DocumentIcon,
   Cog6ToothIcon,
-  UserCircleIcon,
   CommandLineIcon,
   HandThumbUpIcon,
   DocumentTextIcon,
   ServerIcon,
 } from '@heroicons/vue/24/solid';
-import { HardDrive } from 'lucide-vue-next';
 import DiscordIcon from '@/assets/icons/DiscordIcon.vue';
 import { LINKS } from '@/constants/links';
 import SimulatorMenuItem from './SimulatorMenuItem.vue';

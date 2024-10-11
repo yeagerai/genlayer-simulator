@@ -18,7 +18,6 @@ export const useNodeStore = defineStore('nodeStore', () => {
   const logs = ref<NodeLog[]>([]);
   const contractsStore = useContractsStore();
   const nodeProviders = ref<GetProvidersAndModelsData>([]);
-  // const nodeProviders = ref<Record<string, string[]>>({});
   const validators = ref<ValidatorModel[]>([]);
   const isLoadingValidatorData = ref<boolean>(true);
   const searchFilter = ref<string>('');

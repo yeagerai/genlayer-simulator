@@ -285,7 +285,7 @@ const validateData = async () => {
   }
 };
 
-watch(newProviderData, (to, from) => {
+watch(newProviderData, () => {
   error.value = '';
   validateData();
 });

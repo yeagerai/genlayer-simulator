@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useNodeStore, useContractsStore } from '@/stores';
+import { useNodeStore } from '@/stores';
 import { ref, computed } from 'vue';
 import PageSection from '@/components/Simulator/PageSection.vue';
 import { PlusIcon } from '@heroicons/vue/16/solid';

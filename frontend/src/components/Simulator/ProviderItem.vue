@@ -2,7 +2,6 @@
 import { type ProviderModel } from '@/types';
 import {
   CheckCircleIcon,
-  DocumentDuplicateIcon,
   PencilSquareIcon,
   TrashIcon,
   ExclamationTriangleIcon,
