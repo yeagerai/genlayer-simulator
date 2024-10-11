@@ -72,19 +72,6 @@ export const useNodeStore = defineStore('nodeStore', () => {
       ]);
       validators.value = validatorsResult;
       nodeProviders.value = modelsResult;
-      console.log('modelsResult', modelsResult);
-
-      // nodeProviders.value = modelsResult.reduce(
-      //   (acc: Record<string, string[]>, llmprovider: any) => {
-      //     const provider = llmprovider.provider;
-      //     if (!acc[provider]) {
-      //       acc[provider] = [];
-      //     }
-      //     acc[provider].push(llmprovider.model);
-      //     return acc;
-      //   },
-      //   {},
-      // );
     } catch (error) {
       console.error(error);
       notify({
