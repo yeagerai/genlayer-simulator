@@ -57,13 +57,6 @@ const model = defineModel();
           ? option
           : option.label
       }}
-      {{
-        typeof option === 'string' || typeof option === 'number'
-          ? ''
-          : option.disabled
-            ? '(missing configuration)'
-            : ''
-      }}
     </option>
   </select>
 </template>

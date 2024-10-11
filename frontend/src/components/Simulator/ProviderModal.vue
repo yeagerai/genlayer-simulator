@@ -91,6 +91,60 @@ const isPluginLocked = ref(false);
 const customProvider = ref(false);
 const providerOptions = ref<string[]>([]);
 
+const availablePluginOptions = computed(() => {
+  return pluginOptions.value.map((plugin) => {
+    const exists = checkExistingConfig(
+      newProviderData.provider,
+      newProviderData.model,
+      plugin,
+    );
+
+    return {
+      value: plugin,
+      label: exists ? `${plugin} (already exists)` : plugin,
+      disabled: exists,
+    };
+  });
+});
+
+const availableModelOptions = computed(() => {
+  return modelOptions.value.map((model) => {
+    const exists = checkExistingConfig(
+      newProviderData.provider,
+      model,
+      newProviderData.plugin,
+    );
+
+    return {
+      value: model,
+      label: exists ? `${model} (already exists)` : model,
+      disabled: exists,
+    };
+  });
+});
+
+const checkExistingConfig = (
+  provider: string,
+  model: string,
+  plugin: string,
+) => {
+  return nodeStore.nodeProviders.some(
+    (config) =>
+      config.provider === provider &&
+      config.model === model &&
+      config.plugin === plugin,
+  );
+};
+
+const configAlreadyExists = computed(() => {
+  return nodeStore.nodeProviders.some(
+    (provider) =>
+      provider.provider === newProviderData.provider &&
+      provider.model === newProviderData.model &&
+      provider.plugin === newProviderData.plugin,
+  );
+});
+
 interface SchemaProperty {
   type?: string;
   default?: any;
@@ -119,9 +173,11 @@ interface SchemaConfig {
     };
   }[];
 }
+
 const tryInitValues = () => {
   errors.value = [];
   providerOptions.value = schema.properties.provider.examples;
+  pluginOptions.value = schema.properties.plugin.enum;
 
   if (props.provider) {
     const initialProviderOption = providerOptions.value.find(
@@ -215,8 +271,21 @@ const checkRules = () => {
 
       if (rule.then?.properties?.model?.enum) {
         modelOptions.value = rule.then?.properties?.model?.enum;
-        console.log(rule.then?.properties?.model?.enum[0]);
-        newProviderData.model = rule.then?.properties?.model?.enum[0];
+
+        const availableModel = modelOptions.value.find(
+          (model) =>
+            !checkExistingConfig(
+              newProviderData.provider,
+              model,
+              newProviderData.plugin,
+            ),
+        );
+
+        if (availableModel) {
+          newProviderData.model = availableModel || modelOptions.value[0];
+        } else {
+          newProviderData.model = rule.then?.properties?.model?.enum[0];
+        }
         // re-check
       } else {
         newProviderData.model = '';
@@ -382,7 +451,7 @@ const fieldError = computed(() => (prefix: string, key: string) => {
         id="plugin"
         name="plugin"
         v-model="newProviderData.model"
-        :options="modelOptions"
+        :options="availableModelOptions"
         required
         testId="input-model"
       />
@@ -395,13 +464,17 @@ const fieldError = computed(() => (prefix: string, key: string) => {
         id="plugin"
         name="plugin"
         v-model="newProviderData.plugin"
-        :options="schema.properties.plugin.enum"
+        :options="availablePluginOptions"
         :disabled="isPluginLocked"
         required
         testId="input-plugin"
         @update:modelValue="checkRules"
       />
     </div>
+
+    <Alert warning v-if="isCreateMode && configAlreadyExists">
+      A config with this provider and model already exists.
+    </Alert>
 
     <div v-if="showPluginConfig">
       <FieldLabel>Provider Config:</FieldLabel>
@@ -442,7 +515,7 @@ const fieldError = computed(() => (prefix: string, key: string) => {
     <Btn
       v-if="isCreateMode"
       @click="handleCreateProvider"
-      :disabled="errors.length > 0"
+      :disabled="errors.length > 0 || configAlreadyExists"
       testId="btn-create-provider"
       :loading="isLoading"
     >

@@ -134,9 +134,10 @@ const modelOptions = computed(() => {
       (provider: any) => provider.provider === newValidatorData.value.provider,
     )
     .map((provider: any) => {
+      const isDisabled = !provider?.is_model_available;
       return {
-        label: provider.model,
         value: provider.model,
+        label: isDisabled ? `${provider.model} (missing configuration)` : provider.model,
         disabled: !provider?.is_model_available,
       };
     });
