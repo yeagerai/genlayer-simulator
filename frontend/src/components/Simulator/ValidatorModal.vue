@@ -17,7 +17,6 @@ import CopyTextButton from '../global/CopyTextButton.vue';
 import { uniqBy } from 'lodash-es';
 import Alert from '../global/Alert.vue';
 
-// TODO: don't auto select invalid models/providers
 
 const nodeStore = useNodeStore();
 const { trackEvent } = useEventTracking();

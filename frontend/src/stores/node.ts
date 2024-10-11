@@ -152,13 +152,9 @@ export const useNodeStore = defineStore('nodeStore', () => {
     validators.value.push(result);
   }
 
-  // TODO: fix error handling
-
   async function addProvider(providerData: NewProviderDataModel) {
     await rpcClient.addProvider({
       ...providerData,
-      // plugin_config: JSON.parse(providerData.plugin_config),
-      // config: JSON.parse(providerData.config),
     });
 
     getValidatorsData();
@@ -171,8 +167,6 @@ export const useNodeStore = defineStore('nodeStore', () => {
     await rpcClient.updateProvider({
       id: provider.id,
       ...newProviderData,
-      // config: JSON.parse(newProviderData.config),
-      // plugin_config: JSON.parse(newProviderData.plugin_config),
     });
 
     getValidatorsData();

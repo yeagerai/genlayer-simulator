@@ -49,7 +49,7 @@ const handleResetProviders = async () => {
 
 <template>
   <PageSection>
-    <template #title>Providers</template>
+    <template #title>Provider</template>
 
     <template #actions>
       <GhostBtn
@@ -65,11 +65,9 @@ const handleResetProviders = async () => {
       <div class="mb-1 text-xs font-semibold opacity-50">
         {{ group.provider }}
       </div>
-      <!-- {{ group.models.some((model) => !model.is_available) }} -->
 
       <div
         class="overflow-hidden rounded-md border border-gray-300 dark:border-gray-800"
-        v-if="nodeStore.validators.length > 0"
       >
         <div class="divide-y divide-gray-200 dark:divide-gray-800"></div>
         <ProviderItem
