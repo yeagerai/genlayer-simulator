@@ -3,7 +3,7 @@ import { notify } from '@kyvg/vue3-notification';
 import { useNodeStore, useContractsStore } from '@/stores';
 import { ref } from 'vue';
 import PageSection from '@/components/Simulator/PageSection.vue';
-import { ArchiveBoxXMarkIcon } from '@heroicons/vue/24/solid';
+import { FileX2 } from 'lucide-vue-next';
 
 const contractsStore = useContractsStore();
 const nodeStore = useNodeStore();
@@ -35,18 +35,18 @@ const handleResetStorage = async () => {
 
 <template>
   <PageSection>
-    <template #title>Simulator Storage</template>
+    <template #title>Contracts</template>
 
     <Btn
       @click="isResetStorageModalOpen = true"
-      :icon="ArchiveBoxXMarkIcon"
+      :icon="FileX2"
       :disabled="nodeStore.contractsToDelete.length < 1"
       secondary
       v-tooltip="
         nodeStore.contractsToDelete.length < 1 && 'No contracts files to delete'
       "
     >
-      Reset Storage
+      Reset Contracts
     </Btn>
 
     <ConfirmationModal

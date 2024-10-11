@@ -9,8 +9,8 @@ import SimulatorSection from '@/components/Simulator/settings/SimulatorSection.v
   <div class="flex max-h-[93vh] w-full flex-col overflow-y-auto">
     <MainTitle data-testid="settings-page-title">Settings</MainTitle>
 
-    <!-- <AccountSection /> -->
-    <!-- <SimulatorSection /> -->
+    <AccountSection />
     <ProviderSection />
+    <SimulatorSection />
   </div>
 </template>

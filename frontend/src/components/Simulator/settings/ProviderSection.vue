@@ -49,7 +49,7 @@ const handleResetProviders = async () => {
 
 <template>
   <PageSection>
-    <template #title>Provider Configs</template>
+    <template #title>Providers</template>
 
     <template #actions>
       <GhostBtn
