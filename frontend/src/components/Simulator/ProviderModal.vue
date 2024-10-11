@@ -5,6 +5,7 @@ import Alert from '../global/Alert.vue';
 import providerSchema from '../../../../backend/node/create_nodes/providers_schema.json';
 import { computed, markRaw, reactive, ref, watch } from 'vue';
 import Ajv2020 from 'ajv/dist/2020';
+import { type ValidateFunction } from 'ajv/dist/2020';
 import { type ProviderModel, type NewProviderDataModel } from '@/types';
 import TextInput from '@/components/global/inputs/TextInput.vue';
 import SelectInput from '@/components/global/inputs/SelectInput.vue';
@@ -22,7 +23,6 @@ const props = defineProps<{
 // TODO: more tooltips on base fields for user education
 // TODO: maybe reorder some fields?
 // TODO: test state across modals (reset errors on open?)
-// TODO: add unicity constraint on provider+model+plugin in postgres
 // TODO: map empty strings to null in the JSON for the urls
 
 const isCreateMode = computed(() => !props.provider);
@@ -68,7 +68,7 @@ async function handleUpdateProvider(provider: ProviderModel) {
 const ajv = new Ajv2020({
   allErrors: true,
   verbose: true,
-  strict: true,
+  strict: false,
   // ...options,
 });
 
@@ -83,7 +83,15 @@ const newProviderData = reactive<NewProviderDataModel>({
 const defaultProvider = 'openai';
 
 const schema = markRaw(providerSchema);
-const validate = ajv.compile(schema);
+
+let validate: ValidateFunction | undefined;
+
+try {
+  validate = ajv.compile(schema);
+} catch (err) {
+  console.error(err);
+}
+
 const errors = ref<any[]>([]);
 const pluginOptions = ref<string[]>([]);
 const modelOptions = ref<string[]>([]);
@@ -306,12 +314,13 @@ const toggleCustomProvider = () => {
 };
 
 const validateData = async () => {
-  // console.log('validateData', newProviderData.plugin_config);
-  const res = validate(newProviderData);
-  if (res) {
-    errors.value = [];
-  } else {
-    errors.value = validate.errors || [];
+  if (validate) {
+    const res = validate(newProviderData);
+    if (res) {
+      errors.value = [];
+    } else {
+      errors.value = validate.errors || [];
+    }
   }
 };
 
@@ -390,134 +399,138 @@ const fieldError = computed(() => (prefix: string, key: string) => {
     <template #title v-if="isCreateMode">New Provider Config</template>
     <template #title v-else>Provider Config #{{ provider?.id }}</template>
 
-    <div>
-      <div class="flex justify-between">
-        <FieldLabel for="provider">Provider:</FieldLabel>
+    <Alert error v-if="!validate">Could not compile provider schema</Alert>
 
-        <button
-          @click="toggleCustomProvider"
-          class="mr-1 text-xs opacity-50 hover:opacity-70"
-        >
-          {{ customProvider ? 'Use preset' : 'Use custom provider' }}
-        </button>
-      </div>
+    <template v-else>
+      <div>
+        <div class="flex justify-between">
+          <FieldLabel for="provider">Provider:</FieldLabel>
 
-      <TextInput
-        id="provider"
-        v-if="customProvider"
-        name="provider"
-        v-model="newProviderData.provider"
-        required
-        testId="input-provider"
-        @update:modelValue="checkRules"
-      />
-      <SelectInput
-        v-else
-        id="provider"
-        name="provider"
-        v-model="newProviderData.provider"
-        required
-        :options="providerOptions"
-        testId="input-provider"
-        @update:modelValue="checkRules"
-      />
-    </div>
+          <button
+            @click="toggleCustomProvider"
+            class="mr-1 text-xs opacity-50 hover:opacity-70"
+          >
+            {{ customProvider ? 'Use preset' : 'Use custom provider' }}
+          </button>
+        </div>
 
-    <div>
-      <FieldLabel for="model">Model:</FieldLabel>
-      <TextInput
-        v-if="modelOptions.length === 0"
-        id="model"
-        name="model"
-        v-model="newProviderData.model"
-        required
-        testId="input-model"
-        placeholder=""
-      />
-      <SelectInput
-        v-if="modelOptions.length > 0"
-        id="plugin"
-        name="plugin"
-        v-model="newProviderData.model"
-        :options="availableModelOptions"
-        required
-        testId="input-model"
-      />
-    </div>
-
-    <div v-if="!isPluginLocked">
-      <FieldLabel for="plugin">Plugin:</FieldLabel>
-
-      <SelectInput
-        id="plugin"
-        name="plugin"
-        v-model="newProviderData.plugin"
-        :options="availablePluginOptions"
-        :disabled="isPluginLocked"
-        required
-        testId="input-plugin"
-        @update:modelValue="checkRules"
-      />
-    </div>
-
-    <Alert warning v-if="isCreateMode && configAlreadyExists">
-      A config with this provider and model already exists.
-    </Alert>
-
-    <div v-if="showPluginConfig">
-      <FieldLabel>Provider Config:</FieldLabel>
-
-      <div class="rounded-md bg-black bg-opacity-10 p-4">
-        <ConfigField
-          v-for="(property, key) in pluginConfigProperties"
-          :key="key"
-          :name="key"
-          :property="property"
-          v-model="newProviderData.plugin_config[key]"
-          :error="fieldError('plugin_config', key)"
+        <TextInput
+          id="provider"
+          v-if="customProvider"
+          name="provider"
+          v-model="newProviderData.provider"
+          required
+          testId="input-provider"
+          @update:modelValue="checkRules"
+        />
+        <SelectInput
+          v-else
+          id="provider"
+          name="provider"
+          v-model="newProviderData.provider"
+          required
+          :options="providerOptions"
+          testId="input-provider"
+          @update:modelValue="checkRules"
         />
       </div>
-    </div>
 
-    <div v-if="showConfig">
-      <FieldLabel>Default Validator Config:</FieldLabel>
-
-      <div class="rounded-md bg-black bg-opacity-10 p-4">
-        <ConfigField
-          v-for="(property, key) in configProperties"
-          :key="key"
-          :name="key"
-          :property="property"
-          v-model="newProviderData.config[key]"
-          :error="fieldError('config', key)"
+      <div>
+        <FieldLabel for="model">Model:</FieldLabel>
+        <TextInput
+          v-if="modelOptions.length === 0"
+          id="model"
+          name="model"
+          v-model="newProviderData.model"
+          required
+          testId="input-model"
+          placeholder=""
+        />
+        <SelectInput
+          v-if="modelOptions.length > 0"
+          id="plugin"
+          name="plugin"
+          v-model="newProviderData.model"
+          :options="availableModelOptions"
+          required
+          testId="input-model"
         />
       </div>
-    </div>
 
-    <!-- <div v-for="error in errors" class="text-xs text-red-500">
+      <div v-if="!isPluginLocked">
+        <FieldLabel for="plugin">Plugin:</FieldLabel>
+
+        <SelectInput
+          id="plugin"
+          name="plugin"
+          v-model="newProviderData.plugin"
+          :options="availablePluginOptions"
+          :disabled="isPluginLocked"
+          required
+          testId="input-plugin"
+          @update:modelValue="checkRules"
+        />
+      </div>
+
+      <Alert warning v-if="isCreateMode && configAlreadyExists">
+        A config with this provider and model already exists.
+      </Alert>
+
+      <div v-if="showPluginConfig">
+        <FieldLabel>Provider Config:</FieldLabel>
+
+        <div class="rounded-md bg-black bg-opacity-10 p-4">
+          <ConfigField
+            v-for="(property, key) in pluginConfigProperties"
+            :key="key"
+            :name="key"
+            :property="property"
+            v-model="newProviderData.plugin_config[key]"
+            :error="fieldError('plugin_config', key)"
+          />
+        </div>
+      </div>
+
+      <div v-if="showConfig">
+        <FieldLabel>Default Validator Config:</FieldLabel>
+
+        <div class="rounded-md bg-black bg-opacity-10 p-4">
+          <ConfigField
+            v-for="(property, key) in configProperties"
+            :key="key"
+            :name="key"
+            :property="property"
+            v-model="newProviderData.config[key]"
+            :error="fieldError('config', key)"
+          />
+        </div>
+      </div>
+
+      <!-- <div v-for="error in errors" class="text-xs text-red-500">
       {{ error.instancePath }}: {{ error.message }}
     </div> -->
 
-    <Alert error v-if="error" type="error">{{ error }}</Alert>
+      <Alert error v-if="error" type="error">{{ error }}</Alert>
 
-    <Btn
-      v-if="isCreateMode"
-      @click="handleCreateProvider"
-      :disabled="errors.length > 0 || configAlreadyExists"
-      testId="btn-create-provider"
-      :loading="isLoading"
-    >
-      Create
-    </Btn>
+      <Btn
+        v-if="isCreateMode"
+        @click="handleCreateProvider"
+        :disabled="errors.length > 0 || configAlreadyExists"
+        testId="btn-create-provider"
+        :loading="isLoading"
+      >
+        Create
+      </Btn>
 
-    <Btn
-      v-if="!isCreateMode && provider"
-      @click="handleUpdateProvider(provider)"
-      :disabled="errors.length > 0"
-      testId="btn-update-provider"
-      :loading="isLoading"
-    >
-      Save
-    </Btn>
+      <Btn
+        v-if="!isCreateMode && provider"
+        @click="handleUpdateProvider(provider)"
+        :disabled="errors.length > 0"
+        testId="btn-update-provider"
+        :loading="isLoading"
+      >
+        Save
+      </Btn>
+    </template>
   </Modal>
 </template>
