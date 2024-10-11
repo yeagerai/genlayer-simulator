@@ -71,9 +71,6 @@ const tooltip = computed(() => {
   if (props.property.$comment) {
     text.push(props.property.$comment);
   }
-  // if (props.property.type) {
-  //   text.push(`Type: ${props.property.type}`);
-  // }
   if (props.property.minimum !== undefined) {
     text.push(`Min: ${props.property.minimum}`);
   }
@@ -143,11 +140,3 @@ const tooltip = computed(() => {
     </div>
   </div>
 </template>
-
-<style lang="css">
-/* input:invalid {
-  outline: 2px solid red!important;
-  border-color: red!important;
-  box-shadow: 0 0 0 1px red!important;
-} */
-</style>

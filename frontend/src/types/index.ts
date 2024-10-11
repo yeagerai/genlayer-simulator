@@ -28,10 +28,8 @@ export interface ProviderModel {
   provider: string;
   model: string;
   config: Record<string, any>;
-  // config: string;
   plugin: string;
   plugin_config: Record<string, any>;
-  // plugin_config: string;
   is_available: boolean;
   is_model_available: boolean;
 }

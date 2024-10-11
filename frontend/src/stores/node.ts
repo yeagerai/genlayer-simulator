@@ -160,7 +160,6 @@ export const useNodeStore = defineStore('nodeStore', () => {
 
   async function deleteProvider(id: number) {
     await rpcClient.deleteProvider({ id });
-    // nodeProviders.value = nodeProviders.value.filter((provider) => provider.id !== id);
     getValidatorsData();
   }
 
