@@ -17,7 +17,7 @@ import CopyTextButton from '../global/CopyTextButton.vue';
 import { uniqBy } from 'lodash-es';
 import Alert from '../global/Alert.vue';
 
-
+// FIXME: default config doesnt get populated properly (backend is using default_provider jsons!)
 const nodeStore = useNodeStore();
 const { trackEvent } = useEventTracking();
 const emit = defineEmits(['close']);
@@ -144,28 +144,26 @@ const modelOptions = computed(() => {
 
 const handleChangeProvider = () => {
   error.value = '';
-  console.log('handleChangeProvider', newValidatorData.value.provider);
   const availableModels = nodeStore.availableModelsForProvider(
     newValidatorData.value.provider,
   );
   newValidatorData.value.model =
     availableModels.length > 0 ? availableModels[0] : '';
+  initConfig();
+};
+
+const initConfig = () => {
   const config = nodeStore.nodeProviders.find(
     (provider: ProviderModel) =>
-      provider.model === newValidatorData.value.model,
+      provider.model === newValidatorData.value.model &&
+      provider.provider === newValidatorData.value.provider,
   )?.config;
   newValidatorData.value.config = JSON.stringify(config, null, 2);
 };
 
 const handleChangeModel = () => {
   error.value = '';
-  console.log('handleChangeModel', newValidatorData.value.model);
-  console.log(nodeStore.nodeProviders);
-  const config = nodeStore.nodeProviders.find(
-    (provider: ProviderModel) =>
-      provider.model === newValidatorData.value.model,
-  )?.config;
-  newValidatorData.value.config = JSON.stringify(config, null, 2);
+  initConfig();
 };
 
 const tryInitValues = () => {
