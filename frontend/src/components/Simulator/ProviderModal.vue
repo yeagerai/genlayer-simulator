@@ -321,21 +321,15 @@ const configurationError = computed(() => {
   <Modal @close="emit('close')" @onOpen="tryInitValues" wide>
     <template #title v-if="isCreateMode">New Provider Config</template>
     <template #title v-else>Provider Config #{{ provider?.id }}</template>
-
     <template #info v-if="provider">
-      <div class="flex flex-row items-start gap-6 text-sm">
-        <div class="text-left">
-          <span class="opacity-50">Provider:</span><br />
-          {{ provider.provider }}
+      <div
+        class="flex flex-row items-center justify-center gap-4 rounded-md text-center"
+      >
+        <div>
+          <span class="opacity-50">Provider:</span> {{ provider.provider }}
         </div>
-        <div class="text-left">
-          <span class="opacity-50">Model:</span><br />
-          {{ provider.model }}
-        </div>
-        <div class="text-left">
-          <span class="opacity-50">Plugin:</span><br />
-          {{ provider.plugin }}
-        </div>
+        <div><span class="opacity-50">Model:</span> {{ provider.model }}</div>
+        <div><span class="opacity-50">Plugin:</span> {{ provider.plugin }}</div>
       </div>
     </template>
 
@@ -424,7 +418,7 @@ const configurationError = computed(() => {
       </template>
 
       <div v-if="showPluginConfig">
-        <FieldLabel>Provider Config:</FieldLabel>
+        <FieldLabel>Config:</FieldLabel>
 
         <div
           class="flex flex-col gap-2 rounded-md bg-black bg-opacity-10 px-2 py-2"
