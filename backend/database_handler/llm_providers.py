@@ -27,20 +27,22 @@ class LLMProviderRegistry:
         ]
 
     def get_all_dict(self) -> list[dict]:
-        ## TODO: double check this with agustin
         providers = self.session.query(LLMProviderDBModel).all()
         result = []
+
         for provider in providers:
             domain_provider = _to_domain(provider)
             provider_dict = domain_provider.__dict__
-            
-            # Get the plugin instance
-            plugin = get_llm_plugin(domain_provider.plugin, domain_provider.plugin_config)
-            
-            # Add is_available property
-            provider_dict['is_available'] = plugin.is_available()
-            provider_dict['is_model_available'] = plugin.is_model_available(domain_provider.model)
-            
+
+            plugin = get_llm_plugin(
+                domain_provider.plugin, domain_provider.plugin_config
+            )
+
+            provider_dict["is_available"] = plugin.is_available()
+            provider_dict["is_model_available"] = plugin.is_model_available(
+                domain_provider.model
+            )
+
             result.append(provider_dict)
 
         return result
