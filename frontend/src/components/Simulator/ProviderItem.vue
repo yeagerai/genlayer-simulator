@@ -70,8 +70,6 @@ async function handleDeleteProvider() {
         />
       </button>
 
-      <div></div>
-
       <Transition mode="out-in">
         <button
           v-if="!showConfirmDelete"

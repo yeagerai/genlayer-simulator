@@ -76,7 +76,6 @@ def fund_account(
 
 def reset_defaults_llm_providers(llm_provider_registry: LLMProviderRegistry) -> None:
     llm_provider_registry.reset_defaults()
-    # TODO: ? add reset btn in ui ?
 
 
 def get_providers_and_models(llm_provider_registry: LLMProviderRegistry) -> list[dict]:
@@ -91,7 +90,6 @@ def add_provider(llm_provider_registry: LLMProviderRegistry, params: dict) -> in
         plugin=params["plugin"],
         plugin_config=params["plugin_config"],
     )
-    print(provider)
 
     validate_provider(provider)
 
