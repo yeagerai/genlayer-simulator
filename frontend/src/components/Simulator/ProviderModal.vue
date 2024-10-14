@@ -279,6 +279,7 @@ const validateData = async () => {
       errors.value = [];
     } else {
       errors.value = validate.errors || [];
+      console.error('Validation errors', errors.value);
     }
   }
 };
@@ -462,9 +463,10 @@ const configurationError = computed(() => {
         </div>
       </div>
 
+      <!-- We can use this in the future if we want to display all errors -->
       <!-- <div v-for="error in errors" class="text-xs text-red-500">
-      {{ error.instancePath }}: {{ error.message }}
-    </div> -->
+        {{ error.instancePath }}: {{ error.message }}
+      </div> -->
 
       <Alert error v-if="error" type="error">{{ error }}</Alert>
 
