@@ -33,5 +33,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release # Uses `release.config.js` for configuration
-      - name: Build images and push to DockerHub # Since GH Actions do not trigger other GH Actions (https://github.com/orgs/community/discussions/25702) we trigger it manually
-        uses: ./.github/workflows/docker-build-and-push-all.yml
+  push-docker-images:
+    name: Build images and push to DockerHub # Since GH Actions do not trigger other GH Actions (https://github.com/orgs/community/discussions/25702) we trigger it manually
+    uses: ./.github/workflows/docker-build-and-push-all.yml
+    needs: release
