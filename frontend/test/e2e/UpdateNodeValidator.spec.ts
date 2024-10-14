@@ -1,19 +1,19 @@
 import { WebDriver, By, until } from 'selenium-webdriver';
 import { Select } from 'selenium-webdriver/lib/select';
-import { SettingsPage } from '../pages/SettingsPage.js';
+import { ValidatorsPage } from '../pages/ValidatorsPage.js';
 import { ContractsPage } from '../pages/ContractsPage.js';
 import { before, describe, after, it } from 'node:test';
 import { expect } from 'chai';
 import { getDriver } from '../utils/driver.js';
 
 let driver: WebDriver;
-let settingsPage: SettingsPage;
+let validatorsPage: ValidatorsPage;
 let contractsPage: ContractsPage;
 
 describe('Settings - Update Node Validator', () => {
   before(async () => {
     driver = await getDriver();
-    settingsPage = new SettingsPage(driver);
+    validatorsPage = new ValidatorsPage(driver);
     contractsPage = new ContractsPage(driver);
   });
 
@@ -22,15 +22,15 @@ describe('Settings - Update Node Validator', () => {
     await contractsPage.waitUntilVisible();
     await contractsPage.skipTutorial();
 
-    await settingsPage.navigate();
-    await settingsPage.waitUntilVisible();
+    await validatorsPage.navigate();
+    await validatorsPage.waitUntilVisible();
 
-    await settingsPage.createValidator({
+    await validatorsPage.createValidator({
       provider: 'heuristai',
       model: 'mistralai/mixtral-8x7b-instruct',
       stake: 7,
     });
-    const existingValidators = await settingsPage.getValidatorsElements();
+    const existingValidators = await validatorsPage.getValidatorsElements();
     expect(
       existingValidators.length,
       'number of validators should be greather than 0',
@@ -78,7 +78,7 @@ describe('Settings - Update Node Validator', () => {
     await updateValidatorBtn.click();
 
     driver.sleep(10000);
-    const validators = await settingsPage.getValidatorsElements();
+    const validators = await validatorsPage.getValidatorsElements();
     const provider = await validators[0].findElement(
       By.xpath("//span[@data-testid = 'validator-item-provider']"),
     );
