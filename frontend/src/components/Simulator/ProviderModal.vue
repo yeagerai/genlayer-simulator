@@ -219,25 +219,27 @@ const checkRules = () => {
         isPluginLocked.value = true;
       }
 
-      if (rule.then?.properties?.model?.enum) {
-        modelOptions.value = rule.then?.properties?.model?.enum;
+      if (isCreateMode.value) {
+        if (rule.then?.properties?.model?.enum) {
+          modelOptions.value = rule.then?.properties?.model?.enum;
 
-        const availableModel = modelOptions.value.find(
-          (model) =>
-            !checkExistingConfig(
-              newProviderData.provider,
-              model,
-              newProviderData.plugin,
-            ),
-        );
+          const availableModel = modelOptions.value.find(
+            (model) =>
+              !checkExistingConfig(
+                newProviderData.provider,
+                model,
+                newProviderData.plugin,
+              ),
+          );
 
-        if (availableModel) {
-          newProviderData.model = availableModel || modelOptions.value[0];
+          if (availableModel) {
+            newProviderData.model = availableModel || modelOptions.value[0];
+          } else {
+            newProviderData.model = rule.then?.properties?.model?.enum[0];
+          }
         } else {
-          newProviderData.model = rule.then?.properties?.model?.enum[0];
+          newProviderData.model = '';
         }
-      } else {
-        newProviderData.model = '';
       }
     }
 
@@ -247,7 +249,6 @@ const checkRules = () => {
         rule.then?.properties?.plugin_config?.properties || {};
       configProperties.value = rule.then?.properties?.config?.properties || {};
 
-      // TODO: double-check this condition (maybe need to handle it somewhere else)
       if (isCreateMode.value) {
         const pluginConfig = extractDefaults(pluginConfigProperties.value);
         newProviderData.plugin_config = pluginConfig ? { ...pluginConfig } : {};
