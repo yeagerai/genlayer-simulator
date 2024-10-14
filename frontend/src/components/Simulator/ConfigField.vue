@@ -2,6 +2,7 @@
 import NumberInput from '@/components/global/inputs/NumberInput.vue';
 import TextInput from '@/components/global/inputs/TextInput.vue';
 import SelectInput from '@/components/global/inputs/SelectInput.vue';
+import type { SchemaProperty } from '@/types';
 import { computed } from 'vue';
 
 const props = defineProps<{
@@ -102,8 +103,6 @@ const tooltip = computed(() => {
           hideTriggers: ['focus'],
         }"
       />
-
-      <!-- TODO: array ? -->
 
       <TextInput
         v-if="isString"
