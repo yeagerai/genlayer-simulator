@@ -25,10 +25,12 @@ const props = defineProps<{
   provider?: ProviderModel;
 }>();
 const isConfigExpanded = ref(false);
-// TODO: more tooltips on base fields for user education
+
+// FIXME: defaulting of config
 // TODO: unit tests - pass + add
 // TODO: e2e tests - pass + add
-// TODO: update tutorial - fix + add?
+// TODO: fix account item truncation OR refac list items
+// IMPROVEMENT: more tooltips on base fields for user education
 
 const isCreateMode = computed(() => !props.provider);
 
