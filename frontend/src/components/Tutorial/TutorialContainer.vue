@@ -93,7 +93,7 @@ const steps = ref([
       'Switch between different contracts to explore various features and functionalities.',
     placement: 'right',
     onNextStep: async () => {
-      await router.push({ name: 'settings' });
+      await router.push({ name: 'validators' });
     },
   },
   {
