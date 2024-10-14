@@ -52,11 +52,6 @@ async function handleCreateValidator() {
   } catch (err) {
     console.error(err);
     error.value = (err as Error)?.message;
-    // notify({
-    //   title: 'Error',
-    //   text: (error as Error)?.message || 'Error creating new validator',
-    //   type: 'error',
-    // });
   } finally {
     isLoading.value = false;
   }
@@ -75,11 +70,6 @@ async function handleUpdateValidator(validator: ValidatorModel) {
   } catch (err) {
     console.error(err);
     error.value = (err as Error)?.message;
-    // notify({
-    //   title: 'Error',
-    //   text: (error as Error)?.message || 'Error udpating the validator',
-    //   type: 'error',
-    // });
   } finally {
     isLoading.value = false;
   }
