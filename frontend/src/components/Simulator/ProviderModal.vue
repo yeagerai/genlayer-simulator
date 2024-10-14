@@ -421,7 +421,7 @@ const configurationError = computed(() => {
         <FieldLabel>Config:</FieldLabel>
 
         <div
-          class="flex flex-col gap-2 rounded-md bg-black bg-opacity-10 px-2 py-2"
+          class="flex flex-col gap-2 rounded-md bg-slate-100 px-2 py-2 dark:bg-black dark:bg-opacity-10"
         >
           <ConfigField
             v-for="(property, key) in pluginConfigProperties"
@@ -450,7 +450,7 @@ const configurationError = computed(() => {
 
         <div
           v-show="isConfigExpanded"
-          class="flex flex-col gap-2 rounded-md bg-black bg-opacity-10 px-2 py-2"
+          class="flex flex-col gap-2 rounded-md bg-slate-100 px-2 py-2 dark:bg-black dark:bg-opacity-10"
         >
           <ConfigField
             v-for="(property, key) in configProperties"
