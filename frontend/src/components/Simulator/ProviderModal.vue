@@ -6,7 +6,11 @@ import providerSchema from '../../../../backend/node/create_nodes/providers_sche
 import { computed, markRaw, reactive, ref, watch } from 'vue';
 import Ajv2020 from 'ajv/dist/2020';
 import { type ValidateFunction } from 'ajv/dist/2020';
-import { type ProviderModel, type NewProviderDataModel } from '@/types';
+import {
+  type ProviderModel,
+  type NewProviderDataModel,
+  type SchemaProperty,
+} from '@/types';
 import TextInput from '@/components/global/inputs/TextInput.vue';
 import SelectInput from '@/components/global/inputs/SelectInput.vue';
 import FieldLabel from '@/components/global/fields/FieldLabel.vue';
@@ -153,13 +157,6 @@ const configAlreadyExists = computed(() => {
       provider.plugin === newProviderData.plugin,
   );
 });
-
-interface SchemaProperty {
-  type?: string;
-  default?: any;
-  properties?: Record<string, SchemaProperty>;
-  enum?: any[];
-}
 
 const tryInitValues = () => {
   errors.value = [];

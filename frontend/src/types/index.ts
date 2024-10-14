@@ -50,3 +50,14 @@ export interface ContractMethod {
 }
 
 export type Address = `0x${string}`;
+
+export interface SchemaProperty {
+  type?: string | string[];
+  default?: any;
+  minimum?: number;
+  maximum?: number;
+  multipleOf?: number;
+  enum?: any[];
+  $comment?: string;
+  properties?: Record<string, SchemaProperty>;
+}

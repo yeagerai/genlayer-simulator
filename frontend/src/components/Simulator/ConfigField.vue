@@ -4,16 +4,6 @@ import TextInput from '@/components/global/inputs/TextInput.vue';
 import SelectInput from '@/components/global/inputs/SelectInput.vue';
 import { computed } from 'vue';
 
-interface SchemaProperty {
-  type?: string | string[];
-  default?: any;
-  minimum?: number;
-  maximum?: number;
-  multipleOf?: number;
-  enum?: any[];
-  $comment?: string;
-}
-
 const props = defineProps<{
   name: string;
   property: SchemaProperty;
