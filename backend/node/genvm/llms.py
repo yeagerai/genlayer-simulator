@@ -269,14 +269,10 @@ class AnthropicPlugin:
 
         return buffer
 
-    def is_available(self) -> bool:  ## TODO: return either bool or dict
+    def is_available(self) -> bool:
         env_var = self.get_api_key()
 
-        # is_available_reason = "missing_api_key"
-        # is_model_available = "missing_api_key"
         return env_var != None and env_var != ""
-
-        ## TODO: Reason for each plugin ["available", "missing_api_key", ""]
 
     def is_model_available(self, model: str) -> bool:
         """
