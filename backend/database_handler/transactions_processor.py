@@ -3,6 +3,7 @@ import rlp
 
 from .models import Transactions, TransactionsAudit
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 
 from .models import TransactionStatus
 from eth_utils import to_bytes, keccak, is_address
@@ -182,3 +183,19 @@ class TransactionsProcessor:
             .count()
         )
         return count
+
+    def get_transactions_for_address(self, address: str) -> list[dict]:
+        transactions = (
+            self.session.query(Transactions)
+            .filter(
+                or_(
+                    Transactions.from_address == address,
+                    Transactions.to_address == address,
+                )
+            )
+            .all()
+        )
+
+        return [
+            self._parse_transaction_data(transaction) for transaction in transactions
+        ]
