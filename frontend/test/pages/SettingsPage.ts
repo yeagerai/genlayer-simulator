@@ -9,5 +9,8 @@ export class SettingsPage extends BasePage {
     "//*[@data-testid='settings-page-title']",
   );
 
-  // TODO:
+  // TODO: Add / remove / update providers
+  // TODO: reset providers
+  // TODO: reset contracts
+  // TODO: Add / remove / enable account
 }
