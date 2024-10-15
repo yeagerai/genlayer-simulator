@@ -2,7 +2,7 @@ export class Address {
   bytes: Uint8Array;
 
   constructor(addr: Uint8Array) {
-    if (addr.length != 32) {
+    if (addr.length != 20) {
       throw new Error(`invalid address length ${addr}`);
     }
     this.bytes = addr;

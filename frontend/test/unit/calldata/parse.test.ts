@@ -36,7 +36,7 @@ describe('calldata parsing tests', () => {
             str2: "abc",
             num: 0xf,
             bytes: b#dead,
-            addr: addr#0000000000000000000000000000000000000000000000000000000000000000,
+            addr: addr#0000000000000000000000000000000000000000,
             arr: [-2, -0o7, -0xff00, -0]
         }`;
     const asLiteral = {
@@ -47,7 +47,7 @@ describe('calldata parsing tests', () => {
       str2: 'abc',
       num: 0xf,
       bytes: new Uint8Array([0xde, 0xad]),
-      addr: new calldata.Address(new Uint8Array(new Array(32).map(() => 0))),
+      addr: new calldata.Address(new Uint8Array(new Array(20).map(() => 0))),
       arr: [-2, -0o7, -0xff00, -0],
     };
 

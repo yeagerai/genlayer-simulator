@@ -6,6 +6,7 @@ import { useInputMap } from '@/hooks';
 import { notify } from '@kyvg/vue3-notification';
 import { ChevronDownIcon } from '@heroicons/vue/16/solid';
 import { useEventTracking, useContractQueries } from '@/hooks';
+import * as calldata from '@/calldata';
 
 const { callWriteMethod, callReadMethod, contract } = useContractQueries();
 const { trackEvent } = useEventTracking();
@@ -30,14 +31,20 @@ const missingParams = computed(() => {
   );
 });
 
+const getArgs = () => {
+  return Object.keys(inputs.value).map((key) => {
+    if (props.method.inputs.find((v) => v.name == key)?.type === 'string') {
+      return inputs.value[key];
+    }
+    return calldata.parse(inputs.value[key]);
+  });
+};
+
 const handleCallReadMethod = async () => {
   responseMessage.value = '';
 
   try {
-    const result = await callReadMethod(
-      props.method.name,
-      Object.values(inputs.value),
-    );
+    const result = await callReadMethod(props.method.name, getArgs());
 
     responseMessage.value = JSON.stringify(result);
 
@@ -57,7 +64,7 @@ const handleCallReadMethod = async () => {
 const handleCallWriteMethod = async () => {
   await callWriteMethod({
     method: props.method.name,
-    args: Object.values(inputs.value),
+    args: getArgs(),
     leaderOnly: props.leaderOnly,
   });
 

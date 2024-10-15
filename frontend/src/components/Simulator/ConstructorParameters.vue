@@ -24,8 +24,8 @@ const inputParams = ref<{ [k: string]: any }>({});
 
 const constructorInputs = computed(
   () =>
-    data.value?.abi.find(
-      (method: ContractMethod) => method.type === 'constructor',
+    (data.value?.abi as ContractMethod[] | undefined)?.find(
+      (method) => method.type === 'constructor',
     )?.inputs,
 );
 
@@ -49,7 +49,7 @@ const jsonParams = ref('{}');
 const mode = ref<'json' | 'form'>('form');
 
 const handleDeployContract = async () => {
-  let constructorParams: calldata.CalldataEncodable[] = [];
+  let constructorParams: calldata.CalldataEncodable[];
 
   if (mode.value === 'json') {
     try {
@@ -65,12 +65,21 @@ const handleDeployContract = async () => {
         text: 'Please provide valid JSON',
         type: 'error',
       });
+      return;
     }
   } else {
-    constructorParams = Object.values(inputParams.value).map(calldata.parse);
+    constructorParams = Object.keys(inputParams.value).map((key) => {
+      const val = inputParams.value[key];
+      if (
+        constructorInputs.value?.find((x) => x.name === key)?.type === 'string'
+      ) {
+        return val;
+      }
+      return calldata.parse(val);
+    });
   }
 
-  await deployContract('__init__', constructorParams, props.leaderOnly);
+  await deployContract(constructorParams, props.leaderOnly);
 
   emit('deployed-contract');
 };
@@ -84,7 +93,7 @@ const setInputParams = (inputs: { [k: string]: any }) => {
           prev = { ...prev, [curr.name]: 'false' };
           break;
         case 'string':
-          prev = { ...prev, [curr.name]: "''" };
+          prev = { ...prev, [curr.name]: '' };
           break;
         case 'int':
           prev = { ...prev, [curr.name]: '0' };
@@ -162,7 +171,7 @@ const hasConstructorInputs = computed(
         :class="isDeploying && 'pointer-events-none opacity-60'"
       >
         <template v-if="mode === 'form'">
-          <div v-for="input in constructorInputs" :key="input">
+          <div v-for="input in constructorInputs" :key="input.name">
             <component
               :is="inputMap.getComponent(input.type)"
               v-model="inputParams[input.name]"

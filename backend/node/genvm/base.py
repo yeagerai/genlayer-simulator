@@ -178,7 +178,6 @@ class GenVM:
             encoded_pickled_object = None  # Default value in order to have something to return in case of error
             try:
                 calldata = calldata_decode(calldata_raw)
-                method_name = calldata["method"]
                 ctor_args = calldata["args"]
                 if not isinstance(ctor_args, list):
                     raise Exception(
@@ -186,7 +185,7 @@ class GenVM:
                     )
                 # Manual instantiation of the class is done to handle async __init__ methods
                 current_contract = contract_class.__new__(contract_class, *ctor_args)
-                ctor_method = getattr(contract_class, method_name)
+                ctor_method = getattr(contract_class, "__init__")
                 if inspect.iscoroutinefunction(ctor_method):
                     await ctor_method(current_contract, *ctor_args)
                 else:

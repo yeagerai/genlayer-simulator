@@ -75,7 +75,6 @@ export function useContractQueries() {
   const isDeploying = ref(false);
 
   async function deployContract(
-    method: string,
     args: calldata.CalldataEncodable[],
     leaderOnly: boolean,
   ) {
@@ -87,7 +86,7 @@ export function useContractQueries() {
       }
       const data = [
         contract.value?.content ?? '',
-        calldata.encode({ method, args }),
+        calldata.encode({ args }),
         leaderOnly,
       ];
 
@@ -158,11 +157,12 @@ export function useContractQueries() {
     return result;
   }
 
-  async function callReadMethod(method: string, args: string[]) {
+  async function callReadMethod(
+    method: string,
+    args: calldata.CalldataEncodable[],
+  ) {
     try {
-      const data = [
-        calldata.encode({ method, args: args.map(calldata.parse) }),
-      ];
+      const data = [calldata.encode({ method, args })];
       const encodedData = wallet.encodeTransactionData(data);
 
       const result = await rpcClient.getContractState({
@@ -184,17 +184,14 @@ export function useContractQueries() {
     leaderOnly,
   }: {
     method: string;
-    args: string[];
+    args: calldata.CalldataEncodable[];
     leaderOnly: boolean;
   }) {
     try {
       if (!accountsStore.currentPrivateKey) {
         throw new Error('Error Deploying the contract');
       }
-      const data = [
-        calldata.encode({ method, args: args.map(calldata.parse) }),
-        leaderOnly,
-      ];
+      const data = [calldata.encode({ method, args }), leaderOnly];
       const to = (address.value as Address) || null;
 
       const nonce = await accountsStore.getCurrentNonce();

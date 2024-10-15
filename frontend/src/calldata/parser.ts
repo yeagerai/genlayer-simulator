@@ -67,8 +67,8 @@ const lexer = buildLexer([
   [true, /^,/g, TokenKind.Comma],
   [true, /^:/g, TokenKind.Colon],
   [true, /^(?!\d)\w\w*/g, TokenKind.Id],
-  [true, /^'(?:[^']|\\.)*'/g, TokenKind.Str],
-  [true, /^"(?:[^"]|\\.)*"/g, TokenKind.Str],
+  [true, /^'(?:[^'\\]|\\.)*'/g, TokenKind.Str],
+  [true, /^"(?:[^"\\]|\\.)*"/g, TokenKind.Str],
 ]);
 
 const ATOMS = new Map([
