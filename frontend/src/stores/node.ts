@@ -20,6 +20,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
   const nodeProviders = ref<GetProvidersAndModelsData>([]);
   const validators = ref<ValidatorModel[]>([]);
   const isLoadingValidatorData = ref<boolean>(true);
+  const isLoadingProviders = ref<boolean>(true);
   const searchFilter = ref<string>('');
 
   if (!webSocketClient.connected) webSocketClient.connect();
@@ -58,19 +59,14 @@ export const useNodeStore = defineStore('nodeStore', () => {
 
   async function resetProviders() {
     await rpcClient.resetDefaultsLlmProviders();
-    getValidatorsData();
+    getProvidersData();
   }
 
   async function getValidatorsData() {
     isLoadingValidatorData.value = true;
 
     try {
-      const [validatorsResult, modelsResult] = await Promise.all([
-        rpcClient.getValidators(),
-        rpcClient.getProvidersAndModels(),
-      ]);
-      validators.value = validatorsResult;
-      nodeProviders.value = modelsResult;
+      validators.value = await rpcClient.getValidators();
     } catch (error) {
       console.error(error);
       notify({
@@ -80,6 +76,23 @@ export const useNodeStore = defineStore('nodeStore', () => {
       });
     } finally {
       isLoadingValidatorData.value = false;
+    }
+  }
+
+  async function getProvidersData() {
+    isLoadingProviders.value = true;
+
+    try {
+      nodeProviders.value = await rpcClient.getProvidersAndModels();
+    } catch (error) {
+      console.error(error);
+      notify({
+        title: 'Error',
+        text: (error as Error)?.message || 'Error loading providers',
+        type: 'error',
+      });
+    } finally {
+      isLoadingProviders.value = false;
     }
   }
 
@@ -142,8 +155,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
     await rpcClient.addProvider({
       ...providerData,
     });
-
-    getValidatorsData();
+    getProvidersData();
   }
 
   async function updateProvider(
@@ -154,13 +166,12 @@ export const useNodeStore = defineStore('nodeStore', () => {
       id: provider.id,
       ...newProviderData,
     });
-
-    getValidatorsData();
+    getProvidersData();
   }
 
   async function deleteProvider(id: number) {
     await rpcClient.deleteProvider({ id });
-    getValidatorsData();
+    getProvidersData();
   }
 
   const contractsToDelete = computed(() =>
@@ -205,9 +216,11 @@ export const useNodeStore = defineStore('nodeStore', () => {
     nodeProviders,
     contractsToDelete,
     isLoadingValidatorData,
+    isLoadingProviders,
     searchFilter,
 
     getValidatorsData,
+    getProvidersData,
     resetProviders,
     createNewValidator,
     cloneValidator,

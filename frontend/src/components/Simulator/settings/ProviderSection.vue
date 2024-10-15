@@ -63,6 +63,14 @@ const handleResetProviders = async () => {
       </GhostBtn>
     </template>
 
+    <ContentLoader
+      v-if="nodeStore.isLoadingProviders && nodeStore.nodeProviders.length < 1"
+    />
+
+    <EmptyListPlaceholder v-else-if="nodeStore.nodeProviders.length < 1">
+      No providers.
+    </EmptyListPlaceholder>
+
     <div v-for="group in modelGroups" :key="group.provider">
       <div class="mb-1 text-xs font-semibold opacity-50">
         {{ group.provider }}
