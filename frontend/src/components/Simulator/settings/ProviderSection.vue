@@ -15,15 +15,15 @@ const isNewProviderModalOpen = ref(false);
 const isResetProvidersModalOpen = ref(false);
 const isResetting = ref(false);
 
-// TODO: fix order changing on update/create (sort by sth consistent?)
-
 const modelGroups = computed(() => {
-  return uniqBy(nodeStore.nodeProviders, 'provider').map((provider: any) => ({
-    provider: provider.provider,
-    models: nodeStore.nodeProviders.filter(
-      (p) => p.provider === provider.provider,
-    ),
-  }));
+  return uniqBy(nodeStore.nodeProviders, 'provider')
+    .sort((a, b) => a.provider.localeCompare(b.provider))
+    .map((provider: any) => ({
+      provider: provider.provider,
+      models: nodeStore.nodeProviders.filter(
+        (p) => p.provider === provider.provider,
+      ),
+    }));
 });
 
 const handleResetProviders = async () => {
