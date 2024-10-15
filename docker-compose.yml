@@ -10,7 +10,8 @@ services:
       - ./examples:/app/src/assets/examples
       - ./frontend/src:/app/src
     depends_on:
-      - jsonrpc
+      jsonrpc:
+        condition: service_healthy
     expose:
       - "${FRONTEND_PORT}"
 
@@ -37,6 +38,12 @@ services:
         condition: service_completed_successfully
     expose:
       - "${RPCPORT}"
+    healthcheck:
+      test: python backend/healthcheck.py --port ${RPCPORT}
+      interval: 1s
+      timeout: 1s
+      retries: 15
+      start_period: 1s
 
   webrequest:
     build:
