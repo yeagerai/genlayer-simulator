@@ -21,6 +21,8 @@ ENV HUGGINGFACE_HUB_CACHE /home/backend-user/.cache/huggingface
 COPY ../.env .
 COPY backend $path/backend
 
+HEALTHCHECK --interval=1s --timeout=1s --retries=15 --start-period=1s CMD python backend/healthcheck.py --port ${FLASK_SERVER_PORT}
+
 ###########START NEW IMAGE : DEBUGGER ###################
 FROM base AS debug
 RUN --mount=type=cache,target=/root/.cache/pip \
