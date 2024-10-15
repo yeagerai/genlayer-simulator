@@ -251,8 +251,13 @@ const isStakeValid = computed(() => {
         warning
         class="mt-2"
         v-if="!newValidatorData.model && !!newValidatorData.provider"
-        >No available models for this provider. Check your provider
-        settings.</Alert
+        >No available models for this provider. Check your
+        <RouterLink
+          @click="emit('close')"
+          :to="{ name: 'settings' }"
+          class="underline"
+          >settings</RouterLink
+        >.</Alert
       >
     </div>
 
