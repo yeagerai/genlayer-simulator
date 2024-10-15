@@ -57,7 +57,7 @@ const handleResetProviders = async () => {
       <GhostBtn
         @click="isNewProviderModalOpen = true"
         v-tooltip="'New Config'"
-        testId="create-new-validator-btn"
+        testId="create-new-provider-btn"
       >
         <PlusIcon class="h-4 w-4" />
       </GhostBtn>
