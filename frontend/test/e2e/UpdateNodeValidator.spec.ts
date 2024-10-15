@@ -1,5 +1,4 @@
 import { WebDriver, By, until } from 'selenium-webdriver';
-import { Select } from 'selenium-webdriver/lib/select';
 import { ValidatorsPage } from '../pages/ValidatorsPage.js';
 import { ContractsPage } from '../pages/ContractsPage.js';
 import { before, describe, after, it } from 'node:test';

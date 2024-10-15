@@ -1,7 +1,5 @@
-import { By, type Locator, WebElement, until } from 'selenium-webdriver';
-import { Select } from 'selenium-webdriver/lib/select';
+import { By, type Locator } from 'selenium-webdriver';
 import { BasePage } from './BasePage';
-import { expect } from 'chai';
 
 export class SettingsPage extends BasePage {
   override baseurl = 'http://localhost:8080/simulator/settings';
