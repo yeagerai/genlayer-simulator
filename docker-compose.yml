@@ -38,12 +38,6 @@ services:
         condition: service_completed_successfully
     expose:
       - "${RPCPORT}"
-    healthcheck:
-      test: python backend/healthcheck.py --port ${RPCPORT}
-      interval: 1s
-      timeout: 1s
-      retries: 15
-      start_period: 1s
 
   webrequest:
     build:
