@@ -8,7 +8,7 @@ from eth_account import Account
 
 from tests.common.transactions import sign_transaction, encode_transaction_data
 
-import backend.node.genvm.calldata as calldata
+import backend.node.genvm.origin.calldata as calldata
 
 load_dotenv()
 

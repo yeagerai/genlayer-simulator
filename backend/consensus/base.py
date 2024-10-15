@@ -27,7 +27,7 @@ from backend.domain.types import (
     Validator,
 )
 from backend.node.base import Node
-from backend.node.genvm.types import ExecutionMode, Receipt, Vote
+from backend.node.types import ExecutionMode, Receipt, Vote
 from backend.protocol_rpc.message_handler.base import MessageHandler
 from backend.protocol_rpc.message_handler.types import (
     LogEvent,
@@ -110,8 +110,26 @@ class ConsensusAlgorithm:
                     for queue in [q for q in self.queues.values() if not q.empty()]:
                         # sessions cannot be shared between coroutines, we need to create a new session for each coroutine
                         # https://docs.sqlalchemy.org/en/20/orm/session_basics.html#is-the-session-thread-safe-is-asyncsession-safe-to-share-in-concurrent-tasks
-                        transaction = await queue.get()
+                        transaction: Transaction = await queue.get()
                         with self.get_session() as session:
+
+                            def contract_snapshot_factory(
+                                contract_address,
+                                session=session,
+                                transaction=transaction,
+                            ):
+                                if (
+                                    transaction.type == TransactionType.DEPLOY_CONTRACT
+                                    and contract_address == transaction.to_address
+                                ):
+                                    ret = ContractSnapshot(None, session)
+                                    ret.contract_address = transaction.to_address
+                                    ret.contract_code = transaction.data[
+                                        "contract_code"
+                                    ]
+                                    ret.encoded_state = {}
+                                    return ret
+                                return ContractSnapshot(contract_address, session)
 
                             async def exec_transaction_with_session_handling():
                                 await self.exec_transaction(
@@ -119,9 +137,7 @@ class ConsensusAlgorithm:
                                     TransactionsProcessor(session),
                                     ChainSnapshot(session),
                                     AccountsManager(session),
-                                    lambda contract_address, session=session: ContractSnapshot(
-                                        contract_address, session
-                                    ),
+                                    contract_snapshot_factory,
                                 )
                                 session.commit()
 
@@ -202,13 +218,17 @@ class ConsensusAlgorithm:
 
             num_validators = len(remaining_validators) + 1
 
-            contract_snapshot = contract_snapshot_factory(transaction.to_address)
+            contract_snapshot_supplier = lambda: contract_snapshot_factory(
+                transaction.to_address
+            )
+
+            leaders_contract_snapshot = contract_snapshot_supplier()
 
             # Create Leader
             leader_node = node_factory(
                 leader,
                 ExecutionMode.LEADER,
-                contract_snapshot,
+                leaders_contract_snapshot,
                 None,
                 msg_handler,
                 contract_snapshot_factory,
@@ -216,6 +236,26 @@ class ConsensusAlgorithm:
 
             # Leader executes transaction
             leader_receipt = await leader_node.exec_transaction(transaction)
+
+            if leader_receipt.error is not None:
+                # FIXME
+                msg_handler.send_message(
+                    LogEvent(
+                        "leader execution failed",
+                        EventType.ERROR,
+                        EventScope.GENVM,
+                        "Leader execution failed",
+                        leader_receipt.to_dict(),
+                    )
+                )
+                ConsensusAlgorithm.dispatch_transaction_status_update(
+                    transactions_processor,
+                    transaction.hash,
+                    TransactionStatus.UNDETERMINED,
+                    msg_handler,
+                )
+                return
+
             votes = {leader["address"]: leader_receipt.vote.value}
             # Update transaction status
             ConsensusAlgorithm.dispatch_transaction_status_update(
@@ -230,7 +270,7 @@ class ConsensusAlgorithm:
                 node_factory(
                     validator,
                     ExecutionMode.VALIDATOR,
-                    contract_snapshot,
+                    contract_snapshot_supplier(),
                     leader_receipt,
                     msg_handler,
                     contract_snapshot_factory,
@@ -318,7 +358,7 @@ class ConsensusAlgorithm:
                     "code": transaction.data["contract_code"],
                 },
             }
-            contract_snapshot.register_contract(new_contract)
+            leaders_contract_snapshot.register_contract(new_contract)
 
             msg_handler.send_message(
                 LogEvent(
@@ -332,7 +372,9 @@ class ConsensusAlgorithm:
 
         # Update contract state if it is an existing contract
         else:
-            contract_snapshot.update_contract_state(leader_receipt.contract_state)
+            leaders_contract_snapshot.update_contract_state(
+                leader_receipt.contract_state
+            )
 
         ConsensusAlgorithm.dispatch_transaction_status_update(
             transactions_processor,

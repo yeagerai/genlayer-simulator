@@ -7,6 +7,7 @@ import traceback
 from flask import request
 from loguru import logger
 import sys
+import asyncio
 
 from backend.protocol_rpc.message_handler.types import LogEvent
 from flask_socketio import SocketIO
@@ -88,7 +89,7 @@ class MessageHandler:
 def log_endpoint_info_wrapper(msg_handler: MessageHandler, config: GlobalConfiguration):
     def decorator(func):
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        async def wrapper(*args, **kwargs):
             shouldPrintInfoLogs = (
                 func.__name__ not in config.get_disabled_info_logs_endpoints()
             )
@@ -105,6 +106,8 @@ def log_endpoint_info_wrapper(msg_handler: MessageHandler, config: GlobalConfigu
                 )
             try:
                 result = func(*args, **kwargs)
+                if hasattr(result, "__await__"):
+                    result = await result
                 if shouldPrintInfoLogs:
                     msg_handler.send_message(
                         LogEvent(

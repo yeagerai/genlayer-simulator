@@ -9,8 +9,10 @@ from backend.database_handler.contract_snapshot import ContractSnapshot
 from backend.database_handler.models import TransactionStatus
 from backend.domain.types import Transaction, TransactionType
 from backend.node.base import Node
-from backend.node.genvm.types import ExecutionMode, ExecutionResultStatus, Receipt, Vote
+from backend.node.types import ExecutionMode, ExecutionResultStatus, Receipt, Vote
 from backend.protocol_rpc.message_handler.base import MessageHandler
+
+DEFAULT_EXEC_RESULT = b"\x00\x00"  # success(null)
 
 
 class AccountsManagerMock:
@@ -78,7 +80,7 @@ def contract_snapshot_factory(address: str):
         def __init__(self):
             self.address = address
 
-        def update_contract_state(self, state: str):
+        def update_contract_state(self, state: dict[str, str]):
             pass
 
     return ContractSnapshotMock()
@@ -140,12 +142,13 @@ async def test_exec_transaction():
 
         mock.exec_transaction = AsyncMock(
             return_value=Receipt(
+                returned=DEFAULT_EXEC_RESULT,
                 vote=Vote.AGREE,
                 class_name="",
                 calldata=b"",
                 mode=mode,
                 gas_used=0,
-                contract_state="",
+                contract_state={},
                 node_config={},
                 eq_outputs={},
                 execution_result=ExecutionResultStatus.SUCCESS,
@@ -255,7 +258,8 @@ async def test_exec_transaction_no_consensus():
                 calldata=b"",
                 mode=mode,
                 gas_used=0,
-                contract_state="",
+                contract_state={},
+                returned=DEFAULT_EXEC_RESULT,
                 node_config={},
                 eq_outputs={},
                 execution_result=ExecutionResultStatus.SUCCESS,
@@ -366,11 +370,12 @@ async def test_exec_transaction_one_disagreement():
                     == 1  # only agree in the second round
                     else Vote.DISAGREE
                 ),
+                returned=DEFAULT_EXEC_RESULT,
                 class_name="",
                 calldata=b"",
                 mode=mode,
                 gas_used=0,
-                contract_state="",
+                contract_state={},
                 node_config={},
                 eq_outputs={},
                 execution_result=ExecutionResultStatus.SUCCESS,

@@ -25,17 +25,21 @@ services:
       # TODO: remove this in production
       - PYTHONUNBUFFERED=1
       - RPCDEBUGPORT=${RPCDEBUGPORT}
+      - WEBREQUESTPORT=${WEBREQUESTPORT}
+      - WEBREQUESTHOST=${WEBREQUESTHOST}
+      - WEBREQUESTPROTOCOL=${WEBREQUESTPROTOCOL}
     ports:
       - "${RPCPORT}:${RPCPORT}"
       - "${RPCDEBUGPORT}:${RPCDEBUGPORT}"
     volumes:
       - ./.env:/app/.env
       - ./backend:/app/backend
+#      - /path/to/genvm/build/out:/genvm
     depends_on:
-      ollama:
-        condition: service_started
       database-migration:
         condition: service_completed_successfully
+      webrequest:
+        condition: service_started
     expose:
       - "${RPCPORT}"
 
@@ -45,13 +49,21 @@ services:
       dockerfile: ./docker/Dockerfile.webrequest
     shm_size: 2gb
     volumes:
+      - ./.env:/app/webrequest/.env
       - ./webrequest:/app/webrequest
+      # below should be not needed, but copy doesn't work
+      - ./docker:/app/docker
     environment:
       - FLASK_SERVER_PORT=${WEBREQUESTPORT}
+      - WEBREQUESTSELENIUMPORT=${WEBREQUESTSELENIUMPORT}
       # TODO: remove this in production
       - PYTHONUNBUFFERED=1
     expose:
-      - "${WEBREQUESTPORT}"
+      - "${WEBREQUESTPORT}:${WEBREQUESTPORT}"
+      - "${WEBREQUESTSELENIUMPORT}:${WEBREQUESTSELENIUMPORT}"
+    depends_on:
+      ollama:
+        condition: service_started
 
   ollama:
     image: ollama/ollama:0.3.11
@@ -87,6 +99,11 @@ services:
       dockerfile: docker/Dockerfile.database-migration
     environment:
       - DB_URL=postgresql://${DBUSER}:${DBUSER}@postgres/${DBNAME}
+      - WEBREQUESTPORT=${WEBREQUESTPORT}
+      - WEBREQUESTHOST=${WEBREQUESTHOST}
+      - WEBREQUESTPROTOCOL=${WEBREQUESTPROTOCOL}
     depends_on:
       postgres:
         condition: service_healthy
+      webrequest:
+        condition: service_started

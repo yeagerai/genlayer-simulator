@@ -12,7 +12,8 @@ RUN groupadd -r backend-group \
     && useradd -r -g backend-group backend-user \
     && mkdir -p /home/backend-user/.cache/huggingface \
     && chown -R backend-user:backend-group /home/backend-user \
-    && chown -R backend-user:backend-group $path
+    && chown -R backend-user:backend-group $path \
+    && mkdir -p /genvm
 
 ENV PYTHONPATH "${PYTHONPATH}:/${path}"
 ENV FLASK_APP backend/protocol_rpc/server.py

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from backend.node.genvm.types import Receipt
+from backend.node.types import Receipt
 
 
 @dataclass
