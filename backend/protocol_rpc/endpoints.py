@@ -498,6 +498,17 @@ def send_raw_transaction(
     return transaction_hash
 
 
+def get_transactions_for_address(
+    transactions_processor: TransactionsProcessor,
+    accounts_manager: AccountsManager,
+    address: str,
+) -> list[dict]:
+    if not accounts_manager.is_valid_address(address):
+        raise InvalidAddressError(address)
+
+    return transactions_processor.get_transactions_for_address(address)
+
+
 def register_all_rpc_endpoints(
     jsonrpc: JSONRPC,
     msg_handler: MessageHandler,
@@ -611,4 +622,8 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint(
         partial(get_transaction_count, transactions_processor),
         method_name="eth_getTransactionCount",
+    )
+    register_rpc_endpoint(
+        partial(get_transactions_for_address, transactions_processor, accounts_manager),
+        method_name="sim_getTransactionsForAddress",
     )
