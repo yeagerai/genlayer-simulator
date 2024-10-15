@@ -45,6 +45,15 @@ class TransactionsProcessor:
 
     @staticmethod
     def _transaction_data_to_str(data: dict) -> str:
+        """
+        NOTE: json doesn't support bytes object, so they need to be encoded somehow
+            Common approaches can be: array, hex string, base64 string
+            Array takes a lot of space (extra comma for each element)
+            Hex is double in size
+            Base64 is 1.33 in size
+            So base64 is chosen
+        """
+
         def data_encode(d):
             if isinstance(d, bytes):
                 return str(base64.b64encode(d), encoding="ascii")
