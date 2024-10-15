@@ -26,10 +26,6 @@ const props = defineProps<{
 }>();
 const isConfigExpanded = ref(false);
 
-// TODO: unit tests - pass + add
-// TODO: e2e tests - pass + add
-// IMPROVEMENT: more tooltips on base fields for user education
-
 const isCreateMode = computed(() => !props.provider);
 
 async function handleCreateProvider() {

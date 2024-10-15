@@ -17,7 +17,6 @@ import CopyTextButton from '../global/CopyTextButton.vue';
 import { uniqBy } from 'lodash-es';
 import Alert from '../global/Alert.vue';
 
-// FIXME: default config doesnt get populated properly (backend is using default_provider jsons!)
 const nodeStore = useNodeStore();
 const { trackEvent } = useEventTracking();
 const emit = defineEmits(['close']);
