@@ -41,26 +41,6 @@ describe('Settings - Update Node Validator', () => {
     );
     await validator.click();
 
-    // provider select
-    const selectProviderElement = await driver.wait(
-      until.elementLocated(
-        By.xpath("//select[contains(@data-testid, 'dropdown-provider')]"),
-      ),
-      2000,
-    );
-    const selectProvider = new Select(selectProviderElement);
-    await selectProvider.selectByValue('ollama');
-
-    // model select
-    const selectModelElement = await driver.wait(
-      until.elementLocated(
-        By.xpath("//select[contains(@data-testid, 'dropdown-model')]"),
-      ),
-      2000,
-    );
-    const selectModel = new Select(selectModelElement);
-    await selectModel.selectByValue('llama2');
-
     const stakeInput = await driver.wait(
       until.elementLocated(By.xpath("//input[@data-testid='input-stake']")),
       2000,
@@ -77,18 +57,16 @@ describe('Settings - Update Node Validator', () => {
     // call save validator button
     await updateValidatorBtn.click();
 
-    driver.sleep(10000);
-    const validators = await validatorsPage.getValidatorsElements();
-    const provider = await validators[0].findElement(
-      By.xpath("//span[@data-testid = 'validator-item-provider']"),
+    driver.sleep(2000);
+
+    await validator.click();
+
+    const stakeInputNew = await driver.wait(
+      until.elementLocated(By.xpath("//input[@data-testid='input-stake']")),
+      2000,
     );
-    const model = await validators[0].findElement(
-      By.xpath("//span[@data-testid = 'validator-item-model']"),
-    );
-    const providerText = await provider.getText();
-    const modelText = await model.getText();
-    expect(providerText, 'provider should be ollama').be.equal('ollama');
-    expect(modelText, 'model should be llama2').be.equal('llama2');
+    const stake = await stakeInputNew.getAttribute('value');
+    expect(stake, 'stake should be 8').be.equal('8');
   });
 
   after(() => driver.quit());
