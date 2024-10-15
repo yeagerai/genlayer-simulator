@@ -9,6 +9,7 @@ import ProviderItem from '@/components/Simulator/ProviderItem.vue';
 import ProviderModal from '@/components/Simulator/ProviderModal.vue';
 import { DatabaseBackup } from 'lucide-vue-next';
 import { notify } from '@kyvg/vue3-notification';
+import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
 
 const nodeStore = useNodeStore();
 const isNewProviderModalOpen = ref(false);
@@ -94,7 +95,6 @@ const handleResetProviders = async () => {
     />
 
     <Btn
-      v-if="nodeStore.nodeProviders.length > 0"
       @click="isResetProvidersModalOpen = true"
       :icon="DatabaseBackup"
       secondary
