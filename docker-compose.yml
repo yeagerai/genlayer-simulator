@@ -1,0 +1,91 @@
+services:
+  frontend:
+    build:
+      context: ./
+      dockerfile: ./docker/Dockerfile.frontend
+      target: ${FRONTEND_BUILD_TARGET:-final}
+    ports:
+      - "${FRONTEND_PORT}:8080"
+    volumes:
+      - ./examples:/app/src/assets/examples
+      - ./frontend/src:/app/src
+    depends_on:
+      - jsonrpc
+    expose:
+      - "${FRONTEND_PORT}"
+
+  jsonrpc:
+    build:
+      context: ./
+      dockerfile: ./docker/Dockerfile.backend
+      target: debug
+    environment:
+      - FLASK_SERVER_PORT=${RPCPORT}
+      # TODO: remove this in production
+      - PYTHONUNBUFFERED=1
+      - RPCDEBUGPORT=${RPCDEBUGPORT}
+    ports:
+      - "${RPCPORT}:${RPCPORT}"
+      - "${RPCDEBUGPORT}:${RPCDEBUGPORT}"
+    volumes:
+      - ./.env:/app/.env
+      - ./backend:/app/backend
+    depends_on:
+      ollama:
+        condition: service_started
+      database-migration:
+        condition: service_completed_successfully
+    expose:
+      - "${RPCPORT}"
+
+  webrequest:
+    build:
+      context: ./
+      dockerfile: ./docker/Dockerfile.webrequest
+    shm_size: 2gb
+    volumes:
+      - ./webrequest:/app/webrequest
+    environment:
+      - FLASK_SERVER_PORT=${WEBREQUESTPORT}
+      # TODO: remove this in production
+      - PYTHONUNBUFFERED=1
+    expose:
+      - "${WEBREQUESTPORT}"
+
+  ollama:
+    image: ollama/ollama:0.3.11
+    ports:
+      - 11434:11434
+    volumes:
+      - ./.ollama:/root/.ollama
+    container_name: ollama
+    tty: true
+    restart: always
+
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "${DBPORT}:5432"
+    environment:
+      - POSTGRES_USER=${DBUSER}
+      - POSTGRES_PASSWORD=${DBPASSWORD}
+      - POSTGRES_DB=${DBNAME}
+    healthcheck:
+      test: pg_isready -U ${DBUSER} -d ${DBNAME}
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+    # If you want your db to persist in dev
+    # volumes:
+    #  - "./data/postgres:/var/lib/postgresql/data"
+
+  database-migration:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.database-migration
+    environment:
+      - DB_URL=postgresql://${DBUSER}:${DBUSER}@postgres/${DBNAME}
+    depends_on:
+      postgres:
+        condition: service_healthy

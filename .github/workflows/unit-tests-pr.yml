@@ -1,0 +1,39 @@
+name: "Unit Tests"
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+  push:
+    branches:
+      - main # so that test reports get uploaded to Codecov and SonarCloud
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  frontend-unit-tests:
+    if: (github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]')
+    name: Unit Tests
+    uses: ./.github/workflows/frontend-unit-tests.yml
+    secrets:
+      codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+  backend-unit-tests:
+    if: (github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+          cache: pip
+      - run: pip install -r backend/protocol_rpc/requirements.txt
+      - run: pip install pytest-cov
+      - run: pytest tests/unit --cov=backend --cov-report=xml --cov-branch
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@v3.0.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

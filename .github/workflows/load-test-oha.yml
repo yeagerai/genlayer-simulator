@@ -1,0 +1,81 @@
+name: Load Test with oha CLI
+
+on:
+  workflow_call:
+    inputs:
+      oha-version:
+        description: 'Version of oha CLI to use for load testing'
+        required: false
+        type: string
+        default: 'v1.4.5'
+
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Copy .env file
+        run: cp .env.example .env
+
+      - name: Changing URL for rpc server to localhost
+        run: sed -i "s/'jsonrpc'/'localhost'/g" .env
+
+      - name: Remove OPENAIKEY from the .env file so it can be loaded from the environment
+        run: sed -i "/^OPENAIKEY *= *'<add_your_api_key_here>'$/d" .env
+
+      - name: Adding OPENAIKEY to the .env file
+        env:
+          OPENAIKEY: ${{ secrets.OPENAIKEY }}
+        run: printf "\nOPENAIKEY='$OPENAIKEY'\n" >> .env
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Run Docker Compose
+        run: docker compose up -d
+
+      - name: Wait for services to be up
+        run: |
+          timeout=60
+          counter=0
+          while [[ "$counter" -lt "$timeout" ]]; do
+            if curl -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"ping","params":[],"id":1}' http://0.0.0.0:4000/api | grep -q "OK"; then
+              echo "RPC server is up!"
+              break
+            else
+              echo "Waiting for RPC server... ($counter/$timeout)"
+              sleep 5
+              counter=$((counter+1))
+            fi
+          done
+          # Fail if the service didn't start within the timeout
+          if [[ "$counter" -ge "$timeout" ]]; then
+            echo "Error: Timeout while waiting for RPC server"
+            exit 1
+          fi
+
+      - name: Install oha
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl jq
+          curl -sSfL https://github.com/hatoo/oha/releases/download/${{ inputs.oha-version }}/oha-linux-amd64 -o oha
+          chmod +x oha
+          sudo mv oha /usr/local/bin
+
+      - name: Run Load Test
+        run: ./tests/load/test.sh
+
+      - name: Shutdown Docker Compose
+        if: always()
+        run: docker compose down

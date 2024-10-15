@@ -1,0 +1,35 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0 # Use the ref you want to point at
+    hooks:
+      - id: trailing-whitespace
+      - id: check-added-large-files
+      - id: check-json
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: no-commit-to-branch
+        args: ["--branch", "main"]
+  # Copied from https://black.readthedocs.io/en/stable/integrations/source_version_control.html
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 24.4.2
+    hooks:
+      - id: black
+        language_version: python3.11
+  - repo: local
+    hooks:
+      - id: eslint
+        name: eslint
+        entry: sh -c "cd frontend && npm run lint"
+        language: system
+        files: frontend
+  - repo: local
+    hooks:
+      - id: prettier
+        name: prettier
+        entry: sh -c "cd frontend && npm run format"
+        language: system
+        files: frontend
+
+default_install_hook_types:
+  - pre-commit
+  - commit-msg

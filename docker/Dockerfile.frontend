@@ -1,0 +1,24 @@
+FROM node:21.7.3-alpine3.20 AS base
+
+WORKDIR /app
+COPY ./frontend/package*.json .
+RUN --mount=type=cache,target=/root/.npm npm ci
+COPY ./frontend .
+COPY ./examples src/assets/examples
+COPY ./.env .
+
+FROM base AS dev
+ENTRYPOINT ["npm", "run", "dev"]
+
+FROM base AS builder
+RUN npm run build
+
+FROM alpine:latest AS final
+RUN apk add --no-cache nodejs npm && \
+    addgroup --system frontend-user && adduser --system --ingroup frontend-user frontend-user && \
+    mkdir /app && chown -R frontend-user:frontend-user /app
+WORKDIR /app
+COPY --from=builder --chown=frontend-user:frontend-user /app /app
+USER frontend-user
+EXPOSE 8080
+CMD [ "npm", "run", "preview" ]
