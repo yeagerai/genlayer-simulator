@@ -26,10 +26,8 @@ const props = defineProps<{
 }>();
 const isConfigExpanded = ref(false);
 
-// FIXME: defaulting of config
 // TODO: unit tests - pass + add
 // TODO: e2e tests - pass + add
-// TODO: fix account item truncation OR refac list items
 // IMPROVEMENT: more tooltips on base fields for user education
 
 const isCreateMode = computed(() => !props.provider);
