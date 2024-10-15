@@ -86,7 +86,8 @@ const validatorModelValid = computed(() => {
   return (
     newValidatorData.value?.model !== '' &&
     newValidatorData.value?.provider !== '' &&
-    newValidatorData.value?.stake > 0
+    isStakeValid.value &&
+    isConfigValid.value
   );
 });
 
@@ -178,6 +179,13 @@ const tryInitValues = () => {
     };
   }
 };
+
+const isStakeValid = computed(() => {
+  return (
+    Number.isInteger(newValidatorData.value.stake) &&
+    newValidatorData.value.stake >= 1
+  );
+});
 </script>
 
 <template>
@@ -256,13 +264,12 @@ const tryInitValues = () => {
         name="stake"
         :min="1"
         :step="1"
-        :invalid="newValidatorData.stake < 1"
+        :invalid="!isStakeValid"
         v-model="newValidatorData.stake"
-        :forceInteger="true"
         required
         testId="input-stake"
       />
-      <FieldError v-if="newValidatorData.stake < 1"
+      <FieldError v-if="!isStakeValid"
         >Please enter an integer greater than 0.</FieldError
       >
     </div>
@@ -285,7 +292,7 @@ const tryInitValues = () => {
     <Btn
       v-if="isCreateMode"
       @click="handleCreateValidator"
-      :disabled="!validatorModelValid || !isConfigValid"
+      :disabled="!validatorModelValid"
       testId="btn-create-validator"
       :loading="isLoading"
     >
@@ -295,7 +302,7 @@ const tryInitValues = () => {
     <Btn
       v-if="!isCreateMode && validator"
       @click="handleUpdateValidator(validator)"
-      :disabled="!validatorModelValid || !isConfigValid"
+      :disabled="!validatorModelValid"
       testId="btn-update-validator"
       :loading="isLoading"
     >
