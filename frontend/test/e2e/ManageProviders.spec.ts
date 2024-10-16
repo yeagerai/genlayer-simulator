@@ -23,7 +23,7 @@ describe('Settings - Manage Providers', () => {
     contractsPage = new ContractsPage(driver);
   });
 
-  it('should create, update and delete a custom provider', async () => {
+  it('should create and update a custom provider', async () => {
     await contractsPage.navigate();
     await contractsPage.waitUntilVisible();
     await contractsPage.skipTutorial();
