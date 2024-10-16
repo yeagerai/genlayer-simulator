@@ -20,16 +20,10 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    models = [
-        "dolphin-2.9-llama3-8b",
-        "meta-llama/llama-2-70b-chat",
-        "mistralai/mixtral-8x7b-instruct",
-        "openhermes-2-yi-34b-gptq",
-    ]
-
-    for model in models:
-        op.execute("DELETE FROM validators WHERE model = %s", model)
-        op.execute("DELETE FROM providers WHERE model = %s", model)
+    op.execute("DELETE FROM validators WHERE model = 'dolphin-2.9-llama3-8b'")
+    op.execute("DELETE FROM validators WHERE model = 'mistralai/mixtral-8x7b-instruct'")
+    op.execute("DELETE FROM validators WHERE model = 'openhermes-2-yi-34b-gptq'")
+    op.execute("DELETE FROM validators WHERE model = 'meta-llama/llama-2-70b-chat'")
 
 
 def downgrade() -> None:
