@@ -193,6 +193,7 @@ class TransactionsProcessor:
                     Transactions.to_address == address,
                 )
             )
+            .order_by(Transactions.created_at.desc())
             .all()
         )
 
