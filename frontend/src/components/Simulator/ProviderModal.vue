@@ -345,6 +345,7 @@ const configurationError = computed(() => {
             <button
               @click="toggleCustomProvider"
               class="mr-1 text-xs opacity-50 hover:opacity-70"
+              data-testid="toggle-custom-provider"
             >
               {{ customProvider ? 'Use preset' : 'Use custom provider' }}
             </button>
