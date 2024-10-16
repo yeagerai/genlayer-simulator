@@ -52,12 +52,17 @@ const handleResetProviders = async () => {
 
 <template>
   <PageSection>
-    <template #title>Providers</template>
+    <template #title
+      >Providers Presets
+      <MoreInfo
+        text="You can add more providers here, then create new validators using those presets."
+      />
+    </template>
 
     <template #actions>
       <GhostBtn
         @click="isNewProviderModalOpen = true"
-        v-tooltip="'New Config'"
+        v-tooltip="'New Preset'"
         testId="create-new-provider-btn"
       >
         <PlusIcon class="h-4 w-4" />

@@ -245,6 +245,15 @@ const isStakeValid = computed(() => {
         testId="dropdown-provider"
         :disabled="providerOptions.length === 0"
       />
+      <span class="float-right mt-1 text-xs opacity-50" v-if="isCreateMode">
+        To add more providers, go to
+        <RouterLink
+          :to="{ name: 'settings' }"
+          @click="emit('close')"
+          class="underline"
+          >settings</RouterLink
+        >.
+      </span>
     </div>
 
     <div v-if="isCreateMode">

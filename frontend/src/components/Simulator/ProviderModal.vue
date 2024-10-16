@@ -315,7 +315,7 @@ const configurationError = computed(() => {
 
 <template>
   <Modal @close="emit('close')" @onOpen="tryInitValues" wide>
-    <template #title v-if="isCreateMode">New Provider Config</template>
+    <template #title v-if="isCreateMode">New Provider Preset</template>
     <template #title v-else>Provider Config #{{ provider?.id }}</template>
     <template #info v-if="provider">
       <div
@@ -340,14 +340,20 @@ const configurationError = computed(() => {
       <template v-if="isCreateMode">
         <div>
           <div class="flex justify-between">
-            <FieldLabel for="provider">Provider:</FieldLabel>
+            <FieldLabel for="provider"
+              >Provider:
+              <MoreInfo
+                text="The name of the inference provider. Use a standard provider or a custom provider."
+            /></FieldLabel>
 
             <button
               @click="toggleCustomProvider"
               class="mr-1 text-xs opacity-50 hover:opacity-70"
               data-testid="toggle-custom-provider"
             >
-              {{ customProvider ? 'Use preset' : 'Use custom provider' }}
+              {{
+                customProvider ? 'Use standard provider' : 'Use custom provider'
+              }}
             </button>
           </div>
 
@@ -359,6 +365,7 @@ const configurationError = computed(() => {
             required
             testId="input-provider"
             @update:modelValue="checkRules"
+            placeholder="i.e. my-provider"
           />
           <SelectInput
             v-else
@@ -373,7 +380,11 @@ const configurationError = computed(() => {
         </div>
 
         <div>
-          <FieldLabel for="model">Model:</FieldLabel>
+          <FieldLabel for="model"
+            >Model:
+
+            <MoreInfo text="The name of the model." />
+          </FieldLabel>
           <TextInput
             v-if="modelOptions.length === 0"
             id="model"
@@ -381,7 +392,7 @@ const configurationError = computed(() => {
             v-model="newProviderData.model"
             required
             testId="input-model"
-            placeholder=""
+            placeholder="i.e. my-model"
           />
           <SelectInput
             v-if="modelOptions.length > 0"
@@ -395,7 +406,13 @@ const configurationError = computed(() => {
         </div>
 
         <div v-if="!isPluginLocked">
-          <FieldLabel for="plugin">Plugin:</FieldLabel>
+          <FieldLabel for="plugin"
+            >Plugin:
+
+            <MoreInfo
+              text="When using a custom provider, a plugin will be used to interface with the provider."
+            />
+          </FieldLabel>
 
           <SelectInput
             id="plugin"
@@ -415,7 +432,13 @@ const configurationError = computed(() => {
       </template>
 
       <div v-if="showPluginConfig">
-        <FieldLabel>Config:</FieldLabel>
+        <FieldLabel
+          >Config:
+
+          <MoreInfo
+            text="The parameters used to interface with the provider."
+          />
+        </FieldLabel>
 
         <div
           class="flex flex-col gap-2 rounded-md bg-slate-100 px-2 py-2 dark:bg-black dark:bg-opacity-10"
@@ -433,7 +456,11 @@ const configurationError = computed(() => {
 
       <div v-if="showConfig">
         <div class="flex flex-row items-center gap-2">
-          <FieldLabel>Default Validator Config:</FieldLabel>
+          <FieldLabel
+            >Default Validator Config:
+            <MoreInfo
+              text="When creating a new validator, this config will be used as default."
+          /></FieldLabel>
 
           <GhostBtn
             @click="isConfigExpanded = !isConfigExpanded"

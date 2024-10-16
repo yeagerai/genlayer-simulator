@@ -6,7 +6,7 @@ defineProps<{
 
 <template>
   <label
-    class="block"
+    class="flex flex-row items-center gap-1"
     :class="[
       !tiny && 'text-sm font-medium leading-8',
       tiny && 'text-xs font-semibold leading-6',
