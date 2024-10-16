@@ -97,8 +97,8 @@ export class SettingsPage extends BasePage {
     model: string;
   }) {
     await this.openNewProviderModal();
-
     await this.driver.sleep(1000);
+
     // provider select
     const selectProviderElement = await this.driver.wait(
       until.elementLocated(
@@ -127,8 +127,7 @@ export class SettingsPage extends BasePage {
         By.xpath("//button[@data-testid='btn-create-provider']"),
       ),
     );
-    // call create validator button
+
     await createValidatorBtn.click();
-    // await this.driver.navigate().refresh();
   }
 }
