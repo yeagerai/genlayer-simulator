@@ -1,13 +1,20 @@
 # consensus/services/transactions_db_service.py
+from enum import Enum
 import rlp
 
 from .models import Transactions, TransactionsAudit
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 
 from .models import TransactionStatus
 from eth_utils import to_bytes, keccak, is_address
 import json
+
+
+class TransactionAddressFilter(Enum):
+    ALL = "all"
+    TO = "to"
+    FROM = "from"
 
 
 class TransactionsProcessor:
@@ -184,18 +191,26 @@ class TransactionsProcessor:
         )
         return count
 
-    def get_transactions_for_address(self, address: str) -> list[dict]:
-        transactions = (
-            self.session.query(Transactions)
-            .filter(
+    def get_transactions_for_address(
+        self,
+        address: str,
+        filter: TransactionAddressFilter,
+    ) -> list[dict]:
+        query = self.session.query(Transactions)
+
+        if filter == TransactionAddressFilter.TO:
+            query = query.filter(Transactions.to_address == address)
+        elif filter == TransactionAddressFilter.FROM:
+            query = query.filter(Transactions.from_address == address)
+        else:  # TransactionFilter.ALL
+            query = query.filter(
                 or_(
                     Transactions.from_address == address,
                     Transactions.to_address == address,
                 )
             )
-            .order_by(Transactions.created_at.desc())
-            .all()
-        )
+
+        transactions = query.order_by(Transactions.created_at.desc()).all()
 
         return [
             self._parse_transaction_data(transaction) for transaction in transactions
