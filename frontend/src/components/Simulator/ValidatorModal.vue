@@ -79,6 +79,8 @@ const newValidatorData = ref<NewValidatorDataModel>({
   provider: '',
   stake: 1,
   config: '{ }',
+  plugin: '',
+  plugin_config: {},
 });
 
 const validatorModelValid = computed(() => {
@@ -139,21 +141,30 @@ const handleChangeProvider = () => {
   );
   newValidatorData.value.model =
     availableModels.length > 0 ? availableModels[0] : '';
-  initConfig();
+  adaptValues();
 };
 
-const initConfig = () => {
-  const config = nodeStore.nodeProviders.find(
+const adaptValues = () => {
+  newValidatorData.value.plugin = '';
+  newValidatorData.value.config = '';
+  newValidatorData.value.plugin_config = {};
+
+  const provider = nodeStore.nodeProviders.find(
     (provider: ProviderModel) =>
       provider.model === newValidatorData.value.model &&
       provider.provider === newValidatorData.value.provider,
-  )?.config;
-  newValidatorData.value.config = JSON.stringify(config, null, 2);
+  );
+
+  if (provider) {
+    newValidatorData.value.plugin = provider.plugin;
+    newValidatorData.value.config = JSON.stringify(provider.config, null, 2);
+    newValidatorData.value.plugin_config = provider.plugin_config;
+  }
 };
 
 const handleChangeModel = () => {
   error.value = '';
-  initConfig();
+  adaptValues();
 };
 
 const tryInitValues = () => {
@@ -175,6 +186,8 @@ const tryInitValues = () => {
       provider: props.validator.provider,
       stake: props.validator.stake,
       config: JSON.stringify(props.validator.config, null, 2),
+      plugin: props.validator.plugin,
+      plugin_config: props.validator.plugin_config,
     };
   }
 };
@@ -273,6 +286,7 @@ const isStakeValid = computed(() => {
         required
         testId="input-stake"
       />
+
       <FieldError v-if="!isStakeValid"
         >Please enter an integer greater than 0.</FieldError
       >

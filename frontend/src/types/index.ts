@@ -21,6 +21,8 @@ export interface NewValidatorDataModel {
   model: string;
   provider: string;
   stake: number;
+  plugin: string;
+  plugin_config: Record<string, any>;
 }
 
 export interface ProviderModel {

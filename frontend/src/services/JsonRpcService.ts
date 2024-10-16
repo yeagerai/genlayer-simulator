@@ -137,10 +137,12 @@ export class JsonRpcService implements IJsonRpcService {
     provider,
     model,
     config,
+    plugin,
+    plugin_config,
   }: CreateValidatorRequest): Promise<any> {
     return this.callRpcMethod<any>(
       'sim_createValidator',
-      [stake, provider, model, config],
+      [stake, provider, model, config, plugin, plugin_config],
       'Error creating validator',
     );
   }

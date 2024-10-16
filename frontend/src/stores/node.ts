@@ -135,13 +135,16 @@ export const useNodeStore = defineStore('nodeStore', () => {
   };
 
   async function createNewValidator(newValidatorData: NewValidatorDataModel) {
-    const { stake, provider, model, config } = newValidatorData;
+    const { stake, provider, model, config, plugin, plugin_config } =
+      newValidatorData;
     const validatorConfig = JSON.parse(config || '{}');
     const result = await rpcClient.createValidator({
       stake,
       provider,
       model,
       config: validatorConfig,
+      plugin,
+      plugin_config,
     });
     validators.value.push(result);
   }

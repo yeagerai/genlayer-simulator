@@ -138,6 +138,8 @@ describe('useNodeStore', () => {
       provider: 'provider2',
       model: 'model2',
       config: '{}',
+      plugin: 'openai',
+      plugin_config: {},
     };
 
     nodeStore.validators = [testValidator1];
