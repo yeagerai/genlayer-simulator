@@ -86,23 +86,27 @@ const handleDeployContract = async () => {
 
 const setInputParams = (inputs: { [k: string]: any }) => {
   inputParams.value = inputs
-    .map((input: any) => ({ name: input.name, type: input.type }))
+    .map((input: any) => ({
+      name: input.name,
+      type: input.type,
+      default: input.default,
+    }))
     .reduce((prev: any, curr: any) => {
       switch (curr.type) {
         case 'bool':
-          prev = { ...prev, [curr.name]: 'false' };
+          prev = { ...prev, [curr.name]: curr.default || 'false' };
           break;
         case 'string':
-          prev = { ...prev, [curr.name]: '' };
+          prev = { ...prev, [curr.name]: curr.default || '' };
           break;
         case 'int':
-          prev = { ...prev, [curr.name]: '0' };
+          prev = { ...prev, [curr.name]: curr.default || '0' };
           break;
         case 'None':
-          prev = { ...prev, [curr.name]: 'null' };
+          prev = { ...prev, [curr.name]: curr.default || 'null' };
           break;
         default:
-          prev = { ...prev, [curr.name]: '' };
+          prev = { ...prev, [curr.name]: curr.default || '' };
           break;
       }
       return prev;
@@ -178,6 +182,7 @@ const hasConstructorInputs = computed(
               :name="input.name"
               :placeholder="input.name"
               :label="input.name"
+              :data-testid="`constructor-input-${input.name}`"
             />
           </div>
         </template>

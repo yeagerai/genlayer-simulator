@@ -81,32 +81,33 @@ const handleCallWriteMethod = async () => {
   });
 };
 
-const resetInputs = () => {
+const resetInputs = (withDefaults: boolean = false) => {
   props.method.inputs.forEach((input: any) => {
-    let defaultValue;
+    let defaultValue = withDefaults ? input.default || '' : '';
+    let initialValue;
 
     switch (input.type) {
       case 'uint256':
       case 'float':
-        defaultValue = '0';
+        initialValue = defaultValue || '0';
         break;
       case 'bool':
-        defaultValue = 'false';
+        initialValue = defaultValue || 'false';
         break;
       case 'string':
-        defaultValue = '';
+        initialValue = defaultValue || '';
         break;
       default:
-        defaultValue = '';
+        initialValue = defaultValue || '';
         break;
     }
 
-    inputs.value[input.name] = defaultValue;
+    inputs.value[input.name] = initialValue;
   });
 };
 
 onMounted(() => {
-  resetInputs();
+  resetInputs(true);
 });
 </script>
 
