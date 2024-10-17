@@ -211,6 +211,10 @@ export function useContractQueries() {
         type: 'method',
         status: 'PENDING',
         data: {},
+        decodedData: {
+          functionName: method,
+          args,
+        },
       });
       return true;
     } catch (error) {

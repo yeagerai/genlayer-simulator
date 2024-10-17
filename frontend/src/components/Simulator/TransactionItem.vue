@@ -16,6 +16,7 @@ const nodeStore = useNodeStore();
 const props = defineProps<{
   transaction: TransactionItem;
 }>();
+console.log('🚀 ~ transaction:', props.transaction);
 
 const isDetailsModalOpen = ref(false);
 
@@ -55,7 +56,7 @@ const shortHash = computed(() => {
     <div class="grow truncate text-left text-[11px] font-medium">
       {{
         transaction.type === 'method'
-          ? transaction.data.data?.function_name
+          ? transaction.decodedData?.functionName
           : 'Deploy'
       }}
     </div>

@@ -32,6 +32,10 @@ export interface TransactionItem {
   contractAddress: string;
   localContractId: string;
   data?: any;
+  decodedData?: {
+    functionName: string;
+    args: any[];
+  };
 }
 
 export type UIMode = 'light' | 'dark';
