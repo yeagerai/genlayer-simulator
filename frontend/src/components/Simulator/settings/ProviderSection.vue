@@ -53,7 +53,7 @@ const handleResetProviders = async () => {
 <template>
   <PageSection>
     <template #title
-      >Providers Presets
+      >Provider Presets
       <MoreInfo
         text="You can add more providers here, then create new validators using those presets."
       />

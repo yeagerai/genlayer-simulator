@@ -102,7 +102,7 @@ const providerOptions = ref<string[]>([]);
 
 const availablePluginOptions = computed(() => {
   return pluginOptions.value.map((plugin) => {
-    const exists = checkExistingConfig(
+    const exists = checkExistingPreset(
       newProviderData.provider,
       newProviderData.model,
       plugin,
@@ -118,7 +118,7 @@ const availablePluginOptions = computed(() => {
 
 const availableModelOptions = computed(() => {
   return modelOptions.value.map((model) => {
-    const exists = checkExistingConfig(
+    const exists = checkExistingPreset(
       newProviderData.provider,
       model,
       newProviderData.plugin,
@@ -132,20 +132,20 @@ const availableModelOptions = computed(() => {
   });
 });
 
-const checkExistingConfig = (
+const checkExistingPreset = (
   provider: string,
   model: string,
   plugin: string,
 ) => {
   return nodeStore.nodeProviders.some(
-    (config) =>
-      config.provider === provider &&
-      config.model === model &&
-      config.plugin === plugin,
+    (preset) =>
+      preset.provider === provider &&
+      preset.model === model &&
+      preset.plugin === plugin,
   );
 };
 
-const configAlreadyExists = computed(() => {
+const presetAlreadyExists = computed(() => {
   return nodeStore.nodeProviders.some(
     (provider) =>
       provider.provider === newProviderData.provider &&
@@ -221,7 +221,7 @@ const checkRules = () => {
 
           const availableModel = modelOptions.value.find(
             (model) =>
-              !checkExistingConfig(
+              !checkExistingPreset(
                 newProviderData.provider,
                 model,
                 newProviderData.plugin,
@@ -316,7 +316,7 @@ const configurationError = computed(() => {
 <template>
   <Modal @close="emit('close')" @onOpen="tryInitValues" wide>
     <template #title v-if="isCreateMode">New Provider Preset</template>
-    <template #title v-else>Provider Config #{{ provider?.id }}</template>
+    <template #title v-else>Provider Preset #{{ provider?.id }}</template>
     <template #info v-if="provider">
       <div
         class="flex flex-row items-center justify-center gap-4 rounded-md text-center"
@@ -426,8 +426,8 @@ const configurationError = computed(() => {
           />
         </div>
 
-        <Alert warning v-if="configAlreadyExists">
-          A config with this provider and model already exists.
+        <Alert warning v-if="presetAlreadyExists">
+          A preset with this provider and model already exists.
         </Alert>
       </template>
 
@@ -497,7 +497,7 @@ const configurationError = computed(() => {
       <Btn
         v-if="isCreateMode"
         @click="handleCreateProvider"
-        :disabled="errors.length > 0 || configAlreadyExists"
+        :disabled="errors.length > 0 || presetAlreadyExists"
         testId="btn-create-provider"
         :loading="isLoading"
       >

@@ -11,7 +11,7 @@ const props = defineProps({
 
 <template>
   <QuestionMarkCircleIcon
-    class="h-3 w-3 opacity-70 hover:opacity-100"
+    class="h-3 w-3 shrink-0 opacity-70 hover:opacity-100"
     v-tooltip="text"
   />
 </template>
