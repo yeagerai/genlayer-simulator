@@ -15,9 +15,9 @@ const { contractAbiQuery } = useContractQueries();
 const { data, isPending, isError, error, isRefetching } = contractAbiQuery;
 
 const readMethods = computed(() => {
-  return data.value.abi
-    .filter((method: ContractMethod) => method.type !== 'constructor')
-    .filter((method: ContractMethod) => method.name.startsWith('get_'));
+  return (data.value.abi as ContractMethod[])
+    .filter((method) => method.type !== 'constructor')
+    .filter((method) => method.name.startsWith('get_'));
 });
 </script>
 

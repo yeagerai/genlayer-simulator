@@ -35,7 +35,7 @@ def test_storage(setup_validators, from_account):
 
     # Deploy Contract
     contract_address, transaction_response_deploy = deploy_intelligent_contract(
-        from_account, contract_code, f'{{"initial_storage": "{INITIAL_STATE}"}}'
+        from_account, contract_code, [INITIAL_STATE]
     )
 
     assert has_success_status(transaction_response_deploy)
