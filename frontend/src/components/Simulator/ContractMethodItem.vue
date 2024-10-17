@@ -94,7 +94,7 @@ const resetInputs = () => {
         defaultValue = 'false';
         break;
       case 'string':
-        defaultValue = '""';
+        defaultValue = '';
         break;
       default:
         defaultValue = '';
