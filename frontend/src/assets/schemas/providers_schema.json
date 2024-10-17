@@ -1,0 +1,370 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Provider",
+  "type": "object",
+  "properties": {
+    "provider": {
+      "type": "string",
+      "examples": ["ollama", "heuristai", "openai", "anthropic"]
+    },
+    "model": {
+      "type": "string"
+    },
+    "config": {
+      "type": "object"
+    },
+    "plugin": {
+      "$comment": "plugin to be loaded by the simulator to interact with the provider",
+      "enum": ["openai", "ollama", "anthropic"]
+    },
+    "plugin_config": {
+      "type": "object"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "provider": { "const": "ollama" }
+        }
+      },
+      "then": {
+        "properties": {
+          "plugin": {
+            "const": "ollama"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "provider": { "const": "heuristai" }
+        }
+      },
+      "then": {
+        "properties": {
+          "plugin": {
+            "const": "openai"
+          },
+          "model": {
+            "enum": [
+              "mistralai/mixtral-8x22b-instruct",
+              "meta-llama/llama-3.1-405b-instruct",
+              "meta-llama/llama-3-70b-instruct"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "provider": { "const": "openai" }
+        }
+      },
+      "then": {
+        "properties": {
+          "plugin": {
+            "const": "openai"
+          },
+          "model": {
+            "enum": ["gpt-4", "gpt-4o", "gpt-4o-mini", "o1-preview", "o1-mini"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "provider": { "const": "anthropic" }
+        }
+      },
+      "then": {
+        "properties": {
+          "plugin": {
+            "const": "anthropic"
+          },
+          "model": {
+            "enum": [
+              "claude-3-5-sonnet-20240620",
+              "claude-3-opus-20240229",
+              "claude-3-sonnet-20240229",
+              "claude-3-haiku-20240307"
+            ]
+          }
+        }
+      }
+    },
+
+    {
+      "if": {
+        "properties": {
+          "plugin": { "const": "ollama" }
+        }
+      },
+      "then": {
+        "properties": {
+          "plugin_config": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "api_url": {
+                "type": "string",
+                "$comment": "Environment variable that contains the API key",
+                "default": "http://ollama:11434/api/",
+                "minLength": 1
+              }
+            }
+          },
+
+          "config": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "mirostat": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2,
+                "default": 0
+              },
+
+              "mirostat_eta": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "multipleOf": 0.01,
+                "default": 0.1
+              },
+              "microstat_tau": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 10,
+                "multipleOf": 0.1,
+                "default": 5
+              },
+              "num_ctx": {
+                "enum": [512, 1028, 2048, 4096],
+                "default": 2048,
+                "$comment": "this needs to be a per model value"
+              },
+              "num_qga": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20,
+                "default": 8
+              },
+              "num_gpu": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 16,
+                "default": 0
+              },
+              "num_thread": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 16,
+                "default": 2
+              },
+              "repeat_last_n": {
+                "enum": [8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096],
+                "default": 64
+              },
+              "repeat_penalty": {
+                "type": "number",
+                "minimum": 1.0,
+                "maximum": 2.0,
+                "multipleOf": 0.1,
+                "default": 1.1
+              },
+              "temprature": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1.5,
+                "multipleOf": 0.1,
+                "default": 0.8
+              },
+              "seed": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000,
+                "default": 0
+              },
+              "stop": {
+                "const": "",
+                "default": ""
+              },
+              "tfs_z": {
+                "type": "number",
+                "minimum": 1.0,
+                "maximum": 2.0,
+                "multipleOf": 0.1,
+                "default": 1.0
+              },
+              "num_predict": {
+                "enum": [-2, -1, 32, 64, 128, 256, 512],
+                "default": 128
+              },
+              "top_k": {
+                "type": "integer",
+                "minimum": 2,
+                "maximum": 100,
+                "default": 40
+              },
+              "top_p": {
+                "type": "number",
+                "minimum": 0.5,
+                "maximum": 0.99,
+                "multipleOf": 0.01,
+                "default": 0.9
+              }
+            },
+            "required": [
+              "mirostat",
+              "mirostat_eta",
+              "microstat_tau",
+              "num_ctx",
+              "num_qga",
+              "num_gpu",
+              "num_thread",
+              "repeat_last_n",
+              "repeat_penalty",
+              "temprature",
+              "seed",
+              "stop",
+              "tfs_z",
+              "num_predict",
+              "top_k",
+              "top_p"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "plugin": { "const": "openai" }
+        }
+      },
+      "then": {
+        "properties": {
+          "plugin_config": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "api_key_env_var": {
+                "type": "string",
+                "$comment": "Environment variable that contains the API key",
+                "default": "OPENAIKEY",
+                "minLength": 1
+              },
+              "api_url": {
+                "type": ["string", "null"],
+                "$comment": "URL of the API endpoint. Leave empty to use the official OpenAI API endpoint."
+              }
+            },
+            "required": ["api_key_env_var", "api_url"]
+          },
+          "config": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "temperature": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "multipleOf": 0.05,
+                "default": 0.75
+              },
+              "max_tokens": {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 2000,
+                "multipleOf": 10,
+                "default": 500
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "plugin": { "const": "anthropic" }
+        }
+      },
+      "then": {
+        "properties": {
+          "plugin_config": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "api_key_env_var": {
+                "type": "string",
+                "$comment": "Environment variable that contains the API key",
+                "default": "ANTHROPIC_API_KEY",
+                "minLength": 1
+              },
+              "api_url": {
+                "type": ["string", "null"],
+                "$comment": "URL of the API endpoint. Leave empty to use the official anthropic endpoint."
+              }
+            },
+            "required": ["api_key_env_var", "api_url"]
+          },
+          "config": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "temperature": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "multipleOf": 0.05,
+                "default": 0.75
+              },
+              "max_tokens": {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 2000,
+                "multipleOf": 10,
+                "default": 500
+              },
+              "top_k": {
+                "type": "integer",
+                "minimum": 2,
+                "maximum": 100,
+                "default": 40
+              },
+              "top_p": {
+                "type": "number",
+                "minimum": 0.5,
+                "maximum": 0.99,
+                "multipleOf": 0.01,
+                "default": 0.9
+              },
+              "timeout": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 60,
+                "default": 10
+              },
+              "stop_sequences": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "default": []
+              }
+            },
+            "required": ["max_tokens"]
+          }
+        }
+      }
+    }
+  ],
+  "required": ["provider", "model", "config", "plugin", "plugin_config"],
+  "additionalProperties": false
+}

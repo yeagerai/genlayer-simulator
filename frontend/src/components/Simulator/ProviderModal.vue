@@ -2,7 +2,7 @@
 import { useNodeStore } from '@/stores';
 import { notify } from '@kyvg/vue3-notification';
 import Alert from '../global/Alert.vue';
-import providerSchema from '../../../../backend/node/create_nodes/providers_schema.json';
+import providerSchema from '../../assets/schemas/providers_schema.json';
 import { computed, markRaw, reactive, ref, watch } from 'vue';
 import Ajv2020 from 'ajv/dist/2020';
 import { type ValidateFunction } from 'ajv/dist/2020';
