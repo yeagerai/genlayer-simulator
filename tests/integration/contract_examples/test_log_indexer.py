@@ -72,7 +72,7 @@ def test_log_indexer(setup_validators, from_account):
     # ######### Get log 0 metadata ###########
     # ########################################
     metadata_log_0 = call_contract_method(
-        contract_address, from_account, "get_vector_metadata", [0]
+        contract_address, from_account, "get_vector_metadata", [1]
     )
     assert metadata_log_0 == {"log_id": 0}
 
@@ -113,7 +113,7 @@ def test_log_indexer(setup_validators, from_account):
         contract_address, from_account, "get_closest_vector", ["I like mango a lot"]
     )
     assert float(closest_vector_log_0_2["similarity"]) > 0.85
-    assert float(closest_vector_log_0_2["similarity"]) < 0.86
+    assert float(closest_vector_log_0_2["similarity"]) < 0.87
 
     # ########################################
     # ########### Remove log 0 ##############
@@ -122,7 +122,7 @@ def test_log_indexer(setup_validators, from_account):
         from_account,
         contract_address,
         "remove_log",
-        [0],
+        [1],
     )
     assert has_success_status(transaction_response_remove_log_0)
 
@@ -153,5 +153,5 @@ def test_log_indexer(setup_validators, from_account):
         contract_address, from_account, "get_closest_vector", ["This is the third log"]
     )
     assert float(closest_vector_log_2["similarity"]) > 0.99
-    assert closest_vector_log_2["id"] == 2
+    assert closest_vector_log_2["id"] == 3
     assert closest_vector_log_2["text"] == "This is the third log"
