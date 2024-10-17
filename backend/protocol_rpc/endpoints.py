@@ -93,6 +93,7 @@ def add_provider(llm_provider_registry: LLMProviderRegistry, params: dict) -> in
         plugin=params["plugin"],
         plugin_config=params["plugin_config"],
     )
+
     validate_provider(provider)
 
     return llm_provider_registry.add(provider)
@@ -128,9 +129,9 @@ def create_validator(
     plugin_config: dict | None = None,
 ) -> dict:
     # fallback for default provider
-    # TODO: only accept all or none of the config fields
     llm_provider = None
-    if not (config and plugin and plugin_config):
+
+    if config is None or plugin is None or plugin_config is None:
         llm_provider = get_default_provider_for(provider, model)
     else:
         llm_provider = LLMProvider(

@@ -95,10 +95,12 @@ watch(
                 </div>
 
                 <div v-if="$slots.info">
-                  <div
-                    class="block rounded-md bg-gray-100 p-2 text-center font-semibold text-gray-600 dark:bg-gray-600 dark:text-white"
-                  >
-                    <slot name="info" />
+                  <div class="flex justify-center">
+                    <div
+                      class="rounded-md bg-slate-200 p-2 text-center font-semibold text-gray-600 dark:bg-zinc-600 dark:text-white"
+                    >
+                      <slot name="info" />
+                    </div>
                   </div>
                 </div>
 

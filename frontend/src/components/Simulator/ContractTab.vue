@@ -16,7 +16,7 @@ const emit = defineEmits(['closeContract', 'selectContract']);
 const tab = ref<HTMLElement | null>(null);
 
 const tryScrollToTab = () => {
-  if (props.isActive) {
+  if (props.isActive && !props.isHomeTab) {
     tab.value?.scrollIntoView();
   }
 };

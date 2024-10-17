@@ -186,7 +186,7 @@ class OllamaPlugin:
         installed_ollama_models = []
         for ollama_model in ollama_models_result["models"]:
             installed_ollama_models.append(ollama_model["name"].split(":")[0])
-        return model in installed_ollama_models
+        return model in installed_ollama_models and self.is_available()
 
 
 class OpenAIPlugin:
@@ -215,7 +215,7 @@ class OpenAIPlugin:
         """
         Model checks are done by the shema providers_schema.json
         """
-        return True
+        return self.is_available()
 
 
 class AnthropicPlugin:
@@ -278,7 +278,7 @@ class AnthropicPlugin:
         """
         Model checks are done by the shema providers_schema.json
         """
-        return True
+        return self.is_available()
 
     def get_api_key(self):
         return os.environ.get(self.api_key_env_var)

@@ -88,13 +88,20 @@ describe('useNodeStore', () => {
 
   it('should fetch validators data successfully', async () => {
     mockRpcClient.getValidators.mockResolvedValue([]);
-    mockRpcClient.getProvidersAndModels.mockResolvedValue([]);
 
     await nodeStore.getValidatorsData();
 
     expect(mockRpcClient.getValidators).toHaveBeenCalled();
-    expect(mockRpcClient.getProvidersAndModels).toHaveBeenCalled();
     expect(nodeStore.isLoadingValidatorData).toBe(false);
+  });
+
+  it('should fetch providers data successfully', async () => {
+    mockRpcClient.getProvidersAndModels.mockResolvedValue([]);
+
+    await nodeStore.getProvidersData();
+
+    expect(mockRpcClient.getProvidersAndModels).toHaveBeenCalled();
+    expect(nodeStore.isLoadingProviders).toBe(false);
   });
 
   it('should handle error when fetching validators data', async () => {
@@ -131,6 +138,8 @@ describe('useNodeStore', () => {
       provider: 'provider2',
       model: 'model2',
       config: '{}',
+      plugin: 'openai',
+      plugin_config: {},
     };
 
     nodeStore.validators = [testValidator1];
