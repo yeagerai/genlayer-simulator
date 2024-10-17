@@ -37,3 +37,4 @@ jobs:
     name: Build images and push to DockerHub # Since GH Actions do not trigger other GH Actions (https://github.com/orgs/community/discussions/25702) we trigger it manually
     uses: ./.github/workflows/docker-build-and-push-all.yml
     needs: release
+    secrets: inherit

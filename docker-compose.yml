@@ -10,7 +10,8 @@ services:
       - ./examples:/app/src/assets/examples
       - ./frontend/src:/app/src
     depends_on:
-      - jsonrpc
+      jsonrpc:
+        condition: service_healthy
     expose:
       - "${FRONTEND_PORT}"
 

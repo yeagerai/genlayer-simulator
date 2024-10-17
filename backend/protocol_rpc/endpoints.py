@@ -37,7 +37,10 @@ from backend.protocol_rpc.transactions_parser import (
 )
 from backend.errors.errors import InvalidAddressError, InvalidTransactionError
 
-from backend.database_handler.transactions_processor import TransactionsProcessor
+from backend.database_handler.transactions_processor import (
+    TransactionAddressFilter,
+    TransactionsProcessor,
+)
 from backend.node.base import Node
 from backend.node.genvm.types import ExecutionMode
 
@@ -487,6 +490,20 @@ def send_raw_transaction(
     return transaction_hash
 
 
+def get_transactions_for_address(
+    transactions_processor: TransactionsProcessor,
+    accounts_manager: AccountsManager,
+    address: str,
+    filter: str = TransactionAddressFilter.ALL.value,
+) -> list[dict]:
+    if not accounts_manager.is_valid_address(address):
+        raise InvalidAddressError(address)
+
+    return transactions_processor.get_transactions_for_address(
+        address, TransactionAddressFilter(filter)
+    )
+
+
 def register_all_rpc_endpoints(
     jsonrpc: JSONRPC,
     msg_handler: MessageHandler,
@@ -600,4 +617,8 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint(
         partial(get_transaction_count, transactions_processor),
         method_name="eth_getTransactionCount",
+    )
+    register_rpc_endpoint(
+        partial(get_transactions_for_address, transactions_processor, accounts_manager),
+        method_name="sim_getTransactionsForAddress",
     )
