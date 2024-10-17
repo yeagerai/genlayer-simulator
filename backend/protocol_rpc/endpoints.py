@@ -404,18 +404,10 @@ def call(
         contract_snapshot_factory=partial(ContractSnapshot, session=session),
     )
 
-    method_args = decoded_data.function_args
-    if isinstance(method_args, str):
-        try:
-            method_args = json.loads(method_args)
-        except json.JSONDecodeError:
-            method_args = [method_args]
-
     return node.get_contract_data(
         code=contract_account["data"]["code"],
         state=contract_account["data"]["state"],
-        method_name=decoded_data.function_name,
-        method_args=method_args,
+        calldata=decoded_data.calldata,
     )
 
 
@@ -467,7 +459,7 @@ def send_raw_transaction(
         transaction_data = {
             "contract_address": new_contract_address,
             "contract_code": decoded_data.contract_code,
-            "constructor_args": decoded_data.constructor_args,
+            "calldata": decoded_data.calldata,
         }
         result["contract_address"] = new_contract_address
         to_address = None
@@ -480,10 +472,7 @@ def send_raw_transaction(
                 to_address, f"Invalid address to_address: {to_address}"
             )
         decoded_data = decode_method_call_data(decoded_transaction.data)
-        transaction_data = {
-            "function_name": decoded_data.function_name,
-            "function_args": decoded_data.function_args,
-        }
+        transaction_data = {"calldata": decoded_data.calldata}
         transaction_type = 2
         leader_only = decoded_data.leader_only
 

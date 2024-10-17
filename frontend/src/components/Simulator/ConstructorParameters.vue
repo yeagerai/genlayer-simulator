@@ -9,6 +9,7 @@ import { notify } from '@kyvg/vue3-notification';
 import TextAreaInput from '@/components/global/inputs/TextAreaInput.vue';
 import FieldError from '@/components/global/fields/FieldError.vue';
 import { type ContractMethod } from '@/types';
+import * as calldata from '@/calldata';
 
 const props = defineProps<{
   leaderOnly: boolean;
@@ -23,8 +24,8 @@ const inputParams = ref<{ [k: string]: any }>({});
 
 const constructorInputs = computed(
   () =>
-    data.value?.abi.find(
-      (method: ContractMethod) => method.type === 'constructor',
+    (data.value?.abi as ContractMethod[] | undefined)?.find(
+      (method) => method.type === 'constructor',
     )?.inputs,
 );
 
@@ -48,12 +49,15 @@ const jsonParams = ref('{}');
 const mode = ref<'json' | 'form'>('form');
 
 const handleDeployContract = async () => {
-  let constructorParams = {};
+  let constructorParams: calldata.CalldataEncodable[];
 
   if (mode.value === 'json') {
     try {
-      const json = JSON.parse(jsonParams.value || '{}');
-      constructorParams = mapInputs(json);
+      const data = calldata.parse(jsonParams.value || '{}');
+      if (!(data instanceof Array)) {
+        throw new Error('constructor parameters must be an array');
+      }
+      constructorParams = data;
     } catch (error) {
       console.error(error);
       notify({
@@ -61,9 +65,18 @@ const handleDeployContract = async () => {
         text: 'Please provide valid JSON',
         type: 'error',
       });
+      return;
     }
   } else {
-    constructorParams = mapInputs(inputParams.value);
+    constructorParams = Object.keys(inputParams.value).map((key) => {
+      const val = inputParams.value[key];
+      if (
+        constructorInputs.value?.find((x) => x.name === key)?.type === 'string'
+      ) {
+        return val;
+      }
+      return calldata.parse(val);
+    });
   }
 
   await deployContract(constructorParams, props.leaderOnly);
@@ -77,16 +90,16 @@ const setInputParams = (inputs: { [k: string]: any }) => {
     .reduce((prev: any, curr: any) => {
       switch (curr.type) {
         case 'bool':
-          prev = { ...prev, [curr.name]: false };
+          prev = { ...prev, [curr.name]: 'false' };
           break;
         case 'string':
           prev = { ...prev, [curr.name]: '' };
           break;
-        case 'uint256':
-          prev = { ...prev, [curr.name]: 0 };
+        case 'int':
+          prev = { ...prev, [curr.name]: '0' };
           break;
-        case 'float':
-          prev = { ...prev, [curr.name]: 0.0 };
+        case 'None':
+          prev = { ...prev, [curr.name]: 'null' };
           break;
         default:
           prev = { ...prev, [curr.name]: '' };
@@ -101,28 +114,11 @@ const setInputParams = (inputs: { [k: string]: any }) => {
 const toggleMode = () => {
   mode.value = mode.value === 'json' ? 'form' : 'json';
   if (mode.value === 'json') {
-    jsonParams.value = JSON.stringify(inputParams.value || {}, null, 2);
+    throw new Error('json is unsupported right now');
   } else {
-    inputParams.value = JSON.parse(jsonParams.value || '{}');
+    inputParams.value = {};
   }
 };
-
-const mapInputs = (inputs: { [k: string]: string }) =>
-  Object.keys(inputs || {})
-    .map((key) => ({
-      name: key,
-      type: inputs[key],
-      value: inputs[key],
-    }))
-    .reduce((prev, curr) => {
-      if (typeof curr.value === 'boolean') {
-        prev = { ...prev, [curr.name]: curr.value ? 'True' : 'False' };
-      } else {
-        prev = { ...prev, [curr.name]: curr.value };
-      }
-
-      return prev;
-    }, {});
 
 watch(
   () => constructorInputs.value,
@@ -175,7 +171,7 @@ const hasConstructorInputs = computed(
         :class="isDeploying && 'pointer-events-none opacity-60'"
       >
         <template v-if="mode === 'form'">
-          <div v-for="input in constructorInputs" :key="input">
+          <div v-for="input in constructorInputs" :key="input.name">
             <component
               :is="inputMap.getComponent(input.type)"
               v-model="inputParams[input.name]"

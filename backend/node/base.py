@@ -2,6 +2,7 @@ from contextlib import redirect_stdout
 from dataclasses import asdict
 import io
 import json
+import base64
 from typing import Callable, Optional
 
 from backend.domain.types import Validator, Transaction, TransactionType
@@ -37,16 +38,17 @@ class Node:
     async def exec_transaction(self, transaction: Transaction) -> Receipt:
         transaction_data = transaction.data
         if transaction.type == TransactionType.DEPLOY_CONTRACT:
+            calldata = base64.b64decode(transaction_data["calldata"])
             receipt = await self.deploy_contract(
                 transaction.from_address,
                 transaction_data["contract_code"],
-                transaction_data["constructor_args"],
+                calldata,
             )
         elif transaction.type == TransactionType.RUN_CONTRACT:
+            calldata = base64.b64decode(transaction_data["calldata"])
             receipt = await self.run_contract(
                 transaction.from_address,
-                transaction_data["function_name"],
-                transaction_data["function_args"],
+                calldata,
             )
         else:
             receipt = ...
@@ -68,32 +70,30 @@ class Node:
         self,
         from_address: str,
         code_to_deploy: str,
-        constructor_args: dict,
+        calldata: bytes,
     ) -> Receipt:
-        parsed_construction_args = json.loads(constructor_args)
         receipt = await self.genvm.deploy_contract(
-            from_address, code_to_deploy, parsed_construction_args, self.leader_receipt
+            from_address, code_to_deploy, calldata, self.leader_receipt
         )
         return self.parse_transaction_execution_receipt(receipt)
 
-    async def run_contract(
-        self, from_address: str, function_name: str, args: str
-    ) -> Receipt:
-        parsed_args = json.loads(args)
+    async def run_contract(self, from_address: str, calldata: bytes) -> Receipt:
         receipt = await self.genvm.run_contract(
-            from_address, function_name, parsed_args, self.leader_receipt
+            from_address, calldata, self.leader_receipt
         )
 
         return self.parse_transaction_execution_receipt(receipt)
 
     def get_contract_data(
-        self, code: str, state: str, method_name: str, method_args: list
+        self,
+        code: str,
+        state: str,
+        calldata: bytes,
     ):
         result = self.genvm.get_contract_data(
             code,
             state,
-            method_name,
-            method_args,
+            calldata,
             self.contract_snapshot_factory,
         )
 

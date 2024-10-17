@@ -9,6 +9,7 @@ from sqlalchemy import or_, and_
 from .models import TransactionStatus
 from eth_utils import to_bytes, keccak, is_address
 import json
+import base64
 
 
 class TransactionAddressFilter(Enum):
@@ -51,6 +52,24 @@ class TransactionsProcessor:
         }
 
     @staticmethod
+    def _transaction_data_to_str(data: dict) -> str:
+        """
+        NOTE: json doesn't support bytes object, so they need to be encoded somehow
+            Common approaches can be: array, hex string, base64 string
+            Array takes a lot of space (extra comma for each element)
+            Hex is double in size
+            Base64 is 1.33 in size
+            So base64 is chosen
+        """
+
+        def data_encode(d):
+            if isinstance(d, bytes):
+                return str(base64.b64encode(d), encoding="ascii")
+            raise TypeError("Can't encode #{d}")
+
+        return json.dumps(data, default=data_encode)
+
+    @staticmethod
     def _generate_transaction_hash(
         from_address: str,
         to_address: str,
@@ -65,7 +84,8 @@ class TransactionsProcessor:
         to_address_bytes = (
             to_bytes(hexstr=to_address) if is_address(to_address) else None
         )
-        data_bytes = to_bytes(text=json.dumps(data))
+
+        data_bytes = to_bytes(text=TransactionsProcessor._transaction_data_to_str(data))
 
         tx_elements = [
             from_address_bytes,
@@ -113,7 +133,7 @@ class TransactionsProcessor:
             hash=transaction_hash,
             from_address=from_address,
             to_address=to_address,
-            data=data,
+            data=json.loads(self._transaction_data_to_str(data)),
             value=value,
             type=type,
             status=TransactionStatus.PENDING,

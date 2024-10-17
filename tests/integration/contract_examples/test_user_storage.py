@@ -44,7 +44,7 @@ def test_user_storage(setup_validators):
     # Deploy Contract
     # Deploy Contract
     contract_address, transaction_response_deploy = deploy_intelligent_contract(
-        from_account_a, contract_code, "{}"
+        from_account_a, contract_code, []
     )
 
     assert has_success_status(transaction_response_deploy)

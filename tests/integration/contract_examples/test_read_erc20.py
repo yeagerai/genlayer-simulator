@@ -29,7 +29,7 @@ def test_read_erc20(setup_validators, from_account):
     last_contract_address, transaction_response_deploy = deploy_intelligent_contract(
         from_account,
         contract_code,
-        json.dumps({"total_supply": TOKEN_TOTAL_SUPPLY}),
+        [TOKEN_TOTAL_SUPPLY],
     )
     assert has_success_status(transaction_response_deploy)
 
@@ -44,7 +44,7 @@ def test_read_erc20(setup_validators, from_account):
             deploy_intelligent_contract(
                 from_account,
                 contract_code,
-                json.dumps({"token_contract": last_contract_address}),
+                [last_contract_address],
             )
         )
         assert has_success_status(transaction_response_deploy)

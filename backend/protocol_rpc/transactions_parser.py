@@ -1,7 +1,7 @@
 # rpc/transaction_utils.py
 
 import rlp
-from rlp.sedes import text
+from rlp.sedes import text, binary
 from rlp.exceptions import DeserializationError, SerializationError
 from eth_account import Account
 from eth_account._utils.legacy_transactions import Transaction, vrs_from
@@ -105,8 +105,7 @@ def decode_method_call_data(data: str) -> DecodedMethodCallData:
     leader_only = getattr(data_decoded, "leader_only", False)
 
     return DecodedMethodCallData(
-        function_name=data_decoded["function_name"],
-        function_args=data_decoded["function_args"],
+        calldata=data_decoded["calldata"],
         leader_only=leader_only,
     )
 
@@ -126,7 +125,7 @@ def decode_deployment_data(data: str) -> DecodedDeploymentData:
 
     return DecodedDeploymentData(
         contract_code=data_decoded["contract_code"],
-        constructor_args=data_decoded["constructor_args"],
+        calldata=data_decoded["calldata"],
         leader_only=leader_only,
     )
 
@@ -134,7 +133,7 @@ def decode_deployment_data(data: str) -> DecodedDeploymentData:
 class DeploymentContractTransactionPayload(rlp.Serializable):
     fields = [
         ("contract_code", text),
-        ("constructor_args", text),
+        ("calldata", binary),
         ("leader_only", boolean),
     ]
 
@@ -142,20 +141,18 @@ class DeploymentContractTransactionPayload(rlp.Serializable):
 class DeploymentContractTransactionPayloadDefault(rlp.Serializable):
     fields = [
         ("contract_code", text),
-        ("constructor_args", text),
+        ("calldata", binary),
     ]
 
 
 class MethodCallTransactionPayload(rlp.Serializable):
     fields = [
-        ("function_name", text),
-        ("function_args", text),
+        ("calldata", binary),
         ("leader_only", boolean),
     ]
 
 
 class MethodCallTransactionPayloadDefault(rlp.Serializable):
     fields = [
-        ("function_name", text),
-        ("function_args", text),
+        ("calldata", binary),
     ]

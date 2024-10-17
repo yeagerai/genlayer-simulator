@@ -28,6 +28,12 @@ from backend.protocol_rpc.message_handler.types import (
     EventScope,
 )
 
+from .calldata import (
+    decode as calldata_decode,
+    encode as calldata_encode,
+    to_str as calldata_repr,
+)
+
 
 @contextmanager
 def safe_globals(override_globals: dict[str] = None):
@@ -45,6 +51,15 @@ def safe_globals(override_globals: dict[str] = None):
     finally:
         globals().clear()
         globals().update(old_globals)
+
+
+_FAKE_DECODED_DATA = object()
+
+
+def _calldata_to_str(raw: bytes, decoded):
+    if decoded is _FAKE_DECODED_DATA:
+        return str(base64.b64encode(raw), encoding="ascii")
+    return calldata_repr(decoded)
 
 
 class ContractRunner:
@@ -96,15 +111,13 @@ class GenVM:
         self,
         class_name: str,
         encoded_object: str,
-        method_name: str,
-        args: list[str],
+        calldata: bytes,
         execution_result: ExecutionResultStatus,
         error: Exception,
     ) -> Receipt:
         return Receipt(
             class_name=class_name,
-            method=method_name,
-            args=args,
+            calldata=calldata,
             gas_used=self.contract_runner.gas_used,
             mode=self.contract_runner.mode,
             contract_state=encoded_object,
@@ -119,7 +132,7 @@ class GenVM:
         self,
         from_address: str,
         code_to_deploy: str,
-        constructor_args: dict,
+        calldata_raw: bytes,
         leader_receipt: Receipt | None,
     ):
         class_name = self._get_contract_class_name(code_to_deploy)
@@ -136,6 +149,8 @@ class GenVM:
 
         # Buffers to capture stdout and stderr
         stdout_buffer = io.StringIO()
+
+        calldata = _FAKE_DECODED_DATA
 
         with redirect_stdout(stdout_buffer), safe_globals(
             {
@@ -162,14 +177,19 @@ class GenVM:
 
             encoded_pickled_object = None  # Default value in order to have something to return in case of error
             try:
+                calldata = calldata_decode(calldata_raw)
+                ctor_args = calldata["args"]
+                if not isinstance(ctor_args, list):
+                    raise Exception(
+                        f"Invalid arguments, list expected, got {ctor_args}"
+                    )
                 # Manual instantiation of the class is done to handle async __init__ methods
-                current_contract = contract_class.__new__(
-                    contract_class, **constructor_args
-                )
-                if inspect.iscoroutinefunction(current_contract.__init__):
-                    await current_contract.__init__(**constructor_args)
+                current_contract = contract_class.__new__(contract_class, *ctor_args)
+                ctor_method = getattr(contract_class, "__init__")
+                if inspect.iscoroutinefunction(ctor_method):
+                    await ctor_method(current_contract, *ctor_args)
                 else:
-                    current_contract.__init__(**constructor_args)
+                    ctor_method(current_contract, *ctor_args)
                 pickled_object = pickle.dumps(current_contract)
                 encoded_pickled_object = base64.b64encode(pickled_object).decode(
                     "utf-8"
@@ -212,7 +232,7 @@ class GenVM:
                         EventScope.GENVM,
                         "Deploying contract",
                         {
-                            "constructor_args": constructor_args,
+                            "calldata": _calldata_to_str(calldata_raw, calldata),
                             "output": captured_stdout,
                         },
                     )
@@ -221,8 +241,7 @@ class GenVM:
         return self._generate_receipt(
             class_name,
             encoded_pickled_object,
-            "__init__",
-            [constructor_args],
+            calldata_raw,
             execution_result,
             error,
         )
@@ -230,8 +249,7 @@ class GenVM:
     async def run_contract(
         self,
         from_address: str,
-        function_name: str,
-        args: list,
+        calldata_raw: bytes,
         leader_receipt: Receipt | None,
     ) -> Receipt:
         self.contract_runner.from_address = from_address
@@ -248,6 +266,8 @@ class GenVM:
 
         # Buffers to capture stdout and stderr
         stdout_buffer = io.StringIO()
+
+        calldata = _FAKE_DECODED_DATA
 
         with redirect_stdout(stdout_buffer), safe_globals(
             {
@@ -271,13 +291,21 @@ class GenVM:
             decoded_pickled_object = base64.b64decode(contract_encoded_state)
             current_contract = pickle.loads(decoded_pickled_object)
 
-            function_to_run = getattr(current_contract, function_name, None)
-
+            method_name = "<error parsing>"
+            method_args = []
             try:
+                calldata = calldata_decode(calldata_raw)
+                method_name = calldata["method"]
+                method_args = calldata["args"]
+                if not isinstance(method_args, list):
+                    raise Exception(
+                        f"Invalid arguments, list expected, got {method_args}"
+                    )
+                function_to_run = getattr(current_contract, method_name)
                 if inspect.iscoroutinefunction(function_to_run):
-                    await function_to_run(*args)
+                    await function_to_run(*method_args)
                 else:
-                    function_to_run(*args)
+                    function_to_run(*method_args)
             except Exception as e:
                 trace = traceback.format_exc()
                 error = e
@@ -289,10 +317,9 @@ class GenVM:
                         "write_contract_failed",
                         EventType.ERROR,
                         EventScope.GENVM,
-                        "Error executing method " + function_name + ": " + str(error),
+                        "Error executing method " + method_name + ": " + str(error),
                         {
-                            "method_name": function_name,
-                            "method_args": args,
+                            "calldata": _calldata_to_str(calldata_raw, calldata),
                             "error": str(error),
                             "traceback": f"\n{trace}",
                         },
@@ -316,10 +343,9 @@ class GenVM:
                         "write_contract",
                         EventType.INFO,
                         EventScope.GENVM,
-                        "Execute method: " + function_name,
+                        "Execute method: " + method_name,
                         {
-                            "method_name": function_name,
-                            "method_args": args,
+                            "calldata": _calldata_to_str(calldata_raw, calldata),
                             "output": captured_stdout,
                         },
                     )
@@ -328,8 +354,7 @@ class GenVM:
         return self._generate_receipt(
             class_name,
             encoded_pickled_object,
-            function_name,
-            [args],
+            calldata_raw,
             execution_result,
             error,
         )
@@ -383,16 +408,17 @@ class GenVM:
 
     @staticmethod
     def get_abi_param_type(param_type: str) -> str:
+        # okay, this is unsolvable with current implementation...
         if param_type == "int":
-            return "uint256"
+            return "int"
         if param_type == "str":
             return "string"
         if param_type == "bool":
             return "bool"
         if param_type == "dict":
-            return "bytes"
+            return "any"
         if param_type == "list":
-            return "bytes"
+            return "any"
         if param_type == "None":
             return "None"
         return param_type
@@ -447,8 +473,7 @@ class GenVM:
         self,
         code: str,
         state: str,
-        method_name: str,
-        method_args: list,
+        calldata_raw: bytes,
         contract_snapshot_factory: Callable[[str], ContractSnapshot],
     ) -> Any:
         result = None
@@ -474,6 +499,10 @@ class GenVM:
             # Ensure the class and other necessary elements are in the global namespace if needed
             globals().update(local_namespace)
 
+            calldata = calldata_decode(calldata_raw)
+            method_name = calldata["method"]
+            method_args = calldata["args"]
+
             contract_state = pickle.loads(decoded_pickled_object)
             method_to_call = getattr(contract_state, method_name)
             result = method_to_call(*method_args)
@@ -492,8 +521,7 @@ class GenVM:
                         EventScope.GENVM,
                         "Call method: " + method_name,
                         {
-                            "method_name": method_name,
-                            "method_args": method_args,
+                            "calldata": calldata_repr(calldata),
                             "result": result,
                             "output": captured_stdout,
                         },
@@ -518,19 +546,19 @@ class ExternalContract:
         self.schedule_pending_transaction = schedule_pending_transaction
 
     def __getattr__(self, name):
-        def method(*args, **kwargs):
+        def method(*args):  # kwargs are not supported yet
             if re.match("get_", name):
                 return self.genvm.get_contract_data(
                     self.contract_snapshot.contract_code,
                     self.contract_snapshot.encoded_state,
-                    name,
-                    args,
+                    calldata_encode({"method": name, "args": args}),
                     self.contract_snapshot_factory,
                 )
             else:
                 self.schedule_pending_transaction(
                     PendingTransaction(
-                        address=self.address, method_name=name, args=args
+                        address=self.address,
+                        calldata=calldata_encode({"method": name, "args": args}),
                     )
                 )
 

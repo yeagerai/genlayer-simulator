@@ -6,6 +6,7 @@ import { useInputMap } from '@/hooks';
 import { notify } from '@kyvg/vue3-notification';
 import { ChevronDownIcon } from '@heroicons/vue/16/solid';
 import { useEventTracking, useContractQueries } from '@/hooks';
+import * as calldata from '@/calldata';
 
 const { callWriteMethod, callReadMethod, contract } = useContractQueries();
 const { trackEvent } = useEventTracking();
@@ -19,23 +20,31 @@ const props = defineProps<{
 }>();
 
 const isExpanded = ref(false);
-const inputs = ref<{ [k: string]: any }>({});
+const inputs = ref<{ [k: string]: string }>({});
 const responseMessage = ref('');
 
 const missingParams = computed(() => {
   return props.method.inputs.some(
-    (input: any) => inputs.value[input.name] === '',
+    (input: any) =>
+      typeof inputs.value[input.name] === 'string' &&
+      inputs.value[input.name].trim() === '',
   );
 });
+
+const getArgs = () => {
+  return Object.keys(inputs.value).map((key) => {
+    if (props.method.inputs.find((v) => v.name == key)?.type === 'string') {
+      return inputs.value[key];
+    }
+    return calldata.parse(inputs.value[key]);
+  });
+};
 
 const handleCallReadMethod = async () => {
   responseMessage.value = '';
 
   try {
-    const result = await callReadMethod(
-      props.method.name,
-      Object.values(inputs.value),
-    );
+    const result = await callReadMethod(props.method.name, getArgs());
 
     responseMessage.value = JSON.stringify(result);
 
@@ -55,7 +64,7 @@ const handleCallReadMethod = async () => {
 const handleCallWriteMethod = async () => {
   await callWriteMethod({
     method: props.method.name,
-    params: Object.values(inputs.value),
+    args: getArgs(),
     leaderOnly: props.leaderOnly,
   });
 
@@ -79,10 +88,10 @@ const resetInputs = () => {
     switch (input.type) {
       case 'uint256':
       case 'float':
-        defaultValue = 0;
+        defaultValue = '0';
         break;
       case 'bool':
-        defaultValue = false;
+        defaultValue = 'false';
         break;
       case 'string':
         defaultValue = '';
