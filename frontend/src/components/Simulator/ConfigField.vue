@@ -73,6 +73,10 @@ const tooltip = computed(() => {
   }
   return text.join(' <br/> ');
 });
+
+const testId = computed(() => {
+  return `config-field-${props.name}`;
+});
 </script>
 
 <template>
@@ -96,6 +100,7 @@ const tooltip = computed(() => {
         :max="property.maximum"
         :step="property.multipleOf"
         :invalid="!!error"
+        :testId="testId"
         v-tooltip.right="{
           content: tooltip,
           html: true,
@@ -110,6 +115,7 @@ const tooltip = computed(() => {
         :id="name"
         :name="name"
         :invalid="!!error"
+        :testId="testId"
         v-tooltip.right="{
           content: tooltip,
           html: true,
@@ -125,6 +131,7 @@ const tooltip = computed(() => {
         :name="name"
         :options="property.enum || []"
         :invalid="!!error"
+        :testId="testId"
       />
     </div>
   </div>
