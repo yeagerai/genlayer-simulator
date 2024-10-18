@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { useInputMap } from '@/hooks';
 import StringField from '@/components/global/fields/StringField.vue';
 import IntegerField from '@/components/global/fields/IntegerField.vue';
-import FloatField from '@/components/global/fields/FloatField.vue';
 import BooleanField from '@/components/global/fields/BooleanField.vue';
 
 describe('useInputMap composable', () => {
