@@ -31,18 +31,12 @@ const handleDeployContract = async () => {
   let constructorParams = Object.keys(inputParams.value).map((key) => {
     const val = inputParams.value[key];
 
-    if (
-      constructorInputs.value?.find((x) => x.name === key)?.type === 'string'
-    ) {
+    if (typeof val === 'string') {
       return val;
     }
 
-    console.log('parse:', val);
-
-    return calldata.parse(val);
+    return calldata.parse(String(val));
   });
-
-  console.log(constructorParams);
 
   await deployContract(constructorParams, props.leaderOnly);
 
@@ -55,16 +49,13 @@ const setInputParams = (inputs: { [k: string]: any }) => {
     .reduce((prev: any, curr: any) => {
       switch (curr.type) {
         case 'bool':
-          prev = { ...prev, [curr.name]: 'false' };
+          prev = { ...prev, [curr.name]: false };
           break;
         case 'string':
           prev = { ...prev, [curr.name]: '' };
           break;
         case 'int':
-          prev = { ...prev, [curr.name]: '0' };
-          break;
-        case 'None':
-          prev = { ...prev, [curr.name]: 'null' };
+          prev = { ...prev, [curr.name]: 0 };
           break;
         default:
           prev = { ...prev, [curr.name]: '' };
@@ -73,7 +64,6 @@ const setInputParams = (inputs: { [k: string]: any }) => {
       return prev;
     }, {});
 };
-
 
 watch(
   () => constructorInputs.value,

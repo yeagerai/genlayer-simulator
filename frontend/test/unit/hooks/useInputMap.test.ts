@@ -13,14 +13,9 @@ describe('useInputMap composable', () => {
     expect(component).toBe(StringField);
   });
 
-  it('should return the correct component for type "uint256"', () => {
-    const component = getComponent('uint256');
+  it('should return the correct component for type "int"', () => {
+    const component = getComponent('int');
     expect(component).toBe(IntegerField);
-  });
-
-  it('should return the correct component for type "float"', () => {
-    const component = getComponent('float');
-    expect(component).toBe(FloatField);
   });
 
   it('should return the correct component for type "bool"', () => {
