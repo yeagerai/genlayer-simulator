@@ -5,8 +5,8 @@ import BooleanField from '@/components/global/fields/BooleanField.vue';
 
 export const InputTypesMap: { [k: string]: any } = {
   string: StringField,
-  uint256: IntegerField,
-  float: FloatField,
+  int: IntegerField,
+  float: FloatField, // Remove?
   bool: BooleanField,
 };
 
