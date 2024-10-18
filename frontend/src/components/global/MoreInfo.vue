@@ -1,7 +1,7 @@
 <script setup>
 import { QuestionMarkCircleIcon } from '@heroicons/vue/16/solid';
 
-const props = defineProps({
+defineProps({
   text: {
     type: String,
     required: true,

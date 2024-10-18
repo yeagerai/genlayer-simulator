@@ -1,4 +1,4 @@
-import { By, until, WebDriver } from 'selenium-webdriver';
+import { By, WebDriver } from 'selenium-webdriver';
 
 import { SettingsPage } from '../pages/SettingsPage.js';
 import { ContractsPage } from '../pages/ContractsPage.js';
