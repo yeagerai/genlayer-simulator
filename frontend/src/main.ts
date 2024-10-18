@@ -22,6 +22,7 @@ app.use(router);
 app.use(FloatingVue, {
   themes: {
     tooltip: {
+      distance: 10,
       delay: {
         show: 0,
         hide: 0,

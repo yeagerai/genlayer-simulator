@@ -9,6 +9,7 @@ from sqlalchemy import (
     Integer,
     PrimaryKeyConstraint,
     String,
+    UniqueConstraint,
     func,
     text,
     ForeignKey,
@@ -153,7 +154,12 @@ class Validators(Base):
 
 class LLMProviderDBModel(Base):
     __tablename__ = "llm_provider"
-    __table_args__ = (PrimaryKeyConstraint("id", name="llm_provider_pkey"),)
+    __table_args__ = (
+        PrimaryKeyConstraint("id", name="llm_provider_pkey"),
+        UniqueConstraint(
+            "provider", "model", "plugin", name="unique_provider_model_plugin"
+        ),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, init=False)
     provider: Mapped[str] = mapped_column(String(255))

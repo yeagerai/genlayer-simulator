@@ -20,7 +20,7 @@ const props = defineProps<{
 }>();
 
 const isExpanded = ref(false);
-const inputs = ref<{ [k: string]: string }>({});
+const inputs = ref<{ [k: string]: any }>({});
 const responseMessage = ref('');
 
 const missingParams = computed(() => {
@@ -33,10 +33,13 @@ const missingParams = computed(() => {
 
 const getArgs = () => {
   return Object.keys(inputs.value).map((key) => {
-    if (props.method.inputs.find((v) => v.name == key)?.type === 'string') {
-      return inputs.value[key];
+    let val = inputs.value[key];
+
+    if (typeof val === 'string') {
+      return val;
     }
-    return calldata.parse(inputs.value[key]);
+
+    return calldata.parse(String(inputs.value[key]));
   });
 };
 
@@ -86,12 +89,11 @@ const resetInputs = () => {
     let defaultValue;
 
     switch (input.type) {
-      case 'uint256':
-      case 'float':
-        defaultValue = '0';
+      case 'int':
+        defaultValue = 0;
         break;
       case 'bool':
-        defaultValue = 'false';
+        defaultValue = false;
         break;
       case 'string':
         defaultValue = '';

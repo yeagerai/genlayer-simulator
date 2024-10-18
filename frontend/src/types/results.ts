@@ -8,4 +8,6 @@ export interface GetProvidersAndModelsData
     plugin: string;
     plugin_config: Record<string, any>;
     provider: string;
+    is_available: boolean;
+    is_model_available: boolean;
   }> {}

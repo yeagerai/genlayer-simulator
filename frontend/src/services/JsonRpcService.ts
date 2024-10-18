@@ -7,6 +7,9 @@ import type {
   GetDeployedContractSchemaRequest,
   CreateValidatorRequest,
   UpdateValidatorRequest,
+  AddProviderRequest,
+  UpdateProviderRequest,
+  DeleteProviderRequest,
   TransactionItem,
   GetTransactionCountRequest,
 } from '@/types';
@@ -76,6 +79,43 @@ export class JsonRpcService implements IJsonRpcService {
     );
   }
 
+  async addProvider({
+    provider,
+    model,
+    config,
+    plugin,
+    plugin_config,
+  }: AddProviderRequest): Promise<any> {
+    return this.callRpcMethod<any>(
+      'sim_addProvider',
+      [{ provider, model, config, plugin, plugin_config }],
+      'Error adding provider',
+    );
+  }
+
+  async updateProvider({
+    id,
+    provider,
+    model,
+    config,
+    plugin,
+    plugin_config,
+  }: UpdateProviderRequest): Promise<any> {
+    return this.callRpcMethod<any>(
+      'sim_updateProvider',
+      [id, { provider, model, config, plugin, plugin_config }],
+      'Error updating provider',
+    );
+  }
+
+  async deleteProvider({ id }: DeleteProviderRequest): Promise<any> {
+    return this.callRpcMethod<any>(
+      'sim_deleteProvider',
+      [id],
+      'Error deleting provider',
+    );
+  }
+
   async getProvidersAndModels(): Promise<any> {
     return this.callRpcMethod<any>(
       'sim_getProvidersAndModels',
@@ -84,15 +124,25 @@ export class JsonRpcService implements IJsonRpcService {
     );
   }
 
+  async resetDefaultsLlmProviders(): Promise<any> {
+    return this.callRpcMethod<any>(
+      'sim_resetDefaultsLlmProviders',
+      [],
+      'Error resetting default LLM providers',
+    );
+  }
+
   async createValidator({
     stake,
     provider,
     model,
     config,
+    plugin,
+    plugin_config,
   }: CreateValidatorRequest): Promise<any> {
     return this.callRpcMethod<any>(
       'sim_createValidator',
-      [stake, provider, model, config],
+      [stake, provider, model, config, plugin, plugin_config],
       'Error creating validator',
     );
   }

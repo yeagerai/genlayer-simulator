@@ -51,6 +51,7 @@ export const useSetupStores = () => {
     contractsStore.getInitialOpenedFiles();
     tutorialStore.resetTutorialState();
     nodeStore.getValidatorsData();
+    nodeStore.getProvidersData();
 
     if (accountsStore.privateKeys.length < 1) {
       accountsStore.generateNewAccount();

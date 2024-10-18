@@ -59,6 +59,7 @@ input[type='number'] {
 /* floating-vue customization */
 
 .v-popper--theme-tooltip .v-popper__inner {
+  max-width: 300px;
   font-size: 0.8rem !important;
   padding: 2px 8px !important;
   background: rgba(25, 26, 27, 0.95) !important;

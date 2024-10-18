@@ -6,6 +6,8 @@ RUN --mount=type=cache,target=/root/.npm npm ci
 COPY ./frontend .
 COPY ./examples src/assets/examples
 COPY ./.env .
+COPY ../backend/node/create_nodes/providers_schema.json /app/src/assets/schemas/providers_schema.json
+
 
 FROM base AS dev
 ENTRYPOINT ["npm", "run", "dev"]
