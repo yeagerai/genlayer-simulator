@@ -5,7 +5,7 @@
   "properties": {
     "provider": {
       "type": "string",
-      "examples": ["ollama", "heuristai", "openai", "anthropic"]
+      "examples": ["ollama", "heuristai", "openai", "anthropic", "nvidia"]
     },
     "model": {
       "type": "string"
@@ -53,6 +53,23 @@
               "meta-llama/llama-3.1-405b-instruct",
               "meta-llama/llama-3-70b-instruct"
             ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "provider": { "const": "nvidia" }
+        }
+      },
+      "then": {
+        "properties": {
+          "plugin": {
+            "const": "openai"
+          },
+          "model": {
+            "enum": ["llama-3.1-nemotron-70b-instruct"]
           }
         }
       }
