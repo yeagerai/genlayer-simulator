@@ -53,27 +53,34 @@ async def call_ollama(
     return_streaming_channel: Optional[asyncio.Queue],
 ) -> str:
     url = urljoin(node_config[plugin_config_key]["api_url"], "generate")
-
     data = {"model": node_config["model"], "prompt": prompt}
 
     for name, value in node_config["config"].items():
         data[name] = value
 
-    buffer = ""
-    async for chunk_json in stream_http_response(url, data):
-        chunk = json.loads(chunk_json)
-        if return_streaming_channel is not None:
-            if not chunk.get("done"):
-                await return_streaming_channel.put(chunk)
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            buffer = ""
+            async for chunk_json in stream_http_response(url, data):
+                chunk = json.loads(chunk_json)
+                if return_streaming_channel is not None:
+                    if not chunk.get("done"):
+                        await return_streaming_channel.put(chunk)
+                    else:
+                        await return_streaming_channel.put({"done": True})
+                else:
+                    if chunk.get("done"):
+                        return buffer
+                    result = await process_streaming_buffer(buffer, chunk["response"], regex)
+                    buffer += chunk["response"]
+                    if result["stop"]:
+                        return result["match"]
+        except Exception as e:
+            if attempt < max_retries - 1:
+                continue  # Retry
             else:
-                await return_streaming_channel.put({"done": True})
-        else:
-            if chunk.get("done"):
-                return buffer
-            result = await process_streaming_buffer(buffer, chunk["response"], regex)
-            buffer += chunk["response"]
-            if result["stop"]:
-                return result["match"]
+                return f"Error: {str(e)}"  # Return error after final attempt
 
 
 async def call_openai(
@@ -85,10 +92,17 @@ async def call_openai(
     api_key_env_var = node_config[plugin_config_key]["api_key_env_var"]
     url = node_config[plugin_config_key]["api_url"]
     client = get_openai_client(os.environ.get(api_key_env_var), url)
-    # TODO: OpenAI exceptions need to be caught here
-    stream = get_openai_stream(client, prompt, node_config)
 
-    return await get_openai_output(stream, regex, return_streaming_channel)
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            stream = get_openai_stream(client, prompt, node_config)
+            return await get_openai_output(stream, regex, return_streaming_channel)
+        except Exception as e:
+            if attempt < max_retries - 1:
+                continue  # Retry
+            else:
+                return f"Error: {str(e)}"  # Return error after final attempt
 
 
 def get_openai_client(api_key: str, url: str = None) -> OpenAI:
