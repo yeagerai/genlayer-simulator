@@ -13,6 +13,7 @@ from sqlalchemy import (
     func,
     text,
     ForeignKey,
+    Text
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import (
@@ -117,18 +118,33 @@ class Transactions(Base):
     )
 
 
-class TransactionsAudit(Base):
-    __tablename__ = "transactions_audit"
-    __table_args__ = (PrimaryKeyConstraint("id", name="transactions_audit_pkey"),)
+class RollupTransactions(Base):
+    __tablename__ = "rollup_transactions"
+    __table_args__ = (PrimaryKeyConstraint("id", name="rollup_transactions_pkey"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, init=False)
-    transaction_hash: Mapped[Optional[str]] = mapped_column(
-        String(66),
-        ForeignKey("transactions.hash", ondelete="CASCADE"),
+    from_: Mapped[str] = mapped_column(
+        String(255),
     )
-    data: Mapped[Optional[dict]] = mapped_column(JSONB)
-    created_at: Mapped[Optional[datetime.datetime]] = mapped_column(
-        DateTime(True), server_default=func.current_timestamp(), init=False
+    to_: Mapped[Optional[dict]] = mapped_column(
+        String(255),
+    )
+    gas: Mapped[int] = mapped_column(
+        Integer,
+    )
+    gas_price: Mapped[int] = mapped_column(
+        Integer,
+    )
+    value: Mapped[Optional[int]] = mapped_column(
+        Integer,
+    )
+    input: Mapped[str] = mapped_column(
+        Text,
+    )
+    nonce: Mapped[int] = mapped_column(
+        BigInteger,
+        server_default=text("(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) * 1000)::BIGINT"),
+        init=False
     )
 
 
