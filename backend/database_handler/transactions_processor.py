@@ -2,7 +2,7 @@
 from enum import Enum
 import rlp
 
-from .models import Transactions, TransactionsAudit
+from .models import Transactions, RollupTransactions
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_
 
@@ -10,6 +10,7 @@ from .models import TransactionStatus
 from eth_utils import to_bytes, keccak, is_address
 import json
 import base64
+import time
 
 
 class TransactionAddressFilter(Enum):
@@ -158,12 +159,22 @@ class TransactionsProcessor:
 
         self.session.flush()  # So that `created_at` gets set
 
-        transaction_audit_record = TransactionsAudit(
-            transaction_hash=new_transaction.hash,
-            data=self._parse_transaction_data(new_transaction),
+        rollup_input_data = self._transaction_data_to_str(self._parse_transaction_data(new_transaction))
+        rollup_nonce = int(time.time() * 1000)
+        rollup_transaction_hash = self._generate_transaction_hash(
+            from_address, to_address, rollup_input_data, value, 0, rollup_nonce
         )
-
-        self.session.add(transaction_audit_record)
+        rollup_transaction_record = RollupTransactions(
+            transaction_hash=rollup_transaction_hash,
+            from_=from_address,
+            to_=to_address,
+            gas=0,
+            gas_price=0,
+            value=value,
+            input=rollup_input_data,
+            nonce=rollup_nonce
+        )
+        self.session.add(rollup_transaction_record)
 
         return new_transaction.hash
 
@@ -187,7 +198,27 @@ class TransactionsProcessor:
             self.session.query(Transactions).filter_by(hash=transaction_hash).one()
         )
 
-        transaction.status = new_status
+        # Do not make a rollup transaction when transaction is already finalized.
+        # This is done in set_transaction_result() for exec_transaction().
+        if (transaction.status != TransactionStatus.FINALIZED):
+            transaction.status = new_status
+
+            rollup_input_data = self._transaction_data_to_str(self._parse_transaction_data(transaction))
+            rollup_nonce = int(time.time() * 1000)
+            rollup_transaction_hash = self._generate_transaction_hash(
+                transaction.from_address, transaction.to_address, rollup_input_data, transaction.value, 0, rollup_nonce
+            )
+            rollup_transaction_record = RollupTransactions(
+                transaction_hash=rollup_transaction_hash,
+                from_=transaction.from_address,
+                to_=transaction.to_address,
+                gas=0,
+                gas_price=0,
+                value=transaction.value,
+                input=rollup_input_data,
+                nonce=rollup_nonce
+            )
+            self.session.add(rollup_transaction_record)
 
     def set_transaction_result(self, transaction_hash: str, consensus_data: dict):
         transaction = (
@@ -202,6 +233,23 @@ class TransactionsProcessor:
             transaction_hash,
             TransactionStatus.FINALIZED.value,
         )
+
+        rollup_input_data = self._transaction_data_to_str(self._parse_transaction_data(transaction))
+        rollup_nonce = int(time.time() * 1000)
+        rollup_transaction_hash = self._generate_transaction_hash(
+            transaction.from_address, transaction.to_address, rollup_input_data, transaction.value, 0, rollup_nonce
+        )
+        rollup_transaction_record = RollupTransactions(
+            transaction_hash=rollup_transaction_hash,
+            from_=transaction.from_address,
+            to_=transaction.to_address,
+            gas=0,
+            gas_price=0,
+            value=transaction.value,
+            input=rollup_input_data,
+            nonce=rollup_nonce
+        )
+        self.session.add(rollup_transaction_record)
 
     def get_transaction_count(self, address: str) -> int:
         count = (
