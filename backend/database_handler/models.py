@@ -120,9 +120,13 @@ class Transactions(Base):
 
 class RollupTransactions(Base):
     __tablename__ = "rollup_transactions"
-    __table_args__ = (PrimaryKeyConstraint("id", name="rollup_transactions_pkey"),)
+    __table_args__ = (PrimaryKeyConstraint("transaction_hash", name="rollup_transactions_pkey"),)
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, init=False)
+    transaction_hash: Mapped[str] = mapped_column(
+        String(66),
+        primary_key=True,
+        unique=True
+    )
     from_: Mapped[str] = mapped_column(
         String(255),
     )
@@ -143,8 +147,6 @@ class RollupTransactions(Base):
     )
     nonce: Mapped[int] = mapped_column(
         BigInteger,
-        server_default=text("(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) * 1000)::BIGINT"),
-        init=False
     )
 
 
