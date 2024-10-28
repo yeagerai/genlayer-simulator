@@ -45,24 +45,20 @@ const handleDeployContract = async () => {
 
 const setInputParams = (inputs: { [k: string]: any }) => {
   inputParams.value = inputs
-    .map((input: any) => ({
-      name: input.name,
-      type: input.type,
-      default: input.default,
-    }))
+    .map((input: any) => ({ name: input.name, type: input.type }))
     .reduce((prev: any, curr: any) => {
       switch (curr.type) {
         case 'bool':
           prev = { ...prev, [curr.name]: false };
           break;
         case 'string':
-          prev = { ...prev, [curr.name]: curr.default || '' };
+          prev = { ...prev, [curr.name]: '' };
           break;
         case 'int':
           prev = { ...prev, [curr.name]: 0 };
           break;
         default:
-          prev = { ...prev, [curr.name]: curr.default || '' };
+          prev = { ...prev, [curr.name]: '' };
           break;
       }
       return prev;
