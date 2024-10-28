@@ -114,12 +114,12 @@ describe('Contract Example WizardOfCoin', () => {
     expect(methodResponse, 'get_have_coin result should be visible').not.null;
 
     const methodResponseText = await driver
-      .wait(until.elementTextContains(methodResponse, 'True'), 5000)
+      .wait(until.elementTextContains(methodResponse, 'true'), 5000)
       .getText();
 
     expect(
-      methodResponseText.includes('True'),
-      'get_have_coin result should contain "True"',
+      methodResponseText.includes('true'),
+      'get_have_coin result should contain "true"',
     ).to.be.true;
   });
 

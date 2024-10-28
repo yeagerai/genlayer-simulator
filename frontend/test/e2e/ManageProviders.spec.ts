@@ -1,4 +1,4 @@
-import { By, until, WebDriver } from 'selenium-webdriver';
+import { By, WebDriver } from 'selenium-webdriver';
 
 import { SettingsPage } from '../pages/SettingsPage.js';
 import { ContractsPage } from '../pages/ContractsPage.js';
@@ -15,6 +15,8 @@ const providerParams = {
   model: '0-custom-model',
   plugin: 'openai',
 };
+
+const newApiKey = 'NEW_API_KEY';
 
 describe('Settings - Manage Providers', () => {
   before(async () => {
@@ -40,8 +42,8 @@ describe('Settings - Manage Providers', () => {
 
     expect(
       newProviders.length,
-      'number of providers should be greather than old providers list',
-    ).be.greaterThan(initialProviders.length);
+      'number of providers should be one greather than old providers',
+    ).be.equal(initialProviders.length + 1);
 
     const newProvider = await settingsPage.getFirstProviderWithModelText(
       providerParams.model,
@@ -58,13 +60,38 @@ describe('Settings - Manage Providers', () => {
     await newProvider.click();
     await driver.sleep(500);
 
-    const updateProviderBtn = await driver.wait(
-      until.elementLocated(
-        By.xpath("//button[@data-testid='btn-update-provider']"),
-      ),
+    const apiKeyField = await driver.findElement(
+      By.xpath("//input[@data-testid='config-field-api_key_env_var']"),
+    );
+
+    await apiKeyField.clear();
+    await apiKeyField.sendKeys(newApiKey);
+
+    const updateProviderBtn = await driver.findElement(
+      By.xpath("//button[@data-testid='btn-update-provider']"),
     );
 
     await updateProviderBtn.click();
+    await driver.sleep(500);
+
+    await newProvider.click();
+
+    const newApiKeyField = await driver.findElement(
+      By.xpath("//input[@data-testid='config-field-api_key_env_var']"),
+    );
+
+    const newApiKeyFieldValue = await newApiKeyField.getAttribute('value');
+
+    expect(
+      newApiKeyFieldValue,
+      'api key should be changed to the new value',
+    ).to.equal(newApiKey);
+
+    const newUpdateProviderBtn = await driver.findElement(
+      By.xpath("//button[@data-testid='btn-update-provider']"),
+    );
+
+    await newUpdateProviderBtn.click();
     await driver.sleep(500);
   });
 
@@ -96,17 +123,16 @@ describe('Settings - Manage Providers', () => {
     const confirmDeleteProviderBtn = await customProvider.findElement(
       By.xpath("//button[@data-testid='provider-item-confirm-delete']"),
     );
-    // call delete validator button
-    await confirmDeleteProviderBtn.click();
 
-    const providers = await driver.findElements(
-      By.xpath("//button[@data-testid = 'provider-item']"),
-    );
+    await confirmDeleteProviderBtn.click();
+    await driver.sleep(1000);
+
+    const newProviders = await settingsPage.getProvidersElements();
 
     expect(
-      providers.length,
-      'providers length should be less than initial providers length',
-    ).be.lessThan(existingProvidersLength);
+      newProviders.length,
+      'providers length should be one less than initial providers length',
+    ).be.equal(existingProvidersLength - 1);
   });
 
   after(() => driver.quit());
