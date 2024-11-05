@@ -111,6 +111,8 @@ export const useContractsStore = defineStore('contractsStore', () => {
     const index = deployedContracts.value.findIndex(
       (c) => c.contractId === contractId,
     );
+
+    const currentItem = deployedContracts.value[index];
     const newItem = { contractId, address, defaultState };
 
     if (index === -1) {
@@ -119,10 +121,12 @@ export const useContractsStore = defineStore('contractsStore', () => {
       deployedContracts.value.splice(index, 1, newItem);
     }
 
-    notify({
-      title: 'Contract deployed',
-      type: 'success',
-    });
+    if (currentItem.address !== newItem.address) {
+      notify({
+        title: 'Contract deployed',
+        type: 'success',
+      });
+    }
   }
 
   function removeDeployedContract(contractId: string): void {
