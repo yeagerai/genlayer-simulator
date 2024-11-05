@@ -32,9 +32,7 @@ app.use(FloatingVue, {
 });
 app.use(Notifications);
 app.use(VueSpinnersPlugin);
-app.use(TransactionsListenerPlugin, {
-  interval: 5000,
-});
+app.use(TransactionsListenerPlugin);
 
 const plausible = createPlausible({
   init: {

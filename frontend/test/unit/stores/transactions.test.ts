@@ -20,7 +20,7 @@ const updatedTransactionPayload = {
   ...testTransaction,
   status: 'FINALIZED',
 };
-
+// TODO: Update tests
 describe('useTransactionsStore', () => {
   let transactionsStore: ReturnType<typeof useTransactionsStore>;
   const mockRpcClient = {

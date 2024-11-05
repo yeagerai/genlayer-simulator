@@ -1,15 +1,19 @@
 import { defineStore } from 'pinia';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import type { TransactionItem } from '@/types';
-import { useRpcClient } from '@/hooks';
+import { useRpcClient, useWebSocketClient } from '@/hooks';
+import { useContractsStore } from '@/stores';
 
 export const useTransactionsStore = defineStore('transactionsStore', () => {
   const rpcClient = useRpcClient();
-  const pendingTransactions = computed<TransactionItem[]>(() =>
-    transactions.value.filter((t) => t.status === 'PENDING'),
-  );
-  const processingQueue = ref<TransactionItem[]>([]);
+  // const webSocketClient = useWebSocketClient();
   const transactions = ref<TransactionItem[]>([]);
+  // const contractsStore = useContractsStore();
+
+  // TODO: get client session id to persist so that events get passed when reloading
+  // TODO: make sure reload works: persist + refetch all non-finalized
+  // TODO: test with client id scoping
+  // FIXME: multiple "contract deployed" toasts because multiple fetch when tx is alrdy finalized; need to debounce the fetching somehow
 
   function addTransaction(tx: TransactionItem) {
     transactions.value.unshift(tx); // Push on top in case there's no date property yet
@@ -23,6 +27,7 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
     const index = transactions.value.findIndex((t) => t.hash === tx.hash);
     if (index !== -1) {
       const current = transactions.value[index];
+
       transactions.value.splice(index, 1, {
         ...current,
         status: tx.status,
@@ -31,8 +36,22 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
     } else {
       // Temporary logging to debug always-PENDING transactions
       console.warn('Transaction not found', tx);
-      console.trace('updateTransaction', tx); // Temporary logging to debug always-PENDING transactions
+      console.trace('updateTransaction', tx);
     }
+  }
+
+  function refreshPendingTransactions() {
+    const pendingTxs = transactions.value.filter(
+      (tx: TransactionItem) => tx.status !== 'FINALIZED',
+    ) as TransactionItem[];
+
+    console.log('pendingTxs', pendingTxs);
+
+    pendingTxs.forEach(async (tx) => {
+      const newTx = await getTransaction(tx.hash);
+      updateTransaction(newTx);
+      console.log('updating pending tx', newTx);
+    });
   }
 
   async function getTransaction(hash: string) {
@@ -40,10 +59,6 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
   }
 
   function clearTransactionsForContract(contractId: string) {
-    processingQueue.value = processingQueue.value.filter(
-      (t) => t.localContractId !== contractId,
-    );
-
     transactions.value = transactions.value.filter(
       (t) => t.localContractId !== contractId,
     );
@@ -51,12 +66,11 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
 
   return {
     transactions,
-    pendingTransactions,
-    processingQueue,
     getTransaction,
     addTransaction,
     removeTransaction,
     updateTransaction,
     clearTransactionsForContract,
+    refreshPendingTransactions,
   };
 });

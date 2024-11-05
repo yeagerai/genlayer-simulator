@@ -7,7 +7,8 @@ import {
 } from '@/stores';
 import { useDb } from '@/hooks';
 import { v4 as uuidv4 } from 'uuid';
-import type { Address } from '@/types';
+import type { Address, TransactionItem } from '@/types';
+import { useWebSocketClient } from '@/hooks';
 
 export const useSetupStores = () => {
   const setupStores = async () => {
@@ -19,6 +20,7 @@ export const useSetupStores = () => {
     const db = useDb();
     const contractFiles = await db.contractFiles.toArray();
     const exampleFiles = contractFiles.filter((c) => c.example);
+    const webSocketClient = useWebSocketClient();
 
     if (exampleFiles.length === 0) {
       const contractsBlob = import.meta.glob(
@@ -48,6 +50,7 @@ export const useSetupStores = () => {
     contractsStore.deployedContracts = await db.deployedContracts.toArray();
     transactionsStore.transactions = await db.transactions.toArray();
 
+    transactionsStore.refreshPendingTransactions();
     contractsStore.getInitialOpenedFiles();
     tutorialStore.resetTutorialState();
     nodeStore.getValidatorsData();

@@ -1,64 +1,43 @@
 import { useContractsStore, useTransactionsStore } from '@/stores';
 import type { TransactionItem } from '@/types';
 import type { App } from 'vue';
+import { useWebSocketClient } from '@/hooks';
 
-const ENABLE_LOGS = false;
+// TODO: rename
 
 export const TransactionsListenerPlugin = {
-  install(_app: App, { interval = 5000 }: { interval: number }) {
+  install(_app: App) {
     const contractsStore = useContractsStore();
     const transactionsStore = useTransactionsStore();
+    const webSocketClient = useWebSocketClient();
 
-    const listener = async () => {
-      const pendingTxs = transactionsStore.transactions.filter(
-        (tx: TransactionItem) =>
-          tx.status !== 'FINALIZED' &&
-          transactionsStore.processingQueue.findIndex(
-            (q) => q.hash !== tx.hash,
-          ) === -1,
-      ) as TransactionItem[];
+    webSocketClient.on(
+      'transaction_status_updated',
+      handleTransactionStatusUpdate,
+    );
 
-      transactionsStore.processingQueue.push(...pendingTxs);
-      if (transactionsStore.processingQueue.length > 0) {
-        for (const item of transactionsStore.processingQueue) {
-          const tx = await transactionsStore.getTransaction(item.hash);
-          if (!tx) {
-            // Remove the transaction from the processing queue and storage if not found
-            transactionsStore.processingQueue =
-              transactionsStore.processingQueue.filter(
-                (t) => t.hash !== item.hash,
-              );
-            transactionsStore.removeTransaction(item);
-          } else {
-            const currentTx = transactionsStore.processingQueue.find(
-              (t) => t.hash === tx?.hash,
-            );
-            transactionsStore.updateTransaction(tx);
-            transactionsStore.processingQueue =
-              transactionsStore.processingQueue.filter(
-                (t) => t.hash !== tx?.hash,
-              );
-            // if finalized and is contract add to the contract store dpeloyed
-            if (tx?.status === 'FINALIZED' && currentTx?.type === 'deploy') {
-              if (ENABLE_LOGS) {
-                console.log('New deployed contract', currentTx);
-              }
+    async function handleTransactionStatusUpdate(eventData: any) {
+      const newTx = await transactionsStore.getTransaction(eventData.data.hash);
 
-              contractsStore.addDeployedContract({
-                contractId: currentTx.localContractId,
-                address: tx.data.contract_address,
-                defaultState: '{}',
-              });
-              currentTx.data.contractAddress = tx.data.contractAddress;
-            }
-          }
-        }
-
-        if (ENABLE_LOGS) {
-          console.log(`There are ${pendingTxs.length} pending transactions`);
-        }
+      if (!newTx) {
+        transactionsStore.removeTransaction(newTx);
+        return;
       }
-    };
-    setInterval(listener, interval);
+
+      const currentTx = transactionsStore.transactions.find(
+        (t: TransactionItem) => t.hash === eventData.data.hash,
+      );
+
+      transactionsStore.updateTransaction(newTx);
+
+      if (newTx?.status === 'FINALIZED' && currentTx?.type === 'deploy') {
+        contractsStore.addDeployedContract({
+          contractId: currentTx.localContractId,
+          address: newTx.data.contract_address,
+          defaultState: '{}',
+        });
+        currentTx.data.contractAddress = newTx.data.contractAddress;
+      }
+    }
   },
 };
