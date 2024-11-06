@@ -67,6 +67,7 @@ def create_app():
         ValidatorsRegistry(initialize_validators_db_session),
         AccountsManager(initialize_validators_db_session),
     )
+    initialize_validators_db_session.commit()
 
     consensus = ConsensusAlgorithm(
         lambda: Session(engine, expire_on_commit=False), msg_handler
@@ -83,7 +84,6 @@ def create_app():
         consensus,
         llm_provider_registry,
         sqlalchemy_db,
-        validators_init_thread,
     )
 
 
@@ -100,7 +100,6 @@ load_dotenv()
     consensus,
     llm_provider_registry,
     sqlalchemy_db,
-    validators_init_thread,
 ) = create_app()
 register_all_rpc_endpoints(
     jsonrpc,

@@ -55,7 +55,8 @@ def test_initialize_validators_success():
         {
             "stake": 200,
             "provider": "another-provider",
-            "model": "another-model"
+            "model": "another-model",
+            "amount": 2
         }
     ]"""
 
@@ -65,7 +66,7 @@ def test_initialize_validators_success():
     mock_registry.delete_all_validators.assert_called_once()
 
     # Verify that creator was called for each validator with correct arguments
-    assert mock_creator.call_count == 2
+    assert mock_creator.call_count == 3
 
     # Check first validator creation call
     mock_creator.assert_any_call(
@@ -80,6 +81,17 @@ def test_initialize_validators_success():
     )
 
     # Check second validator creation call
+    mock_creator.assert_any_call(
+        mock_registry,
+        mock_accounts,
+        200,
+        "another-provider",
+        "another-model",
+        None,
+        None,
+        None,
+    )
+
     mock_creator.assert_any_call(
         mock_registry,
         mock_accounts,

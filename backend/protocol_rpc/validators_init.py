@@ -12,6 +12,7 @@ class ValidatorConfig:
     config: dict | None = None
     plugin: str | None = None
     plugin_config: dict | None = None
+    amount: int = 1
 
 
 def initialize_validators(
@@ -29,7 +30,9 @@ def initialize_validators(
         accounts_manager: AccountsManager to create validator accounts
         validator_creator: Function to create validators (defaults to endpoints.create_validator)
     """
+
     if not validators_json:
+        print("No validators to initialize")
         return
 
     # If no validator_creator is provided, import the default one
@@ -54,16 +57,17 @@ def initialize_validators(
         try:
             validator = ValidatorConfig(**validator_data)
 
-            validator_creator(
-                validators_registry,
-                accounts_manager,
-                validator.stake,
-                validator.provider,
-                validator.model,
-                validator.config,
-                validator.plugin,
-                validator.plugin_config,
-            )
+            for _ in range(validator.amount):
+                validator_creator(
+                    validators_registry,
+                    accounts_manager,
+                    validator.stake,
+                    validator.provider,
+                    validator.model,
+                    validator.config,
+                    validator.plugin,
+                    validator.plugin_config,
+                )
 
         except Exception as e:
             raise ValueError(f"Failed to create validator `{validator_data}`: {str(e)}")
