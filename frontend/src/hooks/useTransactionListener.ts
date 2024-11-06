@@ -40,7 +40,6 @@ export function useTransactionListener() {
       currentTx.type === 'deploy' &&
       newTx.status === 'FINALIZED'
     ) {
-      console.log('addDeployedContract', newTx, currentTx);
       contractsStore.addDeployedContract({
         contractId: currentTx.localContractId,
         address: newTx.data.contract_address,

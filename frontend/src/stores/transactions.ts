@@ -11,9 +11,6 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
   // const contractsStore = useContractsStore();
 
   // TODO: get client session id to persist so that events get passed when reloading
-  // TODO: make sure reload works: persist + refetch all non-finalized
-  // TODO: test with client id scoping
-  // FIXME: multiple "contract deployed" toasts because multiple fetch when tx is alrdy finalized; need to debounce the fetching somehow
 
   function addTransaction(tx: TransactionItem) {
     transactions.value.unshift(tx); // Push on top in case there's no date property yet
