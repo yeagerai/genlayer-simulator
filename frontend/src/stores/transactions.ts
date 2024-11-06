@@ -45,12 +45,9 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
       (tx: TransactionItem) => tx.status !== 'FINALIZED',
     ) as TransactionItem[];
 
-    console.log('pendingTxs', pendingTxs);
-
     pendingTxs.forEach(async (tx) => {
       const newTx = await getTransaction(tx.hash);
       updateTransaction(newTx);
-      console.log('updating pending tx', newTx);
     });
   }
 

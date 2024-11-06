@@ -5,9 +5,9 @@ import {
   useNodeStore,
   useTutorialStore,
 } from '@/stores';
-import { useDb } from '@/hooks';
+import { useDb, useTransactionListener } from '@/hooks';
 import { v4 as uuidv4 } from 'uuid';
-import type { Address, TransactionItem } from '@/types';
+import type { Address } from '@/types';
 
 export const useSetupStores = () => {
   const setupStores = async () => {
@@ -17,6 +17,7 @@ export const useSetupStores = () => {
     const nodeStore = useNodeStore();
     const tutorialStore = useTutorialStore();
     const db = useDb();
+    const transactionListener = useTransactionListener();
     const contractFiles = await db.contractFiles.toArray();
     const exampleFiles = contractFiles.filter((c) => c.example);
 
@@ -49,6 +50,7 @@ export const useSetupStores = () => {
     transactionsStore.transactions = await db.transactions.toArray();
 
     transactionsStore.refreshPendingTransactions();
+    transactionListener.init();
     contractsStore.getInitialOpenedFiles();
     tutorialStore.resetTutorialState();
     nodeStore.getValidatorsData();
