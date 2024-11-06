@@ -2,7 +2,6 @@ import json
 from dataclasses import dataclass
 from backend.database_handler.accounts_manager import AccountsManager
 from backend.database_handler.validators_registry import ValidatorsRegistry
-from endpoints import create_validator
 
 
 @dataclass
@@ -19,6 +18,7 @@ def initialize_validators(
     validators_json: str,
     validators_registry: ValidatorsRegistry,
     accounts_manager: AccountsManager,
+    validator_creator=None,
 ):
     """
     Idempotently initialize validators from a JSON string by deleting all existing validators and creating new ones.
@@ -27,16 +27,16 @@ def initialize_validators(
         validators_json: JSON string containing validator configurations
         validators_registry: Registry to store validator information
         accounts_manager: AccountsManager to create validator accounts
-
-    Returns:
-        List[ValidatorConfig]: List of initialized validator configurations
-
-    Raises:
-        ValueError: If JSON string contains invalid JSON
-        KeyError: If required fields are missing in the JSON configuration
+        validator_creator: Function to create validators (defaults to endpoints.create_validator)
     """
     if not validators_json:
         return
+
+    # If no validator_creator is provided, import the default one
+    if validator_creator is None:
+        from backend.protocol_rpc.endpoints import create_validator
+
+        validator_creator = create_validator
 
     try:
         validators_data = json.loads(validators_json)
@@ -46,14 +46,15 @@ def initialize_validators(
     if not isinstance(validators_data, list):
         raise ValueError("validators_json must contain a JSON array")
 
+    # Delete all existing validators
     validators_registry.delete_all_validators()
 
+    # Create new validators
     for validator_data in validators_data:
         try:
             validator = ValidatorConfig(**validator_data)
 
-            # Register validator in the registry
-            create_validator(
+            validator_creator(
                 validators_registry,
                 accounts_manager,
                 validator.stake,
@@ -64,5 +65,5 @@ def initialize_validators(
                 validator.plugin_config,
             )
 
-        except (KeyError, ValueError) as e:
-            raise ValueError(f"Invalid validator configuration : {str(e)}")
+        except Exception as e:
+            raise ValueError(f"Failed to create validator `{validator_data}`: {str(e)}")
