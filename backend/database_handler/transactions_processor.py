@@ -159,22 +159,7 @@ class TransactionsProcessor:
 
         self.session.flush()  # So that `created_at` gets set
 
-        rollup_input_data = self._transaction_data_to_str(self._parse_transaction_data(new_transaction))
-        rollup_nonce = int(time.time() * 1000)
-        rollup_transaction_hash = self._generate_transaction_hash(
-            from_address, to_address, rollup_input_data, value, 0, rollup_nonce
-        )
-        rollup_transaction_record = RollupTransactions(
-            transaction_hash=rollup_transaction_hash,
-            from_=from_address,
-            to_=to_address,
-            gas=0,
-            gas_price=0,
-            value=value,
-            input=rollup_input_data,
-            nonce=rollup_nonce
-        )
-        self.session.add(rollup_transaction_record)
+        self.create_rollup_transaction(new_transaction.hash)
 
         return new_transaction.hash
 
@@ -193,51 +178,32 @@ class TransactionsProcessor:
     def update_transaction_status(
         self, transaction_hash: str, new_status: TransactionStatus
     ):
-
         transaction = (
             self.session.query(Transactions).filter_by(hash=transaction_hash).one()
         )
-
-        # Do not make a rollup transaction when transaction is already finalized.
-        # This is done in set_transaction_result() for exec_transaction().
-        if (transaction.status != TransactionStatus.FINALIZED):
-            transaction.status = new_status
-
-            rollup_input_data = self._transaction_data_to_str(self._parse_transaction_data(transaction))
-            rollup_nonce = int(time.time() * 1000)
-            rollup_transaction_hash = self._generate_transaction_hash(
-                transaction.from_address, transaction.to_address, rollup_input_data, transaction.value, 0, rollup_nonce
-            )
-            rollup_transaction_record = RollupTransactions(
-                transaction_hash=rollup_transaction_hash,
-                from_=transaction.from_address,
-                to_=transaction.to_address,
-                gas=0,
-                gas_price=0,
-                value=transaction.value,
-                input=rollup_input_data,
-                nonce=rollup_nonce
-            )
-            self.session.add(rollup_transaction_record)
+        transaction.status = new_status
 
     def set_transaction_result(self, transaction_hash: str, consensus_data: dict):
         transaction = (
             self.session.query(Transactions).filter_by(hash=transaction_hash).one()
         )
-
-        transaction.status = TransactionStatus.FINALIZED
         transaction.consensus_data = consensus_data
 
-        print(
-            "Updating transaction status",
-            transaction_hash,
-            TransactionStatus.FINALIZED.value,
+    def create_rollup_transaction(self, transaction_hash: str):
+        transaction = (
+            self.session.query(Transactions).filter_by(hash=transaction_hash).one()
         )
-
-        rollup_input_data = self._transaction_data_to_str(self._parse_transaction_data(transaction))
+        rollup_input_data = self._transaction_data_to_str(
+            self._parse_transaction_data(transaction)
+        )
         rollup_nonce = int(time.time() * 1000)
         rollup_transaction_hash = self._generate_transaction_hash(
-            transaction.from_address, transaction.to_address, rollup_input_data, transaction.value, 0, rollup_nonce
+            transaction.from_address,
+            transaction.to_address,
+            rollup_input_data,
+            transaction.value,
+            0,
+            rollup_nonce,
         )
         rollup_transaction_record = RollupTransactions(
             transaction_hash=rollup_transaction_hash,
@@ -247,7 +213,7 @@ class TransactionsProcessor:
             gas_price=0,
             value=transaction.value,
             input=rollup_input_data,
-            nonce=rollup_nonce
+            nonce=rollup_nonce,
         )
         self.session.add(rollup_transaction_record)
 

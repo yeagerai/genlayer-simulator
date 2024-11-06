@@ -13,7 +13,7 @@ from sqlalchemy import (
     func,
     text,
     ForeignKey,
-    Text
+    Text,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import (
@@ -120,12 +120,12 @@ class Transactions(Base):
 
 class RollupTransactions(Base):
     __tablename__ = "rollup_transactions"
-    __table_args__ = (PrimaryKeyConstraint("transaction_hash", name="rollup_transactions_pkey"),)
+    __table_args__ = (
+        PrimaryKeyConstraint("transaction_hash", name="rollup_transactions_pkey"),
+    )
 
     transaction_hash: Mapped[str] = mapped_column(
-        String(66),
-        primary_key=True,
-        unique=True
+        String(66), primary_key=True, unique=True
     )
     from_: Mapped[str] = mapped_column(
         String(255),
