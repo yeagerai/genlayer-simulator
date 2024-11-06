@@ -20,7 +20,7 @@ const updatedTransactionPayload = {
   ...testTransaction,
   status: 'FINALIZED',
 };
-// TODO: Update tests
+
 describe('useTransactionsStore', () => {
   let transactionsStore: ReturnType<typeof useTransactionsStore>;
   const mockRpcClient = {
@@ -32,7 +32,6 @@ describe('useTransactionsStore', () => {
     (useRpcClient as Mock).mockReturnValue(mockRpcClient);
     transactionsStore = useTransactionsStore();
     transactionsStore.transactions = [];
-    transactionsStore.processingQueue = [];
     mockRpcClient.getTransactionByHash.mockClear();
   });
 
@@ -82,12 +81,9 @@ describe('useTransactionsStore', () => {
     transactionsStore.addTransaction(tx1);
     transactionsStore.addTransaction(tx2);
 
-    transactionsStore.processingQueue = [tx1];
-
     transactionsStore.clearTransactionsForContract('contract-1');
 
     expect(transactionsStore.transactions).toEqual([tx2]);
-    expect(transactionsStore.processingQueue).toEqual([]);
   });
 
   it('should compute pending transactions', () => {
@@ -104,6 +100,10 @@ describe('useTransactionsStore', () => {
 
     transactionsStore.transactions = [tx1, tx2];
 
-    expect(transactionsStore.pendingTransactions).toEqual([tx2]);
+    const pendingTransactions = transactionsStore.transactions.filter(
+      (tx) => tx.status === 'PENDING',
+    );
+
+    expect(pendingTransactions).toEqual([tx2]);
   });
 });

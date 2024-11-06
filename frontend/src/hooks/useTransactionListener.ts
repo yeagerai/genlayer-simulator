@@ -45,11 +45,6 @@ export function useTransactionListener() {
         address: newTx.data.contract_address,
         defaultState: '{}',
       });
-
-      notify({
-        title: 'Contract deployed',
-        type: 'success',
-      });
     }
   }
 
