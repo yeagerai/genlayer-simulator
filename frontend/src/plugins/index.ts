@@ -1,2 +1,2 @@
 export * from './persistStore';
-export * from './transactionsListener';
+export * from './transactionsProcessor';

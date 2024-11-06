@@ -3,8 +3,6 @@ import type { TransactionItem } from '@/types';
 import type { App } from 'vue';
 import { useWebSocketClient } from '@/hooks';
 
-// TODO: rename
-
 export const TransactionsListenerPlugin = {
   install(_app: App) {
     const contractsStore = useContractsStore();
