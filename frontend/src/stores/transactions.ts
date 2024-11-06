@@ -2,15 +2,13 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import type { TransactionItem } from '@/types';
 import { useRpcClient, useWebSocketClient } from '@/hooks';
-import { useContractsStore } from '@/stores';
+
+// TODO: get client session id to persist so that events get passed when reloading
 
 export const useTransactionsStore = defineStore('transactionsStore', () => {
   const rpcClient = useRpcClient();
   // const webSocketClient = useWebSocketClient();
   const transactions = ref<TransactionItem[]>([]);
-  // const contractsStore = useContractsStore();
-
-  // TODO: get client session id to persist so that events get passed when reloading
 
   function addTransaction(tx: TransactionItem) {
     transactions.value.unshift(tx); // Push on top in case there's no date property yet
