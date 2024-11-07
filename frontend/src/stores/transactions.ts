@@ -49,6 +49,10 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
     );
   }
 
+  async function setTransactionAppeal(tx_address: string) {
+    rpcClient.setTransactionAppeal(tx_address);
+  }
+
   return {
     transactions,
     pendingTransactions,
@@ -58,5 +62,6 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
     removeTransaction,
     updateTransaction,
     clearTransactionsForContract,
+    setTransactionAppeal,
   };
 });

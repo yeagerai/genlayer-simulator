@@ -80,6 +80,8 @@ class Transaction:
         False  # Flag to indicate if this transaction should be processed only by the leader. Used for fast and cheap execution of transactions.
     )
     client_session_id: str | None = None
+    appeal: bool = False
+    timestamp_accepted: int | None = None
 
     def to_dict(self):
         return {
@@ -99,6 +101,8 @@ class Transaction:
             "v": self.v,
             "leader_only": self.leader_only,
             "client_session_id": self.client_session_id,
+            "appeal": self.appeal,
+            "timestamp_accepted": self.timestamp_accepted,
         }
 
 
@@ -120,4 +124,6 @@ def transaction_from_dict(input: dict) -> Transaction:
         v=input.get("v"),
         leader_only=input.get("leader_only", False),
         client_session_id=input["client_session_id"],
+        appeal=input.get("appeal"),
+        timestamp_accepted=input.get("timestamp_accepted"),
     )
