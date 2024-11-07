@@ -141,7 +141,7 @@ def contract_snapshot_factory(address: str):
 
 
 @pytest.mark.asyncio
-async def test_exec_transaction():
+async def test_exec_transaction(managed_thread):
     """
     Minor smoke checks for the happy path of a transaction execution
     """
@@ -219,7 +219,11 @@ async def test_exec_transaction():
 
     msg_handler_mock = Mock(MessageHandler)
 
-    await ConsensusAlgorithm(None, msg_handler_mock).exec_transaction(
+    consensus = ConsensusAlgorithm(None, msg_handler_mock)
+
+    thread_appeal = managed_thread(transactions_processor, consensus)
+
+    await consensus.exec_transaction(
         transaction=transaction,
         transactions_processor=transactions_processor,
         snapshot=SnapshotMock(nodes),
@@ -232,6 +236,8 @@ async def test_exec_transaction():
 
     for node in created_nodes:
         node.exec_transaction.assert_awaited_once_with(transaction)
+
+    time.sleep(DEFAULT_FINALITY_WINDOW + 2)
 
     assert (
         transactions_processor.get_transaction_by_hash(transaction.hash)["status"]
@@ -360,7 +366,7 @@ async def test_exec_transaction_no_consensus():
 
 
 @pytest.mark.asyncio
-async def test_exec_transaction_one_disagreement():
+async def test_exec_transaction_one_disagreement(managed_thread):
     """
     Scenario: first round is disagreement, second round is agreement
     Tests that consensus algorithm correctly rotates the leader when majority of nodes disagree
@@ -445,7 +451,11 @@ async def test_exec_transaction_one_disagreement():
 
     msg_handler_mock = Mock(MessageHandler)
 
-    await ConsensusAlgorithm(None, msg_handler_mock).exec_transaction(
+    consensus = ConsensusAlgorithm(None, msg_handler_mock)
+
+    thread_appeal = managed_thread(transactions_processor, consensus)
+
+    await consensus.exec_transaction(
         transaction=transaction,
         transactions_processor=transactions_processor,
         snapshot=SnapshotMock(nodes),
@@ -453,6 +463,8 @@ async def test_exec_transaction_one_disagreement():
         contract_snapshot_factory=contract_snapshot_factory,
         node_factory=node_factory,
     )
+
+    time.sleep(DEFAULT_FINALITY_WINDOW + 2)
 
     assert transactions_processor.updated_transaction_status_history == {
         "transaction_hash": [
@@ -493,12 +505,7 @@ async def _appeal_window(
     consensus: ConsensusAlgorithm,
 ):
     while not stop_event.is_set():
-        active_trans = transactions_processor.transactions[0]
-        print(
-            f"Appeal: {active_trans['appeal']} ; Status: {active_trans['status']} ; Timestamp_accepted: {active_trans['timestamp_accepted']}"
-        )
         accepted_transactions = transactions_processor.get_accepted_transactions()
-        print(f"Number of accepted_transactions: {len(accepted_transactions)}")
         for transaction in accepted_transactions:
             transaction = dict_to_transaction(transaction)
             if not transaction.appeal:
