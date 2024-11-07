@@ -101,24 +101,24 @@ describe('useTransactionsStore', () => {
     expect(transactionsStore.transactions).toEqual([tx2]);
   });
 
-  it('should compute pending transactions', () => {
-    const tx1 = {
+  it('should refresh pending transactions', async () => {
+    const pendingTransaction = {
       ...testTransaction,
-      hash: '0x1234567890123456789012345678901234567891',
-      status: 'FINALIZED',
-    };
-    const tx2 = {
-      ...testTransaction,
-      hash: '0x1234567890123456789012345678901234567892',
       status: 'PENDING',
     };
+    const updatedTransaction = {
+      ...pendingTransaction,
+      status: 'FINALIZED',
+    };
 
-    transactionsStore.transactions = [tx1, tx2];
+    transactionsStore.addTransaction(pendingTransaction);
+    mockRpcClient.getTransactionByHash.mockResolvedValue(updatedTransaction);
 
-    const pendingTransactions = transactionsStore.transactions.filter(
-      (tx) => tx.status === 'PENDING',
+    await transactionsStore.refreshPendingTransactions();
+
+    expect(mockRpcClient.getTransactionByHash).toHaveBeenCalledWith(
+      pendingTransaction.hash,
     );
-
-    expect(pendingTransactions).toEqual([tx2]);
+    expect(transactionsStore.transactions[0].status).toBe('FINALIZED');
   });
 });

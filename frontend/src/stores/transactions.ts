@@ -53,15 +53,17 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
     }
   }
 
-  function refreshPendingTransactions() {
+  async function refreshPendingTransactions() {
     const pendingTxs = transactions.value.filter(
       (tx: TransactionItem) => tx.status !== 'FINALIZED',
     ) as TransactionItem[];
 
-    pendingTxs.forEach(async (tx) => {
-      const newTx = await getTransaction(tx.hash);
-      updateTransaction(newTx);
-    });
+    await Promise.all(
+      pendingTxs.map(async (tx) => {
+        const newTx = await getTransaction(tx.hash);
+        updateTransaction(newTx);
+      }),
+    );
   }
 
   async function getTransaction(hash: string) {
