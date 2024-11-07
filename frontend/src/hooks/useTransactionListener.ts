@@ -1,9 +1,8 @@
-import { useContractsStore, useTransactionsStore } from '@/stores';
+import { useTransactionsStore } from '@/stores';
 import type { TransactionItem } from '@/types';
 import { useWebSocketClient } from '@/hooks';
 
 export function useTransactionListener() {
-  const contractsStore = useContractsStore();
   const transactionsStore = useTransactionsStore();
   const webSocketClient = useWebSocketClient();
 

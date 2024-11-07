@@ -6,6 +6,21 @@ import { type TransactionItem } from '@/types';
 
 vi.mock('@/hooks', () => ({
   useRpcClient: vi.fn(),
+  useWebSocketClient: vi.fn(() => ({
+    connected: true,
+    emit: vi.fn(),
+  })),
+  useDb: vi.fn(() => ({
+    transaction: vi.fn(),
+    get: vi.fn(),
+    put: vi.fn(),
+  })),
+  useSetupStores: vi.fn(() => ({
+    setupStores: vi.fn(),
+  })),
+  useFileName: vi.fn(() => ({
+    cleanupFileName: vi.fn(),
+  })),
 }));
 
 const testTransaction: TransactionItem = {
