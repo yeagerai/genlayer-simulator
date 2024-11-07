@@ -6,7 +6,7 @@ import threading
 import logging
 from flask import Flask
 from flask_jsonrpc import JSONRPC
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, join_room, leave_room
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
@@ -120,6 +120,17 @@ def run_socketio():
         host="0.0.0.0",
         allow_unsafe_werkzeug=True,
     )
+
+    @socketio.on("subscribe")
+    def handle_subscribe(topics):
+        for topic in topics:
+            join_room(topic)
+
+    @socketio.on("unsubscribe")
+    def handle_unsubscribe(topics):
+        for topic in topics:
+            leave_room(topic)
+
     logging.getLogger("werkzeug").setLevel(
         os.environ.get("FLASK_LOG_LEVEL", logging.ERROR)
     )

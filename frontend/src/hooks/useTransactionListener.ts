@@ -1,7 +1,6 @@
 import { useContractsStore, useTransactionsStore } from '@/stores';
 import type { TransactionItem } from '@/types';
 import { useWebSocketClient } from '@/hooks';
-import { notify } from '@kyvg/vue3-notification';
 
 export function useTransactionListener() {
   const contractsStore = useContractsStore();
@@ -34,18 +33,6 @@ export function useTransactionListener() {
     }
 
     transactionsStore.updateTransaction(newTx);
-
-    if (
-      currentTx.status === 'ACCEPTED' &&
-      currentTx.type === 'deploy' &&
-      newTx.status === 'FINALIZED'
-    ) {
-      contractsStore.addDeployedContract({
-        contractId: currentTx.localContractId,
-        address: newTx.data.contract_address,
-        defaultState: '{}',
-      });
-    }
   }
 
   return {

@@ -49,6 +49,7 @@ export const useSetupStores = () => {
     contractsStore.deployedContracts = await db.deployedContracts.toArray();
     transactionsStore.transactions = await db.transactions.toArray();
 
+    transactionsStore.initSubscriptions();
     transactionsStore.refreshPendingTransactions();
     transactionListener.init();
     contractsStore.getInitialOpenedFiles();
