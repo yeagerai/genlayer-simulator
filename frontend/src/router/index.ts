@@ -8,12 +8,11 @@ import SettingsView from '@/views/Simulator/SettingsView.vue';
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/', redirect: { name: 'contracts' } },
     {
-      path: '/simulator',
+      path: '/',
+      redirect: { name: 'contracts' },
       component: SimulatorView,
       children: [
-        { path: '', redirect: { name: 'contracts' } },
         {
           path: 'contracts',
           name: 'contracts',
