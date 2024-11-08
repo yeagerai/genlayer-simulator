@@ -1,11 +1,12 @@
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useTransactionsStore } from '@/stores';
-import { useRpcClient } from '@/hooks';
+import { useGenlayer } from '@/hooks';
 import { type TransactionItem } from '@/types';
+import type { TransactionHash } from 'genlayer-js/types';
 
 vi.mock('@/hooks', () => ({
-  useRpcClient: vi.fn(),
+  useGenlayer: vi.fn(),
 }));
 
 const testTransaction: TransactionItem = {
@@ -23,17 +24,17 @@ const updatedTransactionPayload = {
 
 describe('useTransactionsStore', () => {
   let transactionsStore: ReturnType<typeof useTransactionsStore>;
-  const mockRpcClient = {
-    getTransactionByHash: vi.fn(),
+  const mockGenlayerClient = {
+    getTransaction: vi.fn(),
   };
 
   beforeEach(() => {
     setActivePinia(createPinia());
-    (useRpcClient as Mock).mockReturnValue(mockRpcClient);
+    (useGenlayer as Mock).mockReturnValue({ genlayer: mockGenlayerClient });
     transactionsStore = useTransactionsStore();
     transactionsStore.transactions = [];
     transactionsStore.processingQueue = [];
-    mockRpcClient.getTransactionByHash.mockClear();
+    mockGenlayerClient.getTransaction.mockClear();
   });
 
   it('should add a transaction', () => {
@@ -55,15 +56,16 @@ describe('useTransactionsStore', () => {
   });
 
   it('should get a transaction by hash using rpcClient', async () => {
-    const transactionHash = '0x1234567890123456789012345678901234567890';
+    const transactionHash =
+      '0x1234567890123456789012345678901234567890' as TransactionHash;
     const transactionData = { id: transactionHash, status: 'PENDING' };
-    mockRpcClient.getTransactionByHash.mockResolvedValue(transactionData);
+    mockGenlayerClient.getTransaction.mockResolvedValue(transactionData);
 
     const result = await transactionsStore.getTransaction(transactionHash);
 
-    expect(mockRpcClient.getTransactionByHash).toHaveBeenCalledWith(
-      transactionHash,
-    );
+    expect(mockGenlayerClient.getTransaction).toHaveBeenCalledWith({
+      hash: transactionHash,
+    });
     expect(result).toEqual(transactionData);
   });
 
