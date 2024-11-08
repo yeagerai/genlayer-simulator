@@ -9,6 +9,8 @@ import type {
 } from 'viem';
 import type { Address } from '@/types';
 
+// TODO: remove ?
+
 export type TransactionDataElement =
   | string
   | number

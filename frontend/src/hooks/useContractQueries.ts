@@ -9,13 +9,19 @@ import {
 import { useDebounceFn } from '@vueuse/core';
 import { notify } from '@kyvg/vue3-notification';
 import { useMockContractData } from './useMockContractData';
-import { useEventTracking, useRpcClient, useWallet } from '@/hooks';
+import {
+  useEventTracking,
+  useRpcClient,
+  useWallet,
+  useGenlayer,
+} from '@/hooks';
 import * as calldata from '@/calldata';
 
 const schema = ref<any>();
 
 export function useContractQueries() {
   const rpcClient = useRpcClient();
+  const { genlayer } = useGenlayer();
   const accountsStore = useAccountsStore();
   const transactionsStore = useTransactionsStore();
   const contractsStore = useContractsStore();
@@ -63,8 +69,9 @@ export function useContractQueries() {
       return mockContractSchema;
     }
 
-    const result = await rpcClient.getContractSchema({
-      code: contract.value?.content ?? '',
+    const result = await genlayer.request({
+      method: 'gen_getContractSchemaForCode',
+      params: [contract.value?.content ?? ''],
     });
 
     schema.value = result;
@@ -84,20 +91,12 @@ export function useContractQueries() {
       if (!contract.value || !accountsStore.currentPrivateKey) {
         throw new Error('Error Deploying the contract');
       }
-      const data = [
-        contract.value?.content ?? '',
-        calldata.encode({ args }),
-        leaderOnly,
-      ];
 
-      const nonce = await accountsStore.getCurrentNonce();
-
-      const signed = await wallet.signTransaction({
-        privateKey: accountsStore.currentPrivateKey,
-        data,
-        nonce,
+      const result = await genlayer.deployContract({
+        code: contract.value?.content ?? '',
+        args,
       });
-      const result = await rpcClient.sendTransaction(signed);
+
       const tx: TransactionItem = {
         contractAddress: '',
         localContractId: contract.value?.id ?? '',
@@ -150,26 +149,26 @@ export function useContractQueries() {
       return mockContractSchema;
     }
 
-    const result = await rpcClient.getDeployedContractSchema({
-      address: deployedContract.value?.address ?? '',
+    const result = await genlayer.request({
+      method: 'gen_getContractSchema',
+      params: [deployedContract.value?.address ?? ''],
     });
 
     return result;
   }
 
-  async function callReadMethod(
-    method: string,
-    args: calldata.CalldataEncodable[],
-  ) {
+  async function callReadMethod(method: string, args: any[]) {
     try {
-      const data = [calldata.encode({ method, args })];
-      const encodedData = wallet.encodeTransactionData(data);
+      const abi = await fetchContractAbi();
 
-      const result = await rpcClient.getContractState({
-        to: address.value || '',
-        from: accountsStore.currentUserAddress,
-        data: encodedData,
+      const result = await genlayer.readContract({
+        abi,
+        address: address.value as Address, // FIXME: ts error
+        functionName: method,
+        args,
       });
+
+      console.log('result', result);
 
       return result;
     } catch (error) {
@@ -187,23 +186,21 @@ export function useContractQueries() {
     args: calldata.CalldataEncodable[];
     leaderOnly: boolean;
   }) {
+    // TODO: leaderonly?
     try {
       if (!accountsStore.currentPrivateKey) {
-        throw new Error('Error Deploying the contract');
+        throw new Error('Error writing to contract');
       }
-      const data = [calldata.encode({ method, args }), leaderOnly];
-      const to = (address.value as Address) || null;
 
-      const nonce = await accountsStore.getCurrentNonce();
+      const abi = await fetchContractAbi();
 
-      const signed = await wallet.signTransaction({
-        privateKey: accountsStore.currentPrivateKey,
-        data,
-        nonce,
-        to,
+      const result = await genlayer.writeContract({
+        abi,
+        address: address.value as Address, // FIXME: ts error
+        functionName: method,
+        args,
       });
 
-      const result = await rpcClient.sendTransaction(signed);
       transactionsStore.addTransaction({
         contractAddress: address.value || '',
         localContractId: contract.value?.id || '',
@@ -218,6 +215,7 @@ export function useContractQueries() {
       });
       return true;
     } catch (error) {
+      console.error(error);
       throw new Error('Error writing to contract');
     }
   }
