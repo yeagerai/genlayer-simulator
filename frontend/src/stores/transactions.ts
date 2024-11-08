@@ -1,10 +1,12 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import type { TransactionItem } from '@/types';
-import { useRpcClient } from '@/hooks';
+import { useGenlayer } from '@/hooks';
+import type { TransactionHash } from 'genlayer-js/types';
 
 export const useTransactionsStore = defineStore('transactionsStore', () => {
-  const rpcClient = useRpcClient();
+  const { genlayer } = useGenlayer();
+
   const pendingTransactions = computed<TransactionItem[]>(() =>
     transactions.value.filter((t) => t.status === 'PENDING'),
   );
@@ -35,8 +37,8 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
     }
   }
 
-  async function getTransaction(hash: string) {
-    return rpcClient.getTransactionByHash(hash);
+  async function getTransaction(hash: TransactionHash) {
+    return genlayer.getTransaction({ hash });
   }
 
   function clearTransactionsForContract(contractId: string) {
