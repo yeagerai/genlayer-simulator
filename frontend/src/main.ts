@@ -38,7 +38,7 @@ app.use(TransactionsListenerPlugin, {
 
 const plausible = createPlausible({
   init: {
-    domain: import.meta.env.VITE_PLAUSIBLE_DOMAIN || 'simulator.genlayer.com',
+    domain: import.meta.env.VITE_PLAUSIBLE_DOMAIN || 'studio.genlayer.com',
     trackLocalhost: true,
   },
   settings: {
