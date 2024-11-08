@@ -58,7 +58,7 @@ const handleResetStorage = async () => {
       :dangerous="true"
       :confirming="isResetting"
     >
-      <template #title>Reset Simulator Storage</template>
+      <template #title>Reset Studio Storage</template>
       <template #description
         >Are you sure? All the examples will be restored, and the following
         intelligent contracts will be removed.</template

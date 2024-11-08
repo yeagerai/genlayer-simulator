@@ -16,7 +16,7 @@ const steps = ref([
   {
     target: '#tutorial-welcome',
     header: {
-      title: 'Welcome to the GenLayer Simulator!',
+      title: 'Welcome to the GenLayer Studio!',
     },
     content: 'This tutorial will guide you through the basics.',
 
@@ -111,7 +111,7 @@ const steps = ref([
     },
     target: '#tutorial-end',
     content:
-      "You've completed the GenLayer Simulator tutorial. Feel free to revisit any step or start experimenting with your own contracts. Happy coding!",
+      "You've completed the GenLayer Studio tutorial. Feel free to revisit any step or start experimenting with your own contracts. Happy coding!",
   },
 ]);
 
