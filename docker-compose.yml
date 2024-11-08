@@ -1,6 +1,6 @@
 services:
   nginx:
-    image: nginx:alpine
+    image: fabiocicerchia/nginx-lua:1.27.2-almalinux9.4-20240923
     cap_add:
       - NET_BIND_SERVICE
     ports:
@@ -58,9 +58,9 @@ services:
       target: ${BACKEND_BUILD_TARGET:-prod}
     environment:
       - FLASK_SERVER_PORT=${RPCPORT}
-      # # TODO: remove this in production
-      # - PYTHONUNBUFFERED=1
-      # - RPCDEBUGPORT=${RPCDEBUGPORT}
+      # TODO: remove this in production
+      - PYTHONUNBUFFERED=1
+      - RPCDEBUGPORT=${RPCDEBUGPORT}
     ports:
       - "${RPCPORT}:${RPCPORT}"
       - "${RPCDEBUGPORT}:${RPCDEBUGPORT}"
@@ -99,7 +99,7 @@ services:
     environment:
       - FLASK_SERVER_PORT=${WEBREQUESTPORT}
       # TODO: remove this in production
-      # - PYTHONUNBUFFERED=1
+      - PYTHONUNBUFFERED=1
     expose:
       - "${WEBREQUESTPORT}"
     restart: always
