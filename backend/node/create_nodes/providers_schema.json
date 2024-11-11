@@ -14,7 +14,7 @@
       "type": "object"
     },
     "plugin": {
-      "$comment": "plugin to be loaded by the studio to interact with the provider",
+      "$comment": "Plugin to be loaded by the Studio to interact with the provider",
       "enum": ["openai", "ollama", "anthropic"]
     },
     "plugin_config": {

@@ -2,7 +2,7 @@
 
 ### Window One
 
-1. Launch the studio
+1. Launch the Studio
 
 ### Window Two
 
