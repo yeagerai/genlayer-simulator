@@ -5,7 +5,7 @@ import { useGenlayer } from '@/hooks';
 import type { TransactionHash } from 'genlayer-js/types';
 
 export const useTransactionsStore = defineStore('transactionsStore', () => {
-  const { genlayer } = useGenlayer();
+  const genlayer = useGenlayer();
 
   const pendingTransactions = computed<TransactionItem[]>(() =>
     transactions.value.filter((t) => t.status === 'PENDING'),
@@ -38,7 +38,8 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
   }
 
   async function getTransaction(hash: TransactionHash) {
-    return genlayer.getTransaction({ hash });
+    console.log('genlayer', genlayer);
+    return genlayer.client.getTransaction({ hash });
   }
 
   function clearTransactionsForContract(contractId: string) {

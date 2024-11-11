@@ -21,7 +21,7 @@ const schema = ref<any>();
 
 export function useContractQueries() {
   const rpcClient = useRpcClient();
-  const { genlayer } = useGenlayer();
+  const genlayer = useGenlayer();
   const accountsStore = useAccountsStore();
   const transactionsStore = useTransactionsStore();
   const contractsStore = useContractsStore();
@@ -69,7 +69,7 @@ export function useContractQueries() {
       return mockContractSchema;
     }
 
-    const result = await genlayer.request({
+    const result = await genlayer.client.request({
       method: 'gen_getContractSchemaForCode',
       params: [contract.value?.content ?? ''],
     });
@@ -92,7 +92,7 @@ export function useContractQueries() {
         throw new Error('Error Deploying the contract');
       }
 
-      const result = await genlayer.deployContract({
+      const result = await genlayer.client.deployContract({
         code: contract.value?.content ?? '',
         args,
       });
@@ -149,7 +149,7 @@ export function useContractQueries() {
       return mockContractSchema;
     }
 
-    const result = await genlayer.request({
+    const result = await genlayer.client.request({
       method: 'gen_getContractSchema',
       params: [deployedContract.value?.address ?? ''],
     });
@@ -161,9 +161,9 @@ export function useContractQueries() {
     try {
       const abi = await fetchContractAbi();
 
-      const result = await genlayer.readContract({
+      const result = await genlayer.client.readContract({
         abi,
-        address: address.value as Address, // FIXME: ts error
+        address: address.value as Address,
         functionName: method,
         args,
       });
@@ -194,9 +194,9 @@ export function useContractQueries() {
 
       const abi = await fetchContractAbi();
 
-      const result = await genlayer.writeContract({
+      const result = await genlayer.client.writeContract({
         abi,
-        address: address.value as Address, // FIXME: ts error
+        address: address.value as Address,
         functionName: method,
         args,
       });

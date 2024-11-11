@@ -1,5 +1,6 @@
 import { Web3Client } from '@/clients/web3';
 
+// TODO: remove
 export function useWallet() {
   const web3 = new Web3Client();
 
