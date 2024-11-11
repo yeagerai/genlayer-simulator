@@ -4,11 +4,13 @@ import { DEFAULT_OPTIONS, KEYS } from './constants';
 import TutorialStep from './TutorialStep.vue';
 import { useContractsStore, useTutorialStore, useUIStore } from '@/stores';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { useConfig } from '@/hooks';
 
 const contractsStore = useContractsStore();
 const tutorialStore = useTutorialStore();
 const uiStore = useUIStore();
 const router = useRouter();
+const { canUpdateValidators } = useConfig();
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -101,8 +103,9 @@ const steps = ref([
       title: 'Validators',
     },
     target: '#tutorial-validators',
-    content:
-      'Configure the number of validators and set up their parameters here.',
+    content: canUpdateValidators
+      ? 'Configure the number of validators and set up their parameters here.'
+      : 'Here you can see the validators that are currently running on the network.',
     placement: 'right',
   },
   {
