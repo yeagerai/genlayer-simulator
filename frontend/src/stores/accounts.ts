@@ -3,13 +3,17 @@ import { computed, ref } from 'vue';
 import type { Address } from '@/types';
 import { createAccount, generatePrivateKey } from 'genlayer-js';
 import type { Account } from 'genlayer-js/types';
+import { useShortAddress } from '@/hooks';
 
 export const useAccountsStore = defineStore('accountsStore', () => {
   const key = localStorage.getItem('accountsStore.currentPrivateKey');
   const currentPrivateKey = ref<Address | null>(key ? (key as Address) : null);
-  const currentUserAddress = computed(
-    () => createAccount(currentPrivateKey.value || undefined).address,
+  const currentUserAddress = computed(() =>
+    currentPrivateKey.value
+      ? createAccount(currentPrivateKey.value).address
+      : '',
   );
+  const { shorten } = useShortAddress();
 
   const privateKeys = ref<Address[]>(
     localStorage.getItem('accountsStore.privateKeys')
@@ -42,19 +46,6 @@ export const useAccountsStore = defineStore('accountsStore', () => {
     currentPrivateKey.value = privateKey;
   }
 
-  function shortenAddress(address?: string) {
-    if (!address) {
-      return '';
-    }
-
-    const maxChars = 4;
-    const displayedChars = Math.min(Math.floor(address.length / 3), maxChars);
-
-    return (
-      address.slice(0, displayedChars) + '...' + address.slice(-displayedChars)
-    );
-  }
-
   // const currentAccount = computed<Account | null>(() => {
   //   if (!currentPrivateKey.value) {
   //     return null;
@@ -67,7 +58,7 @@ export const useAccountsStore = defineStore('accountsStore', () => {
       if (!currentPrivateKey.value) {
         return '';
       } else {
-        return shortenAddress(createAccount(currentPrivateKey.value).address);
+        return shorten(createAccount(currentPrivateKey.value).address);
       }
     } catch (err) {
       console.error(err);

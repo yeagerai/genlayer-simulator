@@ -39,7 +39,7 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
 
   async function getTransaction(hash: TransactionHash) {
     console.log('genlayer', genlayer);
-    return genlayer.client.getTransaction({ hash });
+    return genlayer.client?.getTransaction({ hash });
   }
 
   function clearTransactionsForContract(contractId: string) {

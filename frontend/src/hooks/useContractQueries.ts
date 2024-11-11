@@ -1,6 +1,6 @@
 import { watch, ref, computed } from 'vue';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
-import type { Address, TransactionItem } from '@/types';
+import type { TransactionItem } from '@/types';
 import {
   useContractsStore,
   useTransactionsStore,
@@ -9,25 +9,19 @@ import {
 import { useDebounceFn } from '@vueuse/core';
 import { notify } from '@kyvg/vue3-notification';
 import { useMockContractData } from './useMockContractData';
-import {
-  useEventTracking,
-  useRpcClient,
-  useWallet,
-  useGenlayer,
-} from '@/hooks';
+import { useEventTracking, useGenlayer } from '@/hooks';
 import * as calldata from '@/calldata';
+import type { Address } from 'genlayer-js/types';
 
 const schema = ref<any>();
 
 export function useContractQueries() {
-  const rpcClient = useRpcClient();
   const genlayer = useGenlayer();
   const accountsStore = useAccountsStore();
   const transactionsStore = useTransactionsStore();
   const contractsStore = useContractsStore();
   const queryClient = useQueryClient();
   const { trackEvent } = useEventTracking();
-  const wallet = useWallet();
   const contract = computed(() => contractsStore.currentContract);
 
   const { mockContractId, mockContractSchema } = useMockContractData();
@@ -69,7 +63,7 @@ export function useContractQueries() {
       return mockContractSchema;
     }
 
-    const result = await genlayer.client.request({
+    const result = await genlayer.client?.request({
       method: 'gen_getContractSchemaForCode',
       params: [contract.value?.content ?? ''],
     });
@@ -92,7 +86,7 @@ export function useContractQueries() {
         throw new Error('Error Deploying the contract');
       }
 
-      const result = await genlayer.client.deployContract({
+      const result = await genlayer.client?.deployContract({
         code: contract.value?.content ?? '',
         args,
       });
@@ -149,7 +143,7 @@ export function useContractQueries() {
       return mockContractSchema;
     }
 
-    const result = await genlayer.client.request({
+    const result = await genlayer.client?.request({
       method: 'gen_getContractSchema',
       params: [deployedContract.value?.address ?? ''],
     });
@@ -159,10 +153,7 @@ export function useContractQueries() {
 
   async function callReadMethod(method: string, args: any[]) {
     try {
-      const abi = await fetchContractAbi();
-
-      const result = await genlayer.client.readContract({
-        abi,
+      const result = await genlayer.client?.readContract({
         address: address.value as Address,
         functionName: method,
         args,
@@ -192,13 +183,11 @@ export function useContractQueries() {
         throw new Error('Error writing to contract');
       }
 
-      const abi = await fetchContractAbi();
-
-      const result = await genlayer.client.writeContract({
-        abi,
+      const result = await genlayer.client?.writeContract({
         address: address.value as Address,
         functionName: method,
         args,
+        value: BigInt(0),
       });
 
       transactionsStore.addTransaction({

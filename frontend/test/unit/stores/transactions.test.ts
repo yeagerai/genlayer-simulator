@@ -30,7 +30,7 @@ describe('useTransactionsStore', () => {
 
   beforeEach(() => {
     setActivePinia(createPinia());
-    (useGenlayer as Mock).mockReturnValue({ genlayer: mockGenlayerClient });
+    (useGenlayer as Mock).mockReturnValue({ client: mockGenlayerClient });
     transactionsStore = useTransactionsStore();
     transactionsStore.transactions = [];
     transactionsStore.processingQueue = [];
@@ -55,7 +55,7 @@ describe('useTransactionsStore', () => {
     expect(transactionsStore.transactions[0].status).toBe('FINALIZED');
   });
 
-  it('should get a transaction by hash using rpcClient', async () => {
+  it('should get a transaction by hash using genlayer', async () => {
     const transactionHash =
       '0x1234567890123456789012345678901234567890' as TransactionHash;
     const transactionData = { id: transactionHash, status: 'PENDING' };
