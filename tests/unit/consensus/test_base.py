@@ -7,7 +7,13 @@ import asyncio
 
 import pytest
 
-from backend.consensus.base import ConsensusAlgorithm, rotate
+from backend.consensus.base import (
+    ConsensusAlgorithm,
+    rotate,
+    FinalizingState,
+    PendingState,
+    TransactionContext,
+)
 from backend.database_handler.contract_snapshot import ContractSnapshot
 from backend.database_handler.models import TransactionStatus
 from backend.domain.types import Transaction, TransactionType
@@ -221,7 +227,9 @@ async def test_exec_transaction(managed_thread):
 
     consensus = ConsensusAlgorithm(None, msg_handler_mock)
 
-    thread_appeal = managed_thread(transactions_processor, consensus)
+    thread_appeal = managed_thread(
+        transactions_processor, msg_handler_mock, nodes, node_factory
+    )
 
     await consensus.exec_transaction(
         transaction=transaction,
@@ -453,7 +461,9 @@ async def test_exec_transaction_one_disagreement(managed_thread):
 
     consensus = ConsensusAlgorithm(None, msg_handler_mock)
 
-    thread_appeal = managed_thread(transactions_processor, consensus)
+    thread_appeal = managed_thread(
+        transactions_processor, msg_handler_mock, nodes, node_factory
+    )
 
     await consensus.exec_transaction(
         transaction=transaction,
@@ -502,7 +512,19 @@ def test_rotate():
 async def _appeal_window(
     stop_event: threading.Event,
     transactions_processor: TransactionsProcessorMock,
-    consensus: ConsensusAlgorithm,
+    msg_handler: MessageHandler,
+    nodes: list[dict],
+    node_factory: Callable[
+        [
+            dict,
+            ExecutionMode,
+            ContractSnapshot,
+            Receipt | None,
+            MessageHandler,
+            Callable[[str], ContractSnapshot],
+        ],
+        Node,
+    ],
 ):
     while not stop_event.is_set():
         accepted_transactions = transactions_processor.get_accepted_transactions()
@@ -512,16 +534,41 @@ async def _appeal_window(
                 if (
                     int(time.time()) - transaction.timestamp_accepted
                 ) > DEFAULT_FINALITY_WINDOW:
-                    consensus.finalize_transaction(
-                        transaction,
-                        transactions_processor,
+                    context = TransactionContext(
+                        transaction=transaction,
+                        transactions_processor=transactions_processor,
+                        snapshot=SnapshotMock(nodes),
+                        accounts_manager=AccountsManagerMock(),
                         contract_snapshot_factory=contract_snapshot_factory,
+                        node_factory=node_factory,
+                        msg_handler=msg_handler,
                     )
+                    state = FinalizingState()
+                    await state.handle(context)
+
             else:
                 transactions_processor.set_transaction_appeal(transaction.hash, False)
-                consensus.commit_reveal_accept_transaction(
-                    transaction, transactions_processor
+                context = TransactionContext(
+                    transaction=transaction,
+                    transactions_processor=transactions_processor,
+                    snapshot=SnapshotMock(nodes),
+                    accounts_manager=AccountsManagerMock(),
+                    contract_snapshot_factory=contract_snapshot_factory,
+                    node_factory=node_factory,
+                    msg_handler=msg_handler,
                 )
+                # Temporary in pending state just to test state refactory code
+                # New consensus diagram is different than old one.
+                transactions_processor.update_transaction_status(
+                    transaction.hash, TransactionStatus.PENDING.value
+                )
+                state = PendingState()
+                # State transitions
+                while True:
+                    next_state = await state.handle(context)
+                    if next_state is None:
+                        break
+                    state = next_state
 
         await asyncio.sleep(1)
 
@@ -529,13 +576,27 @@ async def _appeal_window(
 def run_async_task_in_thread(
     stop_event: threading.Event,
     transactions_processor: TransactionsProcessorMock,
-    consensus: ConsensusAlgorithm,
+    msg_handler: MessageHandler,
+    nodes: list[dict],
+    node_factory: Callable[
+        [
+            dict,
+            ExecutionMode,
+            ContractSnapshot,
+            Receipt | None,
+            MessageHandler,
+            Callable[[str], ContractSnapshot],
+        ],
+        Node,
+    ],
 ):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     try:
         loop.run_until_complete(
-            _appeal_window(stop_event, transactions_processor, consensus)
+            _appeal_window(
+                stop_event, transactions_processor, msg_handler, nodes, node_factory
+            )
         )
     finally:
         loop.close()
@@ -544,12 +605,25 @@ def run_async_task_in_thread(
 @pytest.fixture
 def managed_thread(request):
     def start_thread(
-        transactions_processor: TransactionsProcessorMock, consensus: ConsensusAlgorithm
+        transactions_processor: TransactionsProcessorMock,
+        msg_handler: MessageHandler,
+        nodes: list[dict],
+        node_factory: Callable[
+            [
+                dict,
+                ExecutionMode,
+                ContractSnapshot,
+                Receipt | None,
+                MessageHandler,
+                Callable[[str], ContractSnapshot],
+            ],
+            Node,
+        ],
     ):
         stop_event = threading.Event()
         thread = threading.Thread(
             target=run_async_task_in_thread,
-            args=(stop_event, transactions_processor, consensus),
+            args=(stop_event, transactions_processor, msg_handler, nodes, node_factory),
         )
         thread.start()
 
@@ -642,11 +716,11 @@ async def test_exec_appeal(managed_thread):
 
     msg_handler_mock = Mock(MessageHandler)
 
-    consensus = ConsensusAlgorithm(None, msg_handler_mock)
+    thread_appeal = managed_thread(
+        transactions_processor, msg_handler_mock, nodes, node_factory
+    )
 
-    thread_appeal = managed_thread(transactions_processor, consensus)
-
-    await consensus.exec_transaction(
+    await ConsensusAlgorithm(None, msg_handler_mock).exec_transaction(
         transaction=transaction,
         transactions_processor=transactions_processor,
         snapshot=SnapshotMock(nodes),
@@ -699,6 +773,8 @@ async def test_exec_appeal(managed_thread):
             TransactionStatus.COMMITTING,
             TransactionStatus.REVEALING,
             TransactionStatus.ACCEPTED,
+            TransactionStatus.PENDING.value,
+            TransactionStatus.PROPOSING,
             TransactionStatus.COMMITTING,
             TransactionStatus.REVEALING,
             TransactionStatus.ACCEPTED,
