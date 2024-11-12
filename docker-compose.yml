@@ -1,5 +1,7 @@
 services:
   frontend:
+    profiles:
+      - frontend
     build:
       context: ./
       dockerfile: ./docker/Dockerfile.frontend
