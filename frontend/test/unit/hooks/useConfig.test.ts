@@ -28,7 +28,7 @@ describe('useConfig', () => {
   it('should return false for canUpdateValidators when URL does not include localhost', () => {
     Object.defineProperty(window, 'location', {
       value: {
-        href: 'http://studio.genlayer.com',
+        href: 'https://studio.genlayer.com',
         hostname: 'genlayer',
       },
       writable: true,
