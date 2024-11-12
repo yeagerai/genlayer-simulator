@@ -22,7 +22,7 @@ from backend.node.types import (
 import backend.node.genvm.origin.calldata as calldata
 from dataclasses import dataclass
 
-from backend.node.genvm.config import GENVM
+from backend.node.genvm.config import get_genvm_path
 
 
 @dataclass
@@ -302,7 +302,12 @@ async def _run_genvm_host(
             sock_listener.bind(str(sock_path))
             sock_listener.listen(1)
 
-            new_args = [GENVM, "--host", f"unix://{sock_path}", "--print=all"]
+            new_args = [
+                get_genvm_path(),
+                "--host",
+                f"unix://{sock_path}",
+                "--print=all",
+            ]
 
             if config is not None:
                 conf_path = tmpdir.joinpath("conf.json")

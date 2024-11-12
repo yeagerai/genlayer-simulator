@@ -27,4 +27,12 @@ def _find_exe(name: str) -> Path:
     raise Exception(f"Can't find executable {name}, searched at {checked}")
 
 
-GENVM = _find_exe("genvm")
+_found_at: Path | None = None
+
+
+def get_genvm_path() -> Path:
+    global _found_at
+    if _found_at is None:
+        _found_at = _find_exe("genvm")
+
+    return _found_at
