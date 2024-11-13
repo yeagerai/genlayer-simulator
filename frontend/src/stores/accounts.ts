@@ -46,13 +46,6 @@ export const useAccountsStore = defineStore('accountsStore', () => {
     currentPrivateKey.value = privateKey;
   }
 
-  // const currentAccount = computed<Account | null>(() => {
-  //   if (!currentPrivateKey.value) {
-  //     return null;
-  //   }
-  //   return createAccount(currentPrivateKey.value);
-  // });
-
   const displayAddress = computed(() => {
     try {
       if (!currentPrivateKey.value) {
@@ -67,7 +60,6 @@ export const useAccountsStore = defineStore('accountsStore', () => {
   });
 
   return {
-    // currentAccount,
     currentUserAddress,
     currentPrivateKey,
     privateKeys,

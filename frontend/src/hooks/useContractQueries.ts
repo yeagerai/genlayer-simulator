@@ -159,8 +159,6 @@ export function useContractQueries() {
         args,
       });
 
-      console.log('result', result);
-
       return result;
     } catch (error) {
       console.error(error);
@@ -177,7 +175,6 @@ export function useContractQueries() {
     args: calldata.CalldataEncodable[];
     leaderOnly: boolean;
   }) {
-    // TODO: leaderonly?
     try {
       if (!accountsStore.currentPrivateKey) {
         throw new Error('Error writing to contract');
