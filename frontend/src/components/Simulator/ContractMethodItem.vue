@@ -5,8 +5,8 @@ import { Collapse } from 'vue-collapsed';
 import { notify } from '@kyvg/vue3-notification';
 import { ChevronDownIcon } from '@heroicons/vue/16/solid';
 import { useEventTracking, useContractQueries } from '@/hooks';
-import { unfoldArgsData, type ArgData } from './GenericParams';
-import GenericParams from './GenericParams.vue';
+import { unfoldArgsData, type ArgData } from './ContractParams';
+import ContractParams from './ContractParams.vue';
 
 const { callWriteMethod, callReadMethod, contract } = useContractQueries();
 const { trackEvent } = useEventTracking();
@@ -95,10 +95,10 @@ const handleCallWriteMethod = async () => {
 
     <Collapse :when="isExpanded">
       <div class="flex flex-col items-start gap-2 p-2">
-        <GenericParams
+        <ContractParams
           :methodBase="props.method"
           @argsChanged="
-            (v) => {
+            (v: ArgData) => {
               calldataArguments = v;
             }
           "

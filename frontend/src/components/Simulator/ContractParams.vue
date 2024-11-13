@@ -4,7 +4,7 @@ import type { ContractMethodBase, ContractParamsSchema } from '@/types';
 import { onMounted, ref, watch } from 'vue';
 import { AnyFieldValue } from '../global/fields/AnyFieldValue';
 import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
-import type { ArgData } from './GenericParams';
+import type { ArgData } from './ContractParams';
 
 const props = defineProps<{
   methodBase: ContractMethodBase | undefined;

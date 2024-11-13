@@ -4,8 +4,8 @@ import { ref, computed } from 'vue';
 import PageSection from '@/components/Simulator/PageSection.vue';
 import { ArrowUpTrayIcon } from '@heroicons/vue/16/solid';
 import type { ContractMethodBase } from '@/types';
-import GenericParams from './GenericParams.vue';
-import { type ArgData, unfoldArgsData } from './GenericParams';
+import ContractParams from './ContractParams.vue';
+import { type ArgData, unfoldArgsData } from './ContractParams';
 
 const props = defineProps<{
   leaderOnly: boolean;
@@ -45,10 +45,10 @@ const handleDeployContract = async () => {
     <Alert v-else-if="isError" error> Could not load contract schema. </Alert>
 
     <template v-else-if="data">
-      <GenericParams
+      <ContractParams
         :methodBase="ctorMethod"
         @argsChanged="
-          (v) => {
+          (v: ArgData) => {
             calldataArguments = v;
           }
         "
