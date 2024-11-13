@@ -34,7 +34,6 @@ services:
     volumes:
       - ./.env:/app/.env
       - ./backend:/app/backend
-#      - /path/to/genvm/build/out:/genvm
     depends_on:
       database-migration:
         condition: service_completed_successfully

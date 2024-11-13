@@ -1,5 +1,7 @@
 FROM python:3.12.6-slim AS base
 
+ARG TARGETPLATFORM
+
 ARG path=/app
 WORKDIR $path
 
@@ -18,6 +20,22 @@ RUN groupadd -r backend-group \
 ENV PYTHONPATH "${PYTHONPATH}:/${path}"
 ENV FLASK_APP backend/protocol_rpc/server.py
 ENV HUGGINGFACE_HUB_CACHE /home/backend-user/.cache/huggingface
+
+SHELL ["/bin/bash", "-c"]
+RUN apt-get update -y && apt-get install -y --no-install-recommends curl unzip && apt-get clean && rm -rf /var/lib/apt/lists/*
+# FIXME(kp2pml30): rewrite when genvm becomes public
+RUN cd /genvm \
+    && if [[ "$TARGETPLATFORM" == "linux/amd64" ]] ; \
+       then URL="https://storage.googleapis.com/gh-af/genvm_executor_7a6de196b4fa57b05505402293b000ca55f1c37e_20241114_083349/genvm_executor.zip" ; \
+       elif [[ "$TARGETPLATFORM" == "linux/arm64" ]] ; \
+       then URL="https://storage.googleapis.com/gh-af/genvm_executor_7a6de196b4fa57b05505402293b000ca55f1c37e_20241114_083447/genvm_executor.zip" ; \
+       else echo "Sorry, $TARGETPLATFORM is not supported yet" ; exit 1 ; \
+       fi \
+    && curl -L --fail-with-body -H 'Accept: application/octet-stream' -o executor.zip "$URL" \
+    && curl -L --fail-with-body -H 'Accept: application/octet-stream' -o runners.zip "https://storage.googleapis.com/gh-af/genvm_runners_7a6de196b4fa57b05505402293b000ca55f1c37e_20241114_084603/runners.zip" \
+    && unzip runners.zip && unzip executor.zip && rm runners.zip executor.zip \
+    && ls -R . \
+    && cd "$path"
 
 COPY ../.env .
 COPY backend $path/backend
