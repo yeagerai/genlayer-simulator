@@ -4,11 +4,6 @@ import type { GenLayerClient, Account } from 'genlayer-js/types';
 import { ref, watch } from 'vue';
 import { useAccountsStore } from '@/stores';
 
-// TODO: update docs: createClient: network -> chain
-// TODO: update docs: typo Readding -> Reading
-// TODO: update docs: transactionHash as sample string
-// TODO: dynamic accounts / keys
-// TODO: nonces (deploy/write) ?
 // TODO: leader only (deploy/write)? Yes, that is only going to work in the local network
 let client: GenLayerClient<typeof simulator> | null = null;
 
