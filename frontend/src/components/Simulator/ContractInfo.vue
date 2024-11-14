@@ -2,9 +2,9 @@
 import PageSection from '@/components/Simulator/PageSection.vue';
 import { CheckCircleIcon } from '@heroicons/vue/24/outline';
 import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
-import { PlusIcon } from '@heroicons/vue/16/solid';
 import { useNodeStore } from '@/stores';
 import { useContractQueries, useShortAddress } from '@/hooks';
+import { UploadIcon } from 'lucide-vue-next';
 
 const nodeStore = useNodeStore();
 const { shorten } = useShortAddress();
@@ -64,9 +64,9 @@ const { isDeployed, address, contract } = useContractQueries();
       class="inline-flex w-auto shrink grow-0"
       v-else-if="showNewDeploymentButton"
       @click="emit('openDeployment')"
-      :icon="PlusIcon"
+      :icon="UploadIcon"
     >
-      New Deployment
+      Deploy new instance
     </Btn>
   </PageSection>
 </template>

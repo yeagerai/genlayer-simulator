@@ -111,6 +111,7 @@ export function useContractQueries() {
 
       transactionsStore.clearTransactionsForContract(contract.value?.id ?? '');
       transactionsStore.addTransaction(tx);
+      contractsStore.removeDeployedContract(contract.value?.id ?? '');
       return tx;
     } catch (error) {
       isDeploying.value = false;

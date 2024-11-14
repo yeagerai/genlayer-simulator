@@ -16,7 +16,6 @@ const nodeStore = useNodeStore();
 const props = defineProps<{
   transaction: TransactionItem;
 }>();
-console.log('🚀 ~ transaction:', props.transaction);
 
 const isDetailsModalOpen = ref(false);
 
