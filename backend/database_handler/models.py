@@ -89,9 +89,6 @@ class Transactions(Base):
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(
         DateTime(True), server_default=func.current_timestamp(), init=False
     )
-    client_session_id: Mapped[Optional[str]] = mapped_column(
-        String(255)
-    )  # Used to identify the client session that is subscribed to this transaction's events
     leader_only: Mapped[bool] = mapped_column(Boolean)
     r: Mapped[Optional[int]] = mapped_column(Integer)
     s: Mapped[Optional[int]] = mapped_column(Integer)
