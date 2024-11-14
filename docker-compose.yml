@@ -50,8 +50,6 @@ services:
     volumes:
       - ./.env:/app/webrequest/.env
       - ./webrequest:/app/webrequest
-      # below should be not needed, but copy doesn't work
-      - ./docker:/app/docker
     environment:
       - FLASK_SERVER_PORT=${WEBREQUESTPORT}
       - WEBREQUESTSELENIUMPORT=${WEBREQUESTSELENIUMPORT}
