@@ -15,6 +15,7 @@ from backend.database_handler.llm_providers import LLMProviderRegistry
 from backend.protocol_rpc.configuration import GlobalConfiguration
 from backend.protocol_rpc.message_handler.base import MessageHandler
 from backend.protocol_rpc.endpoints import register_all_rpc_endpoints
+from backend.protocol_rpc.validators_init import initialize_validators
 from dotenv import load_dotenv
 
 from backend.database_handler.transactions_processor import TransactionsProcessor
@@ -58,6 +59,16 @@ def create_app():
     accounts_manager = AccountsManager(sqlalchemy_db.session)
     validators_registry = ValidatorsRegistry(sqlalchemy_db.session)
     llm_provider_registry = LLMProviderRegistry(sqlalchemy_db.session)
+
+    # Initialize validators from environment configuration in a thread
+    initialize_validators_db_session = Session(engine, expire_on_commit=False)
+    initialize_validators(
+        os.getenv("VALIDATORS_CONFIG_JSON"),
+        ValidatorsRegistry(initialize_validators_db_session),
+        AccountsManager(initialize_validators_db_session),
+    )
+    initialize_validators_db_session.commit()
+
     consensus = ConsensusAlgorithm(
         lambda: Session(engine, expire_on_commit=False), msg_handler
     )
