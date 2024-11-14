@@ -28,7 +28,7 @@ RUN cd /genvm \
     && if [[ "$TARGETPLATFORM" == "linux/amd64" ]] ; \
        then URL="https://storage.googleapis.com/gh-af/genvm_executor_7a6de196b4fa57b05505402293b000ca55f1c37e_20241114_083349/genvm_executor.zip" ; \
        elif [[ "$TARGETPLATFORM" == "linux/arm64" ]] ; \
-       then URL="https://storage.googleapis.com/gh-af/genvm_executor_7a6de196b4fa57b05505402293b000ca55f1c37e_20241114_083447/genvm_executor.zip" ; \
+       then URL="https://storage.googleapis.com/gh-af/genvm_executor_e24304aeebb0009e0173738e0d82d8c060a26d87_20241114_120218/genvm_executor.zip" ; \
        else echo "Sorry, $TARGETPLATFORM is not supported yet" ; exit 1 ; \
        fi \
     && curl -L --fail-with-body -H 'Accept: application/octet-stream' -o executor.zip "$URL" \

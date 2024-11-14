@@ -324,8 +324,12 @@ async def _run_genvm_host(
                 if host.sock is not None:
                     host.sock.close()
     except Exception as e:
-        return host.provide_result(
-            await genvmhost.run_host_and_program(host, new_args), ExecutionFail(e)
+        return ExecutionResult(
+            result=ExecutionFail(e),
+            eq_outputs={},
+            pending_transactions=[],
+            stdout="",
+            stderr="",
         )
     finally:
         shutil.rmtree(tmpdir, ignore_errors=True)
