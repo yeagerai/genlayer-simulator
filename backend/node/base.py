@@ -222,7 +222,7 @@ class Node:
         if self.msg_handler is not None:
             self.msg_handler.send_message(
                 LogEvent(
-                    name="execution result",
+                    name="execution_finished",
                     type=EventType.INFO,
                     scope=EventScope.GENVM,
                     message="execution finished",

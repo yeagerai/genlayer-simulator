@@ -237,25 +237,6 @@ class ConsensusAlgorithm:
             # Leader executes transaction
             leader_receipt = await leader_node.exec_transaction(transaction)
 
-            if leader_receipt.error is not None:
-                # FIXME
-                msg_handler.send_message(
-                    LogEvent(
-                        "leader execution failed",
-                        EventType.ERROR,
-                        EventScope.GENVM,
-                        "Leader execution failed",
-                        leader_receipt.to_dict(),
-                    )
-                )
-                ConsensusAlgorithm.dispatch_transaction_status_update(
-                    transactions_processor,
-                    transaction.hash,
-                    TransactionStatus.UNDETERMINED,
-                    msg_handler,
-                )
-                return
-
             votes = {leader["address"]: leader_receipt.vote.value}
             # Update transaction status
             ConsensusAlgorithm.dispatch_transaction_status_update(
@@ -298,7 +279,7 @@ class ConsensusAlgorithm:
 
             if (
                 len([vote for vote in votes.values() if vote == Vote.AGREE.value])
-                >= num_validators // 2
+                >= (num_validators + 1) // 2
             ):
                 break  # Consensus reached
 

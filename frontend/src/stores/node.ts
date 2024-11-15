@@ -39,6 +39,7 @@ export const useNodeStore = defineStore('nodeStore', () => {
     'deploying_contract',
     'deployed_contract',
     'contract_deployment_failed',
+    'execution_finished',
   ];
 
   trackedEvents.forEach((eventName) => {

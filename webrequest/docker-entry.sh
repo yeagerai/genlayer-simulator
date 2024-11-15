@@ -6,6 +6,7 @@ set -ex
     -jar "$base/$selpath/selenium-server-4.24.0.jar" \
     standalone \
     -I chrome \
-    --port "$WEBREQUESTSELENIUMPORT" --host 0.0.0.0 &
+    --port "$WEBREQUESTSELENIUMPORT" --host 0.0.0.0 \
+    &
 
 python3 server.py

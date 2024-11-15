@@ -38,7 +38,7 @@ services:
       database-migration:
         condition: service_completed_successfully
       webrequest:
-        condition: service_started
+        condition: service_healthy
     expose:
       - "${RPCPORT}"
 
@@ -50,8 +50,6 @@ services:
     volumes:
       - ./.env:/app/webrequest/.env
       - ./webrequest:/app/webrequest
-      # below should be not needed, but copy doesn't work
-      - ./docker:/app/docker
     environment:
       - FLASK_SERVER_PORT=${WEBREQUESTPORT}
       - WEBREQUESTSELENIUMPORT=${WEBREQUESTSELENIUMPORT}
@@ -105,4 +103,4 @@ services:
       postgres:
         condition: service_healthy
       webrequest:
-        condition: service_started
+        condition: service_healthy
