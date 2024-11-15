@@ -78,6 +78,11 @@ def test_transactions_processor(transactions_processor: TransactionsProcessor):
         actual_transaction_hash, consensus_data
     )
 
+    new_status = TransactionStatus.FINALIZED
+    transactions_processor.update_transaction_status(
+        actual_transaction_hash, new_status
+    )
+
     actual_transaction = transactions_processor.get_transaction_by_hash(
         actual_transaction_hash
     )
