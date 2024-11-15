@@ -25,16 +25,19 @@ from dataclasses import dataclass
 from backend.node.genvm.config import get_genvm_path
 
 
+# Unexpected error
+# - user contract crushed (for instance from integer division by zero)
+# - user contract is not a contract (genvm can't run it)
+# - os-level error occurred (i.e. socket to genvm got closed)
 @dataclass
 class ExecutionFail:
-    exc: Exception | None
+    exc: list[Exception]
 
     def __repr__(self) -> str:
-        if self.exc is None:
-            return "<unknown error>"
-        if isinstance(self.exc, _CombinedExc):
-            return "ExecutionFail: " + repr(self.exc)
-        return "ExecutionFail: " + "".join(traceback.format_exception(self.exc))
+        lines: list[str] = ["ExecutionFail:\n"]
+        for line in (traceback.format_exception(e) for e in self.exc):
+            lines.append(line)
+        return "".join(lines)
 
 
 @dataclass
@@ -42,6 +45,7 @@ class ExecutionReturn:
     ret: bytes
 
 
+# Expected contract error (i.e. handled invalid arguments)
 @dataclass
 class ExecutionRollback:
     message: str
@@ -56,6 +60,8 @@ class ExecutionResult:
     stderr: str
 
 
+# Interface for accessing the blockchain state, it is needed to not tangle current (awfully unoptimized)
+# storage format with the genvm source code
 class StateProxy(typing.Protocol):
     def storage_read(
         self, gas_before: int, account: Address, slot: bytes, index: int, le: int, /
@@ -72,6 +78,7 @@ class StateProxy(typing.Protocol):
     def get_code(self, addr: Address) -> bytes: ...
 
 
+# GenVM protocol just in case it is needed for mocks or bringing back the old one
 class IGenVM(typing.Protocol):
     async def run_contract(
         self,
@@ -88,6 +95,8 @@ class IGenVM(typing.Protocol):
     async def get_contract_schema(self, contract_code: bytes) -> str: ...
 
 
+# state proxy that always fails and can give code only for address from a constructor
+# useful for get_schema
 class _StateProxyNone(StateProxy):
     def __init__(self, my_address: Address, code: bytes):
         self.my_address = my_address
@@ -114,6 +123,7 @@ class _StateProxyNone(StateProxy):
         return self.code
 
 
+# Actual genvm wrapper that will start process and handle all communication
 class GenVMHost(IGenVM):
     async def run_contract(
         self,
@@ -172,16 +182,7 @@ class GenVMHost(IGenVM):
         return schema
 
 
-class _CombinedExc(Exception):
-    def __init__(self, *exc: Exception):
-        self._exceptions = exc
-
-    def __repr__(self) -> str:
-        return "MultiExc: " + "".join(
-            sum([traceback.format_exception(e) for e in self._exceptions], [])
-        )
-
-
+# Class that has logic for handling all genvm host methods and accumulating results
 class _Host(genvmhost.IHost):
     _result: ExecutionReturn | ExecutionRollback | ExecutionFail | None
     _eq_outputs: dict[int, bytes]
@@ -219,7 +220,7 @@ class _Host(genvmhost.IHost):
             return ret(fail)
         if self._result is not None:
             return ret(self._result)
-        return ret(ExecutionFail(exc=_CombinedExc(*res.exceptions)))
+        return ret(ExecutionFail(exc=res.exceptions))
 
     async def loop_enter(self) -> socket.socket:
         async_loop = asyncio.get_event_loop()
@@ -325,7 +326,7 @@ async def _run_genvm_host(
                     host.sock.close()
     except Exception as e:
         return ExecutionResult(
-            result=ExecutionFail(e),
+            result=ExecutionFail([e]),
             eq_outputs={},
             pending_transactions=[],
             stdout="",

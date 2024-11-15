@@ -234,12 +234,9 @@ class Node:
                 )
             )
         if isinstance(res.result, genvmbase.ExecutionFail):
-            exec_result = genvmconsts.ResultCode.ERROR.value.to_bytes(1) + repr(
-                res.result
-            ).encode("utf-8")
             return Receipt(
-                returned=exec_result,
-                error=Exception("execution failed", res),
+                returned=None,
+                error=Exception(repr(res.result)),
                 gas_used=0,
                 eq_outputs={},
                 pending_transactions=[],

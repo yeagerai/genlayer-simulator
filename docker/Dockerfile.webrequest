@@ -4,6 +4,8 @@ ENV base=/app
 ENV path=webrequest
 ENV selpath=selenium
 
+# These are all the requirements to run chrome and it's webdriver + selenium
+# see https://source.chromium.org/chromium/chromium/src/+/main:chrome/installer/linux/debian/dist_package_versions.json
 RUN mkdir -p "${base}/${path}" && \
     mkdir -p "${base}/${selpath}" && \
     apt-get update && \
