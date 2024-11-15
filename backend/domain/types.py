@@ -124,7 +124,7 @@ class Transaction:
             s=input.get("s"),
             v=input.get("v"),
             leader_only=input.get("leader_only", False),
-            client_session_id=input["client_session_id"],
+            client_session_id=input.get("client_session_id", None),
             appeal=input.get("appeal"),
             timestamp_accepted=input.get("timestamp_accepted"),
         )

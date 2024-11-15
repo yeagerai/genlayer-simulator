@@ -306,27 +306,37 @@ class ConsensusAlgorithm:
                         context.consensus_data.leader_receipt = (
                             transaction.consensus_data.leader_receipt
                         )
-                        context.remaining_validators = (
-                            ConsensusAlgorithm.get_extra_validators(
-                                chain_snapshot, transaction.consensus_data
+                        try:
+                            context.remaining_validators = (
+                                ConsensusAlgorithm.get_extra_validators(
+                                    chain_snapshot, transaction.consensus_data
+                                )
                             )
-                        )
-                        context.num_validators = len(
-                            context.remaining_validators
-                        )  # new amount added (N + 2)
-                        context.votes = {}
-                        context.contract_snapshot = context.contract_snapshot_factory(
-                            transaction.to_address
-                        )
+                        except ValueError as e:
+                            print(e, transaction)
+                            context.transactions_processor.set_transaction_appeal(
+                                context.transaction.hash, False
+                            )
+                            context.transaction.appeal = False
+                        else:
+                            context.num_validators = len(
+                                context.remaining_validators
+                            )  # new amount added (N + 2)
+                            context.votes = {}
+                            context.contract_snapshot = (
+                                context.contract_snapshot_factory(
+                                    transaction.to_address
+                                )
+                            )
 
-                        # State transitions
-                        state = CommittingState()
-                        while True:
-                            next_state = await state.handle(context)
-                            if next_state is None:
-                                break
-                            state = next_state
-                        session.commit()
+                            # State transitions
+                            state = CommittingState()
+                            while True:
+                                next_state = await state.handle(context)
+                                if next_state is None:
+                                    break
+                                state = next_state
+                            session.commit()
 
             await asyncio.sleep(1)
 
@@ -343,6 +353,10 @@ class ConsensusAlgorithm:
             for validator in snapshot.get_all_validators()
             if validator["address"] not in current_validators_addresses
         ]
+        if len(not_used_validators) == 0:
+            raise ValueError(
+                "No validators found for appeal, waiting for next appeal request: "
+            )
         return get_validators_for_transaction(
             not_used_validators, len(consensus_data.validators) + 1 + 2
         )  # plus one because of the leader, plus two because of the appeal
@@ -582,7 +596,7 @@ class RevealingState(TransactionState):
 
         if (
             len([vote for vote in context.votes.values() if vote == Vote.AGREE.value])
-            >= context.num_validators // 2
+            > context.num_validators // 2
         ):
             if context.transaction.appeal:
                 # Appeal failed
@@ -590,9 +604,6 @@ class RevealingState(TransactionState):
                 context.validation_results = (
                     context.transaction.consensus_data.validators
                     + context.validation_results
-                )
-                context.transactions_processor.set_transaction_appeal(
-                    context.transaction.hash, False
                 )
 
             return AcceptedState()
@@ -632,9 +643,15 @@ class RevealingState(TransactionState):
 
 class AcceptedState(TransactionState):
     async def handle(self, context):
-        context.transactions_processor.set_transaction_timestamp_accepted(
-            context.transaction.hash
+        if not context.transaction.appeal:
+            # When appeal fails, the appeal window is not reset
+            context.transactions_processor.set_transaction_timestamp_accepted(
+                context.transaction.hash
+            )
+        context.transactions_processor.set_transaction_appeal(
+            context.transaction.hash, False
         )
+        context.transaction.appeal = False
 
         ConsensusAlgorithm.dispatch_transaction_status_update(
             context.transactions_processor,
@@ -683,7 +700,7 @@ class UndeterminedState(TransactionState):
         )
         context.transactions_processor.set_transaction_result(
             context.transaction.hash,
-            context.transaction.consensus_data.to_dict(),
+            context.consensus_data.to_dict(),
         )
         return None
 
