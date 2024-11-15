@@ -1,41 +1,22 @@
-import { describe, it, expect, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useConfig } from '@/hooks';
 
 describe('useConfig', () => {
-  const original = window.location;
-
-  afterEach(() => {
-    Object.defineProperty(window, 'location', {
-      value: original,
-      writable: true,
-    });
+  beforeEach(() => {
+    vi.stubEnv('VITE_IS_HOSTED', 'false');
   });
 
-  it('should return true for canUpdateValidators when URL includes localhost', () => {
-    Object.defineProperty(window, 'location', {
-      value: {
-        href: 'http://localhost:8080',
-        hostname: 'localhost',
-      },
-      writable: true,
-    });
+  it('should return true for canUpdateValidators when not in hosted environment', () => {
+    vi.stubEnv('VITE_IS_HOSTED', 'false');
 
     const { canUpdateValidators } = useConfig();
-    expect(canUpdateValidators.value).toBe(true);
-    Object.defineProperty(window, 'location', original);
+    expect(canUpdateValidators).toBe(true);
   });
 
-  it('should return false for canUpdateValidators when URL does not include localhost', () => {
-    Object.defineProperty(window, 'location', {
-      value: {
-        href: 'https://studio.genlayer.com',
-        hostname: 'genlayer',
-      },
-      writable: true,
-    });
+  it('should return false for canUpdateValidators when in hosted environment', () => {
+    vi.stubEnv('VITE_IS_HOSTED', 'true');
 
     const { canUpdateValidators } = useConfig();
-    expect(canUpdateValidators.value).toBe(false);
-    Object.defineProperty(window, 'location', original);
+    expect(canUpdateValidators).toBe(false);
   });
 });
