@@ -630,5 +630,5 @@ def register_all_rpc_endpoints(
     )
     register_rpc_endpoint(
         partial(set_transaction_appeal, transactions_processor),
-        method_name="sim_setTransactionAppeal",
+        method_name="sim_appealTransaction",
     )

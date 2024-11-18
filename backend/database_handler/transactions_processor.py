@@ -49,7 +49,7 @@ class TransactionsProcessor:
                 transaction.hash
                 for transaction in transaction_data.triggered_transactions
             ],
-            "appeal": transaction_data.appeal,
+            "appealed": transaction_data.appealed,
             "timestamp_accepted": transaction_data.timestamp_accepted,
         }
 
@@ -152,7 +152,7 @@ class TransactionsProcessor:
                 if triggered_by_hash
                 else None
             ),
-            appeal=False,
+            appealed=False,
             timestamp_accepted=None,
         )
 
@@ -256,7 +256,7 @@ class TransactionsProcessor:
         transaction = (
             self.session.query(Transactions).filter_by(hash=transaction_hash).one()
         )
-        transaction.appeal = appeal
+        transaction.appealed = appeal
 
     def set_transaction_timestamp_accepted(
         self, transaction_hash: str, timestamp_accepted: int = None

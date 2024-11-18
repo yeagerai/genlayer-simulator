@@ -52,7 +52,7 @@ class TransactionsProcessorMock:
 
     def set_transaction_appeal(self, transaction_hash: str, appeal: bool):
         transaction = self.get_transaction_by_hash(transaction_hash)
-        transaction["appeal"] = appeal
+        transaction["appealed"] = appeal
 
     def set_transaction_timestamp_accepted(
         self, transaction_hash: str, timestamp_accepted: int = None
@@ -102,7 +102,7 @@ def transaction_to_dict(transaction: Transaction) -> dict:
         "s": transaction.s,
         "v": transaction.v,
         "leader_only": transaction.leader_only,
-        "appeal": transaction.appeal,
+        "appealed": transaction.appealed,
         "timestamp_accepted": transaction.timestamp_accepted,
     }
 
@@ -124,7 +124,7 @@ def dict_to_transaction(input: dict) -> Transaction:
         s=input.get("s"),
         v=input.get("v"),
         leader_only=input.get("leader_only", False),
-        appeal=input.get("appeal"),
+        appealed=input.get("appealed"),
         timestamp_accepted=input.get("timestamp_accepted"),
     )
 
@@ -508,7 +508,7 @@ async def _appeal_window(
         accepted_transactions = transactions_processor.get_accepted_transactions()
         for transaction in accepted_transactions:
             transaction = dict_to_transaction(transaction)
-            if not transaction.appeal:
+            if not transaction.appealed:
                 if (
                     int(time.time()) - transaction.timestamp_accepted
                 ) > DEFAULT_FINALITY_WINDOW:
@@ -665,7 +665,7 @@ async def test_exec_appeal(managed_thread):
         == TransactionStatus.ACCEPTED
     )
     assert (
-        transactions_processor.get_transaction_by_hash(transaction.hash)["appeal"]
+        transactions_processor.get_transaction_by_hash(transaction.hash)["appealed"]
         == False
     )
 
@@ -682,7 +682,7 @@ async def test_exec_appeal(managed_thread):
 
     transactions_processor.set_transaction_appeal(transaction.hash, True)
     assert (
-        transactions_processor.get_transaction_by_hash(transaction.hash)["appeal"]
+        transactions_processor.get_transaction_by_hash(transaction.hash)["appealed"]
         == True
     )
 

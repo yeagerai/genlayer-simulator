@@ -2,8 +2,8 @@
 
 DEFAULT_VALIDATORS_COUNT = 5
 DEFAULT_CONSENSUS_SLEEP_TIME = 5
-DEFAULT_FINALITY_WINDOW = 30 * 60  # 30 minutes
 
+import os
 import asyncio
 from collections import deque
 import json
@@ -189,7 +189,6 @@ class ConsensusAlgorithm:
 
         for validators in rotate(involved_validators):
             consensus_data = ConsensusData(
-                final=False,
                 votes={},
                 leader_receipt=None,
                 validators=[],
@@ -410,7 +409,6 @@ class ConsensusAlgorithm:
             contract_snapshot.update_contract_state(leader_receipt["contract_state"])
 
         # Finalize transaction
-        consensus_data["final"] = True
         transactions_processor.set_transaction_result(
             transaction.hash,
             consensus_data,
@@ -527,6 +525,7 @@ class ConsensusAlgorithm:
         loop.close()
 
     async def _appeal_window(self):
+        FINALITY_WINDOW = int(os.getenv("FINALITY_WINDOW"))
         while True:
             with self.get_session() as session:
                 chain_snapshot = ChainSnapshot(session)
@@ -534,10 +533,10 @@ class ConsensusAlgorithm:
                 accepted_transactions = chain_snapshot.get_accepted_transactions()
                 for transaction in accepted_transactions:
                     transaction = transaction_from_dict(transaction)
-                    if not transaction.appeal:
+                    if not transaction.appealed:
                         if (
                             int(time.time()) - transaction.timestamp_accepted
-                        ) > DEFAULT_FINALITY_WINDOW:
+                        ) > FINALITY_WINDOW:
                             self.finalize_transaction(
                                 transaction,
                                 transactions_processor,
