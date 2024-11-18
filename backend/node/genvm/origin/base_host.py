@@ -25,17 +25,16 @@ class IHost(typing.Protocol):
     async def get_calldata(self, /) -> bytes: ...
     async def get_code(self, addr: bytes, /) -> bytes: ...
     async def storage_read(
-        self, gas_before: int, account: bytes, slot: bytes, index: int, le: int, /
-    ) -> tuple[bytes, int]: ...
+        self, account: bytes, slot: bytes, index: int, le: int, /
+    ) -> bytes: ...
     async def storage_write(
         self,
-        gas_before: int,
         account: bytes,
         slot: bytes,
         index: int,
         got: collections.abc.Buffer,
         /,
-    ) -> int: ...
+    ) -> None: ...
     async def consume_result(
         self, type: ResultCode, data: collections.abc.Buffer, /
     ) -> None: ...
@@ -46,6 +45,7 @@ class IHost(typing.Protocol):
     async def post_message(
         self, gas: int, account: bytes, calldata: bytes, code: bytes, /
     ) -> None: ...
+    async def consume_gas(self, gas: int, /) -> None: ...
 
 
 async def host_loop(handler: IHost):
@@ -91,26 +91,20 @@ async def host_loop(handler: IHost):
                 await send_int(len(code))
                 await send_all(code)
             case Methods.STORAGE_READ:
-                gas_before = await recv_int(8)
                 account = await read_exact(ACCOUNT_ADDR_SIZE)
                 slot = await read_exact(GENERIC_ADDR_SIZE)
                 index = await recv_int()
                 le = await recv_int()
-                res, gas = await handler.storage_read(
-                    gas_before, account, slot, index, le
-                )
+                res = await handler.storage_read(account, slot, index, le)
                 assert len(res) == le
-                await send_int(gas, 8)
                 await send_all(res)
             case Methods.STORAGE_WRITE:
-                gas_before = await recv_int(8)
                 account = await read_exact(ACCOUNT_ADDR_SIZE)
                 slot = await read_exact(GENERIC_ADDR_SIZE)
                 index = await recv_int()
                 le = await recv_int()
                 got = await read_exact(le)
-                gas = await handler.storage_write(gas_before, account, slot, index, got)
-                await send_int(gas, 8)
+                await handler.storage_write(account, slot, index, got)
             case Methods.CONSUME_RESULT:
                 await handler.consume_result(*await read_result())
                 await send_all(b"\x00")
@@ -140,11 +134,11 @@ async def host_loop(handler: IHost):
                 code_len = await recv_int()
                 code = await read_exact(code_len)
                 await handler.post_message(gas, account, calldata, code)
+            case Methods.CONSUME_FUEL:
+                gas = await recv_int(8)
+                await handler.consume_gas(gas)
             case x:
                 raise Exception(f"unknown method {x}")
-
-
-import subprocess
 
 
 @dataclass
@@ -164,6 +158,7 @@ async def run_host_and_program(
     env=None,
     cwd: Path | None = None,
     exit_timeout=0.05,
+    deadline: float | None = None,
 ) -> RunHostAndProgramRes:
     loop = asyncio.get_running_loop()
 
@@ -223,8 +218,12 @@ async def run_host_and_program(
     coro_loop = asyncio.ensure_future(wrap_host())
     coro_proc = asyncio.ensure_future(wrap_proc())
 
+    all_proc = [coro_loop, coro_proc]
+    if deadline is not None:
+        all_proc.append(asyncio.ensure_future(asyncio.sleep(deadline)))
+
     done, _pending = await asyncio.wait(
-        [coro_loop, coro_proc],
+        all_proc,
         return_when=asyncio.FIRST_COMPLETED,
     )
 
@@ -237,7 +236,7 @@ async def run_host_and_program(
             errors.append(e)
 
     # coro_loop must finish first if everything succeeded
-    if not coro_loop.done():
+    if not coro_loop.done() and deadline is None:
         print("WARNING: genvm finished first")
         coro_loop.cancel()
 
@@ -269,6 +268,9 @@ async def run_host_and_program(
 
     await coro_proc
     exit_code = await process.wait()
+
+    if not coro_loop.done():
+        coro_loop.cancel()
 
     if exit_code_use and exit_code != 0:
         errors.append(Exception(f"exit code {exit_code} != 0"))

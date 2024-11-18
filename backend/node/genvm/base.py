@@ -35,8 +35,8 @@ class ExecutionFail:
 
     def __repr__(self) -> str:
         lines: list[str] = ["ExecutionFail:\n"]
-        for line in (traceback.format_exception(e) for e in self.exc):
-            lines.append(line)
+        for exc_lines in (traceback.format_exception(e) for e in self.exc):
+            lines.extend(exc_lines)
         return "".join(lines)
 
 
@@ -64,17 +64,16 @@ class ExecutionResult:
 # storage format with the genvm source code
 class StateProxy(typing.Protocol):
     def storage_read(
-        self, gas_before: int, account: Address, slot: bytes, index: int, le: int, /
-    ) -> tuple[bytes, int]: ...
+        self, account: Address, slot: bytes, index: int, le: int, /
+    ) -> bytes: ...
     def storage_write(
         self,
-        gas_before: int,
         account: Address,
         slot: bytes,
         index: int,
         got: collections.abc.Buffer,
         /,
-    ) -> int: ...
+    ) -> None: ...
     def get_code(self, addr: Address) -> bytes: ...
 
 
@@ -103,19 +102,18 @@ class _StateProxyNone(StateProxy):
         self.code = code
 
     def storage_read(
-        self, gas_before: int, account: Address, slot: bytes, index: int, le: int, /
-    ) -> tuple[bytes, int]:
+        self, account: Address, slot: bytes, index: int, le: int, /
+    ) -> bytes:
         assert False
 
     def storage_write(
         self,
-        gas_before: int,
         account: Address,
         slot: bytes,
         index: int,
         got: collections.abc.Buffer,
         /,
-    ) -> int:
+    ) -> None:
         assert False
 
     def get_code(self, addr: Address) -> bytes:
@@ -236,24 +234,19 @@ class _Host(genvmhost.IHost):
         return self._state_proxy.get_code(Address(addr))
 
     async def storage_read(
-        self, gas_before: int, account: bytes, slot: bytes, index: int, le: int, /
-    ) -> tuple[bytes, int]:
-        return self._state_proxy.storage_read(
-            gas_before, Address(account), slot, index, le
-        )
+        self, account: bytes, slot: bytes, index: int, le: int, /
+    ) -> bytes:
+        return self._state_proxy.storage_read(Address(account), slot, index, le)
 
     async def storage_write(
         self,
-        gas_before: int,
         account: bytes,
         slot: bytes,
         index: int,
         got: collections.abc.Buffer,
         /,
-    ) -> int:
-        return self._state_proxy.storage_write(
-            gas_before, Address(account), slot, index, got
-        )
+    ) -> None:
+        return self._state_proxy.storage_write(Address(account), slot, index, got)
 
     async def consume_result(
         self, type: genvmhost.ResultCode, data: collections.abc.Buffer, /
@@ -289,6 +282,9 @@ class _Host(genvmhost.IHost):
             PendingTransaction(Address(account).as_hex, calldata)
         )
 
+    async def consume_gas(self, gas: int, /) -> None:
+        pass
+
 
 async def _run_genvm_host(
     host_supplier: typing.Callable[[socket.socket], _Host],
@@ -305,6 +301,7 @@ async def _run_genvm_host(
 
             new_args = [
                 get_genvm_path(),
+                "run",
                 "--host",
                 f"unix://{sock_path}",
                 "--print=all",

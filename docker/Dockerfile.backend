@@ -7,8 +7,7 @@ WORKDIR $path
 
 ADD backend/protocol_rpc/requirements.txt backend/protocol_rpc/requirements.txt
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --cache-dir=/root/.cache/pip torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu \
-    && pip install --cache-dir=/root/.cache/pip -r backend/protocol_rpc/requirements.txt
+    pip install --cache-dir=/root/.cache/pip -r backend/protocol_rpc/requirements.txt
 
 RUN groupadd -r backend-group \
     && useradd -r -g backend-group backend-user \
@@ -22,20 +21,33 @@ ENV FLASK_APP backend/protocol_rpc/server.py
 ENV HUGGINGFACE_HUB_CACHE /home/backend-user/.cache/huggingface
 
 SHELL ["/bin/bash", "-c"]
-RUN apt-get update -y && apt-get install -y --no-install-recommends curl unzip && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -y && apt-get install -y --no-install-recommends curl unzip xz-utils && apt-get clean && rm -rf /var/lib/apt/lists/*
+ENV RUST_BACKTRACE=1
+
 # FIXME(kp2pml30): rewrite when genvm becomes public
 RUN cd /genvm \
     && if [[ "$TARGETPLATFORM" == "linux/amd64" ]] ; \
-       then URL="https://storage.googleapis.com/gh-af/genvm_executor_7a6de196b4fa57b05505402293b000ca55f1c37e_20241114_083349/genvm_executor.zip" ; \
+       then \
+           URL="https://storage.googleapis.com/gh-af/genvm_executor_90b48e74c2afe2c551870510a383553f13a19a69_20241118_152102/genvm_executor.zip" ; \
        elif [[ "$TARGETPLATFORM" == "linux/arm64" ]] ; \
-       then URL="https://storage.googleapis.com/gh-af/genvm_executor_e24304aeebb0009e0173738e0d82d8c060a26d87_20241114_120218/genvm_executor.zip" ; \
+       then \
+           URL="https://storage.googleapis.com/gh-af/genvm_executor_90b48e74c2afe2c551870510a383553f13a19a69_20241118_152053/genvm_executor.zip" && \
+           DIR="$(pwd)" && \
+           mkdir -p /openssl && cd /openssl && \
+           curl -L --fail-with-body -H 'Accept: application/octet-stream' -o "openssl.tar.xz" "http://mirror.archlinuxarm.org/aarch64/core/openssl-1.0-1.0.2.u-1-aarch64.pkg.tar.xz" && \
+           tar -xf openssl.tar.xz && \
+           cp usr/lib/*.so* /usr/lib/ && \
+           cd "$DIR" || exit 1 ; \
        else echo "Sorry, $TARGETPLATFORM is not supported yet" ; exit 1 ; \
        fi \
     && curl -L --fail-with-body -H 'Accept: application/octet-stream' -o executor.zip "$URL" \
-    && curl -L --fail-with-body -H 'Accept: application/octet-stream' -o runners.zip "https://storage.googleapis.com/gh-af/genvm_runners_7a6de196b4fa57b05505402293b000ca55f1c37e_20241114_084603/runners.zip" \
+    && curl -L --fail-with-body -H 'Accept: application/octet-stream' -o runners.zip "https://storage.googleapis.com/gh-af/genvm_runners_90b48e74c2afe2c551870510a383553f13a19a69_20241118_152940/runners.zip" \
     && unzip runners.zip && unzip executor.zip && rm runners.zip executor.zip \
     && ls -R . \
-    && cd "$path"
+    && cd "$path" \
+    && true
+
+RUN su - backend-user -c '/genvm/bin/genvm precompile'
 
 COPY ../.env .
 COPY backend $path/backend

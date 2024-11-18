@@ -222,7 +222,7 @@ export function useContractQueries() {
         data: {},
         decodedData: {
           functionName: method,
-          args,
+          ...args,
         },
       });
       return true;

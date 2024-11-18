@@ -46,24 +46,23 @@ class _SnapshotView(genvmbase.StateProxy):
         return self._get_snapshot(addr).contract_code.encode("utf-8")
 
     def storage_read(
-        self, gas_before: int, account: Address, slot: bytes, index: int, le: int, /
+        self, account: Address, slot: bytes, index: int, le: int, /
     ) -> tuple[bytes, int]:
         snap = self._get_snapshot(account)
         for_acc = snap.encoded_state.setdefault(account.as_b64, {})
         for_slot = for_acc.setdefault(base64.b64encode(slot).decode("ascii"), "")
         data = bytearray(base64.b64decode(for_slot))
         data.extend(b"\x00" * (index + le - len(data)))
-        return data[index : index + le], gas_before
+        return data[index : index + le]
 
     def storage_write(
         self,
-        gas_before: int,
         account: Address,
         slot: bytes,
         index: int,
         got: collections.abc.Buffer,
         /,
-    ) -> int:
+    ) -> None:
         assert account == self.contract_address
         assert not self.readonly
         snap = self._get_snapshot(account)
@@ -75,7 +74,6 @@ class _SnapshotView(genvmbase.StateProxy):
         data.extend(b"\x00" * (index + len(mem) - len(data)))
         data[index : index + len(mem)] = mem
         for_acc[slot_id] = base64.b64encode(data).decode("utf-8")
-        return gas_before
 
 
 class Node:
