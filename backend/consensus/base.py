@@ -154,9 +154,7 @@ class ConsensusAlgorithm:
             Node,
         ] = node_factory,
     ):
-        msg_handler = self.msg_handler.with_client_session(
-            transaction.client_session_id
-        )
+        msg_handler = self.msg_handler
         if (
             transactions_processor.get_transaction_by_hash(transaction.hash)["status"]
             != TransactionStatus.PENDING.value
@@ -439,7 +437,6 @@ class ConsensusAlgorithm:
                 type=TransactionType.RUN_CONTRACT.value,
                 nonce=nonce,
                 leader_only=transaction.leader_only,  # Cascade
-                client_session_id=transaction.client_session_id,
                 triggered_by_hash=transaction.hash,
             )
 

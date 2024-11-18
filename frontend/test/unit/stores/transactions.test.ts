@@ -6,6 +6,21 @@ import { type TransactionItem } from '@/types';
 
 vi.mock('@/hooks', () => ({
   useRpcClient: vi.fn(),
+  useWebSocketClient: vi.fn(() => ({
+    connected: true,
+    emit: vi.fn(),
+  })),
+  useDb: vi.fn(() => ({
+    transaction: vi.fn(),
+    get: vi.fn(),
+    put: vi.fn(),
+  })),
+  useSetupStores: vi.fn(() => ({
+    setupStores: vi.fn(),
+  })),
+  useFileName: vi.fn(() => ({
+    cleanupFileName: vi.fn(),
+  })),
 }));
 
 const testTransaction: TransactionItem = {
@@ -32,7 +47,6 @@ describe('useTransactionsStore', () => {
     (useRpcClient as Mock).mockReturnValue(mockRpcClient);
     transactionsStore = useTransactionsStore();
     transactionsStore.transactions = [];
-    transactionsStore.processingQueue = [];
     mockRpcClient.getTransactionByHash.mockClear();
   });
 
@@ -82,28 +96,29 @@ describe('useTransactionsStore', () => {
     transactionsStore.addTransaction(tx1);
     transactionsStore.addTransaction(tx2);
 
-    transactionsStore.processingQueue = [tx1];
-
     transactionsStore.clearTransactionsForContract('contract-1');
 
     expect(transactionsStore.transactions).toEqual([tx2]);
-    expect(transactionsStore.processingQueue).toEqual([]);
   });
 
-  it('should compute pending transactions', () => {
-    const tx1 = {
+  it('should refresh pending transactions', async () => {
+    const pendingTransaction = {
       ...testTransaction,
-      hash: '0x1234567890123456789012345678901234567891',
-      status: 'FINALIZED',
-    };
-    const tx2 = {
-      ...testTransaction,
-      hash: '0x1234567890123456789012345678901234567892',
       status: 'PENDING',
     };
+    const updatedTransaction = {
+      ...pendingTransaction,
+      status: 'FINALIZED',
+    };
 
-    transactionsStore.transactions = [tx1, tx2];
+    transactionsStore.addTransaction(pendingTransaction);
+    mockRpcClient.getTransactionByHash.mockResolvedValue(updatedTransaction);
 
-    expect(transactionsStore.pendingTransactions).toEqual([tx2]);
+    await transactionsStore.refreshPendingTransactions();
+
+    expect(mockRpcClient.getTransactionByHash).toHaveBeenCalledWith(
+      pendingTransaction.hash,
+    );
+    expect(transactionsStore.transactions[0].status).toBe('FINALIZED');
   });
 });

@@ -18,7 +18,6 @@ const transactionsStore = useTransactionsStore();
 const props = defineProps<{
   transaction: TransactionItem;
 }>();
-console.log('🚀 ~ transaction:', props.transaction);
 
 const isDetailsModalOpen = ref(false);
 
