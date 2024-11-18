@@ -61,6 +61,14 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
     await Promise.all(
       pendingTxs.map(async (tx) => {
         const newTx = await getTransaction(tx.hash);
+
+        if (!newTx) {
+          removeTransaction(tx);
+          return;
+        }
+
+        console.log('newTx', newTx);
+
         updateTransaction(newTx);
       }),
     );
