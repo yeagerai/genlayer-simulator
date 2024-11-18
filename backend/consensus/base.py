@@ -2,7 +2,7 @@
 
 DEFAULT_VALIDATORS_COUNT = 5
 DEFAULT_CONSENSUS_SLEEP_TIME = 5
-DEFAULT_FINALITY_WINDOW = 30  # * 60  # 30 minutes
+DEFAULT_FINALITY_WINDOW = 30 * 60  # 30 minutes
 
 import asyncio
 from collections import deque
@@ -154,9 +154,7 @@ class ConsensusAlgorithm:
             Node,
         ] = node_factory,
     ):
-        msg_handler = self.msg_handler.with_client_session(
-            transaction.client_session_id
-        )
+        msg_handler = self.msg_handler
 
         # Create initial state context
         context = TransactionContext(
@@ -318,6 +316,7 @@ class ConsensusAlgorithm:
                                 context.transaction.hash, False
                             )
                             context.transaction.appeal = False
+                            session.commit()
                         else:
                             context.num_validators = len(
                                 context.remaining_validators
@@ -768,7 +767,6 @@ class FinalizingState(TransactionState):
                 type=TransactionType.RUN_CONTRACT.value,
                 nonce=nonce,
                 leader_only=context.transaction.leader_only,  # Cascade
-                client_session_id=context.transaction.client_session_id,
                 triggered_by_hash=context.transaction.hash,
             )
 

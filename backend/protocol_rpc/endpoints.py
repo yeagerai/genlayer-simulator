@@ -72,7 +72,7 @@ def fund_account(
 
     nonce = transactions_processor.get_transaction_count(None)
     transaction_hash = transactions_processor.insert_transaction(
-        None, account_address, None, amount, 0, nonce, False, get_client_session_id()
+        None, account_address, None, amount, 0, nonce, False
     )
     return transaction_hash
 
@@ -485,7 +485,6 @@ def send_raw_transaction(
         transaction_type,
         nonce,
         leader_only,
-        get_client_session_id(),
     )
 
     return transaction_hash

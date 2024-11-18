@@ -44,7 +44,6 @@ class TransactionsProcessor:
             "v": transaction_data.v,
             "created_at": transaction_data.created_at.isoformat(),
             "leader_only": transaction_data.leader_only,
-            "client_session_id": transaction_data.client_session_id,
             "triggered_by": transaction_data.triggered_by_hash,
             "triggered_transactions": [
                 transaction.hash
@@ -116,7 +115,6 @@ class TransactionsProcessor:
         type: int,
         nonce: int,
         leader_only: bool,
-        client_session_id: str | None,
         triggered_by_hash: (
             str | None
         ) = None,  # If filled, the transaction must be present in the database (committed)
@@ -149,7 +147,6 @@ class TransactionsProcessor:
             s=None,
             v=None,
             leader_only=leader_only,
-            client_session_id=client_session_id,
             triggered_by=(
                 self.session.query(Transactions).filter_by(hash=triggered_by_hash).one()
                 if triggered_by_hash

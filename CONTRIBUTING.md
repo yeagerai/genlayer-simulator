@@ -1,29 +1,29 @@
-# Contributing to GenLayer Simulator
+# Contributing to GenLayer Studio
 
-We're thrilled that you're interested in contributing to the GenLayer Simulator! This document will guide you through the contribution process.
+We're thrilled that you're interested in contributing to the GenLayer Studio! This document will guide you through the contribution process.
 
-## What is the GenLayer Simulator?
+## What is the GenLayer Studio?
 
-The GenLayer Simulator is an interactive sandbox designed for developers to explore the potential of GenLayer's Intelligent Contracts. It replicates the GenLayer network's execution environment and consensus algorithm, providing a controlled and local environment to test different ideas and behaviors.
+The GenLayer Studio is an interactive sandbox designed for developers to explore the potential of GenLayer's Intelligent Contracts. It replicates the GenLayer network's execution environment and consensus algorithm, providing a controlled and local environment to test different ideas and behaviors.
 
 ## How You Can Contribute?
 
-Contributions to the GenLayer Simulator are welcome in several forms:
+Contributions to the GenLayer Studio are welcome in several forms:
 
-### Testing the Simulator and Providing Feedback
+### Testing the Studio and Providing Feedback
 
-Help us make the simulator better by testing and giving feedback:
+Help us make the Studio better by testing and giving feedback:
 
-- Start installing the simulator using the GenLayer [CLI](https://github.com/yeagerai/genlayer-simulator?tab=readme-ov-file#quick-install).
-- Try out the Simulator features and tell us what you think through our [feedback form](https://docs.google.com/forms/d/1IVNsZwm936kSNCiXmlAP8bgJnbik7Bqaoc3I6UYhr-o/viewform) or on our [Discord Channel](https://discord.gg/8Jm4v89VAu).
+- Start installing the Studio using the GenLayer [CLI](https://github.com/yeagerai/genlayer-simulator?tab=readme-ov-file#quick-install).
+- Try out the Studio features and tell us what you think through our [feedback form](https://docs.google.com/forms/d/1IVNsZwm936kSNCiXmlAP8bgJnbik7Bqaoc3I6UYhr-o/viewform) or on our [Discord Channel](https://discord.gg/8Jm4v89VAu).
 - If you find any issues, please report them on our [GitHub issues page](https://github.com/yeagerai/genlayer-simulator/issues).
 
 ### Sharing New Ideas and Use Cases
 
 Have ideas for new features or use cases? We're eager to hear them! But first:
 
-- Ensure you have the [Simulator installed](https://github.com/yeagerai/genlayer-simulator?tab=readme-ov-file#quick-install) first to explore existing use cases.
-- After familiarizing yourself with the simulator, contribute your unique use case and share your ideas in our [Discord channel](https://discord.gg/8Jm4v89VAu).
+- Ensure you have the [Studio installed](https://github.com/yeagerai/genlayer-simulator?tab=readme-ov-file#quick-install) first to explore existing use cases.
+- After familiarizing yourself with the Studio, contribute your unique use case and share your ideas in our [Discord channel](https://discord.gg/8Jm4v89VAu).
 
 ### Bug fixing and Feature development
 
@@ -33,7 +33,7 @@ Have ideas for new features or use cases? We're eager to hear them! But first:
 
 - **1.2. Create a branch**: create the branch that you will work on by using the link provided in the issue details page (right panel at the bottom - section "Development")
 
-- **1.3. Setup the Simulator locally**: launch the simulator's frontend and backend by running the docker compose command (Please note that you must have docker, node, and npm installed)
+- **1.3. Setup the Studio locally**: launch the Studio's frontend and backend by running the docker compose command (Please note that you must have docker, node, and npm installed)
 
    ```sh
    $ cp .env.example .env
@@ -90,4 +90,4 @@ Connect with the GenLayer community to discuss, collaborate, and share insights:
 - **[Discord Channel](https://discord.gg/8Jm4v89VAu)**: Our primary hub for discussions, support, and announcements.
 - **[Telegram Group](https://t.me/genlayer)**: For more informal chats and quick updates.
 
-Your continuous feedback drives better product development. Please engage with us regularly to test, discuss, and improve the GenLayer Simulator.
+Your continuous feedback drives better product development. Please engage with us regularly to test, discuss, and improve the GenLayer Studio.

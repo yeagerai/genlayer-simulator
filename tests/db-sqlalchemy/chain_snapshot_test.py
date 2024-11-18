@@ -23,7 +23,6 @@ def test_chain_snapshot(session: Session):
         s=None,
         v=None,
         leader_only=False,
-        client_session_id=None,
         # triggered_by_hash=None,
     )
 
@@ -43,7 +42,6 @@ def test_chain_snapshot(session: Session):
         s=None,
         v=None,
         leader_only=False,
-        client_session_id=None,
         # triggered_by_hash="0xdef",
     )
 
@@ -63,7 +61,6 @@ def test_chain_snapshot(session: Session):
         s=None,
         v=None,
         leader_only=False,
-        client_session_id=None,
         # triggered_by_hash=None,
     )
 
