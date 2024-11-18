@@ -8,4 +8,5 @@ export * from './useInputMap';
 export * from './useContractQueries';
 export * from './useFileName';
 export * from './useSetupStores';
+export * from './useConfig';
 export * from './useTransactionListener';
