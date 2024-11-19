@@ -63,8 +63,6 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
           return;
         }
 
-        console.log('newTx', newTx);
-
         updateTransaction(newTx);
       }),
     );
