@@ -304,7 +304,7 @@ async def _run_genvm_host(
                 "run",
                 "--host",
                 f"unix://{sock_path}",
-                "--print=all",
+                "--print=shrink",
             ]
 
             if config is not None:

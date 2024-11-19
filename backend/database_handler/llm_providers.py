@@ -38,8 +38,8 @@ class LLMProviderRegistry:
                 domain_provider.plugin, domain_provider.plugin_config
             )
 
-            provider_dict["is_available"] = plugin.is_available()
-            provider_dict["is_model_available"] = plugin.is_model_available(
+            provider_dict["is_available"] = await plugin.is_available()
+            provider_dict["is_model_available"] = await plugin.is_model_available(
                 domain_provider.model
             )
 

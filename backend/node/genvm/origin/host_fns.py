@@ -10,6 +10,7 @@ class Methods(IntEnum):
     GET_LEADER_NONDET_RESULT = 5
     POST_NONDET_RESULT = 6
     POST_MESSAGE = 7
+    CONSUME_FUEL = 8
 
 
 class ResultCode(IntEnum):
