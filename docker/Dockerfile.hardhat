@@ -1,0 +1,16 @@
+FROM node:20.11-alpine3.19
+
+WORKDIR /app
+
+RUN apk add --no-cache python3 make g++
+
+COPY ./hardhat/package*.json ./
+RUN npm install
+
+COPY ./hardhat .
+
+ENV PATH="/app/node_modules/.bin:${PATH}"
+
+EXPOSE 8545
+
+CMD ["./node_modules/.bin/hardhat", "node", "--network", "hardhat"]

@@ -94,3 +94,18 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
+  hardhat:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.hardhat
+    ports:
+      - "${HARDHAT_PORT:-8545}:8545"
+    volumes:
+      - ./hardhat/contracts:/app/contracts
+      - ./hardhat/scripts:/app/scripts
+      - ./hardhat/test:/app/test
+      - ./hardhat/hardhat.config.js:/app/hardhat.config.js
+    environment:
+      - HARDHAT_NETWORK=hardhat
+

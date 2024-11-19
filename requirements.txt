@@ -4,3 +4,4 @@ black==24.8.0
 pytest==8.3.3
 pytest-mock==3.14.0
 pre-commit==3.8.0
+web3==6.10.0
