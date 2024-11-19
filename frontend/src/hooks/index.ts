@@ -9,4 +9,5 @@ export * from './useFileName';
 export * from './useSetupStores';
 export * from './useGenlayer';
 export * from './useShortAddress';
+export * from './useConfig';
 export * from './useTransactionListener';

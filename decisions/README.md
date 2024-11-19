@@ -1,6 +1,6 @@
 # Decisions documentation
 
-Greatly inspired by ADRs, this directory contains important decisions about the `simulator` code.
+Greatly inspired by ADRs, this directory contains important decisions about the `Studio` code.
 
 # Index
 

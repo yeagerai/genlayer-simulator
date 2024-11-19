@@ -4,6 +4,8 @@ services:
       context: ./
       dockerfile: ./docker/Dockerfile.frontend
       target: ${FRONTEND_BUILD_TARGET:-final}
+      args:
+        - VITE_*
     ports:
       - "${FRONTEND_PORT}:8080"
     volumes:
@@ -14,6 +16,8 @@ services:
         condition: service_healthy
     expose:
       - "${FRONTEND_PORT}"
+    environment:
+      - VITE_*
 
   jsonrpc:
     build:
