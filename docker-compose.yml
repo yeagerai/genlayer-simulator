@@ -106,6 +106,7 @@ services:
       - ./hardhat/scripts:/app/scripts
       - ./hardhat/test:/app/test
       - ./hardhat/hardhat.config.js:/app/hardhat.config.js
+      - ./hardhat/artifacts:/app/artifacts
     environment:
       - HARDHAT_NETWORK=hardhat
 

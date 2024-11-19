@@ -81,7 +81,7 @@ print("\nCreate ghost contract")
 print("________________________")
 
 # Read contract ABI and bytecode from compiled contract
-with open("hardhat/artifacts/contracts/GhostContract.sol/GhostContract.json", "r") as f:
+with open("artifacts/contracts/GhostContract.sol/GhostContract.json", "r") as f:
     contract_json = json.loads(f.read())
     abi = contract_json["abi"]
     bytecode = contract_json["bytecode"]
