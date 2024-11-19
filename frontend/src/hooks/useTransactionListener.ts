@@ -33,8 +33,6 @@ export function useTransactionListener() {
 
     const newTx = await getTransaction(hash, requestTime);
 
-    if (!newTx) return;
-
     if (!newTx) {
       console.warn('Server tx not found for local tx:', newTx);
       transactionsStore.removeTransaction(newTx);
