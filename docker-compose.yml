@@ -2,7 +2,7 @@ services:
   nginx:
     build:
       context: ./
-      dockerfile: Dockerfile.nginx
+      dockerfile: ./docker/Dockerfile.nginx
     cap_add:
       - NET_BIND_SERVICE
     ports:
@@ -92,7 +92,7 @@ services:
         max-size: "10m"
         max-file: "3"
     deploy:
-      replicas: ${ENVIRONMENT:-dev} == 'prod' && 5 || 1 # If ENVIRONMENT is set to 'prod', it will create 5 replicas, otherwise 1
+      replicas: ${JSONRPC_REPLICAS:-1}
 
   webrequest:
     build:
@@ -132,10 +132,6 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-    # if environment is prod, it will create 0 replicas, since we rely on LLM providers for inference
-    # otherwise it will create a single replica for local development
-    deploy:
-      replicas: ${ENVIRONMENT:-dev} == 'prod' && 0 || 1
 
   postgres:
     image: postgres:16-alpine
