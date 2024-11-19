@@ -161,6 +161,15 @@ def to_str(d: Any) -> str:
     buf: list[str] = []
 
     def impl(d: Any) -> None:
+        def handle_dict(d: dict[str, Any]) -> None:
+            buf.append("{")
+            for k, v in d.items():
+                buf.append(f"{k!r}")
+                buf.append(":")
+                impl(v)
+                buf.append(",")
+            buf.append("}")
+
         if d is None:
             buf.append("null")
         elif d is True:
@@ -178,13 +187,9 @@ def to_str(d: Any) -> str:
             buf.append("addr#")
             buf.append(d.as_bytes.hex())
         elif isinstance(d, dict):
-            buf.append("{")
-            for k, v in d.items():
-                buf.append(f"{k!r}")
-                buf.append(":")
-                impl(v)
-                buf.append(",")
-            buf.append("}")
+            handle_dict(d)
+        elif hasattr(d, "__dict__"):
+            handle_dict(d.__dict__)
         elif isinstance(d, list):
             buf.append("[")
             for v in d:
