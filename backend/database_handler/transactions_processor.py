@@ -2,7 +2,7 @@
 from enum import Enum
 import rlp
 
-from .models import Transactions, RollupTransactions
+from .models import Transactions
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_
 
@@ -262,39 +262,16 @@ class TransactionsProcessor:
             self._parse_transaction_data(transaction)
         ).encode("utf-8")
 
-        rollup_nonce = int(time.time() * 1000)
-        rollup_transaction_hash = self._generate_transaction_hash(
-            transaction.from_address,
-            transaction.to_address,
-            rollup_input_data,
-            transaction.value,
-            0,
-            rollup_nonce,
-        )
-        rollup_transaction_record = RollupTransactions(
-            transaction_hash=rollup_transaction_hash,
-            from_=transaction.from_address,
-            to_=transaction.to_address,
-            gas=0,
-            gas_price=0,
-            value=transaction.value,
-            input=rollup_input_data,
-            nonce=rollup_nonce,
-        )
-        self.session.add(rollup_transaction_record)
-
         # Hardhat transaction
         account = self.web3.eth.accounts[0]  # Use the first account
         private_key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"  # Need to get it somehow from the account
-
-        hardhat_data = self.web3.to_hex(rollup_input_data)  # TODO: maybe not to_hex
 
         gas_estimate = self.web3.eth.estimate_gas(
             {
                 "from": account,
                 "to": transaction.ghost_contract_address,
                 "value": self.web3.to_wei(transaction.value, "ether"),
-                "data": hardhat_data,
+                "data": rollup_input_data,
             }
         )
 
@@ -302,7 +279,7 @@ class TransactionsProcessor:
             "from": account,
             "to": transaction.ghost_contract_address,
             "value": self.web3.to_wei(transaction.value, "ether"),
-            "data": hardhat_data,
+            "data": rollup_input_data,
             "nonce": self.web3.eth.get_transaction_count(account),
             "gas": int(gas_estimate * 1.2),
             "gasPrice": self.web3.to_wei("20", "gwei"),
