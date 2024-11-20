@@ -119,12 +119,36 @@ class Node:
         return receipt
 
     def _set_vote(self, receipt: Receipt) -> Receipt:
-        if self.validator_mode == ExecutionMode.LEADER or (
-            self.leader_receipt.contract_state == receipt.contract_state
-            and self.leader_receipt.returned == receipt.returned
+
+        def try_decode_error(e: Exception) -> tuple[str, ...]:
+            # FIXME(kp2pml30): I am not sure that we should compare args,
+            # because if traceback gets there,
+            # it will have different ones for validator and nodes
+            if len(e.args) != 2:
+                return ()
+            typ = e.args[0]
+            if typ == "rollback":
+                return ("rollback", e.args[1])
+            if typ == "error":
+                return ("error",)
+            return ()
+
+        leader_receipt = self.leader_receipt
+        if self.validator_mode == ExecutionMode.LEADER:
+            receipt.vote = Vote.AGREE
+        elif (
+            leader_receipt.execution_result == receipt.leader_receipt
+            and (leader_receipt.error is None) == (receipt.error is None)
+            and (
+                leader_receipt.error is None
+                or try_decode_error(leader_receipt.error)
+                == try_decode_error(receipt.error)
+            )
+            and leader_receipt.returned == receipt.returned
+            and leader_receipt.contract_state == receipt.contract_state
+            and leader_receipt.pending_transactions == receipt.leader_receipt
         ):
             receipt.vote = Vote.AGREE
-
         else:
             receipt.vote = Vote.DISAGREE
 
@@ -231,34 +255,24 @@ class Node:
                     },
                 )
             )
-        if isinstance(res.result, genvmbase.ExecutionFail):
-            return Receipt(
-                returned=None,
-                error=Exception(repr(res.result)),
-                gas_used=0,
-                eq_outputs={},
-                pending_transactions=[],
-                vote=Vote.DISAGREE,
-                execution_result=ExecutionResultStatus.ERROR,
-                contract_state=self.contract_snapshot.encoded_state,  # should it be empty?..
-                **base_receipt,
-            )
 
-        if isinstance(res.result, genvmbase.ExecutionRollback):
-            exec_result_code = ExecutionResultStatus.ERROR
-            exec_result = genvmconsts.ResultCode.ROLLBACK.value.to_bytes(
-                1
-            ) + res.result.message.encode("utf-8")
+        returned = None
+        error = None
+        exec_result_code = ExecutionResultStatus.ERROR
+
+        if isinstance(res.result, genvmbase.ExecutionFail):
+            error = Exception("error", repr(res.result))
+        elif isinstance(res.result, genvmbase.ExecutionRollback):
+            error = Exception("rollback", res.result.message)
         else:
+            assert isinstance(res.result, genvmbase.ExecutionReturn)
+            returned = res.result.ret
             exec_result_code = ExecutionResultStatus.SUCCESS
-            exec_result = (
-                genvmconsts.ResultCode.RETURN.value.to_bytes(1) + res.result.ret
-            )
 
         return self._set_vote(
             Receipt(
-                returned=exec_result,
-                error=None,
+                returned=returned,
+                error=error,
                 gas_used=0,
                 eq_outputs={
                     k: base64.b64encode(v).decode("ascii")
