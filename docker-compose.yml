@@ -35,6 +35,7 @@ services:
     volumes:
       - ./.env:/app/.env
       - ./backend:/app/backend
+      - ./hardhat/artifacts:/app/hardhat/artifacts
     depends_on:
       ollama:
         condition: service_started

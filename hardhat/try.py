@@ -61,9 +61,9 @@ def decode_log(log):
     return decoded_log
 
 
-##################
-# Ghost contract #
-##################
+###########
+# Account #
+###########
 # Need to think on how to integrate this account in the genlayer accounts manager
 # Is it possible to create a new account (there are only 20 now in web3.eth.accounts)
 print("Get account")
@@ -143,7 +143,7 @@ transaction = {
 signed_tx = web3.eth.account.sign_transaction(transaction, private_key=private_key)
 tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
 
-# Wait for transaction to be actually mined and get thereceipt
+# Wait for transaction to be actually mined and get the receipt
 receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
 
 # View the Receipt
