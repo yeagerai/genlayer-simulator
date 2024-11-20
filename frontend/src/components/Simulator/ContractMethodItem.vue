@@ -19,13 +19,14 @@ const props = defineProps<{
 }>();
 
 const isExpanded = ref(false);
-
+const isReading = ref(false);
 const responseMessage = ref('');
 
 const calldataArguments = ref<ArgData>({ args: [], kwargs: {} });
 
 const handleCallReadMethod = async () => {
   responseMessage.value = '';
+  isReading.value = true;
 
   try {
     const result = await callReadMethod(
@@ -49,6 +50,8 @@ const handleCallReadMethod = async () => {
       text: (error as Error)?.message || 'Error getting contract state',
       type: 'error',
     });
+  } finally {
+    isReading.value = false;
   }
 };
 
@@ -110,7 +113,9 @@ const handleCallWriteMethod = async () => {
             @click="handleCallReadMethod"
             tiny
             :data-testid="`read-method-btn-${name}`"
-            >Call Contract</Btn
+            :loading="isReading"
+            :disabled="isReading"
+            >{{ isReading ? 'Calling...' : 'Call Contract' }}</Btn
           >
 
           <Btn

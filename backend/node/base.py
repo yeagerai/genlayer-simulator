@@ -121,7 +121,7 @@ class Node:
     def _set_vote(self, receipt: Receipt) -> Receipt:
 
         def try_decode_error(e: Exception) -> tuple[str, ...]:
-            # FIXME(kp2pml30): I am not sure that we should compare args,
+            # FIXME(kp2pml30): #622 I am not sure that we should compare args,
             # because if traceback gets there,
             # it will have different ones for validator and nodes
             if len(e.args) != 2:
@@ -137,7 +137,7 @@ class Node:
         if self.validator_mode == ExecutionMode.LEADER:
             receipt.vote = Vote.AGREE
         elif (
-            leader_receipt.execution_result == receipt.leader_receipt
+            leader_receipt.execution_result == receipt.execution_result
             and (leader_receipt.error is None) == (receipt.error is None)
             and (
                 leader_receipt.error is None
@@ -146,7 +146,7 @@ class Node:
             )
             and leader_receipt.returned == receipt.returned
             and leader_receipt.contract_state == receipt.contract_state
-            and leader_receipt.pending_transactions == receipt.leader_receipt
+            and leader_receipt.pending_transactions == receipt.pending_transactions
         ):
             receipt.vote = Vote.AGREE
         else:

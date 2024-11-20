@@ -28,10 +28,10 @@ ENV RUST_BACKTRACE=1
 RUN cd /genvm \
     && if [[ "$TARGETPLATFORM" == "linux/amd64" ]] ; \
        then \
-           URL="https://storage.googleapis.com/gh-af/genvm_executor_90b48e74c2afe2c551870510a383553f13a19a69_20241118_152102/genvm_executor.zip" ; \
+           URL="https://storage.googleapis.com/gh-af/genvm_executor_be2586c6a5bb77362f2fb6bc51aa7050dfca8fda_20241120_124155/genvm_executor.zip" ; \
        elif [[ "$TARGETPLATFORM" == "linux/arm64" ]] ; \
        then \
-           URL="https://storage.googleapis.com/gh-af/genvm_executor_90b48e74c2afe2c551870510a383553f13a19a69_20241118_152053/genvm_executor.zip" && \
+           URL="https://storage.googleapis.com/gh-af/genvm_executor_be2586c6a5bb77362f2fb6bc51aa7050dfca8fda_20241120_124315/genvm_executor.zip" && \
            DIR="$(pwd)" && \
            mkdir -p /openssl && cd /openssl && \
            curl -L --fail-with-body -H 'Accept: application/octet-stream' -o "openssl.tar.xz" "http://mirror.archlinuxarm.org/aarch64/core/openssl-1.0-1.0.2.u-1-aarch64.pkg.tar.xz" && \
@@ -41,7 +41,7 @@ RUN cd /genvm \
        else echo "Sorry, $TARGETPLATFORM is not supported yet" ; exit 1 ; \
        fi \
     && curl -L --fail-with-body -H 'Accept: application/octet-stream' -o executor.zip "$URL" \
-    && curl -L --fail-with-body -H 'Accept: application/octet-stream' -o runners.zip "https://storage.googleapis.com/gh-af/genvm_runners_90b48e74c2afe2c551870510a383553f13a19a69_20241118_152940/runners.zip" \
+    && curl -L --fail-with-body -H 'Accept: application/octet-stream' -o runners.zip "https://storage.googleapis.com/gh-af/genvm_runners_be2586c6a5bb77362f2fb6bc51aa7050dfca8fda_20241120_125238/runners.zip" \
     && unzip runners.zip && unzip executor.zip && rm runners.zip executor.zip \
     && ls -R . \
     && cd "$path" \
