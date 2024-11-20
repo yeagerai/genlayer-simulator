@@ -413,10 +413,10 @@ async def call(
         from_address="0x" + "00" * 20,
         calldata=decoded_data.calldata,
     )
-    # FIXME
+    # FIXME #621
     # this place is defective because
     # - write methods can return as well and it is not supported at all in the UI
-    # - no decoding should happen here, the frontend (caller) should be responsible for that
+    # - no calldata decoding should happen here, the frontend (caller) should be responsible for that
     if receipt.execution_result != ExecutionResultStatus.SUCCESS:
         return receipt.to_dict()
     try:
