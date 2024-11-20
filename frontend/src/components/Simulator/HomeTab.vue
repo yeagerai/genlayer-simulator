@@ -56,7 +56,7 @@ const hasAnySampleContract = computed(() => {
           class="rounded-md bg-slate-50 p-4 @[1024px]:p-8 dark:bg-slate-600 dark:bg-opacity-10"
         >
           <h1 class="mb-4 text-lg font-semibold">
-            Welcome to the GenLayer Simulator
+            Welcome to the GenLayer Studio
           </h1>
 
           <div class="text-sm">
@@ -66,7 +66,7 @@ const hasAnySampleContract = computed(() => {
               natural language.
             </p>
             <p class="my-2">
-              This Simulator is an interactive sandbox for developers to explore
+              This Studio is an interactive sandbox for developers to explore
               GenLayer’s Intelligent Contracts. It mirrors the GenLayer
               network’s environment and consensus, allowing you to test ideas
               locally.
@@ -107,7 +107,7 @@ const hasAnySampleContract = computed(() => {
 
           <div class="text-sm">
             <Alert info class="mt-4">
-              The simulator currently does not support token transfers,
+              The Studio currently does not support token transfers,
               contract-to-contract interactions, or gas consumption. These
               features will be added in future updates.
             </Alert>

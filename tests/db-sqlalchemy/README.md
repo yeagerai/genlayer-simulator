@@ -10,7 +10,7 @@ Integration tests allow us to rapidly catch runtime errors (very common in langu
 
 These tests test our integration with an actual `postgres` database. That's why this need its own environment by setting up a private postgres db just for testing
 
-These tests are standalone, they don't require the simulator to be up
+These tests are standalone, they don't require the Studio to be up
 
 ### What they are not
 

@@ -8,9 +8,11 @@ import PageSection from '@/components/Simulator/PageSection.vue';
 import { PlusIcon } from '@heroicons/vue/16/solid';
 import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
 import GhostBtn from '@/components/global/GhostBtn.vue';
+import { useConfig } from '@/hooks';
 
 const nodeStore = useNodeStore();
 const isNewValidatorModalOpen = ref(false);
+const { canUpdateValidators } = useConfig();
 </script>
 
 <template>
@@ -25,6 +27,7 @@ const isNewValidatorModalOpen = ref(false);
 
       <template #actions>
         <GhostBtn
+          v-if="canUpdateValidators"
           @click="isNewValidatorModalOpen = true"
           v-tooltip="'New Validator'"
           testId="create-new-validator-btn"
@@ -54,7 +57,9 @@ const isNewValidatorModalOpen = ref(false);
 
       <Btn
         v-if="
-          !nodeStore.hasAtLeastOneValidator && !nodeStore.isLoadingValidatorData
+          canUpdateValidators &&
+          !nodeStore.hasAtLeastOneValidator &&
+          !nodeStore.isLoadingValidatorData
         "
         @click="isNewValidatorModalOpen = true"
         :icon="PlusIcon"

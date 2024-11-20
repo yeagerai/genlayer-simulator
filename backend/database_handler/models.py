@@ -13,6 +13,7 @@ from sqlalchemy import (
     func,
     text,
     ForeignKey,
+    Text,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import (
@@ -89,9 +90,6 @@ class Transactions(Base):
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(
         DateTime(True), server_default=func.current_timestamp(), init=False
     )
-    client_session_id: Mapped[Optional[str]] = mapped_column(
-        String(255)
-    )  # Used to identify the client session that is subscribed to this transaction's events
     leader_only: Mapped[bool] = mapped_column(Boolean)
     r: Mapped[Optional[int]] = mapped_column(Integer)
     s: Mapped[Optional[int]] = mapped_column(Integer)
@@ -117,18 +115,35 @@ class Transactions(Base):
     )
 
 
-class TransactionsAudit(Base):
-    __tablename__ = "transactions_audit"
-    __table_args__ = (PrimaryKeyConstraint("id", name="transactions_audit_pkey"),)
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, init=False)
-    transaction_hash: Mapped[Optional[str]] = mapped_column(
-        String(66),
-        ForeignKey("transactions.hash", ondelete="CASCADE"),
+class RollupTransactions(Base):
+    __tablename__ = "rollup_transactions"
+    __table_args__ = (
+        PrimaryKeyConstraint("transaction_hash", name="rollup_transactions_pkey"),
     )
-    data: Mapped[Optional[dict]] = mapped_column(JSONB)
-    created_at: Mapped[Optional[datetime.datetime]] = mapped_column(
-        DateTime(True), server_default=func.current_timestamp(), init=False
+
+    transaction_hash: Mapped[str] = mapped_column(
+        String(66), primary_key=True, unique=True
+    )
+    from_: Mapped[str] = mapped_column(
+        String(255),
+    )
+    to_: Mapped[Optional[dict]] = mapped_column(
+        String(255),
+    )
+    gas: Mapped[int] = mapped_column(
+        Integer,
+    )
+    gas_price: Mapped[int] = mapped_column(
+        Integer,
+    )
+    value: Mapped[Optional[int]] = mapped_column(
+        Integer,
+    )
+    input: Mapped[str] = mapped_column(
+        Text,
+    )
+    nonce: Mapped[int] = mapped_column(
+        BigInteger,
     )
 
 
