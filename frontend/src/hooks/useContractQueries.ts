@@ -63,10 +63,9 @@ export function useContractQueries() {
       return mockContractSchema;
     }
 
-    const result = await genlayer.client?.request({
-      method: 'gen_getContractSchemaForCode',
-      params: [contract.value?.content ?? ''],
-    });
+    const result = await genlayer.client?.getContractSchemaForCode(
+      contract.value?.content ?? '',
+    );
 
     schema.value = result;
 
@@ -145,10 +144,9 @@ export function useContractQueries() {
       return mockContractSchema;
     }
 
-    const result = await genlayer.client?.request({
-      method: 'gen_getContractSchema',
-      params: [deployedContract.value?.address ?? ''],
-    });
+    const result = await genlayer.client?.getContractSchema(
+      deployedContract.value?.address ?? '',
+    );
 
     return result;
   }
