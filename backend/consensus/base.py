@@ -27,7 +27,7 @@ from backend.domain.types import (
     Validator,
 )
 from backend.node.base import Node
-from backend.node.types import ExecutionMode, Receipt, Vote
+from backend.node.types import ExecutionMode, Receipt, Vote, ExecutionResultStatus
 from backend.protocol_rpc.message_handler.base import MessageHandler
 from backend.protocol_rpc.message_handler.types import (
     LogEvent,
@@ -330,32 +330,33 @@ class ConsensusAlgorithm:
             )
         )
 
-        # Register contract if it is a new contract
-        if transaction.type == TransactionType.DEPLOY_CONTRACT:
-            new_contract = {
-                "id": transaction.data["contract_address"],
-                "data": {
-                    "state": leader_receipt.contract_state,
-                    "code": transaction.data["contract_code"],
-                },
-            }
-            leaders_contract_snapshot.register_contract(new_contract)
+        if leader_receipt.execution_result == ExecutionResultStatus.SUCCESS:
+            # Register contract if it is a new contract
+            if transaction.type == TransactionType.DEPLOY_CONTRACT:
+                new_contract = {
+                    "id": transaction.data["contract_address"],
+                    "data": {
+                        "state": leader_receipt.contract_state,
+                        "code": transaction.data["contract_code"],
+                    },
+                }
+                leaders_contract_snapshot.register_contract(new_contract)
 
-            msg_handler.send_message(
-                LogEvent(
-                    "deployed_contract",
-                    EventType.SUCCESS,
-                    EventScope.GENVM,
-                    "Contract deployed",
-                    new_contract,
+                msg_handler.send_message(
+                    LogEvent(
+                        "deployed_contract",
+                        EventType.SUCCESS,
+                        EventScope.GENVM,
+                        "Contract deployed",
+                        new_contract,
+                    )
                 )
-            )
 
-        # Update contract state if it is an existing contract
-        else:
-            leaders_contract_snapshot.update_contract_state(
-                leader_receipt.contract_state
-            )
+            # Update contract state if it is an existing contract
+            else:
+                leaders_contract_snapshot.update_contract_state(
+                    leader_receipt.contract_state
+                )
 
         ConsensusAlgorithm.dispatch_transaction_status_update(
             transactions_processor,
