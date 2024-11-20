@@ -43,13 +43,13 @@ export const useNodeStore = defineStore('nodeStore', () => {
   ];
 
   trackedEvents.forEach((eventName) => {
-    webSocketClient.on(eventName, (data: any) => {
+    webSocketClient.on(eventName, (eventData: any) => {
       addLog({
-        scope: data.scope,
-        name: data.name,
-        type: data.type,
-        message: data.message,
-        data: data.data,
+        scope: eventData.scope,
+        name: eventData.name,
+        type: eventData.type,
+        message: eventData.message,
+        data: eventData.data,
       });
     });
   });

@@ -47,6 +47,9 @@ class TransactionsProcessorMock:
         transaction = self.get_transaction_by_hash(transaction_hash)
         transaction["consensus_data"] = consensus_data
 
+    def create_rollup_transaction(self, transaction_hash: str):
+        pass
+
 
 class SnapshotMock:
     def __init__(self, nodes):
