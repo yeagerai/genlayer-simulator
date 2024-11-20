@@ -38,7 +38,7 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
       if (currentTx.type === 'deploy' && tx.status === 'FINALIZED') {
         contractsStore.addDeployedContract({
           contractId: currentTx.localContractId,
-          address: tx.contractAddress,
+          address: tx.data.contract_address,
           defaultState: '{}',
         });
       }
