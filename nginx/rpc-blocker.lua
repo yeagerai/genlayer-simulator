@@ -1,18 +1,8 @@
--- Check environment
-local function is_production()
-    local env = os.getenv("ENVIRONMENT")
-    return env and env:lower() == "prod"
-end
+-- rpc-blocker.lua
+local cjson = require "cjson"
 
--- Skip blocking if not in production
-local is_prod = is_production()
-ngx.log(ngx.DEBUG, "Environment check: ", is_prod and "prod" or "dev")
-if not is_prod then
-    return
-end
-
--- List of blocked JSON-RPC methods
-local blocked_methods = {
+-- Table of specifically restricted methods
+local restricted_methods = {
     "sim_clearDbTables",
     "sim_resetDefaultsLlmProviders",
     "sim_addProvider",
@@ -26,43 +16,63 @@ local blocked_methods = {
     "sim_deleteAllValidators"
 }
 
--- Convert array to hash table for O(1) lookup
-local blocked_methods_hash = {}
-for _, method in ipairs(blocked_methods) do
-    blocked_methods_hash[method] = true
+-- Create a lookup table for faster checking
+local restricted_lookup = {}
+for _, method in ipairs(restricted_methods) do
+    restricted_lookup[method] = true
 end
 
--- Get request body
-ngx.req.read_body()
-local body = ngx.req.get_body_data()
-
-if body then
-    -- Try to decode JSON
-    local success, request = pcall(function()
-        return require("cjson").decode(body)
-    end)
-
-    if success and request then
-        -- Check if it's a JSON-RPC request
-        if request.jsonrpc and request.method then
-            -- Check if method is in blocked list
-            if blocked_methods_hash[request.method] then
-                -- Return JSON-RPC error response
-                ngx.status = 403
-                ngx.header.content_type = "application/json"
-                ngx.say(require("cjson").encode({
-                    jsonrpc = "2.0",
-                    error = {
-                        code = -32601,
-                        message = "Method not allowed"
-                    },
-                    id = request.id
-                }))
-                return ngx.exit(ngx.HTTP_FORBIDDEN)
-            end
+-- Main function to handle the filtering
+local function filter_rpc_methods()
+    ngx.req.read_body()
+    local body = ngx.req.get_body_data()
+    
+    if not body then
+        ngx.status = 400
+        ngx.say(cjson.encode({
+            error = {
+                code = -32700,
+                message = "Parse error: empty request body"
+            }
+        }))
+        return ngx.exit(ngx.HTTP_BAD_REQUEST)
+    end
+    
+    local success, request = pcall(cjson.decode, body)
+    if not success then
+        ngx.status = 400
+        ngx.say(cjson.encode({
+            error = {
+                code = -32700,
+                message = "Parse error: invalid JSON"
+            }
+        }))
+        return ngx.exit(ngx.HTTP_BAD_REQUEST)
+    end
+    
+    -- Handle both single requests and batch requests
+    local requests = request
+    if not request[1] then
+        requests = {request}
+    end
+    
+    -- Check each request in the batch
+    for _, req in ipairs(requests) do
+        if type(req.method) == "string" and restricted_lookup[req.method] then
+            ngx.status = 403
+            ngx.say(cjson.encode({
+                error = {
+                    code = -32001,
+                    message = "Method not allowed: this method is restricted"
+                }
+            }))
+            return ngx.exit(ngx.HTTP_FORBIDDEN)
         end
     end
+    
+    -- If we get here, the request is valid and can be passed through
+    return
 end
 
--- Continue processing if method is not blocked
-return
+-- Execute the filter
+filter_rpc_methods()
