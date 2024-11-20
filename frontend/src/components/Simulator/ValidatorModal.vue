@@ -12,7 +12,7 @@ import NumberInput from '@/components/global/inputs/NumberInput.vue';
 import TextAreaInput from '@/components/global/inputs/TextAreaInput.vue';
 import FieldError from '@/components/global/fields/FieldError.vue';
 import FieldLabel from '@/components/global/fields/FieldLabel.vue';
-import { useEventTracking } from '@/hooks';
+import { useEventTracking, useConfig } from '@/hooks';
 import CopyTextButton from '../global/CopyTextButton.vue';
 import { uniqBy } from 'lodash-es';
 import Alert from '../global/Alert.vue';
@@ -22,6 +22,7 @@ const { trackEvent } = useEventTracking();
 const emit = defineEmits(['close']);
 const error = ref('');
 const isLoading = ref(false);
+const { canUpdateValidators } = useConfig();
 
 const props = defineProps<{
   validator?: ValidatorModel;
@@ -294,6 +295,7 @@ const isStakeValid = computed(() => {
         v-model="newValidatorData.stake"
         required
         testId="input-stake"
+        :disabled="!canUpdateValidators"
       />
 
       <FieldError v-if="!isStakeValid"
@@ -310,14 +312,17 @@ const isStakeValid = computed(() => {
         :cols="60"
         v-model="newValidatorData.config"
         :invalid="!isConfigValid"
+        :disabled="!canUpdateValidators"
       />
       <FieldError v-if="!isConfigValid">Please enter valid JSON.</FieldError>
     </div>
 
     <Alert error v-if="error" type="error">{{ error }}</Alert>
 
+    <Btn v-if="!canUpdateValidators" @click="emit('close')">Close</Btn>
+
     <Btn
-      v-if="isCreateMode"
+      v-else-if="isCreateMode"
       @click="handleCreateValidator"
       :disabled="!validatorModelValid"
       testId="btn-create-validator"
@@ -327,7 +332,7 @@ const isStakeValid = computed(() => {
     </Btn>
 
     <Btn
-      v-if="!isCreateMode && validator"
+      v-else-if="!isCreateMode && validator"
       @click="handleUpdateValidator(validator)"
       :disabled="!validatorModelValid"
       testId="btn-update-validator"

@@ -151,9 +151,7 @@ class ConsensusAlgorithm:
             Node,
         ] = node_factory,
     ):
-        msg_handler = self.msg_handler.with_client_session(
-            transaction.client_session_id
-        )
+        msg_handler = self.msg_handler
         if (
             transactions_processor.get_transaction_by_hash(transaction.hash)["status"]
             != TransactionStatus.PENDING.value
@@ -187,6 +185,16 @@ class ConsensusAlgorithm:
         )
 
         for validators in rotate(involved_validators):
+            consensus_data = ConsensusData(
+                final=False,
+                votes={},
+                leader_receipt=None,
+                validators=[],
+            )
+            transactions_processor.set_transaction_result(
+                transaction.hash,
+                consensus_data.to_dict(),
+            )
             # Update transaction status
             ConsensusAlgorithm.dispatch_transaction_status_update(
                 transactions_processor,
@@ -194,6 +202,7 @@ class ConsensusAlgorithm:
                 TransactionStatus.PROPOSING,
                 msg_handler,
             )
+            transactions_processor.create_rollup_transaction(transaction.hash)
 
             [leader, *remaining_validators] = validators
 
@@ -217,6 +226,12 @@ class ConsensusAlgorithm:
             # Leader executes transaction
             leader_receipt = await leader_node.exec_transaction(transaction)
             votes = {leader["address"]: leader_receipt.vote.value}
+            consensus_data.votes = votes
+            consensus_data.leader_receipt = leader_receipt
+            transactions_processor.set_transaction_result(
+                transaction.hash,
+                consensus_data.to_dict(),
+            )
             # Update transaction status
             ConsensusAlgorithm.dispatch_transaction_status_update(
                 transactions_processor,
@@ -224,6 +239,7 @@ class ConsensusAlgorithm:
                 TransactionStatus.COMMITTING,
                 msg_handler,
             )
+            transactions_processor.create_rollup_transaction(transaction.hash)
 
             # Create Validators
             validator_nodes = [
@@ -247,14 +263,26 @@ class ConsensusAlgorithm:
             ]
             validation_results = await asyncio.gather(*validation_tasks)
 
-            for i, validation_result in enumerate(validation_results):
-                votes[validator_nodes[i].address] = validation_result.vote.value
             ConsensusAlgorithm.dispatch_transaction_status_update(
                 transactions_processor,
                 transaction.hash,
                 TransactionStatus.REVEALING,
                 msg_handler,
             )
+
+            for i, validation_result in enumerate(validation_results):
+                votes[validator_nodes[i].address] = validation_result.vote.value
+                single_reveal_votes = {
+                    leader["address"]: leader_receipt.vote.value,
+                    validator_nodes[i].address: validation_result.vote.value,
+                }
+                consensus_data.votes = single_reveal_votes
+                consensus_data.validators = [validation_result]
+                transactions_processor.set_transaction_result(
+                    transaction.hash,
+                    consensus_data.to_dict(),
+                )
+                transactions_processor.create_rollup_transaction(transaction.hash)
 
             if (
                 len([vote for vote in votes.values() if vote == Vote.AGREE.value])
@@ -290,22 +318,20 @@ class ConsensusAlgorithm:
             TransactionStatus.ACCEPTED,
             msg_handler,
         )
-
-        final = False
-        consensus_data = ConsensusData(
-            final=final,
-            votes=votes,
-            leader_receipt=leader_receipt,
-            validators=validation_results,
-        ).to_dict()
-
+        consensus_data.votes = votes
+        consensus_data.validators = validation_results
+        transactions_processor.set_transaction_result(
+            transaction.hash,
+            consensus_data.to_dict(),
+        )
+        transactions_processor.create_rollup_transaction(transaction.hash)
         msg_handler.send_message(
             LogEvent(
                 "consensus_reached",
                 EventType.SUCCESS,
                 EventScope.CONSENSUS,
                 "Reached consensus",
-                consensus_data,
+                consensus_data.to_dict(),
             )
         )
 
@@ -334,18 +360,19 @@ class ConsensusAlgorithm:
         else:
             contract_snapshot.update_contract_state(leader_receipt.contract_state)
 
+        # Finalize transaction
+        consensus_data.final = True
+        transactions_processor.set_transaction_result(
+            transaction.hash,
+            consensus_data.to_dict(),
+        )
         ConsensusAlgorithm.dispatch_transaction_status_update(
             transactions_processor,
             transaction.hash,
             TransactionStatus.FINALIZED,
             msg_handler,
         )
-
-        # Finalize transaction
-        transactions_processor.set_transaction_result(
-            transaction.hash,
-            consensus_data,
-        )
+        transactions_processor.create_rollup_transaction(transaction.hash)
 
         # Insert pending transactions generated by contract-to-contract calls
         pending_transactions_to_insert = leader_receipt.pending_transactions
@@ -361,7 +388,6 @@ class ConsensusAlgorithm:
                 type=TransactionType.RUN_CONTRACT.value,
                 nonce=nonce,
                 leader_only=transaction.leader_only,  # Cascade
-                client_session_id=transaction.client_session_id,
                 triggered_by_hash=transaction.hash,
             )
 

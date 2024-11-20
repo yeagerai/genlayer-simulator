@@ -2,7 +2,7 @@
 
 ### Window One
 
-1. Launch the simulator
+1. Launch the Studio
 
 ### Window Two
 

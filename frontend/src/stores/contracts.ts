@@ -111,6 +111,7 @@ export const useContractsStore = defineStore('contractsStore', () => {
     const index = deployedContracts.value.findIndex(
       (c) => c.contractId === contractId,
     );
+
     const newItem = { contractId, address, defaultState };
 
     if (index === -1) {
