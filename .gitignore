@@ -147,5 +147,5 @@ package-lock.json
 package.json
 
 # Nginx TLS certificates and keys
-ssl/*.key
-ssl/*.crt
+nginx/ssl/*.key
+nginx/ssl/*.crt
