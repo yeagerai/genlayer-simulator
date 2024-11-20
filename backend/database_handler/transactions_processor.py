@@ -31,10 +31,9 @@ class TransactionsProcessor:
         self.session = session
 
         # Connect to Hardhat Network
-        hardhat_url = "http://hardhat:8545"
+        port = os.environ.get("HARDHATPORT")
+        hardhat_url = f"http://hardhat:{port}"
         self.web3 = Web3(Web3.HTTPProvider(hardhat_url))
-        if not self.web3.is_connected():
-            print("Failed to connect to Hardhat Network")
 
     @staticmethod
     def _parse_transaction_data(transaction_data: Transactions) -> dict:
