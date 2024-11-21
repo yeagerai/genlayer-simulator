@@ -27,6 +27,7 @@ def upgrade() -> None:
         nullable=True,
     )
 
+
 def downgrade() -> None:
     op.alter_column(
         "rollup_transactions",
