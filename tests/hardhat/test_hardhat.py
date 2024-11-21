@@ -1,7 +1,6 @@
 from web3 import Web3
 import json
 from eth_account import Account
-import pytest
 import os
 
 
@@ -42,7 +41,7 @@ def connect_to_hardhat():
     Raises:
         Exception: If the connection to the Hardhat network fails.
     """
-    hardhat_url = "http://localhost:8545"
+    hardhat_url = os.environ.get("HARDHAT_URL")
     web3 = Web3(Web3.HTTPProvider(hardhat_url))
 
     # Check connection
