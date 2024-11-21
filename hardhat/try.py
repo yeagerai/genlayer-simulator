@@ -1,6 +1,6 @@
 from web3 import Web3
 import json
-from eth_utils import decode_hex
+from eth_account import Account
 
 # docker should contain:
 # npx hardhat compile
@@ -67,10 +67,16 @@ def decode_log(log):
 # Need to think on how to integrate this account in the genlayer accounts manager
 # Is it possible to create a new account (there are only 20 now in web3.eth.accounts)
 print("Get account")
-print("________________________")
-account = web3.eth.accounts[0]  # Use the first account
+# print("________________________")
+# account = web3.eth.accounts[0]  # Use the first account
+# print("Account:", account)
+# private_key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"  # Need to get it somehow from the account
+account = Account.create()
+private_key = account.key.hex()
+account = account.address
 print("Account:", account)
-private_key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"  # Need to get it somehow from the account
+print("private_key:", private_key)
+print("Account Balance:", web3.eth.get_balance(account))
 
 
 ##################
@@ -81,7 +87,7 @@ print("\nCreate ghost contract")
 print("________________________")
 
 # Read contract ABI and bytecode from compiled contract
-with open("artifacts/contracts/GhostContract.sol/GhostContract.json", "r") as f:
+with open("hardhat/artifacts/contracts/GhostContract.sol/GhostContract.json", "r") as f:
     contract_json = json.loads(f.read())
     abi = contract_json["abi"]
     bytecode = contract_json["bytecode"]
@@ -90,12 +96,21 @@ with open("artifacts/contracts/GhostContract.sol/GhostContract.json", "r") as f:
 contact = web3.eth.contract(abi=abi, bytecode=bytecode)
 
 # Build the transaction
+gas_estimate = web3.eth.estimate_gas(
+    contact.constructor().build_transaction(
+        {
+            "from": account,
+            "nonce": web3.eth.get_transaction_count(account),
+            "gasPrice": 0,
+        }
+    )
+)
 transaction = contact.constructor().build_transaction(
     {
         "from": account,
         "nonce": web3.eth.get_transaction_count(account),
-        "gas": 3000000,
-        "gasPrice": web3.to_wei("20", "gwei"),
+        "gas": gas_estimate,
+        "gasPrice": 0,
     }
 )
 
@@ -124,7 +139,7 @@ gas_estimate = web3.eth.estimate_gas(
     {
         "from": account,
         "to": contract_address,
-        "value": web3.to_wei(0, "ether"),
+        "value": 0,
         "data": web3.to_hex(text="todo: This should be genlayer data.."),
     }
 )
@@ -132,11 +147,11 @@ gas_estimate = web3.eth.estimate_gas(
 transaction = {
     "from": account,
     "to": contract_address,
-    "value": web3.to_wei(0, "ether"),
+    "value": 0,
     "data": web3.to_hex(text="todo: This should be genlayer data.."),
     "nonce": web3.eth.get_transaction_count(account),
-    "gas": int(gas_estimate * 1.2),
-    "gasPrice": web3.to_wei("20", "gwei"),
+    "gas": gas_estimate,
+    "gasPrice": 0,
 }
 
 # Sign and send the transaction
@@ -153,3 +168,6 @@ print("eth_getTransactionReceipt:", json.dumps(decode_eth_dict(receipt), indent=
 transaction = web3.eth.get_transaction(tx_hash)
 print("\neth_getTransactionByHash:", json.dumps(decode_eth_dict(transaction), indent=2))
 print("\nDecoded input data:", web3.to_text(transaction["input"]))
+
+
+print("Account Balance:", web3.eth.get_balance(account))

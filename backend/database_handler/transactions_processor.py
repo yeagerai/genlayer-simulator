@@ -140,10 +140,8 @@ class TransactionsProcessor:
 
         if type == TransactionType.DEPLOY_CONTRACT.value:
             # Hardhat account
-            # Need to think on how to integrate this account in the genlayer accounts manager
-            # Is it possible to create a new account (there are only 20 now in web3.eth.accounts)
-            account = self.web3.eth.accounts[0]  # Use the first account
-            private_key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"  # Need to get it somehow from the account
+            account = self.web3.eth.accounts[0]
+            private_key = os.environ.get("HARDHAT_PRIVATE_KEY")
 
             # Ghost contract
             # Read contract ABI and bytecode from compiled contract
@@ -161,12 +159,21 @@ class TransactionsProcessor:
             contact = self.web3.eth.contract(abi=abi, bytecode=bytecode)
 
             # Build the transaction
+            gas_estimate = self.web3.eth.estimate_gas(
+                contact.constructor().build_transaction(
+                    {
+                        "from": account,
+                        "nonce": self.web3.eth.get_transaction_count(account),
+                        "gasPrice": 0,
+                    }
+                )
+            )
             transaction = contact.constructor().build_transaction(
                 {
                     "from": account,
                     "nonce": self.web3.eth.get_transaction_count(account),
-                    "gas": 3000000,
-                    "gasPrice": self.web3.to_wei("20", "gwei"),
+                    "gas": gas_estimate,
+                    "gasPrice": 0,
                 }
             )
 
@@ -263,14 +270,14 @@ class TransactionsProcessor:
         ).encode("utf-8")
 
         # Hardhat transaction
-        account = self.web3.eth.accounts[0]  # Use the first account
-        private_key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"  # Need to get it somehow from the account
+        account = self.web3.eth.accounts[0]
+        private_key = os.environ.get("HARDHAT_PRIVATE_KEY")
 
         gas_estimate = self.web3.eth.estimate_gas(
             {
                 "from": account,
                 "to": transaction.ghost_contract_address,
-                "value": self.web3.to_wei(transaction.value, "ether"),
+                "value": transaction.value,
                 "data": rollup_input_data,
             }
         )
@@ -278,11 +285,11 @@ class TransactionsProcessor:
         transaction = {
             "from": account,
             "to": transaction.ghost_contract_address,
-            "value": self.web3.to_wei(transaction.value, "ether"),
+            "value": transaction.value,
             "data": rollup_input_data,
             "nonce": self.web3.eth.get_transaction_count(account),
-            "gas": int(gas_estimate * 1.2),
-            "gasPrice": self.web3.to_wei("20", "gwei"),
+            "gas": gas_estimate,
+            "gasPrice": 0,
         }
 
         # Sign and send the transaction
@@ -307,6 +314,7 @@ class TransactionsProcessor:
             json.dumps(dict(transaction), indent=2, default=str),
         )
         print("\nDecoded input data:", self.web3.to_text(transaction["input"]))
+        print("Account Balance:", self.web3.eth.get_balance(account))
 
     def get_transaction_count(self, address: str) -> int:
         count = (

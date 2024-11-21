@@ -9,7 +9,12 @@ module.exports = {
         auto: true,
         interval: 0
       },
-      chainId: 31337
+      chainId: 31337,
+      gasPrice: 0,
+      initialBaseFeePerGas: 0,
+      accounts: {
+        count: 1
+      }
     }
   },
   paths: {
@@ -18,4 +23,4 @@ module.exports = {
     cache: "./cache",
     artifacts: "./artifacts"
   }
-}; 
+};
