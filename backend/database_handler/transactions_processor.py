@@ -184,18 +184,12 @@ class TransactionsProcessor:
 
             # Send the transaction
             tx_hash = self.web3.eth.send_raw_transaction(signed_tx.raw_transaction)
-            print(f"Transaction sent! Hash: {tx_hash.hex()}")
 
             # Wait for the transaction receipt
             receipt = self.web3.eth.wait_for_transaction_receipt(tx_hash)
-            print(
-                f"eth_getTransactionReceipt: {json.dumps(dict(receipt), indent=2, default=str)}"
-            )
-            print(f"Contract deployed at address: {receipt.contractAddress}")
             ghost_contract_address = receipt.contractAddress
 
         elif type == TransactionType.RUN_CONTRACT.value:
-            print(f"Set existing ghost contract address")
             genlayer_contract_address = to_address
             contract_snapshot = ContractSnapshot(
                 genlayer_contract_address, self.session
@@ -301,20 +295,8 @@ class TransactionsProcessor:
         # Wait for transaction to be actually mined and get the receipt
         receipt = self.web3.eth.wait_for_transaction_receipt(tx_hash)
 
-        # View the Receipt
-        print(
-            "eth_getTransactionReceipt:",
-            json.dumps(dict(receipt), indent=2, default=str),
-        )
-
         # Get full transaction details including input data
         transaction = self.web3.eth.get_transaction(tx_hash)
-        print(
-            "\neth_getTransactionByHash:",
-            json.dumps(dict(transaction), indent=2, default=str),
-        )
-        print("\nDecoded input data:", self.web3.to_text(transaction["input"]))
-        print("Account Balance:", self.web3.eth.get_balance(account))
 
     def get_transaction_count(self, address: str) -> int:
         count = (
