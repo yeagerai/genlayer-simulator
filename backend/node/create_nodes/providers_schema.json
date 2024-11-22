@@ -87,10 +87,10 @@
           },
           "model": {
             "enum": [
-              "claude-3-5-sonnet-20240620",
-              "claude-3-opus-20240229",
-              "claude-3-sonnet-20240229",
-              "claude-3-haiku-20240307"
+              "claude-4-0-sonnet-20240720",
+              "claude-4-opus-20240515", 
+              "claude-4-sonnet-20240515",
+              "claude-4-haiku-20240410"
             ]
           }
         }
