@@ -9,6 +9,7 @@ import { useUIStore, useNodeStore } from '@/stores';
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/vue/16/solid';
 import CopyTextButton from '../global/CopyTextButton.vue';
 import { FilterIcon } from 'lucide-vue-next';
+import * as calldata from '@/calldata';
 
 const uiStore = useUIStore();
 const nodeStore = useNodeStore();
@@ -40,6 +41,51 @@ const leaderReceipt = computed(() => {
 const shortHash = computed(() => {
   return props.transaction.hash?.slice(0, 6);
 });
+
+function prettifyTxData(x: any): any {
+  const oldEqOutputs = x?.consensus_data?.leader_receipt?.eq_outputs;
+  if (oldEqOutputs == undefined) {
+    return x;
+  }
+  try {
+    const new_eq_outputs = Object.fromEntries(
+      Object.entries(oldEqOutputs).map(([k, v]) => {
+        const val = Uint8Array.from(atob(v as string), (c) => c.charCodeAt(0));
+        const rest = new Uint8Array(val).slice(1);
+        if (val[0] == 0) {
+          return [
+            k,
+            {
+              status: 'success',
+              data: calldata.toString(calldata.decode(rest)),
+            },
+          ];
+        } else if (val[0] == 1) {
+          return [
+            k,
+            { status: 'rollback', data: new TextDecoder('utf-8').decode(rest) },
+          ];
+        }
+        return [k, v];
+      }),
+    );
+    const ret = {
+      ...x,
+      consensus_data: {
+        ...x.consensus_data,
+        leader_receipt: {
+          ...x.consensus_data.leader_receipt,
+          eq_outputs: new_eq_outputs,
+        },
+      },
+    };
+    console.log(ret);
+    return ret;
+  } catch (e) {
+    console.log(e);
+    return x;
+  }
+}
 </script>
 
 <template>
@@ -230,7 +276,7 @@ const shortHash = computed(() => {
 
           <JsonViewer
             class="overflow-y-auto rounded-md bg-white p-2 dark:bg-zinc-800"
-            :value="transaction.data || {}"
+            :value="prettifyTxData(transaction.data || {})"
             :theme="uiStore.mode === 'light' ? 'light' : 'dark'"
             :expand="true"
             sort
