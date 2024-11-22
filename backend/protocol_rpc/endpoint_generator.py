@@ -3,6 +3,7 @@
 import inspect
 from typing import Callable
 from flask_jsonrpc import JSONRPC
+import flask
 from flask_jsonrpc.exceptions import JSONRPCError
 from functools import partial, wraps
 
@@ -38,9 +39,11 @@ def generate_rpc_endpoint(
     partial_function.__annotations__ = get_function_annotations(partial_function)
 
     @wraps(partial_function)
-    def endpoint(*endpoint_args, **endpoint_kwargs):
+    async def endpoint(*endpoint_args, **endpoint_kwargs):
         try:
             result = partial_function(*endpoint_args, **endpoint_kwargs)
+            if hasattr(result, "__await__"):
+                result = await result
             return _serialize(result)
 
         except Exception as e:

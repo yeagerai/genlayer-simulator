@@ -6,7 +6,7 @@ from backend.protocol_rpc.transactions_parser import (
     DecodedDeploymentData,
 )
 from rlp import encode
-import backend.node.genvm.calldata as calldata
+import backend.node.genvm.origin.calldata as calldata
 
 
 @pytest.mark.parametrize(

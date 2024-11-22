@@ -22,6 +22,9 @@ from tests.common.response import (
 from tests.common.accounts import create_new_account
 from tests.common.request import call_contract_method
 
+import json
+from backend.node.types import Address
+
 INITIAL_STATE_USER_A = "user_a_initial_state"
 UPDATED_STATE_USER_A = "user_a_updated_state"
 INITIAL_STATE_USER_B = "user_b_initial_state"
@@ -55,7 +58,7 @@ def test_user_storage(setup_validators):
     contract_state_1 = call_contract_method(
         contract_address, from_account_a, "get_complete_storage", []
     )
-    assert len(contract_state_1) == 0
+    assert contract_state_1 == "{}"
 
     ########################################
     ########## ADD User A State ############
@@ -72,7 +75,10 @@ def test_user_storage(setup_validators):
     contract_state_2_1 = call_contract_method(
         contract_address, from_account_a, "get_complete_storage", []
     )
-    assert contract_state_2_1[from_account_a.address] == INITIAL_STATE_USER_A
+    print(contract_state_2_1)
+    assert (
+        json.loads(contract_state_2_1)[from_account_a.address] == INITIAL_STATE_USER_A
+    )
 
     # Get Updated State
     contract_state_2_2 = call_contract_method(
@@ -81,7 +87,7 @@ def test_user_storage(setup_validators):
         "get_account_storage",
         [from_account_a.address],
     )
-    assert contract_state_2_2 == INITIAL_STATE_USER_A
+    assert json.loads(contract_state_2_2) == INITIAL_STATE_USER_A
 
     ########################################
     ########## ADD User B State ############
@@ -98,8 +104,8 @@ def test_user_storage(setup_validators):
     contract_state_3 = call_contract_method(
         contract_address, from_account_a, "get_complete_storage", []
     )
-    assert contract_state_3[from_account_a.address] == INITIAL_STATE_USER_A
-    assert contract_state_3[from_account_b.address] == INITIAL_STATE_USER_B
+    assert json.loads(contract_state_3)[from_account_a.address] == INITIAL_STATE_USER_A
+    assert json.loads(contract_state_3)[from_account_b.address] == INITIAL_STATE_USER_B
 
     #########################################
     ######### UPDATE User A State ###########
@@ -116,8 +122,12 @@ def test_user_storage(setup_validators):
     contract_state_4_1 = call_contract_method(
         contract_address, from_account_a, "get_complete_storage", []
     )
-    assert contract_state_4_1[from_account_a.address] == UPDATED_STATE_USER_A
-    assert contract_state_4_1[from_account_b.address] == INITIAL_STATE_USER_B
+    assert (
+        json.loads(contract_state_4_1)[from_account_a.address] == UPDATED_STATE_USER_A
+    )
+    assert (
+        json.loads(contract_state_4_1)[from_account_b.address] == INITIAL_STATE_USER_B
+    )
 
     # Get Updated State
     contract_state_4_2 = call_contract_method(
@@ -126,4 +136,4 @@ def test_user_storage(setup_validators):
         "get_account_storage",
         [from_account_b.address],
     )
-    assert contract_state_4_2 == INITIAL_STATE_USER_B
+    assert json.loads(contract_state_4_2) == INITIAL_STATE_USER_B
