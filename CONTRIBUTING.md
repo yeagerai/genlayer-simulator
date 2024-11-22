@@ -33,6 +33,10 @@ Have ideas for new features or use cases? We're eager to hear them! But first:
 
 - **1.2. Create a branch**: create the branch that you will work on by using the link provided in the issue details page (right panel at the bottom - section "Development")
 
+- **1.3. Production Server Setup**: When running the application in production mode, use Gunicorn instead of the Flask development server:
+  ```sh
+  gunicorn --bind 0.0.0.0:<PORT> backend.protocol_rpc.server:app --workers 4 --worker-class gevent
+  ```
 - **1.3. Setup the Studio locally**: launch the Studio's frontend and backend by running the docker compose command (Please note that you must have docker, node, and npm installed)
 
    ```sh
