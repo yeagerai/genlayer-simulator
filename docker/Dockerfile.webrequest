@@ -31,7 +31,7 @@ pip install --cache-dir=/root/.cache/pip -r $path/requirements.txt
 
 # TODO: download and cache webdriver here
 
-HEALTHCHECK --interval=10s --timeout=5s --retries=15 --start-period=5s CMD curl "http://0.0.0.0:$WEBREQUESTSELENIUMPORT/status" | grep -P "\"ready\"\s*:\s*true\b"
+HEALTHCHECK --interval=5s --timeout=5s --retries=10 --start-period=3s CMD python "${base}/webrequest/healthcheck.py"
 
 COPY webrequest/docker-entry.sh "${base}/webrequest-docker-entry.sh"
 WORKDIR $base/$path
