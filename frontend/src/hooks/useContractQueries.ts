@@ -75,7 +75,10 @@ export function useContractQueries() {
   const isDeploying = ref(false);
 
   async function deployContract(
-    args: calldata.CalldataEncodable[],
+    args: {
+      args: calldata.CalldataEncodable[];
+      kwargs: { [key: string]: calldata.CalldataEncodable };
+    },
     leaderOnly: boolean,
   ) {
     isDeploying.value = true;
@@ -87,7 +90,7 @@ export function useContractQueries() {
 
       const result = await genlayer.client?.deployContract({
         code: contract.value?.content ?? '',
-        args,
+        args: args.args,
         leader_only: leaderOnly,
       });
 
@@ -151,12 +154,18 @@ export function useContractQueries() {
     return result;
   }
 
-  async function callReadMethod(method: string, args: any[]) {
+  async function callReadMethod(
+    method: string,
+    args: {
+      args: calldata.CalldataEncodable[];
+      kwargs: { [key: string]: calldata.CalldataEncodable };
+    },
+  ) {
     try {
       const result = await genlayer.client?.readContract({
         address: address.value as Address,
         functionName: method,
-        args,
+        args: args.args,
       });
 
       return result;
@@ -172,7 +181,10 @@ export function useContractQueries() {
     leaderOnly,
   }: {
     method: string;
-    args: calldata.CalldataEncodable[];
+    args: {
+      args: calldata.CalldataEncodable[];
+      kwargs: { [key: string]: calldata.CalldataEncodable };
+    };
     leaderOnly: boolean;
   }) {
     try {
@@ -183,7 +195,7 @@ export function useContractQueries() {
       const result = await genlayer.client?.writeContract({
         address: address.value as Address,
         functionName: method,
-        args,
+        args: args.args,
         value: BigInt(0),
         leader_only: leaderOnly,
       });
@@ -197,7 +209,7 @@ export function useContractQueries() {
         data: {},
         decodedData: {
           functionName: method,
-          args,
+          ...args,
         },
       });
       return true;

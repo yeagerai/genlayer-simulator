@@ -1,5 +1,7 @@
-from .types import Address
+from ...types import Address
 from typing import Any
+import collections.abc
+import json
 
 BITS_IN_TYPE = 3
 
@@ -86,7 +88,7 @@ def encode(x: Any) -> bytes:
     return bytes(mem)
 
 
-def decode(mem0) -> Any:  # type: ignore
+def decode(mem0: collections.abc.Buffer) -> Any:  # type: ignore
     mem: memoryview = memoryview(mem0)
 
     def read_uleb128() -> int:
@@ -126,7 +128,7 @@ def decode(mem0) -> Any:  # type: ignore
         elif typ == TYPE_BYTES:
             ret_bytes = mem[:code]
             mem = mem[code:]
-            return bytes(ret_bytes)
+            return ret_bytes
         elif typ == TYPE_STR:
             ret_str = mem[:code]
             mem = mem[code:]
@@ -168,7 +170,7 @@ def to_str(d: Any) -> str:
         elif d is False:
             buf.append("false")
         elif isinstance(d, str):
-            buf.append(f"{d!r}")
+            buf.append(json.dumps(d))
         elif isinstance(d, bytes):
             buf.append("b#")
             buf.append(d.hex())
@@ -178,18 +180,26 @@ def to_str(d: Any) -> str:
             buf.append("addr#")
             buf.append(d.as_bytes.hex())
         elif isinstance(d, dict):
+            was_first = False
             buf.append("{")
             for k, v in d.items():
-                buf.append(f"{k!r}")
+                if was_first:
+                    buf.append(",")
+                else:
+                    was_first = True
+                buf.append(json.dumps(k))
                 buf.append(":")
                 impl(v)
-                buf.append(",")
             buf.append("}")
         elif isinstance(d, list):
+            was_first = False
             buf.append("[")
             for v in d:
+                if was_first:
+                    buf.append(",")
+                else:
+                    was_first = True
                 impl(v)
-                buf.append(",")
             buf.append("]")
         else:
             raise Exception(f"can't encode {d} to calldata")
