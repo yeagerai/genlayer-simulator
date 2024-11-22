@@ -33,11 +33,25 @@ def test_webrequest_service():
     webrequest_url = f"http://localhost:{os.environ.get('WEBREQUESTPORT')}/api"
     assert wait_for_service(webrequest_url), "Webrequest service is not available."
 
+def test_gunicorn_deployment():
+    """Verify that Gunicorn is serving the application correctly."""
+    backend_url = f"http://localhost:{os.environ.get('RPCPORT')}/api"
+    response = requests.get(backend_url)
+    assert response.status_code == 200
+    assert 'result' in response.json()
+
+def test_gunicorn_workers():
+    """Ensure Gunicorn is running with the specified number of workers."""
+    workers = os.getenv('GUNICORN_WORKERS')
+    assert workers == '4'
+
 if __name__ == "__main__":
     try:
         start_containers()
         test_backend_service()
         test_webrequest_service()
+        test_gunicorn_deployment()
+        test_gunicorn_workers()
         print("All services are running and accessible.")
     finally:
         stop_containers()

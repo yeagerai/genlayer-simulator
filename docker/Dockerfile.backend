@@ -65,3 +65,5 @@ CMD watchmedo auto-restart --no-restart-on-command-exit --recursive --pattern="*
 FROM base AS prod
 USER backend-user
 CMD ["gunicorn", "--bind", "0.0.0.0:${FLASK_SERVER_PORT}", "backend.protocol_rpc.server:app", "--workers", "4", "--worker-class", "gevent"]
+ENV GUNICORN_WORKERS=4
+ENV GUNICORN_WORKER_CLASS=gevent

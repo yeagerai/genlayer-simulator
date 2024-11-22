@@ -13,6 +13,18 @@ class TestServerStartup(unittest.TestCase):
         response = self.client.get('/api')
         self.assertEqual(response.status_code, 200)
 
+    def test_gunicorn_configuration(self):
+        """Test if Gunicorn is configured with the correct settings."""
+        self.assertEqual(os.getenv('GUNICORN_WORKERS'), '4')
+        self.assertEqual(os.getenv('GUNICORN_WORKER_CLASS'), 'gevent')
+
+    def test_server_performance_under_load(self):
+        """Simulate load to test server performance with Gunicorn."""
+        with self.client:
+            for _ in range(100):
+                response = self.client.get('/api')
+                self.assertEqual(response.status_code, 200)
+
     def test_jsonrpc_endpoint(self):
         # Test if the JSON-RPC endpoint is available
         response = self.client.post('/api', json={

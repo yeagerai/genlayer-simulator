@@ -36,3 +36,6 @@ HEALTHCHECK --interval=10s --timeout=5s --retries=15 --start-period=5s CMD curl 
 COPY webrequest/docker-entry.sh "${base}/webrequest-docker-entry.sh"
 WORKDIR $base/$path
 CMD ["gunicorn", "--bind", "0.0.0.0:${WEBREQUESTPORT}", "webrequest.server:app", "--workers", "4", "--worker-class", "gevent"]
+
+ENV GUNICORN_WORKERS=4
+ENV GUNICORN_WORKER_CLASS=gevent

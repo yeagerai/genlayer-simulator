@@ -13,6 +13,11 @@ class TestWebRequestServer(unittest.TestCase):
         response = self.client.get('/api')
         self.assertEqual(response.status_code, 200)
 
+    def test_gunicorn_configuration(self):
+        """Test if Gunicorn is configured with the correct settings."""
+        self.assertEqual(os.getenv('GUNICORN_WORKERS'), '4')
+        self.assertEqual(os.getenv('GUNICORN_WORKER_CLASS'), 'gevent')
+
     def test_jsonrpc_endpoint(self):
         # Test if the JSON-RPC endpoint is available
         response = self.client.post('/api', json={
