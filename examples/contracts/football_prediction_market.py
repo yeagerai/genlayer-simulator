@@ -44,13 +44,17 @@ class PredictionMarket:
         if self.has_resolved:
             return "Already resolved"
 
+        market_resolution_url = self.resolution_url
+        team1 = self.team1
+        team2 = self.team2
+
         def nondet() -> str:
-            web_data = gl.get_webpage(self.resolution_url, mode="text")
+            web_data = gl.get_webpage(market_resolution_url, mode="text")
             print(web_data)
 
             task = f"""In the following web page, find the winning team in a matchup between the following teams:
-            Team 1: {self.team1}
-            Team 2: {self.team2}
+            Team 1: {team1}
+            Team 2: {team2}
 
             Web page content:
             {web_data}
