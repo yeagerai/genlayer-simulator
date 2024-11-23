@@ -13,6 +13,8 @@ class PredictionMarket:
     team1: str
     team2: str
     resolution_url: str
+    winner: u256
+    score: str
 
     def __init__(self, game_date: str, team1: str, team2: str):
         """
@@ -37,6 +39,8 @@ class PredictionMarket:
         )
         self.team1 = team1
         self.team2 = team2
+        self.winner = 0
+        self.score = ""
 
     @gl.public.write
     def resolve(self) -> typing.Any:
@@ -85,3 +89,11 @@ class PredictionMarket:
             self.score = result_json["score"]
 
         return result_json
+
+    @gl.public.view
+    def get_resolution_data(self) -> dict[str, typing.Any]:
+        return {
+            "winner": self.winner,
+            "score": self.score,
+            "has_resolved": self.has_resolved,
+        }
