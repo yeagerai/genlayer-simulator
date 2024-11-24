@@ -82,6 +82,7 @@ class Transaction:
     )
     appeal: bool = False
     timestamp_accepted: int | None = None
+    appeal_failed: int = 0
 
     def to_dict(self):
         return {
@@ -102,6 +103,7 @@ class Transaction:
             "leader_only": self.leader_only,
             "appeal": self.appeal,
             "timestamp_accepted": self.timestamp_accepted,
+            "appeal_failed": self.appeal_failed,
         }
 
     @classmethod
@@ -124,4 +126,5 @@ class Transaction:
             leader_only=input.get("leader_only", False),
             appeal=input.get("appeal"),
             timestamp_accepted=input.get("timestamp_accepted"),
+            appeal_failed=input.get("appeal_failed", 0),
         )

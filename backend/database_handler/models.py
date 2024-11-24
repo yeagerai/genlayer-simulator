@@ -94,6 +94,7 @@ class Transactions(Base):
     r: Mapped[Optional[int]] = mapped_column(Integer)
     s: Mapped[Optional[int]] = mapped_column(Integer)
     v: Mapped[Optional[int]] = mapped_column(Integer)
+    appeal_failed: Mapped[Optional[int]] = mapped_column(Integer)
 
     # Relationship for triggered transactions
     triggered_by_hash: Mapped[Optional[str]] = mapped_column(
@@ -129,7 +130,7 @@ class RollupTransactions(Base):
     from_: Mapped[str] = mapped_column(
         String(255),
     )
-    to_: Mapped[Optional[dict]] = mapped_column(
+    to_: Mapped[Optional[str]] = mapped_column(
         String(255),
     )
     gas: Mapped[int] = mapped_column(

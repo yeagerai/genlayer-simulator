@@ -2,7 +2,7 @@
 
 DEFAULT_VALIDATORS_COUNT = 5
 DEFAULT_CONSENSUS_SLEEP_TIME = 5
-DEFAULT_FINALITY_WINDOW = 30 * 60  # 30 minutes
+DEFAULT_FINALITY_WINDOW = 40  # 30 minutes
 
 import asyncio
 from collections import deque
@@ -307,7 +307,9 @@ class ConsensusAlgorithm:
                         try:
                             context.remaining_validators = (
                                 ConsensusAlgorithm.get_extra_validators(
-                                    chain_snapshot, transaction.consensus_data
+                                    chain_snapshot,
+                                    transaction.consensus_data,
+                                    transaction.appeal_failed,
                                 )
                             )
                         except ValueError as e:
@@ -318,9 +320,7 @@ class ConsensusAlgorithm:
                             context.transaction.appeal = False
                             session.commit()
                         else:
-                            context.num_validators = len(
-                                context.remaining_validators
-                            )  # new amount added (N + 2)
+                            context.num_validators = len(context.remaining_validators)
                             context.votes = {}
                             context.contract_snapshot = (
                                 context.contract_snapshot_factory(
@@ -340,25 +340,69 @@ class ConsensusAlgorithm:
             await asyncio.sleep(1)
 
     @staticmethod
-    def get_extra_validators(snapshot: ChainSnapshot, consensus_data: ConsensusData):
-        current_validators_addresses = {
-            validator.node_config["address"] for validator in consensus_data.validators
-        }
-        current_validators_addresses.add(
-            consensus_data.leader_receipt.node_config["address"]
-        )
+    def get_extra_validators(
+        snapshot: ChainSnapshot, consensus_data: ConsensusData, appeal_failed: int
+    ):
+        # Get all validators
+        validators = snapshot.get_all_validators()
+
+        if appeal_failed > 0:
+            # Create a dictionary to map addresses to validator entries
+            validator_map = {
+                validator["address"]: validator for validator in validators
+            }
+
+            # List to store current validators for each receipt
+            current_validators = [
+                validator_map[consensus_data.leader_receipt.node_config["address"]]
+            ]
+        else:
+            current_validators = []
+
+        # Set to track addresses found in receipts
+        receipt_addresses = set([consensus_data.leader_receipt.node_config["address"]])
+
+        # Iterate over receipts to find matching validators
+        for receipt in consensus_data.validators:
+            address = receipt.node_config["address"]
+            receipt_addresses.add(address)
+            if appeal_failed > 0:
+                if address in validator_map:
+                    current_validators.append(validator_map[address])
+
+        # Get all validators where the address is not in the receipts
         not_used_validators = [
             validator
-            for validator in snapshot.get_all_validators()
-            if validator["address"] not in current_validators_addresses
+            for validator in validators
+            if validator["address"] not in receipt_addresses
         ]
+
         if len(not_used_validators) == 0:
             raise ValueError(
                 "No validators found for appeal, waiting for next appeal request: "
             )
-        return get_validators_for_transaction(
-            not_used_validators, len(consensus_data.validators) + 1 + 2
-        )  # plus one because of the leader, plus two because of the appeal
+
+        # when appeal_failed=0, add n + 2 validators
+        # when appeal_failed>0, add (2 * appeal_failed * n + 1) + 2 validators
+        nb_current_validators = len(receipt_addresses)
+        if appeal_failed == 0:
+            extra_validators = get_validators_for_transaction(
+                not_used_validators, nb_current_validators + 2
+            )
+        elif appeal_failed == 1:
+            n = (nb_current_validators - 2) // 2
+            extra_validators = get_validators_for_transaction(
+                not_used_validators, n + 1
+            )
+            extra_validators = current_validators[n:] + extra_validators
+        else:
+            n = (nb_current_validators - 3) // (2 * appeal_failed - 1)
+            extra_validators = get_validators_for_transaction(
+                not_used_validators, 2 * n
+            )
+            extra_validators = current_validators[n:] + extra_validators
+
+        return extra_validators
 
     @staticmethod
     def get_validators_from_consensus_data(
@@ -593,29 +637,49 @@ class RevealingState(TransactionState):
                 context.transaction.hash
             )
 
-        if (
+        majority_agrees = (
             len([vote for vote in context.votes.values() if vote == Vote.AGREE.value])
             > context.num_validators // 2
-        ):
-            if context.transaction.appeal:
-                # Appeal failed
-                context.votes.update(context.transaction.consensus_data.votes)
-                context.validation_results = (
-                    context.transaction.consensus_data.validators
-                    + context.validation_results
-                )
+        )
 
-            return AcceptedState()
-        else:
-            if context.transaction.appeal:
-                # Appeal succeeded
-                context.consensus_data.votes = (
-                    context.transaction.consensus_data.votes | context.votes
-                )
+        if context.transaction.appeal:
+            # Update the consensus results with the new votes and validators
+            context.consensus_data.votes = (
+                context.transaction.consensus_data.votes | context.votes
+            )
+
+            if context.transaction.appeal_failed == 0:
                 context.consensus_data.validators = (
                     context.transaction.consensus_data.validators
                     + context.validation_results
                 )
+
+            elif context.transaction.appeal_failed == 1:
+                n = (len(context.transaction.consensus_data.validators) - 1) // 2
+                context.consensus_data.validators = (
+                    context.transaction.consensus_data.validators[: n - 1]
+                    + context.validation_results
+                )
+
+            else:
+                n = len(context.validation_results) - (
+                    len(context.transaction.consensus_data.validators) + 1
+                )
+                context.consensus_data.validators = (
+                    context.transaction.consensus_data.validators[: n - 1]
+                    + context.validation_results
+                )
+
+            if majority_agrees:
+                # Appeal failed
+                context.transactions_processor.set_transaction_appeal_failed(
+                    context.transaction.hash,
+                    context.transaction.appeal_failed + 1,
+                )
+                return AcceptedState()
+
+            else:
+                # Appeal succeeded
                 context.transactions_processor.set_transaction_result(
                     context.transaction.hash, context.consensus_data.to_dict()
                 )
@@ -628,15 +692,26 @@ class RevealingState(TransactionState):
                 context.transactions_processor.create_rollup_transaction(
                     context.transaction.hash
                 )
+                context.transactions_processor.set_transaction_appeal_failed(
+                    context.transaction.hash,
+                    0,
+                )
                 # TODO: put all the transactions that came after this one back in the pending queue
                 return None  # Transaction will be picked up by _crawl_snapshot
+
+        else:
+            # Not appealed
+            context.consensus_data.votes = context.votes
+            context.consensus_data.validators = context.validation_results
+
+            if majority_agrees:
+                return AcceptedState()
+
             else:
                 print(
                     "Consensus not reached for transaction, rotating leader: ",
                     context.transaction,
                 )
-                context.consensus_data.votes = context.votes
-                context.consensus_data.validators = context.validation_results
                 return ProposingState()
 
 
@@ -659,8 +734,6 @@ class AcceptedState(TransactionState):
             context.msg_handler,
         )
 
-        context.consensus_data.votes = context.votes
-        context.consensus_data.validators = context.validation_results
         context.transactions_processor.set_transaction_result(
             context.transaction.hash, context.consensus_data.to_dict()
         )

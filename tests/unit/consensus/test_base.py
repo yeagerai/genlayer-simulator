@@ -83,6 +83,12 @@ class TransactionsProcessorMock:
     def create_rollup_transaction(self, transaction_hash: str):
         pass
 
+    def set_transaction_appeal_failed(self, transaction_hash: str, appeal_failed: int):
+        if appeal_failed < 0:
+            raise ValueError("appeal_failed must be a non-negative integer")
+        transaction = self.get_transaction_by_hash(transaction_hash)
+        transaction["appeal_failed"] = appeal_failed
+
 
 class SnapshotMock:
     def __init__(self, nodes):
@@ -111,6 +117,7 @@ def transaction_to_dict(transaction: Transaction) -> dict:
         "leader_only": transaction.leader_only,
         "appeal": transaction.appeal,
         "timestamp_accepted": transaction.timestamp_accepted,
+        "appeal_failed": transaction.appeal_failed,
     }
 
 

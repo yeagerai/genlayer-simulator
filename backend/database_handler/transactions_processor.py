@@ -51,6 +51,7 @@ class TransactionsProcessor:
             ],
             "appeal": transaction_data.appeal,
             "timestamp_accepted": transaction_data.timestamp_accepted,
+            "appeal_failed": transaction_data.appeal_failed,
         }
 
     @staticmethod
@@ -154,6 +155,7 @@ class TransactionsProcessor:
             ),
             appeal=False,
             timestamp_accepted=None,
+            appeal_failed=0,
         )
 
         self.session.add(new_transaction)
@@ -268,3 +270,11 @@ class TransactionsProcessor:
             transaction.timestamp_accepted = timestamp_accepted
         else:
             transaction.timestamp_accepted = int(time.time())
+
+    def set_transaction_appeal_failed(self, transaction_hash: str, appeal_failed: int):
+        if appeal_failed < 0:
+            raise ValueError("appeal_failed must be a non-negative integer")
+        transaction = (
+            self.session.query(Transactions).filter_by(hash=transaction_hash).one()
+        )
+        transaction.appeal_failed = appeal_failed
