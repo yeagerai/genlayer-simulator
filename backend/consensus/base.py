@@ -354,7 +354,8 @@ class ConsensusAlgorithm:
 
                         # Check if the transaction has exceeded the finality window
                         if (
-                            int(time.time()) - transaction.timestamp_accepted
+                            int(time.time())
+                            - transaction.timestamp_awaiting_finalization
                         ) > DEFAULT_FINALITY_WINDOW:
 
                             # Create a transaction context for finalizing the transaction
@@ -984,7 +985,7 @@ class AcceptedState(TransactionState):
         """
         if not context.transaction.appeal:
             # When appeal fails, the appeal window is not reset
-            context.transactions_processor.set_transaction_timestamp_accepted(
+            context.transactions_processor.set_transaction_timestamp_awaiting_finalization(
                 context.transaction.hash
             )
 
@@ -1049,6 +1050,11 @@ class UndeterminedState(TransactionState):
                 EventScope.CONSENSUS,
                 "Failed to reach consensus",
             )
+        )
+
+        # Set the start of the appeal window
+        context.transactions_processor.set_transaction_timestamp_awaiting_finalization(
+            context.transaction.hash
         )
 
         # Update the transaction status to UNDETERMINED

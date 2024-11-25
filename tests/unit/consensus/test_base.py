@@ -61,14 +61,16 @@ class TransactionsProcessorMock:
         transaction = self.get_transaction_by_hash(transaction_hash)
         transaction["appeal"] = appeal
 
-    def set_transaction_timestamp_accepted(
-        self, transaction_hash: str, timestamp_accepted: int = None
+    def set_transaction_timestamp_awaiting_finalization(
+        self, transaction_hash: str, timestamp_awaiting_finalization: int = None
     ):
         transaction = self.get_transaction_by_hash(transaction_hash)
-        if timestamp_accepted:
-            transaction["timestamp_accepted"] = timestamp_accepted
+        if timestamp_awaiting_finalization:
+            transaction["timestamp_awaiting_finalization"] = (
+                timestamp_awaiting_finalization
+            )
         else:
-            transaction["timestamp_accepted"] = int(time.time())
+            transaction["timestamp_awaiting_finalization"] = int(time.time())
 
     def add_transaction(self, new_transaction: dict):
         self.transactions.append(new_transaction)
@@ -88,6 +90,10 @@ class TransactionsProcessorMock:
             raise ValueError("appeal_failed must be a non-negative integer")
         transaction = self.get_transaction_by_hash(transaction_hash)
         transaction["appeal_failed"] = appeal_failed
+
+    def set_transaction_appeal(self, transaction_hash: str, appeal_undetermined: bool):
+        transaction = self.get_transaction_by_hash(transaction_hash)
+        transaction["appeal_undetermined"] = appeal_undetermined
 
 
 class SnapshotMock:
@@ -116,8 +122,9 @@ def transaction_to_dict(transaction: Transaction) -> dict:
         "v": transaction.v,
         "leader_only": transaction.leader_only,
         "appeal": transaction.appeal,
-        "timestamp_accepted": transaction.timestamp_accepted,
+        "timestamp_awaiting_finalization": transaction.timestamp_awaiting_finalization,
         "appeal_failed": transaction.appeal_failed,
+        "appeal_undetermined": transaction.appeal_undetermined,
     }
 
 
@@ -475,7 +482,7 @@ async def _appeal_window(
             transaction = Transaction.from_dict(transaction)
             if not transaction.appeal:
                 if (
-                    int(time.time()) - transaction.timestamp_accepted
+                    int(time.time()) - transaction.timestamp_awaiting_finalization
                 ) > DEFAULT_FINALITY_WINDOW:
                     context = TransactionContext(
                         transaction=transaction,
@@ -730,9 +737,9 @@ async def test_exec_accepted_appeal_fail(managed_thread):
         == False
     )
 
-    timestamp_accepted_1 = transactions_processor.get_transaction_by_hash(
+    timestamp_awaiting_finalization_1 = transactions_processor.get_transaction_by_hash(
         transaction.hash
-    )["timestamp_accepted"]
+    )["timestamp_awaiting_finalization"]
 
     transactions_processor.set_transaction_appeal(transaction.hash, True)
     assert (
@@ -772,9 +779,9 @@ async def test_exec_accepted_appeal_fail(managed_thread):
 
     assert (
         transactions_processor.get_transaction_by_hash(transaction.hash)[
-            "timestamp_accepted"
+            "timestamp_awaiting_finalization"
         ]
-        == timestamp_accepted_1
+        == timestamp_awaiting_finalization_1
     )
 
 
@@ -875,9 +882,9 @@ async def test_exec_accepted_appeal_no_extra_validators(managed_thread):
         == False
     )
 
-    timestamp_accepted_1 = transactions_processor.get_transaction_by_hash(
+    timestamp_awaiting_finalization_1 = transactions_processor.get_transaction_by_hash(
         transaction.hash
-    )["timestamp_accepted"]
+    )["timestamp_awaiting_finalization"]
 
     transactions_processor.set_transaction_appeal(transaction.hash, True)
     assert (
@@ -904,9 +911,9 @@ async def test_exec_accepted_appeal_no_extra_validators(managed_thread):
 
     assert (
         transactions_processor.get_transaction_by_hash(transaction.hash)[
-            "timestamp_accepted"
+            "timestamp_awaiting_finalization"
         ]
-        == timestamp_accepted_1
+        == timestamp_awaiting_finalization_1
     )
 
 
@@ -1026,9 +1033,9 @@ async def test_exec_accepted_appeal_successful(managed_thread):
         == False
     )
 
-    timestamp_accepted_1 = transactions_processor.get_transaction_by_hash(
+    timestamp_awaiting_finalization_1 = transactions_processor.get_transaction_by_hash(
         transaction.hash
-    )["timestamp_accepted"]
+    )["timestamp_awaiting_finalization"]
 
     transactions_processor.set_transaction_appeal(transaction.hash, True)
     assert (
@@ -1109,9 +1116,9 @@ async def test_exec_accepted_appeal_successful(managed_thread):
 
     assert (
         transactions_processor.get_transaction_by_hash(transaction.hash)[
-            "timestamp_accepted"
+            "timestamp_awaiting_finalization"
         ]
-        > timestamp_accepted_1
+        > timestamp_awaiting_finalization_1
     )
 
     assert (
@@ -1456,9 +1463,9 @@ async def test_exec_accepted_appeal_successful_twice(managed_thread):
         == False
     )
 
-    timestamp_accepted_1 = transactions_processor.get_transaction_by_hash(
+    timestamp_awaiting_finalization_1 = transactions_processor.get_transaction_by_hash(
         transaction.hash
-    )["timestamp_accepted"]
+    )["timestamp_awaiting_finalization"]
 
     transactions_processor.set_transaction_appeal(transaction.hash, True)
     assert (
@@ -1539,10 +1546,10 @@ async def test_exec_accepted_appeal_successful_twice(managed_thread):
         == False
     )
 
-    timestamp_accepted_2 = transactions_processor.get_transaction_by_hash(
+    timestamp_awaiting_finalization_2 = transactions_processor.get_transaction_by_hash(
         transaction.hash
-    )["timestamp_accepted"]
-    assert timestamp_accepted_2 > timestamp_accepted_1
+    )["timestamp_awaiting_finalization"]
+    assert timestamp_awaiting_finalization_2 > timestamp_awaiting_finalization_1
 
     assert (
         len(
@@ -1653,9 +1660,9 @@ async def test_exec_accepted_appeal_successful_twice(managed_thread):
 
     assert (
         transactions_processor.get_transaction_by_hash(transaction.hash)[
-            "timestamp_accepted"
+            "timestamp_awaiting_finalization"
         ]
-        > timestamp_accepted_2
+        > timestamp_awaiting_finalization_2
     )
 
     assert len(
@@ -1769,9 +1776,9 @@ async def test_exec_accepted_appeal_fail_three_times(managed_thread):
         == TransactionStatus.ACCEPTED.value
     )
 
-    timestamp_accepted_1 = transactions_processor.get_transaction_by_hash(
+    timestamp_awaiting_finalization_1 = transactions_processor.get_transaction_by_hash(
         transaction.hash
-    )["timestamp_accepted"]
+    )["timestamp_awaiting_finalization"]
 
     n = DEFAULT_VALIDATORS_COUNT
     nb_validators_processing_appeal = n
@@ -1824,9 +1831,9 @@ async def test_exec_accepted_appeal_fail_three_times(managed_thread):
 
         assert (
             transactions_processor.get_transaction_by_hash(transaction.hash)[
-                "timestamp_accepted"
+                "timestamp_awaiting_finalization"
             ]
-            == timestamp_accepted_1
+            == timestamp_awaiting_finalization_1
         )
 
         if appeal_failed == 0:
@@ -2050,9 +2057,9 @@ async def test_exec_accepted_appeal_successful_fail_successful(managed_thread):
         == False
     )
 
-    timestamp_accepted_1 = transactions_processor.get_transaction_by_hash(
+    timestamp_awaiting_finalization_1 = transactions_processor.get_transaction_by_hash(
         transaction.hash
-    )["timestamp_accepted"]
+    )["timestamp_awaiting_finalization"]
 
     transactions_processor.set_transaction_appeal(transaction.hash, True)
     assert (
@@ -2131,11 +2138,11 @@ async def test_exec_accepted_appeal_successful_fail_successful(managed_thread):
     expected_nb_created_nodes += n_new
     assert len(created_nodes) == expected_nb_created_nodes
 
-    timestamp_accepted_2 = transactions_processor.get_transaction_by_hash(
+    timestamp_awaiting_finalization_2 = transactions_processor.get_transaction_by_hash(
         transaction.hash
-    )["timestamp_accepted"]
+    )["timestamp_awaiting_finalization"]
 
-    assert timestamp_accepted_2 > timestamp_accepted_1
+    assert timestamp_awaiting_finalization_2 > timestamp_awaiting_finalization_1
 
     assert (
         len(
@@ -2203,11 +2210,11 @@ async def test_exec_accepted_appeal_successful_fail_successful(managed_thread):
         == 2 * n_new + 1
     )
 
-    timestamp_accepted_3 = transactions_processor.get_transaction_by_hash(
+    timestamp_awaiting_finalization_3 = transactions_processor.get_transaction_by_hash(
         transaction.hash
-    )["timestamp_accepted"]
+    )["timestamp_awaiting_finalization"]
 
-    assert timestamp_accepted_3 == timestamp_accepted_2
+    assert timestamp_awaiting_finalization_3 == timestamp_awaiting_finalization_2
 
     validator_set_addresses_after_appeal_fail = {
         validator["node_config"]["address"]
@@ -2321,11 +2328,11 @@ async def test_exec_accepted_appeal_successful_fail_successful(managed_thread):
     expected_nb_created_nodes += 3 * n_new + 2
     assert len(created_nodes) == expected_nb_created_nodes
 
-    timestamp_accepted_4 = transactions_processor.get_transaction_by_hash(
+    timestamp_awaiting_finalization_4 = transactions_processor.get_transaction_by_hash(
         transaction.hash
-    )["timestamp_accepted"]
+    )["timestamp_awaiting_finalization"]
 
-    assert timestamp_accepted_4 > timestamp_accepted_3
+    assert timestamp_awaiting_finalization_4 > timestamp_awaiting_finalization_3
 
     assert (
         len(

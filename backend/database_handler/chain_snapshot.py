@@ -52,7 +52,7 @@ class ChainSnapshot:
                 (Transactions.status == TransactionStatus.ACCEPTED)
                 | (Transactions.status == TransactionStatus.UNDETERMINED)
             )
-            .order_by(Transactions.timestamp_accepted)
+            .order_by(Transactions.timestamp_awaiting_finalization)
             .all()
         )
         return [

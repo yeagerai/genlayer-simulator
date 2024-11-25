@@ -81,8 +81,9 @@ class Transaction:
         False  # Flag to indicate if this transaction should be processed only by the leader. Used for fast and cheap execution of transactions.
     )
     appeal: bool = False
-    timestamp_accepted: int | None = None
+    timestamp_awaiting_finalization: int | None = None
     appeal_failed: int = 0
+    appeal_undetermined: bool = False
 
     def to_dict(self):
         return {
@@ -102,8 +103,9 @@ class Transaction:
             "v": self.v,
             "leader_only": self.leader_only,
             "appeal": self.appeal,
-            "timestamp_accepted": self.timestamp_accepted,
+            "timestamp_awaiting_finalization": self.timestamp_awaiting_finalization,
             "appeal_failed": self.appeal_failed,
+            "appeal_undetermined": self.appeal_undetermined,
         }
 
     @classmethod
@@ -125,6 +127,9 @@ class Transaction:
             v=input.get("v"),
             leader_only=input.get("leader_only", False),
             appeal=input.get("appeal"),
-            timestamp_accepted=input.get("timestamp_accepted"),
+            timestamp_awaiting_finalization=input.get(
+                "timestamp_awaiting_finalization"
+            ),
             appeal_failed=input.get("appeal_failed", 0),
+            appeal_undetermined=input.get("appeal_undetermined", False),
         )
