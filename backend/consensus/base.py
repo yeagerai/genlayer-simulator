@@ -342,11 +342,11 @@ class ConsensusAlgorithm:
             with self.get_session() as session:
                 chain_snapshot = ChainSnapshot(session)
 
-                # Retrieve accepted transactions from the chain snapshot
-                accepted_transactions = (
-                    chain_snapshot.get_accepted_transactions()
-                )  # TODO: also get undetermined transactions
-                for transaction in accepted_transactions:
+                # Retrieve accepted and undetermined transactions from the chain snapshot
+                accepted_undetermined_transactions = (
+                    chain_snapshot.get_accepted_undetermined_transactions()
+                )
+                for transaction in accepted_undetermined_transactions:
                     transaction = Transaction.from_dict(transaction)
 
                     # Check if the transaction is appealed
@@ -376,7 +376,6 @@ class ConsensusAlgorithm:
                             session.commit()
 
                     else:
-
                         # Handle transactions that are appealed
                         transactions_processor = TransactionsProcessor(session)
 
@@ -1060,10 +1059,13 @@ class UndeterminedState(TransactionState):
             context.msg_handler,
         )
 
-        # Set the transaction result with the current consensus data
+        # Set the transaction result with the current consensus data and create a rollup transaction
         context.transactions_processor.set_transaction_result(
             context.transaction.hash,
             context.consensus_data.to_dict(),
+        )
+        context.transactions_processor.create_rollup_transaction(
+            context.transaction.hash
         )
         return None
 
