@@ -68,6 +68,9 @@ services:
       # TODO: remove this in production
       - PYTHONUNBUFFERED=1
       - RPCDEBUGPORT=${RPCDEBUGPORT}
+      - WEBREQUESTPORT=${WEBREQUESTPORT}
+      - WEBREQUESTHOST=${WEBREQUESTHOST}
+      - WEBREQUESTPROTOCOL=${WEBREQUESTPROTOCOL}
     ports:
       - "${RPCPORT}:${RPCPORT}"
       - "${RPCDEBUGPORT}:${RPCDEBUGPORT}"
@@ -75,10 +78,10 @@ services:
       - ./.env:/app/.env
       - ./backend:/app/backend
     depends_on:
-      ollama:
-        condition: service_started
       database-migration:
         condition: service_completed_successfully
+      webrequest:
+        condition: service_healthy
     expose:
       - "${RPCPORT}"
     healthcheck:
@@ -104,13 +107,19 @@ services:
       dockerfile: ./docker/Dockerfile.webrequest
     shm_size: 2gb
     volumes:
+      - ./.env:/app/webrequest/.env
       - ./webrequest:/app/webrequest
     environment:
       - FLASK_SERVER_PORT=${WEBREQUESTPORT}
+      - WEBREQUESTSELENIUMPORT=${WEBREQUESTSELENIUMPORT}
       # TODO: remove this in production
       - PYTHONUNBUFFERED=1
+    depends_on:
+      ollama:
+        condition: service_started
     expose:
-      - "${WEBREQUESTPORT}"
+      - "${WEBREQUESTPORT}:${WEBREQUESTPORT}"
+      - "${WEBREQUESTSELENIUMPORT}:${WEBREQUESTSELENIUMPORT}"
     restart: always
     security_opt:
       - "no-new-privileges=true"
@@ -168,6 +177,11 @@ services:
       dockerfile: docker/Dockerfile.database-migration
     environment:
       - DB_URL=postgresql://${DBUSER}:${DBUSER}@postgres/${DBNAME}
+      - WEBREQUESTPORT=${WEBREQUESTPORT}
+      - WEBREQUESTHOST=${WEBREQUESTHOST}
+      - WEBREQUESTPROTOCOL=${WEBREQUESTPROTOCOL}
     depends_on:
       postgres:
+        condition: service_healthy
+      webrequest:
         condition: service_healthy

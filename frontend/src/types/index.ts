@@ -44,11 +44,33 @@ export interface NewProviderDataModel {
   plugin_config: Record<string, any>;
 }
 
-export interface ContractMethod {
-  type: string;
-  name: string;
-  inputs: [{ name: string; type: string }];
-  outputs: [{ name: string; type: string }];
+export type ContractParamsArraySchemaElement =
+  | ContractParamsSchema
+  | { $rep: ContractParamsSchema };
+
+export type ContractParamsSchema =
+  | 'null'
+  | 'bool'
+  | 'int'
+  | 'address'
+  | 'string'
+  | 'bytes'
+  | 'any'
+  | 'array'
+  | 'dict'
+  | { $or: ContractParamsSchema[] }
+  | { $dict: ContractParamsSchema }
+  | { [key: string]: ContractParamsSchema }
+  | ContractParamsArraySchemaElement[];
+
+export interface ContractMethodBase {
+  params: [string, ContractParamsSchema][];
+  kwparams: { [key: string]: ContractParamsSchema };
+}
+
+export interface ContractMethod extends ContractMethodBase {
+  ret: ContractParamsSchema;
+  readonly: boolean;
 }
 
 export type Address = `0x${string}`;

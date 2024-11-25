@@ -74,6 +74,7 @@ async def call_ollama(
             buffer += chunk["response"]
             if result["stop"]:
                 return result["match"]
+    assert False
 
 
 async def call_openai(
@@ -84,14 +85,14 @@ async def call_openai(
 ) -> str:
     api_key_env_var = node_config[plugin_config_key]["api_key_env_var"]
     url = node_config[plugin_config_key]["api_url"]
-    client = get_openai_client(os.environ.get(api_key_env_var), url)
+    client = get_openai_client(os.environ[api_key_env_var], url)
     # TODO: OpenAI exceptions need to be caught here
     stream = get_openai_stream(client, prompt, node_config)
 
     return await get_openai_output(stream, regex, return_streaming_channel)
 
 
-def get_openai_client(api_key: str, url: str = None) -> OpenAI:
+def get_openai_client(api_key: str, url: str | None = None) -> OpenAI:
     openai_client = None
     if url:
         openai_client = OpenAI(api_key=api_key, base_url=url)
@@ -230,7 +231,7 @@ class AnthropicPlugin:
         regex: Optional[str],
         return_streaming_channel: Optional[asyncio.Queue],
     ) -> str:
-        client: AsyncAnthropic = None
+        client: AsyncAnthropic
         if self.url:
             client = AsyncAnthropic(api_key=self.get_api_key(), base_url=self.url)
         else:

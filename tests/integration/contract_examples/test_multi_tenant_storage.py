@@ -11,6 +11,8 @@ from tests.common.request import (
 )
 from tests.common.response import has_success_status
 
+from backend.node.types import Address
+
 
 def test_multi_tenant_storage(setup_validators):
     """
@@ -107,7 +109,7 @@ def test_multi_tenant_storage(setup_validators):
         [],
     )
 
-    assert storages == {
-        first_storage_contract_address: "user_a_storage",
-        second_storage_contract_address: "user_b_storage",
+    assert json.loads(storages) == {
+        second_storage_contract_address: "user_a_storage",
+        first_storage_contract_address: "user_b_storage",
     }
