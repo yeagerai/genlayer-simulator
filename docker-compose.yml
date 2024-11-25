@@ -1,5 +1,6 @@
 services:
   nginx:
+    profiles: ["studio"]  # For hosted studio, turned off by default
     build:
       context: ./
       dockerfile: ./docker/Dockerfile.nginx
