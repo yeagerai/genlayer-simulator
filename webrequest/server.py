@@ -78,6 +78,11 @@ async def llm_plugin_call(
     )
 
 
+@jsonrpc.method("status")
+async def status(x: str) -> dict:
+    return {"pong": x}
+
+
 @jsonrpc.method("llm_genvm_module_call")
 async def llm_genvm_module_call(
     encoded_model: str,

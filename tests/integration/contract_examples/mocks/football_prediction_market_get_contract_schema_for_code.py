@@ -11,7 +11,13 @@ football_prediction_market_contract_schema = {
             ],
         },
         "methods": {
-            "resolve": {"kwparams": {}, "params": [], "readonly": False, "ret": "any"}
+            "get_resolution_data": {
+                "kwparams": {},
+                "params": [],
+                "readonly": True,
+                "ret": {"$dict": "any"},
+            },
+            "resolve": {"kwparams": {}, "params": [], "readonly": False, "ret": "any"},
         },
     },
 }
