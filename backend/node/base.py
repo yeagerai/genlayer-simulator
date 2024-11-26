@@ -200,7 +200,7 @@ class Node:
         *,
         readonly: bool,
         is_init: bool,
-        transaction_hash: str,
+        transaction_hash: str | None = None,
     ) -> Receipt:
         genvm = self._create_genvm()
         leader_res: None | dict[int, bytes]
