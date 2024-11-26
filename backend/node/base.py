@@ -166,7 +166,11 @@ class Node:
         assert self.contract_snapshot is not None
         self.contract_snapshot.contract_code = code_to_deploy
         return await self._run_genvm(
-            from_address, calldata, readonly=False, is_init=True, transaction_hash=transaction_hash
+            from_address,
+            calldata,
+            readonly=False,
+            is_init=True,
+            transaction_hash=transaction_hash,
         )
 
     async def run_contract(

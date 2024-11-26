@@ -1,7 +1,13 @@
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useContractsStore } from '@/stores';
-import { useDb, useFileName, useSetupStores, useRpcClient, useWebSocketClient } from '@/hooks';
+import {
+  useDb,
+  useFileName,
+  useSetupStores,
+  useRpcClient,
+  useWebSocketClient,
+} from '@/hooks';
 import { notify } from '@kyvg/vue3-notification';
 
 const testContract = {
