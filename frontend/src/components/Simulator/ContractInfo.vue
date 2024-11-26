@@ -53,8 +53,8 @@ const { isDeployed, address, contract } = useContractQueries();
       You need at least one validator before you can deploy or interact with a
       contract.
 
-      <RouterLink :to="{ name: 'settings' }"
-        ><Btn secondary tiny class="mt-1">Go to settings</Btn></RouterLink
+      <RouterLink :to="{ name: 'validators' }"
+        ><Btn secondary tiny class="mt-1">Go to validators</Btn></RouterLink
       >
     </Alert>
 
