@@ -8,7 +8,6 @@ import type {
 } from '@/types';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
-import { useContractsStore } from './contracts';
 import { notify } from '@kyvg/vue3-notification';
 import { useRpcClient, useWebSocketClient } from '@/hooks';
 
@@ -16,7 +15,6 @@ export const useNodeStore = defineStore('nodeStore', () => {
   const rpcClient = useRpcClient();
   const webSocketClient = useWebSocketClient();
   const logs = ref<NodeLog[]>([]);
-  const contractsStore = useContractsStore();
   const nodeProviders = ref<GetProvidersAndModelsData>([]);
   const validators = ref<ValidatorModel[]>([]);
   const isLoadingValidatorData = ref<boolean>(true);

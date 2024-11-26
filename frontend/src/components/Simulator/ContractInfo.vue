@@ -2,7 +2,6 @@
 import PageSection from '@/components/Simulator/PageSection.vue';
 import { CheckCircleIcon } from '@heroicons/vue/24/outline';
 import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
-import { PlusIcon } from '@heroicons/vue/16/solid';
 import { useNodeStore } from '@/stores';
 import { useWallet, useContractQueries } from '@/hooks';
 import { UploadIcon } from 'lucide-vue-next';

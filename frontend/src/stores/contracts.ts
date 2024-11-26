@@ -3,14 +3,12 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { notify } from '@kyvg/vue3-notification';
 import { useDb, useFileName } from '@/hooks';
-import { useTransactionsStore } from '@/stores';
 
 export const useContractsStore = defineStore('contractsStore', () => {
   const contracts = ref<ContractFile[]>([]);
   const openedFiles = ref<string[]>([]);
   const db = useDb();
   const { cleanupFileName } = useFileName();
-  const transactionsStore = useTransactionsStore();
 
   const currentContractId = ref<string | undefined>(
     localStorage.getItem('contractsStore.currentContractId') || '',
