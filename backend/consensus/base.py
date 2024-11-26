@@ -380,58 +380,87 @@ class ConsensusAlgorithm:
                         # Handle transactions that are appealed
                         transactions_processor = TransactionsProcessor(session)
 
-                        # Create a transaction context for the appeal process
-                        context = TransactionContext(
-                            transaction=transaction,
-                            transactions_processor=transactions_processor,
-                            snapshot=chain_snapshot,
-                            accounts_manager=AccountsManager(session),
-                            contract_snapshot_factory=lambda contract_address, session=session: ContractSnapshot(
-                                contract_address, session
-                            ),
-                            node_factory=node_factory,
-                            msg_handler=self.msg_handler,
-                        )
+                        if transaction.status == TransactionStatus.UNDETERMINED:
+                            # Leader appeal
+                            # Appeal data member is used in the frontend for both types of appeals
+                            # Here the type is refined based on the status
+                            transactions_processor.set_transaction_appeal_undetermined(
+                                transaction.hash, True
+                            )
+                            transactions_processor.set_transaction_appeal(
+                                transaction.hash, False
+                            )
 
-                        # Set the leader receipt in the context
-                        context.consensus_data.leader_receipt = (
-                            transaction.consensus_data.leader_receipt
-                        )
-                        try:
-                            # Attempt to get extra validators for the appeal process
-                            context.remaining_validators = (
-                                ConsensusAlgorithm.get_extra_validators(
-                                    chain_snapshot,
-                                    transaction.consensus_data,
-                                    transaction.appeal_failed,
-                                )
+                            # Set the status to PENDING, transaction will be picked up by _crawl_snapshot
+                            ConsensusAlgorithm.dispatch_transaction_status_update(
+                                transactions_processor,
+                                transaction.hash,
+                                TransactionStatus.PENDING,
+                                self.msg_handler,
                             )
-                        except ValueError as e:
-                            # When no validators are found, then the appeal failed
-                            print(e, transaction)
-                            context.transactions_processor.set_transaction_appeal(
-                                context.transaction.hash, False
+                            # Create a rollup transaction
+                            transactions_processor.create_rollup_transaction(
+                                transaction.hash
                             )
-                            context.transaction.appeal = False
+
                             session.commit()
+
                         else:
-                            # Set up the context for the committing state
-                            context.num_validators = len(context.remaining_validators)
-                            context.votes = {}
-                            context.contract_snapshot = (
-                                context.contract_snapshot_factory(
-                                    transaction.to_address
-                                )
+                            # Validator appeal
+                            # Create a transaction context for the appeal process
+                            context = TransactionContext(
+                                transaction=transaction,
+                                transactions_processor=transactions_processor,
+                                snapshot=chain_snapshot,
+                                accounts_manager=AccountsManager(session),
+                                contract_snapshot_factory=lambda contract_address, session=session: ContractSnapshot(
+                                    contract_address, session
+                                ),
+                                node_factory=node_factory,
+                                msg_handler=self.msg_handler,
                             )
 
-                            # Begin state transitions starting from CommittingState
-                            state = CommittingState()
-                            while True:
-                                next_state = await state.handle(context)
-                                if next_state is None:
-                                    break
-                                state = next_state
-                            session.commit()
+                            # Set the leader receipt in the context
+                            context.consensus_data.leader_receipt = (
+                                transaction.consensus_data.leader_receipt
+                            )
+                            try:
+                                # Attempt to get extra validators for the appeal process
+                                context.remaining_validators = (
+                                    ConsensusAlgorithm.get_extra_validators(
+                                        chain_snapshot,
+                                        transaction.consensus_data,
+                                        transaction.appeal_failed,
+                                    )
+                                )
+                            except ValueError as e:
+                                # When no validators are found, then the appeal failed
+                                print(e, transaction)
+                                context.transactions_processor.set_transaction_appeal(
+                                    context.transaction.hash, False
+                                )
+                                context.transaction.appeal = False
+                                session.commit()
+                            else:
+                                # Set up the context for the committing state
+                                context.num_validators = len(
+                                    context.remaining_validators
+                                )
+                                context.votes = {}
+                                context.contract_snapshot = (
+                                    context.contract_snapshot_factory(
+                                        transaction.to_address
+                                    )
+                                )
+
+                                # Begin state transitions starting from CommittingState
+                                state = CommittingState()
+                                while True:
+                                    next_state = await state.handle(context)
+                                    if next_state is None:
+                                        break
+                                    state = next_state
+                                session.commit()
 
             # Sleep for a short duration before the next iteration
             await asyncio.sleep(1)
@@ -693,6 +722,15 @@ class PendingState(TransactionState):
                 context.transaction.hash, False
             )
             context.transaction.appeal = False
+        elif context.transaction.appeal_undetermined:
+            # Add n+2 validators, remove the old leader
+            current_validators = ConsensusAlgorithm.get_validators_from_consensus_data(
+                all_validators, context.transaction.consensus_data
+            )
+            extra_validators = ConsensusAlgorithm.get_extra_validators(
+                context.snapshot, context.transaction.consensus_data, 0
+            )
+            involved_validators = current_validators + extra_validators
         else:
             # If not appealed, get the default number of validators for the transaction
             involved_validators = get_validators_for_transaction(
@@ -892,6 +930,7 @@ class RevealingState(TransactionState):
             len([vote for vote in context.votes.values() if vote == Vote.AGREE.value])
             > context.num_validators // 2
         )
+        majority_agrees = False
 
         if context.transaction.appeal:
             # Update the consensus results with all new votes and validators
@@ -1057,7 +1096,7 @@ class UndeterminedState(TransactionState):
             context.transaction.hash
         )
 
-        # Update the transaction status to UNDETERMINED
+        # Update the transaction status to undetermined
         ConsensusAlgorithm.dispatch_transaction_status_update(
             context.transactions_processor,
             context.transaction.hash,

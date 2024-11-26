@@ -54,7 +54,7 @@ const handleSetTransactionAppeal = () => {
 watch(
   () => props.transaction.status,
   (newStatus) => {
-    if (newStatus !== 'ACCEPTED') {
+    if (newStatus !== 'ACCEPTED' && newStatus !== 'UNDETERMINED') {
       isAppealed.value = false;
     }
   },
@@ -104,7 +104,10 @@ watch(
         as="button"
         @click.stop="handleSetTransactionAppeal"
         :class="{ '!bg-green-500': isAppealed }"
-        v-if="transaction.status == 'ACCEPTED'"
+        v-if="
+          transaction.status == 'ACCEPTED' ||
+          transaction.status == 'UNDETERMINED'
+        "
         v-tooltip="'Appeal transaction'"
       >
         <div class="flex items-center gap-1">
@@ -156,6 +159,21 @@ watch(
             <Loader :size="15" v-if="transaction.status !== 'FINALIZED'" />
             <TransactionStatusBadge>
               {{ transaction.status }}
+            </TransactionStatusBadge>
+            <TransactionStatusBadge
+              as="button"
+              @click.stop="handleSetTransactionAppeal"
+              :class="{ '!bg-green-500': isAppealed }"
+              v-if="
+                transaction.status == 'ACCEPTED' ||
+                transaction.status == 'UNDETERMINED'
+              "
+              v-tooltip="'Appeal transaction'"
+            >
+              <div class="flex items-center gap-1">
+                APPEAL
+                <GavelIcon class="h-3 w-3" />
+              </div>
             </TransactionStatusBadge>
           </p>
         </div>
