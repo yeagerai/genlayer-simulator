@@ -105,8 +105,9 @@ watch(
         @click.stop="handleSetTransactionAppeal"
         :class="{ '!bg-green-500': isAppealed }"
         v-if="
-          transaction.status == 'ACCEPTED' ||
-          transaction.status == 'UNDETERMINED'
+          transaction.data.leader_only == false &&
+          (transaction.status == 'ACCEPTED' ||
+            transaction.status == 'UNDETERMINED')
         "
         v-tooltip="'Appeal transaction'"
       >

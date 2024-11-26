@@ -930,7 +930,7 @@ class RevealingState(TransactionState):
             len([vote for vote in context.votes.values() if vote == Vote.AGREE.value])
             > context.num_validators // 2
         )
-        majority_agrees = False
+        # majority_agrees = False
 
         if context.transaction.appeal:
             # Update the consensus results with all new votes and validators
@@ -1024,9 +1024,15 @@ class AcceptedState(TransactionState):
         """
         if not context.transaction.appeal:
             # When appeal fails, the appeal window is not reset
-            context.transactions_processor.set_transaction_timestamp_awaiting_finalization(
-                context.transaction.hash
-            )
+            if context.transaction.leader_only:
+                # No appeal window for leader-only transactions
+                context.transactions_processor.set_transaction_timestamp_awaiting_finalization(
+                    context.transaction.hash, int(time.time()) - DEFAULT_FINALITY_WINDOW
+                )
+            else:
+                context.transactions_processor.set_transaction_timestamp_awaiting_finalization(
+                    context.transaction.hash
+                )
 
         # Set the transaction appeal status to False
         context.transactions_processor.set_transaction_appeal(
@@ -1092,9 +1098,15 @@ class UndeterminedState(TransactionState):
         )
 
         # Set the start of the appeal window
-        context.transactions_processor.set_transaction_timestamp_awaiting_finalization(
-            context.transaction.hash
-        )
+        if context.transaction.leader_only:
+            # No appeal window for leader-only transactions
+            context.transactions_processor.set_transaction_timestamp_awaiting_finalization(
+                context.transaction.hash, int(time.time()) - DEFAULT_FINALITY_WINDOW
+            )
+        else:
+            context.transactions_processor.set_transaction_timestamp_awaiting_finalization(
+                context.transaction.hash
+            )
 
         # Update the transaction status to undetermined
         ConsensusAlgorithm.dispatch_transaction_status_update(
