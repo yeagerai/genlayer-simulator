@@ -91,7 +91,8 @@ const handleRemoveFile = (id: string) => {
 
 const handleDownloadFile = (e: Event) => {
   e.preventDefault();
-  const blob = new Blob([props.contract?.content], { type: 'text/plain' });
+  if (!props.contract?.content) return;
+  const blob = new Blob([props.contract.content], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
