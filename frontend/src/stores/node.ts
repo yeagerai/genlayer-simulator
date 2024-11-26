@@ -178,10 +178,6 @@ export const useNodeStore = defineStore('nodeStore', () => {
     getProvidersData();
   }
 
-  const contractsToDelete = computed(() =>
-    contractsStore.contracts.filter((c) => c.example),
-  );
-
   const validatorsOrderedById = computed(() =>
     validators.value.slice().sort((a, b) => a.id - b.id),
   );
@@ -218,7 +214,6 @@ export const useNodeStore = defineStore('nodeStore', () => {
     logs,
     validators,
     nodeProviders,
-    contractsToDelete,
     isLoadingValidatorData,
     isLoadingProviders,
     searchFilter,
