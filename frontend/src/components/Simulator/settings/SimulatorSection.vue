@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { notify } from '@kyvg/vue3-notification';
-import { useNodeStore, useContractsStore } from '@/stores';
+import { useTransactionsStore, useContractsStore } from '@/stores';
 import { ref } from 'vue';
 import PageSection from '@/components/Simulator/PageSection.vue';
 import { ArchiveXIcon, XIcon } from 'lucide-vue-next';
+import { useSetupStores } from '@/hooks';
 
 const contractsStore = useContractsStore();
-const nodeStore = useNodeStore();
+const transactionsStore = useTransactionsStore();
+const { setupStores } = useSetupStores();
+
 const isResetStorageModalOpen = ref(false);
 const isResetting = ref(false);
 
@@ -14,6 +17,8 @@ const handleResetStorage = async () => {
   isResetting.value = true;
   try {
     await contractsStore.resetStorage();
+    await transactionsStore.resetStorage();
+    await setupStores();
 
     notify({
       title: 'Storage reset successfully',
