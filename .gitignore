@@ -132,6 +132,9 @@ dmypy.json
 receipt.json
 .DS_Store
 
+# Docker Volume
+data/
+
 # LLM models
 .ollama
 
