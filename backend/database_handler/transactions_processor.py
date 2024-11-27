@@ -289,4 +289,4 @@ class TransactionsProcessor:
         transaction = (
             self.session.query(Transactions).filter_by(hash=transaction_hash).one()
         )
-        transaction.appeal = appeal_undetermined
+        transaction.appeal_undetermined = appeal_undetermined

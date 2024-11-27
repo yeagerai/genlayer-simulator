@@ -675,12 +675,14 @@ class PendingState(TransactionState):
         Returns:
             TransactionState | None: The ProposingState or None if the transaction is already in process, when it is a transaction or when there are no validators.
         """
-        if (
+        # Transactions that are put back to pending are processed again, so we need to get the latest data of the transaction
+        context.transaction = Transaction.from_dict(
             context.transactions_processor.get_transaction_by_hash(
                 context.transaction.hash
-            )["status"]
-            != TransactionStatus.PENDING.value
-        ):
+            )
+        )
+
+        if context.transaction.status != TransactionStatus.PENDING:
             # This is a patch for a TOCTOU problem we have https://github.com/yeagerai/genlayer-simulator/issues/387
             # Problem: Pending transactions are checked by `_crawl_snapshot`, which appends them to queues. These queues are consumed by `_run_consensus`, which processes the transactions. This means that a transaction can be processed multiple times, since `_crawl_snapshot` can append the same transaction to the queue multiple times.
             # Partial solution: This patch checks if the transaction is still pending before processing it. This is not the best solution, but we'll probably refactor the whole consensus algorithm in the short term.
@@ -717,11 +719,13 @@ class PendingState(TransactionState):
             involved_validators = ConsensusAlgorithm.get_validators_from_consensus_data(
                 all_validators, context.transaction.consensus_data
             )
+
             # Reset the transaction appeal status
             context.transactions_processor.set_transaction_appeal(
                 context.transaction.hash, False
             )
             context.transaction.appeal = False
+
         elif context.transaction.appeal_undetermined:
             # Add n+2 validators, remove the old leader
             current_validators = ConsensusAlgorithm.get_validators_from_consensus_data(
@@ -731,6 +735,13 @@ class PendingState(TransactionState):
                 context.snapshot, context.transaction.consensus_data, 0
             )
             involved_validators = current_validators + extra_validators
+
+            # Reset the transaction appeal status
+            context.transactions_processor.set_transaction_appeal_undetermined(
+                context.transaction.hash, False
+            )
+            context.transaction.appeal_undetermined = False
+
         else:
             # If not appealed, get the default number of validators for the transaction
             involved_validators = get_validators_for_transaction(
@@ -930,7 +941,6 @@ class RevealingState(TransactionState):
             len([vote for vote in context.votes.values() if vote == Vote.AGREE.value])
             > context.num_validators // 2
         )
-        # majority_agrees = False
 
         if context.transaction.appeal:
             # Update the consensus results with all new votes and validators
@@ -1040,6 +1050,11 @@ class AcceptedState(TransactionState):
         )
         context.transaction.appeal = False
 
+        # Set the transaction result and create a rollup transaction
+        context.transactions_processor.set_transaction_result(
+            context.transaction.hash, context.consensus_data.to_dict()
+        )
+
         # Update the transaction status to ACCEPTED
         ConsensusAlgorithm.dispatch_transaction_status_update(
             context.transactions_processor,
@@ -1048,10 +1063,7 @@ class AcceptedState(TransactionState):
             context.msg_handler,
         )
 
-        # Set the transaction result and create a rollup transaction
-        context.transactions_processor.set_transaction_result(
-            context.transaction.hash, context.consensus_data.to_dict()
-        )
+        # Create a rollup transaction
         context.transactions_processor.create_rollup_transaction(
             context.transaction.hash
         )
@@ -1108,6 +1120,12 @@ class UndeterminedState(TransactionState):
                 context.transaction.hash
             )
 
+        # Set the transaction result with the current consensus data
+        context.transactions_processor.set_transaction_result(
+            context.transaction.hash,
+            context.consensus_data.to_dict(),
+        )
+
         # Update the transaction status to undetermined
         ConsensusAlgorithm.dispatch_transaction_status_update(
             context.transactions_processor,
@@ -1116,11 +1134,7 @@ class UndeterminedState(TransactionState):
             context.msg_handler,
         )
 
-        # Set the transaction result with the current consensus data and create a rollup transaction
-        context.transactions_processor.set_transaction_result(
-            context.transaction.hash,
-            context.consensus_data.to_dict(),
-        )
+        # Create a rollup transaction
         context.transactions_processor.create_rollup_transaction(
             context.transaction.hash
         )
@@ -1145,35 +1159,37 @@ class FinalizingState(TransactionState):
         # Retrieve the leader's receipt from the consensus data
         leader_receipt = context.transaction.consensus_data.leader_receipt
 
-        # Create a contract snapshot for the transaction's target address
-        contract_snapshot = context.contract_snapshot_factory(
-            context.transaction.to_address
-        )
-
-        # Register contract if it is a new contract
-        if context.transaction.type == TransactionType.DEPLOY_CONTRACT:
-            new_contract = {
-                "id": context.transaction.data["contract_address"],
-                "data": {
-                    "state": leader_receipt.contract_state,
-                    "code": context.transaction.data["contract_code"],
-                },
-            }
-            contract_snapshot.register_contract(new_contract)
-
-            # Send a message indicating successful contract deployment
-            context.msg_handler.send_message(
-                LogEvent(
-                    "deployed_contract",
-                    EventType.SUCCESS,
-                    EventScope.GENVM,
-                    "Contract deployed",
-                    new_contract,
-                )
+        # Do not deploy the contract if the transaction was undetermined
+        if context.transaction.status != TransactionStatus.UNDETERMINED:
+            # Create a contract snapshot for the transaction's target address
+            contract_snapshot = context.contract_snapshot_factory(
+                context.transaction.to_address
             )
-        # Update contract state if it is an existing contract
-        else:
-            contract_snapshot.update_contract_state(leader_receipt.contract_state)
+
+            # Register contract if it is a new contract
+            if context.transaction.type == TransactionType.DEPLOY_CONTRACT:
+                new_contract = {
+                    "id": context.transaction.data["contract_address"],
+                    "data": {
+                        "state": leader_receipt.contract_state,
+                        "code": context.transaction.data["contract_code"],
+                    },
+                }
+                contract_snapshot.register_contract(new_contract)
+
+                # Send a message indicating successful contract deployment
+                context.msg_handler.send_message(
+                    LogEvent(
+                        "deployed_contract",
+                        EventType.SUCCESS,
+                        EventScope.GENVM,
+                        "Contract deployed",
+                        new_contract,
+                    )
+                )
+            # Update contract state if it is an existing contract
+            else:
+                contract_snapshot.update_contract_state(leader_receipt.contract_state)
 
         # Finalize transaction by marking it as final
         context.transaction.consensus_data.final = True
@@ -1197,24 +1213,25 @@ class FinalizingState(TransactionState):
             context.transaction.hash
         )
 
-        # Insert pending transactions generated by contract-to-contract calls
-        pending_transactions = leader_receipt.pending_transactions
-        for pending_transaction in pending_transactions:
-            nonce = context.transactions_processor.get_transaction_count(
-                context.transaction.to_address
-            )
-            context.transactions_processor.insert_transaction(
-                context.transaction.to_address,  # new calls are done by the contract
-                pending_transaction.address,
-                {
-                    "calldata": pending_transaction.calldata,
-                },
-                value=0,  # we only handle EOA transfers at the moment, so no value gets transferred
-                type=TransactionType.RUN_CONTRACT.value,
-                nonce=nonce,
-                leader_only=context.transaction.leader_only,  # Cascade
-                triggered_by_hash=context.transaction.hash,
-            )
+        # Insert pending transactions generated by contract-to-contract calls when transaction is not undetermined
+        if context.transaction.status != TransactionStatus.UNDETERMINED:
+            pending_transactions = leader_receipt.pending_transactions
+            for pending_transaction in pending_transactions:
+                nonce = context.transactions_processor.get_transaction_count(
+                    context.transaction.to_address
+                )
+                context.transactions_processor.insert_transaction(
+                    context.transaction.to_address,  # new calls are done by the contract
+                    pending_transaction.address,
+                    {
+                        "calldata": pending_transaction.calldata,
+                    },
+                    value=0,  # we only handle EOA transfers at the moment, so no value gets transferred
+                    type=TransactionType.RUN_CONTRACT.value,
+                    nonce=nonce,
+                    leader_only=context.transaction.leader_only,  # Cascade
+                    triggered_by_hash=context.transaction.hash,
+                )
 
 
 def rotate(nodes: list) -> Iterator[list]:
