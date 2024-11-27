@@ -1,5 +1,6 @@
 import json
 import os
+from backend.node.types import Address
 
 from tests.common.accounts import create_new_account
 from tests.common.request import (
@@ -78,7 +79,7 @@ def test_multi_read_erc20(setup_validators):
         [],
     )
 
-    assert call_method_response_get_balances == {
+    assert json.loads(call_method_response_get_balances) == {
         from_account_doge.address: {
             doge_contract_address: TOKEN_TOTAL_SUPPLY,
             shiba_contract_address: 0,
@@ -103,7 +104,7 @@ def test_multi_read_erc20(setup_validators):
         [],
     )
 
-    assert call_method_response_get_balances == {
+    assert json.loads(call_method_response_get_balances) == {
         from_account_doge.address: {
             doge_contract_address: TOKEN_TOTAL_SUPPLY,
             shiba_contract_address: 0,

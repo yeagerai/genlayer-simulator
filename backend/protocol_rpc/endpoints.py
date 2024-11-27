@@ -7,16 +7,17 @@ from flask_jsonrpc import JSONRPC
 from sqlalchemy import Table
 from sqlalchemy.orm import Session
 
+import backend.node.genvm.origin.calldata as genvm_calldata
 
 from backend.database_handler.contract_snapshot import ContractSnapshot
 from backend.database_handler.llm_providers import LLMProviderRegistry
 from backend.database_handler.models import Base
-from backend.domain.types import LLMProvider, Validator
+from backend.domain.types import LLMProvider, Validator, TransactionType
 from backend.node.create_nodes.providers import (
     get_default_provider_for,
     validate_provider,
 )
-from backend.node.genvm.llms import get_llm_plugin
+from backend.llms import get_llm_plugin
 from backend.protocol_rpc.message_handler.base import (
     MessageHandler,
     get_client_session_id,
@@ -42,7 +43,7 @@ from backend.database_handler.transactions_processor import (
     TransactionsProcessor,
 )
 from backend.node.base import Node
-from backend.node.genvm.types import ExecutionMode
+from backend.node.types import ExecutionMode, ExecutionResultStatus
 
 from flask import request
 
@@ -81,8 +82,10 @@ def reset_defaults_llm_providers(llm_provider_registry: LLMProviderRegistry) -> 
     llm_provider_registry.reset_defaults()
 
 
-def get_providers_and_models(llm_provider_registry: LLMProviderRegistry) -> list[dict]:
-    return llm_provider_registry.get_all_dict()
+async def get_providers_and_models(
+    llm_provider_registry: LLMProviderRegistry,
+) -> list[dict]:
+    return await llm_provider_registry.get_all_dict()
 
 
 def add_provider(llm_provider_registry: LLMProviderRegistry, params: dict) -> int:
@@ -153,23 +156,25 @@ def create_validator(
     )
 
 
-def create_random_validator(
+async def create_random_validator(
     validators_registry: ValidatorsRegistry,
     accounts_manager: AccountsManager,
     llm_provider_registry: LLMProviderRegistry,
     stake: int,
 ) -> dict:
-    return create_random_validators(
-        validators_registry,
-        accounts_manager,
-        llm_provider_registry,
-        1,
-        stake,
-        stake,
+    return (
+        await create_random_validators(
+            validators_registry,
+            accounts_manager,
+            llm_provider_registry,
+            1,
+            stake,
+            stake,
+        )
     )[0]
 
 
-def create_random_validators(
+async def create_random_validators(
     validators_registry: ValidatorsRegistry,
     accounts_manager: AccountsManager,
     llm_provider_registry: LLMProviderRegistry,
@@ -182,7 +187,7 @@ def create_random_validators(
     limit_providers = limit_providers or []
     limit_models = limit_models or []
 
-    details = random_validator_config(
+    details = await random_validator_config(
         llm_provider_registry.get_all,
         get_llm_plugin,
         limit_providers=set(limit_providers),
@@ -278,7 +283,7 @@ def count_validators(validators_registry: ValidatorsRegistry) -> int:
 
 
 ####### GEN ENDPOINTS #######
-def get_contract_schema(
+async def get_contract_schema(
     accounts_manager: AccountsManager,
     msg_handler: MessageHandler,
     contract_address: str,
@@ -314,10 +319,11 @@ def get_contract_schema(
         msg_handler=msg_handler.with_client_session(get_client_session_id()),
         contract_snapshot_factory=None,
     )
-    return node.get_contract_schema(contract_account["data"]["code"])
+    schema = await node.get_contract_schema(contract_account["data"]["code"])
+    return json.loads(schema)
 
 
-def get_contract_schema_for_code(
+async def get_contract_schema_for_code(
     msg_handler: MessageHandler, contract_code: str
 ) -> dict:
     node = Node(  # Mock node just to get the data from the GenVM
@@ -338,7 +344,7 @@ def get_contract_schema_for_code(
         msg_handler=msg_handler.with_client_session(get_client_session_id()),
         contract_snapshot_factory=None,
     )
-    return node.get_contract_schema(contract_code)
+    return json.loads(await node.get_contract_schema(contract_code))
 
 
 ####### ETH ENDPOINTS #######
@@ -361,11 +367,11 @@ def get_transaction_count(
 
 def get_transaction_by_hash(
     transactions_processor: TransactionsProcessor, transaction_hash: str
-) -> dict:
+) -> dict | None:
     return transactions_processor.get_transaction_by_hash(transaction_hash)
 
 
-def call(
+async def call(
     session: Session,
     accounts_manager: AccountsManager,
     msg_handler: MessageHandler,
@@ -384,9 +390,9 @@ def call(
 
     decoded_data = decode_method_call_data(data)
 
-    contract_account = accounts_manager.get_account_or_fail(to_address)
     node = Node(  # Mock node just to get the data from the GenVM
-        contract_snapshot=None,
+        contract_snapshot=ContractSnapshot(to_address, session),
+        contract_snapshot_factory=partial(ContractSnapshot, session=session),
         validator_mode=ExecutionMode.LEADER,
         validator=Validator(
             address="",
@@ -401,14 +407,23 @@ def call(
         ),
         leader_receipt=None,
         msg_handler=msg_handler.with_client_session(get_client_session_id()),
-        contract_snapshot_factory=partial(ContractSnapshot, session=session),
     )
 
-    return node.get_contract_data(
-        code=contract_account["data"]["code"],
-        state=contract_account["data"]["state"],
+    receipt = await node.get_contract_data(
+        from_address="0x" + "00" * 20,
         calldata=decoded_data.calldata,
     )
+    # FIXME #621
+    # this place is defective because
+    # - write methods can return as well and it is not supported at all in the UI
+    # - no calldata decoding should happen here, the frontend (caller) should be responsible for that
+    if receipt.execution_result != ExecutionResultStatus.SUCCESS:
+        return receipt.to_dict()
+    try:
+        return genvm_calldata.to_str(genvm_calldata.decode(receipt.returned))
+    except:
+        pass
+    return receipt.to_dict()
 
 
 def send_raw_transaction(
@@ -443,11 +458,11 @@ def send_raw_transaction(
 
     transaction_data = {}
     result = {}
-    transaction_type = None
+    transaction_type: TransactionType
     leader_only = False
     if not decoded_transaction.data:
         # Sending value transaction
-        transaction_type = 0
+        transaction_type = TransactionType.SEND
     elif not to_address or to_address == "0x":
         # Contract deployment
         if value > 0:
@@ -462,8 +477,8 @@ def send_raw_transaction(
             "calldata": decoded_data.calldata,
         }
         result["contract_address"] = new_contract_address
-        to_address = None
-        transaction_type = 1
+        to_address = new_contract_address
+        transaction_type = TransactionType.DEPLOY_CONTRACT
         leader_only = decoded_data.leader_only
     else:
         # Contract Call
@@ -473,7 +488,7 @@ def send_raw_transaction(
             )
         decoded_data = decode_method_call_data(decoded_transaction.data)
         transaction_data = {"calldata": decoded_data.calldata}
-        transaction_type = 2
+        transaction_type = TransactionType.RUN_CONTRACT
         leader_only = decoded_data.leader_only
 
     # Insert transaction into the database
@@ -482,7 +497,7 @@ def send_raw_transaction(
         to_address,
         transaction_data,
         value,
-        transaction_type,
+        transaction_type.value,
         nonce,
         leader_only,
     )
