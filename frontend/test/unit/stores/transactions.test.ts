@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useTransactionsStore } from '@/stores';
-import { useGenlayer } from '@/hooks';
+import { useDb, useRpcClient, useGenlayer } from '@/hooks';
 import { type TransactionItem } from '@/types';
 import type { TransactionHash } from 'genlayer-js/types';
 
@@ -46,10 +46,20 @@ describe('useTransactionsStore', () => {
   const mockGenlayerClient = {
     getTransaction: vi.fn(),
   };
+  const mockDb = {
+    transactions: {
+      where: vi.fn().mockReturnThis(),
+      anyOf: vi.fn().mockReturnThis(),
+      equals: vi.fn().mockReturnThis(),
+      modify: vi.fn().mockResolvedValue(undefined),
+      delete: vi.fn(),
+    },
+  };
 
   beforeEach(() => {
     setActivePinia(createPinia());
     (useGenlayer as Mock).mockReturnValue({ client: mockGenlayerClient });
+    (useDb as Mock).mockReturnValue(mockDb);
     transactionsStore = useTransactionsStore();
     transactionsStore.transactions = [];
     mockGenlayerClient.getTransaction.mockClear();
@@ -104,6 +114,10 @@ describe('useTransactionsStore', () => {
 
     transactionsStore.clearTransactionsForContract('contract-1');
 
+    expect(mockDb.transactions.where).toHaveBeenCalledWith('localContractId');
+    expect(mockDb.transactions.equals).toHaveBeenCalledWith('contract-1');
+    expect(mockDb.transactions.delete).toHaveBeenCalled();
+
     expect(transactionsStore.transactions).toEqual([tx2]);
   });
 
@@ -124,6 +138,14 @@ describe('useTransactionsStore', () => {
 
     expect(mockGenlayerClient.getTransaction).toHaveBeenCalledWith({
       hash: pendingTransaction.hash,
+    });
+    expect(mockDb.transactions.where).toHaveBeenCalledWith('hash');
+    expect(mockDb.transactions.equals).toHaveBeenCalledWith(
+      pendingTransaction.hash,
+    );
+    expect(mockDb.transactions.modify).toHaveBeenCalledWith({
+      status: 'FINALIZED',
+      data: updatedTransaction,
     });
     expect(transactionsStore.transactions[0].status).toBe('FINALIZED');
   });
