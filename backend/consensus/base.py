@@ -1012,7 +1012,9 @@ class RevealingState(TransactionState):
                 # Log the failure to reach consensus and transition to ProposingState
                 print(
                     "Consensus not reached for transaction, rotating leader: ",
-                    context.transaction,
+                    context.transactions_processor.get_transaction_by_hash(
+                        context.transaction.hash
+                    ),
                 )
                 return ProposingState()
 
@@ -1096,9 +1098,6 @@ class UndeterminedState(TransactionState):
         Returns:
             None: The transaction remains in an undetermined state.
         """
-        # Log the failure to reach consensus for the transaction
-        print("Consensus not reached for transaction: ", context.transaction)
-
         # Send a message indicating consensus failure
         context.msg_handler.send_message(
             LogEvent(
@@ -1137,6 +1136,14 @@ class UndeterminedState(TransactionState):
         # Create a rollup transaction
         context.transactions_processor.create_rollup_transaction(
             context.transaction.hash
+        )
+
+        # Log the failure to reach consensus for the transaction
+        print(
+            "Consensus not reached for transaction: ",
+            context.transactions_processor.get_transaction_by_hash(
+                context.transaction.hash
+            ),
         )
         return None
 
