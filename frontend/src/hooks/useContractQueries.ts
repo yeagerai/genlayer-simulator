@@ -11,7 +11,11 @@ import { notify } from '@kyvg/vue3-notification';
 import { useMockContractData } from './useMockContractData';
 import { useEventTracking, useGenlayer } from '@/hooks';
 import * as calldata from '@/calldata';
-import type { Address } from 'genlayer-js/types';
+import type {
+  Address,
+  TransactionHash,
+  ContractSchema,
+} from 'genlayer-js/types';
 
 const schema = ref<any>();
 
@@ -97,7 +101,7 @@ export function useContractQueries() {
       const tx: TransactionItem = {
         contractAddress: '',
         localContractId: contract.value?.id ?? '',
-        hash: result,
+        hash: result as TransactionHash,
         type: 'deploy',
         status: 'PENDING',
         data: {},
