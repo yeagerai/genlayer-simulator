@@ -1,21 +1,26 @@
+# { "Depends": "py-genlayer:test" }
+
 import json
-from backend.node.genvm.icontract import IContract
-from backend.node.genvm.equivalence_principle import EquivalencePrinciple
+
+from genlayer import *
 
 
-class LlmErc20(IContract):
+@gl.contract
+class LlmErc20:
+    balances: TreeMap[Address, u256]
+
     def __init__(self, total_supply: int) -> None:
-        self.balances = {}
-        self.balances[contract_runner.from_address] = total_supply
+        self.balances[gl.message.sender_account] = u256(total_supply)
 
-    async def transfer(self, amount: int, to_address: str) -> None:
+    @gl.public.write
+    def transfer(self, amount: int, to_address: str) -> None:
         prompt = f"""
 You keep track of transactions between users and their balance in coins.
 The current balance for all users in JSON format is:
-{json.dumps(self.balances)}
+{json.dumps(self.get_balances())}
 The transaction to compute is: {{
-sender: "{contract_runner.from_address}",
-recipient: "{to_address}",
+sender: "{gl.message.sender_account.as_hex}",
+recipient: "{Address(to_address).as_hex}",
 amount: {amount},
 }}
 
@@ -32,28 +37,31 @@ please provide the result of your calculation with the following format:
 It is mandatory that you respond only using the JSON format above,
 nothing else. Don't include any other words or characters,
 your output must be only JSON without any formatting prefix or suffix.
-This result should be perfectly parseable by a JSON parser without errors."""
+This result should be perfectly parsable by a JSON parser without errors."""
         print(prompt)
-        final_result = {}
-        async with EquivalencePrinciple(
-            result=final_result,
-            principle="""The new_balance of the sender should have decreased
-            in the amount sent and the new_balance of the receiver should have
-            increased by the amount sent. Also, the total sum of all balances
-            should have remain the same before and after the transaction""",
-            comparative=True,
-        ) as eq:
-            result = await eq.call_llm(prompt)
-            result_clean = result.replace("True", "true").replace("False", "false")
-            eq.set(result_clean)
 
+        def compute_updated_balances():
+            result = gl.exec_prompt(prompt)
+            result = result.replace("```json", "").replace("```", "")
+            return result
+
+        final_result = gl.eq_principle_prompt_noncomparative(
+            compute_updated_balances,
+            """
+The new_balance of the sender should have decreased
+in the amount sent and the new_balance of the receiver should have
+increased by the amount sent. Also, the total sum of all balances
+should remain the same before and after the transaction""",
+        )
         print("final_result: ", final_result)
-        print("final_result[output]: ", final_result["output"])
-        result_json = json.loads(final_result["output"])
-        self.balances = result_json["updated_balances"]
+        result_json = json.loads(final_result)
+        for k, v in result_json["updated_balances"].items():
+            self.balances[Address(k)] = v
 
+    @gl.public.view
     def get_balances(self) -> dict[str, int]:
-        return self.balances
+        return {k.as_hex: v for k, v in self.balances.items()}
 
+    @gl.public.view
     def get_balance_of(self, address: str) -> int:
-        return self.balances.get(address, 0)
+        return self.balances.get(Address(address), 0)

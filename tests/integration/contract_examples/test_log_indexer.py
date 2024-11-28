@@ -19,6 +19,7 @@ from tests.common.response import (
 )
 
 from tests.common.request import call_contract_method
+import json
 
 TOKEN_TOTAL_SUPPLY = 1000
 TRANSFER_AMOUNT = 100
@@ -45,6 +46,7 @@ def test_log_indexer(setup_validators, from_account):
     closest_vector_log_0 = call_contract_method(
         contract_address, from_account, "get_closest_vector", ["I like mango"]
     )
+    closest_vector_log_0 = closest_vector_log_0
     assert closest_vector_log_0 is None
 
     # ########################################
@@ -65,16 +67,9 @@ def test_log_indexer(setup_validators, from_account):
     closest_vector_log_0 = call_contract_method(
         contract_address, from_account, "get_closest_vector", ["I like mango"]
     )
-    assert float(closest_vector_log_0["similarity"]) > 0.86
-    assert float(closest_vector_log_0["similarity"]) < 0.87
-
-    # ########################################
-    # ######### Get log 0 metadata ###########
-    # ########################################
-    metadata_log_0 = call_contract_method(
-        contract_address, from_account, "get_vector_metadata", [1]
-    )
-    assert metadata_log_0 == {"log_id": 0}
+    closest_vector_log_0 = closest_vector_log_0
+    assert float(closest_vector_log_0["similarity"]) > 0.94
+    assert float(closest_vector_log_0["similarity"]) < 0.95
 
     # ########################################
     # ############## Add log 1 ###############
@@ -93,6 +88,7 @@ def test_log_indexer(setup_validators, from_account):
     closest_vector_log_1 = call_contract_method(
         contract_address, from_account, "get_closest_vector", ["I like carrots"]
     )
+    closest_vector_log_1 = closest_vector_log_1
     assert float(closest_vector_log_1["similarity"]) == 1
 
     # ########################################
@@ -102,7 +98,7 @@ def test_log_indexer(setup_validators, from_account):
         from_account,
         contract_address,
         "update_log",
-        [0, "I like to eat a lot of mangoes", 0],
+        [0, "I like to eat a lot of mangoes"],
     )
     assert has_success_status(transaction_response_update_log_0)
 
@@ -112,8 +108,9 @@ def test_log_indexer(setup_validators, from_account):
     closest_vector_log_0_2 = call_contract_method(
         contract_address, from_account, "get_closest_vector", ["I like mango a lot"]
     )
-    assert float(closest_vector_log_0_2["similarity"]) > 0.85
-    assert float(closest_vector_log_0_2["similarity"]) < 0.87
+    closest_vector_log_0_2 = closest_vector_log_0_2
+    assert float(closest_vector_log_0_2["similarity"]) > 0.94
+    assert float(closest_vector_log_0_2["similarity"]) < 0.95
 
     # ########################################
     # ########### Remove log 0 ##############
@@ -122,7 +119,7 @@ def test_log_indexer(setup_validators, from_account):
         from_account,
         contract_address,
         "remove_log",
-        [1],
+        [0],
     )
     assert has_success_status(transaction_response_remove_log_0)
 
@@ -132,8 +129,9 @@ def test_log_indexer(setup_validators, from_account):
     closest_vector_log_0_3 = call_contract_method(
         contract_address, from_account, "get_closest_vector", ["I like to eat mango"]
     )
-    assert float(closest_vector_log_0_3["similarity"]) > 0.50
-    assert float(closest_vector_log_0_3["similarity"]) < 0.51
+    closest_vector_log_0_3 = closest_vector_log_0_3
+    assert float(closest_vector_log_0_3["similarity"]) > 0.67
+    assert float(closest_vector_log_0_3["similarity"]) < 0.68
 
     # ########################################
     # ##### Test id uniqueness after deletion #

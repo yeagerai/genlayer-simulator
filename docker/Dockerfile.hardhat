@@ -1,13 +1,18 @@
 FROM node:20.11-alpine3.19
 
+# Create non-root user
+RUN addgroup -S hardhat-group && adduser -S hardhat-user -G hardhat-group
 WORKDIR /app
 
-RUN apk add --no-cache python3 make g++ netcat-openbsd
+RUN apk add --no-cache g++ make netcat-openbsd python3
 
 COPY ./hardhat/package*.json ./
-RUN npm install
+RUN npm install --ignore-scripts
 
 COPY ./hardhat .
+
+# Change ownership of the app directory to the non-root user
+RUN chown -R hardhat-user:hardhat-group /app
 
 ENV PATH="/app/node_modules/.bin:${PATH}"
 
@@ -17,4 +22,7 @@ RUN echo -e '#!/bin/sh\necho "Compiling contracts..."\nnpx hardhat compile --for
 
 EXPOSE 8545
 
-CMD ["/app/start.sh"]
+# Switch to non-root user
+USER hardhat-user
+
+CMD ["/app/start.sh"] 

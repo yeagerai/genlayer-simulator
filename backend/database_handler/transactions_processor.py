@@ -31,8 +31,9 @@ class TransactionsProcessor:
         self.session = session
 
         # Connect to Hardhat Network
-        port = os.environ.get("HARDHATPORT")
-        hardhat_url = f"http://hardhat:{port}"
+        port = os.environ.get("HARDHAT_PORT")
+        url = os.environ.get("HARDHAT_URL")
+        hardhat_url = f"{url}:{port}"
         self.web3 = Web3(Web3.HTTPProvider(hardhat_url))
 
     @staticmethod
@@ -156,11 +157,11 @@ class TransactionsProcessor:
                 bytecode = contract_json["bytecode"]
 
             # Create the contract instance
-            contact = self.web3.eth.contract(abi=abi, bytecode=bytecode)
+            contract = self.web3.eth.contract(abi=abi, bytecode=bytecode)
 
             # Build the transaction
             gas_estimate = self.web3.eth.estimate_gas(
-                contact.constructor().build_transaction(
+                contract.constructor().build_transaction(
                     {
                         "from": account,
                         "nonce": self.web3.eth.get_transaction_count(account),
@@ -168,7 +169,7 @@ class TransactionsProcessor:
                     }
                 )
             )
-            transaction = contact.constructor().build_transaction(
+            transaction = contract.constructor().build_transaction(
                 {
                     "from": account,
                     "nonce": self.web3.eth.get_transaction_count(account),

@@ -9,10 +9,14 @@ class ContractSnapshot:
     """
     Warning: if you initialize this class with a contract_address:
     - The contract_address must exist in the database.
-    - `self.contract_data`, `self.contract_code`, `self.encoded_state` and `self.ghost_contract_address` will be loaded from the database **only once** at initialization.
+    - `self.contract_data`, `self.contract_code` and `self.encoded_state` will be loaded from the database **only once** at initialization.
     """
 
-    def __init__(self, contract_address: str, session: Session):
+    contract_address: str
+    contract_code: str
+    encoded_state: dict[str, dict[str, str]]
+
+    def __init__(self, contract_address: str | None, session: Session):
         self.session = session
 
         if contract_address is not None:
@@ -47,9 +51,9 @@ class ContractSnapshot:
         current_contract.data = contract["data"]
         self.session.commit()
 
-    def update_contract_state(self, new_state: str):
+    def update_contract_state(self, new_state: dict[str, str]):
         """Update the state of the contract in the database."""
-        new_contract_nada = {
+        new_contract_data = {
             "code": self.contract_data["code"],
             "state": new_state,
         }
@@ -57,5 +61,5 @@ class ContractSnapshot:
         contract = (
             self.session.query(CurrentState).filter_by(id=self.contract_address).one()
         )
-        contract.data = new_contract_nada
+        contract.data = new_contract_data
         self.session.commit()
