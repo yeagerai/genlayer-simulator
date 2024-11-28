@@ -21,6 +21,7 @@ export function useTransactionListener() {
     );
 
     if (currentTx && !newTx) {
+      console.log('Server tx not found for local tx:', currentTx);
       // We're cleaning up local txs that don't exist on the server anymore
       transactionsStore.removeTransaction(currentTx);
       return;
