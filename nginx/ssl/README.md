@@ -5,14 +5,14 @@ Place your TLS (Transport Layer Security) certificates and private keys for NGIN
 ## Required Files
 Ensure the following files are correctly placed in the specified directory (`/etc/nginx/ssl`):
 
-- **Server certificate**: `genlayer.com.crt`  
-- **Private key**: `genlayer.com.key`  
+- **Server certificate**: `genlayer.com.crt`
+- **Private key**: `genlayer.com.key`
 - **Client certificate**: `cloudflare.crt`
 
 ## File Permissions
 Permissions should follow these guidelines:
 
-- **Certificates** (`.crt` or `.pem`): `chmod 644`  
+- **Certificates** (`.crt` or `.pem`): `chmod 644`
 - **Private keys** (`.key`): `chmod 600`
 
 ## Configuration Alignment
@@ -22,3 +22,4 @@ Verify that the NGINX configuration matches the expected file names and location
 ssl_certificate /etc/nginx/ssl/genlayer.com.crt;
 ssl_certificate_key /etc/nginx/ssl/genlayer.com.key;
 ssl_client_certificate /etc/nginx/ssl/cloudflare.crt;
+```

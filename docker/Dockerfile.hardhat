@@ -25,4 +25,4 @@ EXPOSE 8545
 # Switch to non-root user
 USER hardhat-user
 
-CMD ["/app/start.sh"] 
+CMD ["/app/start.sh"]

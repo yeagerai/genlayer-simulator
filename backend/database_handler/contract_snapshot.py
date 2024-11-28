@@ -32,10 +32,8 @@ class ContractSnapshot:
                 else None
             )
 
-
     def _load_contract_account(self) -> CurrentState:
         """Load and return the current state of the contract from the database."""
-
         result = (
             self.session.query(CurrentState)
             .filter(CurrentState.id == self.contract_address)
