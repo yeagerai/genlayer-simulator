@@ -3,7 +3,7 @@ import time
 import pytest
 from backend.consensus.base import ConsensusAlgorithm, rotate
 from backend.database_handler.models import TransactionStatus
-from backend.node.genvm.types import Vote
+from backend.node.types import Vote
 from backend.protocol_rpc.message_handler.base import MessageHandler
 from tests.unit.consensus.test_helpers import (
     AccountsManagerMock,

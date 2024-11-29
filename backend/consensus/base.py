@@ -67,6 +67,23 @@ def node_factory(
     )
 
 
+def contract_snapshot_factory(
+    contract_address: str,
+    session: Session,
+    transaction: Transaction,
+):
+    if (
+        transaction.type == TransactionType.DEPLOY_CONTRACT
+        and contract_address == transaction.to_address
+    ):
+        ret = ContractSnapshot(None, session)
+        ret.contract_address = transaction.to_address
+        ret.contract_code = transaction.data["contract_code"]
+        ret.encoded_state = {}
+        return ret
+    return ContractSnapshot(contract_address, session)
+
+
 class ConsensusAlgorithm:
     def __init__(
         self,
@@ -116,31 +133,15 @@ class ConsensusAlgorithm:
                         transaction: Transaction = await queue.get()
                         with self.get_session() as session:
 
-                            def contract_snapshot_factory(
-                                contract_address,
-                                session=session,
-                                transaction=transaction,
-                            ):
-                                if (
-                                    transaction.type == TransactionType.DEPLOY_CONTRACT
-                                    and contract_address == transaction.to_address
-                                ):
-                                    ret = ContractSnapshot(None, session)
-                                    ret.contract_address = transaction.to_address
-                                    ret.contract_code = transaction.data[
-                                        "contract_code"
-                                    ]
-                                    ret.encoded_state = {}
-                                    return ret
-                                return ContractSnapshot(contract_address, session)
-
                             async def exec_transaction_with_session_handling():
                                 await self.exec_transaction(
                                     transaction,
                                     TransactionsProcessor(session),
                                     ChainSnapshot(session),
                                     AccountsManager(session),
-                                    contract_snapshot_factory,
+                                    lambda contract_address: contract_snapshot_factory(
+                                        contract_address, session, transaction
+                                    ),
                                 )
                                 session.commit()
 
@@ -404,9 +405,14 @@ class ConsensusAlgorithm:
     ):
         consensus_data = transaction.consensus_data
         leader_receipt = consensus_data["leader_receipt"]
-        contract_snapshot = contract_snapshot_factory(transaction.to_address)
 
-        if leader_receipt.execution_result == ExecutionResultStatus.SUCCESS:
+        contract_snapshot_supplier = lambda: contract_snapshot_factory(
+            transaction.to_address
+        )
+
+        leaders_contract_snapshot = contract_snapshot_supplier()
+
+        if leader_receipt["execution_result"] == ExecutionResultStatus.SUCCESS:
             # Register contract if it is a new contract
             if transaction.type == TransactionType.DEPLOY_CONTRACT:
                 new_contract = {
@@ -417,7 +423,7 @@ class ConsensusAlgorithm:
                     },
                 }
                 leaders_contract_snapshot.register_contract(new_contract)
-                msg_handler.send_message(
+                self.msg_handler.send_message(
                     LogEvent(
                         "deployed_contract",
                         EventType.SUCCESS,
@@ -431,7 +437,7 @@ class ConsensusAlgorithm:
             # Update contract state if it is an existing contract
             else:
                 leaders_contract_snapshot.update_contract_state(
-                    leader_receipt.["contract_state"]
+                    leader_receipt["contract_state"]
                 )
 
         # Finalize transaction
@@ -567,8 +573,8 @@ class ConsensusAlgorithm:
                             self.finalize_transaction(
                                 transaction,
                                 transactions_processor,
-                                lambda contract_address, session=session: ContractSnapshot(
-                                    contract_address, session
+                                lambda contract_address: contract_snapshot_factory(
+                                    contract_address, session, transaction
                                 ),
                             )
                             session.commit()
