@@ -412,13 +412,13 @@ class ConsensusAlgorithm:
 
         leaders_contract_snapshot = contract_snapshot_supplier()
 
-        if leader_receipt["execution_result"] == ExecutionResultStatus.SUCCESS:
+        if leader_receipt["execution_result"] == ExecutionResultStatus.SUCCESS.value:
             # Register contract if it is a new contract
             if transaction.type == TransactionType.DEPLOY_CONTRACT:
                 new_contract = {
                     "id": transaction.data["contract_address"],
                     "data": {
-                        "state": leader_receipt.contract_state,
+                        "state": leader_receipt["contract_state"],
                         "code": transaction.data["contract_code"],
                     },
                 }
