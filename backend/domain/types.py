@@ -4,7 +4,7 @@
 
 from dataclasses import dataclass
 import decimal
-from enum import Enum
+from enum import Enum, IntEnum
 
 from backend.database_handler.models import TransactionStatus
 
@@ -54,7 +54,7 @@ class Validator:
         return result
 
 
-class TransactionType(Enum):
+class TransactionType(IntEnum):
     SEND = 0
     DEPLOY_CONTRACT = 1
     RUN_CONTRACT = 2
@@ -65,8 +65,8 @@ class Transaction:
     hash: str
     status: TransactionStatus
     type: TransactionType
-    from_address: str | None = None
-    to_address: str | None = None
+    from_address: str | None
+    to_address: str | None
     input_data: dict | None = None
     data: dict | None = None
     consensus_data: dict | None = None

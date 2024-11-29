@@ -20,6 +20,8 @@ from tests.common.response import (
 
 from tests.common.request import call_contract_method
 
+import json
+
 INITIAL_STATE = "a"
 UPDATED_STATE = "b"
 

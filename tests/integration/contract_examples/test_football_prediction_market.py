@@ -1,10 +1,13 @@
 # tests/e2e/test_storage.py
 
+import json
+
 from tests.common.request import (
     deploy_intelligent_contract,
     send_transaction,
     payload,
     post_request_localhost,
+    call_contract_method,
 )
 from tests.integration.contract_examples.mocks.football_prediction_market_get_contract_schema_for_code import (
     football_prediction_market_contract_schema,
@@ -50,3 +53,12 @@ def test_football_prediction_market(setup_validators, from_account):
 
     # Assert response format
     assert_dict_struct(transaction_response_call_1, call_contract_function_response)
+
+    # Get Updated State
+    contract_state_2 = call_contract_method(
+        contract_address, from_account, "get_resolution_data", []
+    )
+
+    assert contract_state_2["winner"] == 1
+    assert contract_state_2["score"] == "2:0"
+    assert contract_state_2["has_resolved"] == True

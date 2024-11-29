@@ -1,5 +1,6 @@
 # tests/e2e/test_storage.py
 import json
+from backend.node.types import Address
 from tests.common.request import (
     deploy_intelligent_contract,
     send_transaction,
