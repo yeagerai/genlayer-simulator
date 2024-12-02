@@ -15,9 +15,9 @@ const { contractAbiQuery } = useContractQueries();
 const { data, isPending, isError, error, isRefetching } = contractAbiQuery;
 
 const readMethods = computed(() => {
-  return (data.value.abi as ContractMethod[])
-    .filter((method) => method.type !== 'constructor')
-    .filter((method) => method.name.startsWith('get_'));
+  return Object.entries(
+    data.value.methods as { [key: string]: ContractMethod },
+  ).filter((x) => x[1].readonly);
 });
 </script>
 
@@ -37,8 +37,9 @@ const readMethods = computed(() => {
     <template v-else-if="data">
       <ContractMethodItem
         v-for="method in readMethods"
-        :key="method.name"
-        :method="method"
+        :name="method[0]"
+        :key="method[0]"
+        :method="method[1]"
         methodType="read"
         :leaderOnly="props.leaderOnly"
       />

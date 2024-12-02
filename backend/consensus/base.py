@@ -2,11 +2,10 @@
 
 DEFAULT_VALIDATORS_COUNT = 5
 DEFAULT_CONSENSUS_SLEEP_TIME = 5
-DEFAULT_FINALITY_WINDOW = 30 * 60  # 30 minutes
 
+import os
 import asyncio
 from collections import deque
-import json
 import traceback
 from typing import Callable, Iterator, List
 import time
@@ -30,7 +29,7 @@ from backend.domain.types import (
     Validator,
 )
 from backend.node.base import Node
-from backend.node.genvm.types import ExecutionMode, Receipt, Vote
+from backend.node.types import ExecutionMode, Receipt, Vote, ExecutionResultStatus
 from backend.protocol_rpc.message_handler.base import MessageHandler
 from backend.protocol_rpc.message_handler.types import (
     LogEvent,
@@ -65,6 +64,23 @@ def node_factory(
         ),
         contract_snapshot_factory=contract_snapshot_factory,
     )
+
+
+def contract_snapshot_factory(
+    contract_address: str,
+    session: Session,
+    transaction: Transaction,
+):
+    if (
+        transaction.type == TransactionType.DEPLOY_CONTRACT
+        and contract_address == transaction.to_address
+    ):
+        ret = ContractSnapshot(None, session)
+        ret.contract_address = transaction.to_address
+        ret.contract_code = transaction.data["contract_code"]
+        ret.encoded_state = {}
+        return ret
+    return ContractSnapshot(contract_address, session)
 
 
 class ConsensusAlgorithm:
@@ -113,7 +129,7 @@ class ConsensusAlgorithm:
                     for queue in [q for q in self.queues.values() if not q.empty()]:
                         # sessions cannot be shared between coroutines, we need to create a new session for each coroutine
                         # https://docs.sqlalchemy.org/en/20/orm/session_basics.html#is-the-session-thread-safe-is-asyncsession-safe-to-share-in-concurrent-tasks
-                        transaction = await queue.get()
+                        transaction: Transaction = await queue.get()
                         with self.get_session() as session:
 
                             async def exec_transaction_with_session_handling():
@@ -122,8 +138,8 @@ class ConsensusAlgorithm:
                                     TransactionsProcessor(session),
                                     ChainSnapshot(session),
                                     AccountsManager(session),
-                                    lambda contract_address, session=session: ContractSnapshot(
-                                        contract_address, session
+                                    lambda contract_address: contract_snapshot_factory(
+                                        contract_address, session, transaction
                                     ),
                                 )
                                 session.commit()
@@ -194,6 +210,7 @@ class ConsensusAlgorithm:
                     "hash": str(transaction_hash),
                     "new_status": str(new_status.value),
                 },
+                transaction_hash=transaction_hash,
             )
         )
 
@@ -262,6 +279,7 @@ class ConsensusAlgorithm:
         loop.close()
 
     async def _appeal_window(self):
+        FINALITY_WINDOW = int(os.getenv("FINALITY_WINDOW"))
         while True:
             with self.get_session() as session:
                 chain_snapshot = ChainSnapshot(session)
@@ -270,17 +288,17 @@ class ConsensusAlgorithm:
                 )  # TODO: also get undetermined transactions
                 for transaction in accepted_transactions:
                     transaction = Transaction.from_dict(transaction)
-                    if not transaction.appeal:
+                    if not transaction.appealed:
                         if (
                             int(time.time()) - transaction.timestamp_accepted
-                        ) > DEFAULT_FINALITY_WINDOW:
+                        ) > FINALITY_WINDOW:
                             context = TransactionContext(
                                 transaction=transaction,
                                 transactions_processor=TransactionsProcessor(session),
                                 snapshot=chain_snapshot,
                                 accounts_manager=AccountsManager(session),
-                                contract_snapshot_factory=lambda contract_address, session=session: ContractSnapshot(
-                                    contract_address, session
+                                contract_snapshot_factory=lambda contract_address: contract_snapshot_factory(
+                                    contract_address, session, transaction
                                 ),
                                 node_factory=node_factory,
                                 msg_handler=self.msg_handler,
@@ -295,8 +313,8 @@ class ConsensusAlgorithm:
                             transactions_processor=transactions_processor,
                             snapshot=chain_snapshot,
                             accounts_manager=AccountsManager(session),
-                            contract_snapshot_factory=lambda contract_address, session=session: ContractSnapshot(
-                                contract_address, session
+                            contract_snapshot_factory=lambda contract_address: contract_snapshot_factory(
+                                contract_address, session, transaction
                             ),
                             node_factory=node_factory,
                             msg_handler=self.msg_handler,
@@ -315,16 +333,16 @@ class ConsensusAlgorithm:
                             context.transactions_processor.set_transaction_appeal(
                                 context.transaction.hash, False
                             )
-                            context.transaction.appeal = False
+                            context.transaction.appealed = False
                             session.commit()
                         else:
                             context.num_validators = len(
                                 context.remaining_validators
                             )  # new amount added (N + 2)
                             context.votes = {}
-                            context.contract_snapshot = (
-                                context.contract_snapshot_factory(
-                                    transaction.to_address
+                            context.contract_snapshot_supplier = (
+                                lambda: context.contract_snapshot_factory(
+                                    context.transaction.to_address
                                 )
                             )
 
@@ -403,12 +421,12 @@ class TransactionContext:
         self.node_factory = node_factory
         self.msg_handler = msg_handler
         self.consensus_data = ConsensusData(
-            final=False, votes={}, leader_receipt=None, validators=[]
+            votes={}, leader_receipt=None, validators=[]
         )
         self.iterator_rotation: Iterator[list] | None = None
         self.remaining_validators: list = []
         self.num_validators: int = 0
-        self.contract_snapshot: ContractSnapshot | None = None
+        self.contract_snapshot_supplier: Callable[[], ContractSnapshot] | None = None
         self.votes: dict = {}
         self.validator_nodes: list = []
         self.validation_results: list = []
@@ -455,7 +473,7 @@ class PendingState(TransactionState):
             )
             return None
 
-        if context.transaction.appeal:
+        if context.transaction.appealed:
             # Generate a new leader and remove the old leader
             involved_validators = ConsensusAlgorithm.get_validators_from_consensus_data(
                 all_validators, context.transaction.consensus_data
@@ -463,7 +481,7 @@ class PendingState(TransactionState):
             context.transactions_processor.set_transaction_appeal(
                 context.transaction.hash, False
             )
-            context.transaction.appeal = False
+            context.transaction.appealed = False
         else:
             involved_validators = get_validators_for_transaction(
                 all_validators, DEFAULT_VALIDATORS_COUNT
@@ -488,14 +506,14 @@ class ProposingState(TransactionState):
         if context.transaction.leader_only:
             remaining_validators = []
 
-        contract_snapshot = context.contract_snapshot_factory(
+        contract_snapshot_supplier = lambda: context.contract_snapshot_factory(
             context.transaction.to_address
         )
 
         leader_node = context.node_factory(
             leader,
             ExecutionMode.LEADER,
-            contract_snapshot,
+            contract_snapshot_supplier(),
             None,
             context.msg_handler,
             context.contract_snapshot_factory,
@@ -524,7 +542,7 @@ class ProposingState(TransactionState):
 
         context.remaining_validators = remaining_validators
         context.num_validators = len(remaining_validators) + 1
-        context.contract_snapshot = contract_snapshot
+        context.contract_snapshot_supplier = contract_snapshot_supplier
         context.votes = votes
 
         return CommittingState()
@@ -537,7 +555,7 @@ class CommittingState(TransactionState):
             context.node_factory(
                 validator,
                 ExecutionMode.VALIDATOR,
-                context.contract_snapshot,
+                context.contract_snapshot_supplier(),
                 context.consensus_data.leader_receipt,
                 context.msg_handler,
                 context.contract_snapshot_factory,
@@ -597,7 +615,7 @@ class RevealingState(TransactionState):
             len([vote for vote in context.votes.values() if vote == Vote.AGREE.value])
             > context.num_validators // 2
         ):
-            if context.transaction.appeal:
+            if context.transaction.appealed:
                 # Appeal failed
                 context.votes.update(context.transaction.consensus_data.votes)
                 context.validation_results = (
@@ -607,7 +625,7 @@ class RevealingState(TransactionState):
 
             return AcceptedState()
         else:
-            if context.transaction.appeal:
+            if context.transaction.appealed:
                 # Appeal succeeded
                 context.consensus_data.votes = (
                     context.transaction.consensus_data.votes | context.votes
@@ -642,7 +660,7 @@ class RevealingState(TransactionState):
 
 class AcceptedState(TransactionState):
     async def handle(self, context):
-        if not context.transaction.appeal:
+        if not context.transaction.appealed:
             # When appeal fails, the appeal window is not reset
             context.transactions_processor.set_transaction_timestamp_accepted(
                 context.transaction.hash
@@ -650,7 +668,7 @@ class AcceptedState(TransactionState):
         context.transactions_processor.set_transaction_appeal(
             context.transaction.hash, False
         )
-        context.transaction.appeal = False
+        context.transaction.appealed = False
 
         ConsensusAlgorithm.dispatch_transaction_status_update(
             context.transactions_processor,
@@ -675,6 +693,7 @@ class AcceptedState(TransactionState):
                 EventScope.CONSENSUS,
                 "Reached consensus",
                 context.consensus_data.to_dict(),
+                transaction_hash=context.transaction.hash,
             )
         )
         return None
@@ -689,6 +708,7 @@ class UndeterminedState(TransactionState):
                 EventType.ERROR,
                 EventScope.CONSENSUS,
                 "Failed to reach consensus",
+                transaction_hash=context.transaction.hash,
             )
         )
         ConsensusAlgorithm.dispatch_transaction_status_update(
@@ -707,36 +727,40 @@ class UndeterminedState(TransactionState):
 class FinalizingState(TransactionState):
     async def handle(self, context):
         leader_receipt = context.transaction.consensus_data.leader_receipt
-        contract_snapshot = context.contract_snapshot_factory(
+        contract_snapshot_supplier = lambda: context.contract_snapshot_factory(
             context.transaction.to_address
         )
+        leaders_contract_snapshot = contract_snapshot_supplier()
 
-        # Register contract if it is a new contract
-        if context.transaction.type == TransactionType.DEPLOY_CONTRACT:
-            new_contract = {
-                "id": context.transaction.data["contract_address"],
-                "data": {
-                    "state": leader_receipt.contract_state,
-                    "code": context.transaction.data["contract_code"],
-                },
-            }
-            contract_snapshot.register_contract(new_contract)
+        if leader_receipt.execution_result == ExecutionResultStatus.SUCCESS:
+            # Register contract if it is a new contract
+            if context.transaction.type == TransactionType.DEPLOY_CONTRACT:
+                new_contract = {
+                    "id": context.transaction.data["contract_address"],
+                    "data": {
+                        "state": leader_receipt.contract_state,
+                        "code": context.transaction.data["contract_code"],
+                    },
+                }
+                leaders_contract_snapshot.register_contract(new_contract)
 
-            context.msg_handler.send_message(
-                LogEvent(
-                    "deployed_contract",
-                    EventType.SUCCESS,
-                    EventScope.GENVM,
-                    "Contract deployed",
-                    new_contract,
+                context.msg_handler.send_message(
+                    LogEvent(
+                        "deployed_contract",
+                        EventType.SUCCESS,
+                        EventScope.GENVM,
+                        "Contract deployed",
+                        new_contract,
+                        transaction_hash=context.transaction.hash,
+                    )
                 )
-            )
-        # Update contract state if it is an existing contract
-        else:
-            contract_snapshot.update_contract_state(leader_receipt.contract_state)
+            # Update contract state if it is an existing contract
+            else:
+                leaders_contract_snapshot.update_contract_state(
+                    leader_receipt.contract_state
+                )
 
         # Finalize transaction
-        context.transaction.consensus_data.final = True
         context.transactions_processor.set_transaction_result(
             context.transaction.hash,
             context.transaction.consensus_data.to_dict(),

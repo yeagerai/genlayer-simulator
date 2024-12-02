@@ -132,6 +132,9 @@ dmypy.json
 receipt.json
 .DS_Store
 
+# Docker Volume
+data/
+
 # LLM models
 .ollama
 
@@ -145,3 +148,7 @@ consensus/nodes/nodes.json
 node_modules/
 package-lock.json
 package.json
+
+# Nginx TLS certificates and keys
+nginx/ssl/*.key
+nginx/ssl/*.crt
