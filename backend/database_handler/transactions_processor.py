@@ -49,7 +49,7 @@ class TransactionsProcessor:
                 transaction.hash
                 for transaction in transaction_data.triggered_transactions
             ],
-            "appeal": transaction_data.appeal,
+            "appealed": transaction_data.appealed,
             "timestamp_awaiting_finalization": transaction_data.timestamp_awaiting_finalization,
             "appeal_failed": transaction_data.appeal_failed,
             "appeal_undetermined": transaction_data.appeal_undetermined,
@@ -154,7 +154,7 @@ class TransactionsProcessor:
                 if triggered_by_hash
                 else None
             ),
-            appeal=False,
+            appealed=False,
             timestamp_awaiting_finalization=None,
             appeal_failed=0,
             appeal_undetermined=False,
@@ -260,7 +260,7 @@ class TransactionsProcessor:
         transaction = (
             self.session.query(Transactions).filter_by(hash=transaction_hash).one()
         )
-        transaction.appeal = appeal
+        transaction.appealed = appeal
 
     def set_transaction_timestamp_awaiting_finalization(
         self, transaction_hash: str, timestamp_awaiting_finalization: int = None

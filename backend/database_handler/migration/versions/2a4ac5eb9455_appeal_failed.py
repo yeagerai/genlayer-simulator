@@ -1,7 +1,7 @@
 """appeal_failed
 
 Revision ID: 2a4ac5eb9455
-Revises: 579e86111b36
+Revises: 37196a51038e
 Create Date: 2024-11-22 09:48:50.048787
 
 """
@@ -14,7 +14,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = "2a4ac5eb9455"
-down_revision: Union[str, None] = "579e86111b36"
+down_revision: Union[str, None] = "37196a51038e"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

@@ -4,7 +4,7 @@
 
 from dataclasses import dataclass
 import decimal
-from enum import Enum
+from enum import Enum, IntEnum
 
 from backend.database_handler.models import TransactionStatus
 from backend.database_handler.types import ConsensusData
@@ -55,7 +55,7 @@ class Validator:
         return result
 
 
-class TransactionType(Enum):
+class TransactionType(IntEnum):
     SEND = 0
     DEPLOY_CONTRACT = 1
     RUN_CONTRACT = 2
@@ -66,8 +66,8 @@ class Transaction:
     hash: str
     status: TransactionStatus
     type: TransactionType
-    from_address: str | None = None
-    to_address: str | None = None
+    from_address: str | None
+    to_address: str | None
     input_data: dict | None = None
     data: dict | None = None
     consensus_data: ConsensusData | None = None
@@ -80,7 +80,7 @@ class Transaction:
     leader_only: bool = (
         False  # Flag to indicate if this transaction should be processed only by the leader. Used for fast and cheap execution of transactions.
     )
-    appeal: bool = False
+    appealed: bool = False
     timestamp_awaiting_finalization: int | None = None
     appeal_failed: int = 0
     appeal_undetermined: bool = False
@@ -102,7 +102,7 @@ class Transaction:
             "s": self.s,
             "v": self.v,
             "leader_only": self.leader_only,
-            "appeal": self.appeal,
+            "appealed": self.appealed,
             "timestamp_awaiting_finalization": self.timestamp_awaiting_finalization,
             "appeal_failed": self.appeal_failed,
             "appeal_undetermined": self.appeal_undetermined,
@@ -126,7 +126,7 @@ class Transaction:
             s=input.get("s"),
             v=input.get("v"),
             leader_only=input.get("leader_only", False),
-            appeal=input.get("appeal"),
+            appealed=input.get("appealed"),
             timestamp_awaiting_finalization=input.get(
                 "timestamp_awaiting_finalization"
             ),

@@ -3,23 +3,53 @@ from enum import Enum
 from typing import Iterable, Optional
 import base64
 
+import collections.abc
+
+from eth_hash.auto import keccak
+
 
 class Address:
-    SIZE = 32
-    _as_bytes: bytes
+    SIZE = 20
 
-    def __init__(self, val: str | bytes | memoryview):
-        if isinstance(val, memoryview):
+    __slots__ = ("_as_bytes", "_as_hex")
+
+    _as_bytes: bytes
+    _as_hex: str | None
+
+    def __init__(self, val: str | collections.abc.Buffer):
+        self._as_hex = None
+        if isinstance(val, str):
+            if len(val) == 2 + Address.SIZE * 2 and val.startswith("0x"):
+                val = bytes.fromhex(val[2:])
+            elif len(val) > Address.SIZE:
+                val = base64.b64decode(val)
+        else:
             val = bytes(val)
-        if isinstance(val, str) or len(val) > Address.SIZE:
-            val = base64.b64decode(val)
-        if len(val) != Address.SIZE:
-            raise Exception("invalid address")
+        if not isinstance(val, bytes) or len(val) != Address.SIZE:
+            raise Exception(f"invalid address {val}")
         self._as_bytes = val
 
     @property
     def as_bytes(self) -> bytes:
         return self._as_bytes
+
+    @property
+    def as_hex(self) -> str:
+        if self._as_hex is None:
+            simple = self._as_bytes.hex()
+            low_up = keccak(simple.encode("ascii")).hex()
+            res = ["0", "x"]
+            for i in range(len(simple)):
+                if low_up[i] in ["0", "1", "2", "3", "4", "5", "6", "7"]:
+                    res.append(simple[i])
+                else:
+                    res.append(simple[i].upper())
+            self._as_hex = "".join(res)
+        return self._as_hex
+
+    @property
+    def as_b64(self) -> str:
+        return str(base64.b64encode(self.as_bytes), encoding="ascii")
 
     @property
     def as_int(self) -> int:
@@ -28,13 +58,29 @@ class Address:
     def __hash__(self):
         return hash(self._as_bytes)
 
+    def __lt__(self, r):
+        assert isinstance(r, Address)
+        return self._as_bytes < r._as_bytes
+
+    def __le__(self, r):
+        assert isinstance(r, Address)
+        return self._as_bytes <= r._as_bytes
+
     def __eq__(self, r):
         if not isinstance(r, Address):
             return False
         return self._as_bytes == r._as_bytes
 
+    def __ge__(self, r):
+        assert isinstance(r, Address)
+        return self._as_bytes >= r._as_bytes
+
+    def __gt__(self, r):
+        assert isinstance(r, Address)
+        return self._as_bytes > r._as_bytes
+
     def __repr__(self) -> str:
-        return "addr:[" + "".join(["{:02x}".format(x) for x in self._as_bytes]) + "]"
+        return "addr#" + "".join(["{:02x}".format(x) for x in self._as_bytes])
 
 
 class Vote(Enum):
@@ -94,13 +140,14 @@ class PendingTransaction:
 
 @dataclass
 class Receipt:
+    returned: bytes | None
     class_name: str
     calldata: bytes
     gas_used: int
     mode: ExecutionMode
-    contract_state: str
+    contract_state: dict[str, dict[str, str]]
     node_config: dict
-    eq_outputs: dict
+    eq_outputs: dict[int, str]
     execution_result: ExecutionResultStatus
     error: Optional[Exception] = None
     vote: Optional[Vote] = None
@@ -110,6 +157,9 @@ class Receipt:
         return {
             "vote": self.vote.value,
             "execution_result": self.execution_result.value,
+            "returned": base64.b64encode(
+                self.returned if self.returned is not None else b""
+            ).decode("ascii"),
             "class_name": self.class_name,
             "calldata": str(base64.b64encode(self.calldata), encoding="ascii"),
             "gas_used": self.gas_used,
@@ -131,6 +181,11 @@ class Receipt:
                 vote=Vote.from_string(input.get("vote")),
                 execution_result=ExecutionResultStatus.from_string(
                     input.get("execution_result")
+                ),
+                returned=(
+                    (base64.b64decode(input.get("returned")))
+                    if input.get("returned")
+                    else None
                 ),
                 class_name=input.get("class_name"),
                 calldata=base64.b64decode(input.get("calldata")),

@@ -189,7 +189,7 @@ export class JsonRpcService implements IJsonRpcService {
 
   async setTransactionAppeal(tx_address: string): Promise<any> {
     return this.callRpcMethod<any>(
-      'sim_setTransactionAppeal',
+      'sim_appealTransaction',
       [String(tx_address)],
       'Error setting transaction appeal flag',
     );

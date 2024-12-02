@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useTransactionsStore } from '@/stores';
-import { useRpcClient } from '@/hooks';
+import { useDb, useRpcClient } from '@/hooks';
 import { type TransactionItem } from '@/types';
 
 vi.mock('@/hooks', () => ({
@@ -28,6 +28,9 @@ const testTransaction: TransactionItem = {
   type: 'deploy',
   status: 'PENDING',
   contractAddress: '0xAf4ec2548dBBdc43ab6dCFbD4EdcEedde3FEAFB5',
+  data: {
+    contract_address: '0xAf4ec2548dBBdc43ab6dCFbD4EdcEedde3FEAFB5',
+  },
   localContractId: '47490604-6ee9-4c0e-bf31-05d33197eedd',
 };
 
@@ -41,10 +44,20 @@ describe('useTransactionsStore', () => {
   const mockRpcClient = {
     getTransactionByHash: vi.fn(),
   };
+  const mockDb = {
+    transactions: {
+      where: vi.fn().mockReturnThis(),
+      anyOf: vi.fn().mockReturnThis(),
+      equals: vi.fn().mockReturnThis(),
+      modify: vi.fn().mockResolvedValue(undefined),
+      delete: vi.fn(),
+    },
+  };
 
   beforeEach(() => {
     setActivePinia(createPinia());
     (useRpcClient as Mock).mockReturnValue(mockRpcClient);
+    (useDb as Mock).mockReturnValue(mockDb);
     transactionsStore = useTransactionsStore();
     transactionsStore.transactions = [];
     mockRpcClient.getTransactionByHash.mockClear();
@@ -98,6 +111,10 @@ describe('useTransactionsStore', () => {
 
     transactionsStore.clearTransactionsForContract('contract-1');
 
+    expect(mockDb.transactions.where).toHaveBeenCalledWith('localContractId');
+    expect(mockDb.transactions.equals).toHaveBeenCalledWith('contract-1');
+    expect(mockDb.transactions.delete).toHaveBeenCalled();
+
     expect(transactionsStore.transactions).toEqual([tx2]);
   });
 
@@ -119,6 +136,14 @@ describe('useTransactionsStore', () => {
     expect(mockRpcClient.getTransactionByHash).toHaveBeenCalledWith(
       pendingTransaction.hash,
     );
+    expect(mockDb.transactions.where).toHaveBeenCalledWith('hash');
+    expect(mockDb.transactions.equals).toHaveBeenCalledWith(
+      pendingTransaction.hash,
+    );
+    expect(mockDb.transactions.modify).toHaveBeenCalledWith({
+      status: 'FINALIZED',
+      data: updatedTransaction,
+    });
     expect(transactionsStore.transactions[0].status).toBe('FINALIZED');
   });
 });
