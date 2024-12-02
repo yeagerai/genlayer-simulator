@@ -7,6 +7,7 @@ import { ChevronDownIcon } from '@heroicons/vue/16/solid';
 import { useEventTracking, useContractQueries } from '@/hooks';
 import { unfoldArgsData, type ArgData } from './ContractParams';
 import ContractParams from './ContractParams.vue';
+import * as calldata from '@/calldata';
 
 const { callWriteMethod, callReadMethod, contract } = useContractQueries();
 const { trackEvent } = useEventTracking();
@@ -19,14 +20,14 @@ const props = defineProps<{
 }>();
 
 const isExpanded = ref(false);
-const isReading = ref(false);
+const isCalling = ref(false);
 const responseMessage = ref('');
 
 const calldataArguments = ref<ArgData>({ args: [], kwargs: {} });
 
 const handleCallReadMethod = async () => {
   responseMessage.value = '';
-  isReading.value = true;
+  isCalling.value = true;
 
   try {
     const result = await callReadMethod(
@@ -37,8 +38,13 @@ const handleCallReadMethod = async () => {
       }),
     );
 
-    responseMessage.value =
-      typeof result === 'string' ? result : JSON.stringify(result);
+    let repr: string;
+    if (typeof result === 'string') {
+      const val = Uint8Array.from(atob(result), (c) => c.charCodeAt(0));
+      responseMessage.value = calldata.toString(calldata.decode(val));
+    } else {
+      responseMessage.value = '<unknown>';
+    }
 
     trackEvent('called_read_method', {
       contract_name: contract.value?.name || '',
@@ -51,29 +57,41 @@ const handleCallReadMethod = async () => {
       type: 'error',
     });
   } finally {
-    isReading.value = false;
+    isCalling.value = false;
   }
 };
 
 const handleCallWriteMethod = async () => {
-  await callWriteMethod({
-    method: props.name,
-    leaderOnly: props.leaderOnly,
-    args: unfoldArgsData({
-      args: calldataArguments.value.args,
-      kwargs: calldataArguments.value.kwargs,
-    }),
-  });
+  isCalling.value = true;
 
-  notify({
-    text: 'Write method called',
-    type: 'success',
-  });
+  try {
+    await callWriteMethod({
+      method: props.name,
+      leaderOnly: props.leaderOnly,
+      args: unfoldArgsData({
+        args: calldataArguments.value.args,
+        kwargs: calldataArguments.value.kwargs,
+      }),
+    });
 
-  trackEvent('called_write_method', {
-    contract_name: contract.value?.name || '',
-    method_name: props.name,
-  });
+    notify({
+      text: 'Write method called',
+      type: 'success',
+    });
+
+    trackEvent('called_write_method', {
+      contract_name: contract.value?.name || '',
+      method_name: props.name,
+    });
+  } catch (error) {
+    notify({
+      title: 'Error',
+      text: (error as Error)?.message || 'Error getting contract state',
+      type: 'error',
+    });
+  } finally {
+    isCalling.value = false;
+  }
 };
 </script>
 
@@ -113,9 +131,9 @@ const handleCallWriteMethod = async () => {
             @click="handleCallReadMethod"
             tiny
             :data-testid="`read-method-btn-${name}`"
-            :loading="isReading"
-            :disabled="isReading"
-            >{{ isReading ? 'Calling...' : 'Call Contract' }}</Btn
+            :loading="isCalling"
+            :disabled="isCalling"
+            >{{ isCalling ? 'Calling...' : 'Call Contract' }}</Btn
           >
 
           <Btn
@@ -123,7 +141,9 @@ const handleCallWriteMethod = async () => {
             @click="handleCallWriteMethod"
             tiny
             :data-testid="`write-method-btn-${name}`"
-            >Send Transaction</Btn
+            :loading="isCalling"
+            :disabled="isCalling"
+            >{{ isCalling ? 'Sending...' : 'Send Transaction' }}</Btn
           >
         </div>
 

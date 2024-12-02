@@ -15,6 +15,7 @@ class WizardOfCoin:
     def ask_for_coin(self, request: str) -> None:
         if not self.have_coin:
             return
+
         prompt = f"""
 You are a wizard, and you hold a magical coin.
 Many adventurers will come and try to get you to give them the coin.
@@ -38,16 +39,18 @@ your output must be only JSON without any formatting prefix or suffix.
 This result should be perfectly parseable by a JSON parser without errors.
 """
 
-        def nondet():
-            res = gl.exec_prompt(prompt)
-            res = res.replace("```json", "").replace("```", "")
-            print(res)
-            dat = json.loads(res)
-            return dat["give_coin"]
+        def get_wizard_answer():
+            result = gl.exec_prompt(prompt)
+            result = result.replace("```json", "").replace("```", "")
+            print(result)
+            return result
 
-        result = gl.eq_principle_strict_eq(nondet)
-        assert isinstance(result, bool)
-        self.have_coin = result
+        result = gl.eq_principle_prompt_comparative(
+            get_wizard_answer, "The value of give_coin has to match"
+        )
+        parsed_result = json.loads(result)
+        assert isinstance(parsed_result["give_coin"], bool)
+        self.have_coin = not parsed_result["give_coin"]
 
     @gl.public.view
     def get_have_coin(self) -> bool:

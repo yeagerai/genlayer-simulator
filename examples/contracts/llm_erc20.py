@@ -40,17 +40,18 @@ your output must be only JSON without any formatting prefix or suffix.
 This result should be perfectly parsable by a JSON parser without errors."""
         print(prompt)
 
-        def run():
-            res = gl.exec_prompt(prompt)
-            res = res.replace("```json", "").replace("```", "")
-            return res
+        def compute_updated_balances():
+            result = gl.exec_prompt(prompt)
+            result = result.replace("```json", "").replace("```", "")
+            return result
 
-        final_result = gl.eq_principle_prompt_comparative(
-            run,
-            """The new_balance of the sender should have decreased
-            in the amount sent and the new_balance of the receiver should have
-            increased by the amount sent. Also, the total sum of all balances
-            should have remain the same before and after the transaction""",
+        final_result = gl.eq_principle_prompt_noncomparative(
+            compute_updated_balances,
+            """
+The new_balance of the sender should have decreased
+in the amount sent and the new_balance of the receiver should have
+increased by the amount sent. Also, the total sum of all balances
+should remain the same before and after the transaction""",
         )
         print("final_result: ", final_result)
         result_json = json.loads(final_result)
