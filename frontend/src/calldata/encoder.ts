@@ -1,20 +1,6 @@
 import type { CalldataEncodable } from './types';
 import { Address } from './types';
-
-const BITS_IN_TYPE = 3;
-
-const TYPE_SPECIAL = 0;
-const TYPE_PINT = 1;
-const TYPE_NINT = 2;
-const TYPE_BYTES = 3;
-const TYPE_STR = 4;
-const TYPE_ARR = 5;
-const TYPE_MAP = 6;
-
-const SPECIAL_NULL = (0 << BITS_IN_TYPE) | TYPE_SPECIAL;
-const SPECIAL_FALSE = (1 << BITS_IN_TYPE) | TYPE_SPECIAL;
-const SPECIAL_TRUE = (2 << BITS_IN_TYPE) | TYPE_SPECIAL;
-const SPECIAL_ADDR = (3 << BITS_IN_TYPE) | TYPE_SPECIAL;
+import * as consts from './consts';
 
 function reportError(msg: string, data: CalldataEncodable): never {
   throw new Error(`invalid calldata input '${data}'`);
@@ -36,15 +22,15 @@ function writeNum(to: number[], data: bigint) {
 }
 
 function encodeNumWithType(to: number[], data: bigint, type: number) {
-  const res = (data << BigInt(BITS_IN_TYPE)) | BigInt(type);
+  const res = (data << BigInt(consts.BITS_IN_TYPE)) | BigInt(type);
   writeNum(to, res);
 }
 
 function encodeNum(to: number[], data: bigint) {
   if (data >= 0n) {
-    encodeNumWithType(to, data, TYPE_PINT);
+    encodeNumWithType(to, data, consts.TYPE_PINT);
   } else {
-    encodeNumWithType(to, -data - 1n, TYPE_NINT);
+    encodeNumWithType(to, -data - 1n, consts.TYPE_NINT);
   }
 }
 
@@ -77,7 +63,7 @@ function encodeMap(to: number[], arr: Iterable<[string, CalldataEncodable]>) {
     }
   }
 
-  encodeNumWithType(to, BigInt(newEntries.length), TYPE_MAP);
+  encodeNumWithType(to, BigInt(newEntries.length), consts.TYPE_MAP);
   for (const [_k, k, v] of newEntries) {
     writeNum(to, BigInt(k.length));
     for (const c of k) {
@@ -89,15 +75,15 @@ function encodeMap(to: number[], arr: Iterable<[string, CalldataEncodable]>) {
 
 function encodeImpl(to: number[], data: CalldataEncodable) {
   if (data === null || data === undefined) {
-    to.push(SPECIAL_NULL);
+    to.push(consts.SPECIAL_NULL);
     return;
   }
   if (data === true) {
-    to.push(SPECIAL_TRUE);
+    to.push(consts.SPECIAL_TRUE);
     return;
   }
   if (data === false) {
-    to.push(SPECIAL_FALSE);
+    to.push(consts.SPECIAL_FALSE);
     return;
   }
   switch (typeof data) {
@@ -114,7 +100,7 @@ function encodeImpl(to: number[], data: CalldataEncodable) {
     }
     case 'string': {
       const str = new TextEncoder().encode(data);
-      encodeNumWithType(to, BigInt(str.length), TYPE_STR);
+      encodeNumWithType(to, BigInt(str.length), consts.TYPE_STR);
       for (const c of str) {
         to.push(c);
       }
@@ -122,30 +108,24 @@ function encodeImpl(to: number[], data: CalldataEncodable) {
     }
     case 'object': {
       if (data instanceof Uint8Array) {
-        encodeNumWithType(to, BigInt(data.length), TYPE_BYTES);
+        encodeNumWithType(to, BigInt(data.length), consts.TYPE_BYTES);
         for (const c of data) {
           to.push(c);
         }
       } else if (data instanceof Array) {
-        encodeNumWithType(to, BigInt(data.length), TYPE_ARR);
+        encodeNumWithType(to, BigInt(data.length), consts.TYPE_ARR);
         for (const c of data) {
           encodeImpl(to, c);
         }
       } else if (data instanceof Map) {
         encodeMap(to, data);
       } else if (data instanceof Address) {
-        to.push(SPECIAL_ADDR);
+        to.push(consts.SPECIAL_ADDR);
         for (const c of data.bytes) {
           to.push(c);
         }
       } else if (Object.getPrototypeOf(data) === Object.prototype) {
-        encodeMap(
-          to,
-          Object.keys(data).map((k): [string, CalldataEncodable] => [
-            k,
-            data[k],
-          ]),
-        );
+        encodeMap(to, Object.entries(data));
       } else {
         reportError('unknown object type', data);
       }
@@ -161,4 +141,84 @@ export function encode(data: CalldataEncodable): Uint8Array {
   const arr: number[] = [];
   encodeImpl(arr, data);
   return new Uint8Array(arr);
+}
+
+function toStringImplMap(
+  data: Iterable<[string, CalldataEncodable]>,
+  to: string[],
+) {
+  to.push('{');
+  for (const [k, v] of data) {
+    to.push(JSON.stringify(k));
+    to.push(':');
+    toStringImpl(v, to);
+  }
+  to.push('}');
+}
+
+function toStringImpl(data: CalldataEncodable, to: string[]) {
+  if (data === null || data === undefined) {
+    to.push('null');
+    return;
+  }
+  if (data === true) {
+    to.push('true');
+    return;
+  }
+  if (data === false) {
+    to.push('false');
+    return;
+  }
+  switch (typeof data) {
+    case 'number': {
+      if (!Number.isInteger(data)) {
+        reportError('floats are not supported', data);
+      }
+      to.push(data.toString());
+      return;
+    }
+    case 'bigint': {
+      to.push(data.toString());
+      return;
+    }
+    case 'string': {
+      to.push(JSON.stringify(data));
+      return;
+    }
+    case 'object': {
+      if (data instanceof Uint8Array) {
+        to.push('b#');
+        for (const b of data) {
+          to.push(b.toString(16));
+        }
+      } else if (data instanceof Array) {
+        to.push('[');
+        for (const c of data) {
+          toStringImpl(c, to);
+          to.push(',');
+        }
+        to.push(']');
+      } else if (data instanceof Map) {
+        toStringImplMap(data.entries(), to);
+      } else if (data instanceof Address) {
+        to.push('addr#');
+        for (const c of data.bytes) {
+          to.push(c.toString(16));
+        }
+      } else if (Object.getPrototypeOf(data) === Object.prototype) {
+        toStringImplMap(Object.entries(data), to);
+      } else {
+        reportError('unknown object type', data);
+      }
+      return;
+    }
+    default:
+      reportError('unknown base type', data);
+  }
+}
+
+export function toString(data: CalldataEncodable): string {
+  const to: string[] = [];
+  toStringImpl(data, to);
+  return to.join('');
 }
