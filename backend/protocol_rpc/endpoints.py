@@ -348,8 +348,6 @@ async def get_contract_schema_for_code(
         contract_snapshot_factory=None,
     )
     schema = await node.get_contract_schema(contract_code)
-    if isinstance(schema, dict):
-        raise JSONRPCError(**schema)
     return json.loads(schema)
 
 

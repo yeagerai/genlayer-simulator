@@ -32,7 +32,7 @@ def get_function_annotations(function: Callable) -> Callable:
     return {k: v for k, v in original_function_annotations.items()}
 
 
-def _decode_exception(x: Exception) -> str:
+def _decode_exception(x: Exception) -> typing.Any:
     def unfold(x: typing.Any):
         if isinstance(x, tuple):
             return list(x)
@@ -51,7 +51,7 @@ def _decode_exception(x: Exception) -> str:
         return x
 
     try:
-        return json.dumps(x, default=unfold)
+        return json.loads(json.dumps(x, default=unfold))
     except Exception:
         return repr(x)
 

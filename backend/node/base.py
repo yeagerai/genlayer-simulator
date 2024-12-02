@@ -199,9 +199,7 @@ class Node:
             )
         )
 
-    async def get_contract_schema(
-        self, code: str
-    ) -> str | typing.Annotated[dict, "error"]:
+    async def get_contract_schema(self, code: str) -> str:
         genvm = self._create_genvm()
         res = await genvm.get_contract_schema(code.encode("utf-8"))
         await self._execution_finished(res, None)
@@ -212,23 +210,16 @@ class Node:
             "result": f"{res.result!r}",
         }
         if not isinstance(res.result, genvmbase.ExecutionReturn):
-            return {
-                "message": f"execution failed",
-                "data": err_data,
-            }
+            raise Exception("execution failed", err_data)
         ret_calldata = res.result.ret
         try:
             schema = calldata.decode(ret_calldata)
         except Exception as e:
-            return {
-                "message": f"abi violation, can't parse calldata #{e}",
-                "data": err_data,
-            }
+            raise Exception(f"abi violation, can't parse calldata #{e}", err_data)
         if not isinstance(schema, str):
-            return {
-                "message": f"abi violation, invalid return type #{type(schema)}",
-                "data": err_data,
-            }
+            raise Exception(
+                f"abi violation, invalid return type #{type(schema)}", err_data
+            )
         return schema
 
     async def _run_genvm(
