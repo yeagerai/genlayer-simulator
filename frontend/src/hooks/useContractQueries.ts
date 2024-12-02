@@ -95,7 +95,7 @@ export function useContractQueries() {
       const result = await genlayer.client?.deployContract({
         code: contract.value?.content ?? '',
         args: args.args,
-        leader_only: leaderOnly,
+        leaderOnly,
       });
 
       const tx: TransactionItem = {
@@ -201,7 +201,7 @@ export function useContractQueries() {
         functionName: method,
         args: args.args,
         value: BigInt(0),
-        leader_only: leaderOnly,
+        leaderOnly,
       });
 
       transactionsStore.addTransaction({
