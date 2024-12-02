@@ -93,7 +93,9 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
   }
 
   function subscribe(topics: string[]) {
-    subscriptions.add(topics);
+    topics.forEach((topic) => {
+      subscriptions.add(topic);
+    });
     if (webSocketClient.connected) {
       webSocketClient.emit('subscribe', topics);
     }
@@ -110,6 +112,12 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
     subscribe(transactions.value.map((t) => t.hash));
   }
 
+  async function resetStorage() {
+    transactions.value.forEach((t) => unsubscribe(t.hash));
+    transactions.value = [];
+    await db.transactions.clear();
+  }
+
   return {
     transactions,
     getTransaction,
@@ -119,5 +127,6 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
     clearTransactionsForContract,
     refreshPendingTransactions,
     initSubscriptions,
+    resetStorage,
   };
 });
