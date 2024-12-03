@@ -1,6 +1,6 @@
 from contextlib import redirect_stdout
 from dataclasses import asdict
-import datetime
+from datetime import datetime, timezone
 import json
 import base64
 from typing import Callable, Optional
@@ -178,8 +178,13 @@ class Node:
         from_address: str,
         calldata: bytes,
     ) -> Receipt:
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
         return await self._run_genvm(
-            from_address, calldata, readonly=True, is_init=False
+            from_address,
+            calldata,
+            readonly=True,
+            is_init=False,
+            transaction_created_at=now,
         )
 
     async def _execution_finished(
@@ -276,7 +281,9 @@ class Node:
             self.contract_snapshot, self.contract_snapshot_factory, readonly
         )
 
-        transaction_datetime = datetime.datetime.fromisoformat(transaction_created_at)
+        transaction_datetime = datetime.fromisoformat(transaction_created_at).replace(
+            tzinfo=timezone.utc
+        )
 
         result_exec_code: ExecutionResultStatus
         res = await genvm.run_contract(

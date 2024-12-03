@@ -79,6 +79,7 @@ class Transaction:
     leader_only: bool = (
         False  # Flag to indicate if this transaction should be processed only by the leader. Used for fast and cheap execution of transactions.
     )
+    created_at: str | None = None
 
     def to_dict(self):
         return {
@@ -97,6 +98,7 @@ class Transaction:
             "s": self.s,
             "v": self.v,
             "leader_only": self.leader_only,
+            "created_at": self.created_at,
         }
 
 
@@ -117,4 +119,5 @@ def transaction_from_dict(input: dict) -> Transaction:
         s=input.get("s"),
         v=input.get("v"),
         leader_only=input.get("leader_only", False),
+        created_at=input.get("created_at"),
     )
