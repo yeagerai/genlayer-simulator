@@ -9,7 +9,6 @@ from collections import deque
 import traceback
 from typing import Callable, Iterator, List
 import time
-import base64
 from abc import ABC, abstractmethod
 
 from sqlalchemy.orm import Session
