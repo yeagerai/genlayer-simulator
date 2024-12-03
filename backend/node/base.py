@@ -108,6 +108,7 @@ class Node:
                 transaction_data["contract_code"],
                 calldata,
                 transaction.hash,
+                transaction.created_at,
             )
         elif transaction.type == TransactionType.RUN_CONTRACT:
             calldata = base64.b64decode(transaction_data["calldata"])
@@ -115,6 +116,7 @@ class Node:
                 transaction.from_address,
                 calldata,
                 transaction.hash,
+                transaction.created_at,
             )
         else:
             raise Exception(f"unknown transaction type {transaction.type}")
@@ -142,6 +144,7 @@ class Node:
         code_to_deploy: str,
         calldata: bytes,
         transaction_hash: str,
+        transaction_created_at: str | None = None,
     ) -> Receipt:
         assert self.contract_snapshot is not None
         self.contract_snapshot.contract_code = code_to_deploy
@@ -151,10 +154,15 @@ class Node:
             readonly=False,
             is_init=True,
             transaction_hash=transaction_hash,
+            transaction_created_at=transaction_created_at,
         )
 
     async def run_contract(
-        self, from_address: str, calldata: bytes, transaction_hash: str
+        self,
+        from_address: str,
+        calldata: bytes,
+        transaction_hash: str,
+        transaction_created_at: str | None = None,
     ) -> Receipt:
         return await self._run_genvm(
             from_address,
@@ -162,6 +170,7 @@ class Node:
             readonly=False,
             is_init=False,
             transaction_hash=transaction_hash,
+            transaction_created_at=transaction_created_at,
         )
 
     async def get_contract_data(
@@ -230,6 +239,7 @@ class Node:
         readonly: bool,
         is_init: bool,
         transaction_hash: str | None = None,
+        transaction_created_at: str | None = None,
     ) -> Receipt:
         genvm = self._create_genvm()
         leader_res: None | dict[int, bytes]
@@ -266,10 +276,7 @@ class Node:
             self.contract_snapshot, self.contract_snapshot_factory, readonly
         )
 
-        # FIXME(core-team): please provide valid date
-        transaction_datetime = datetime.datetime.fromisoformat(
-            "2024-11-28T06:42:42.424242Z"
-        )
+        transaction_datetime = datetime.datetime.fromisoformat(transaction_created_at)
 
         result_exec_code: ExecutionResultStatus
         res = await genvm.run_contract(
