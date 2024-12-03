@@ -1,6 +1,6 @@
 from contextlib import redirect_stdout
 from dataclasses import asdict
-from datetime import datetime, timezone
+import datetime
 import json
 import base64
 from typing import Callable, Optional
@@ -138,6 +138,14 @@ class Node:
 
         return receipt
 
+    def _date_from_str(self, date: str | None) -> datetime.datetime | None:
+        if date is None:
+            return None
+        res = datetime.datetime.fromisoformat(date)
+        if res.tzinfo is None:
+            res = res.replace(tzinfo=datetime.utc)
+        return res
+
     async def deploy_contract(
         self,
         from_address: str,
@@ -154,7 +162,7 @@ class Node:
             readonly=False,
             is_init=True,
             transaction_hash=transaction_hash,
-            transaction_created_at=transaction_created_at,
+            transaction_datetime=self._date_from_str(transaction_created_at),
         )
 
     async def run_contract(
@@ -170,7 +178,7 @@ class Node:
             readonly=False,
             is_init=False,
             transaction_hash=transaction_hash,
-            transaction_created_at=transaction_created_at,
+            transaction_datetime=self._date_from_str(transaction_created_at),
         )
 
     async def get_contract_data(
@@ -178,13 +186,12 @@ class Node:
         from_address: str,
         calldata: bytes,
     ) -> Receipt:
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
         return await self._run_genvm(
             from_address,
             calldata,
             readonly=True,
             is_init=False,
-            transaction_created_at=now,
+            transaction_datetime=datetime.datetime.now().astimezone(datetime.utc),
         )
 
     async def _execution_finished(
@@ -244,7 +251,7 @@ class Node:
         readonly: bool,
         is_init: bool,
         transaction_hash: str | None = None,
-        transaction_created_at: str | None = None,
+        transaction_datetime: datetime.datetime | None,
     ) -> Receipt:
         genvm = self._create_genvm()
         leader_res: None | dict[int, bytes]
@@ -279,10 +286,6 @@ class Node:
         }
         snapshot_view = _SnapshotView(
             self.contract_snapshot, self.contract_snapshot_factory, readonly
-        )
-
-        transaction_datetime = datetime.fromisoformat(transaction_created_at).replace(
-            tzinfo=timezone.utc
         )
 
         result_exec_code: ExecutionResultStatus

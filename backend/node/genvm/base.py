@@ -91,7 +91,7 @@ class IGenVM(typing.Protocol):
         is_init: bool = False,
         leader_results: None | dict[int, bytes],
         config: str,
-        date: datetime.datetime,
+        date: datetime.datetime | None,
     ) -> ExecutionResult: ...
 
     async def get_contract_schema(self, contract_code: bytes) -> ExecutionResult: ...
@@ -136,7 +136,7 @@ class GenVMHost(IGenVM):
         is_init: bool = False,
         leader_results: None | dict[int, bytes],
         config: str,
-        date: datetime.datetime,
+        date: datetime.datetime | None,
     ) -> ExecutionResult:
         assert date.tzinfo is not None
         message = {
@@ -144,8 +144,9 @@ class GenVMHost(IGenVM):
             "contract_account": contract_address.as_b64,
             "sender_account": from_address.as_b64,
             "value": None,
-            "datetime": date.isoformat(),
         }
+        if date is not None:
+            message["datetime"] = date.isoformat()
         return await _run_genvm_host(
             functools.partial(
                 _Host,
