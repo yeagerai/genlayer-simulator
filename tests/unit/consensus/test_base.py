@@ -69,6 +69,25 @@ async def test_exec_transaction(managed_thread):
         transactions_processor, msg_handler_mock, nodes, node_factory_supplier
     )
 
+    node_factory_supplier = (
+        lambda node, mode, contract_snapshot, receipt, msg_handler, contract_snapshot_factory: created_nodes.append(
+            node_factory(
+                node,
+                mode,
+                contract_snapshot,
+                receipt,
+                msg_handler,
+                contract_snapshot_factory,
+                get_vote(),
+            )
+        )
+        or created_nodes[-1]
+    )
+
+    managed_thread(
+        transactions_processor, msg_handler_mock, nodes, node_factory_supplier
+    )
+
     await ConsensusAlgorithm(None, msg_handler_mock).exec_transaction(
         transaction=transaction,
         transactions_processor=transactions_processor,
@@ -190,6 +209,25 @@ async def test_exec_transaction_one_disagreement(managed_thread):
     )
 
     msg_handler_mock = Mock(MessageHandler)
+
+    node_factory_supplier = (
+        lambda node, mode, contract_snapshot, receipt, msg_handler, contract_snapshot_factory: created_nodes.append(
+            node_factory(
+                node,
+                mode,
+                contract_snapshot,
+                receipt,
+                msg_handler,
+                contract_snapshot_factory,
+                get_vote(),
+            )
+        )
+        or created_nodes[-1]
+    )
+
+    managed_thread(
+        transactions_processor, msg_handler_mock, nodes, node_factory_supplier
+    )
 
     node_factory_supplier = (
         lambda node, mode, contract_snapshot, receipt, msg_handler, contract_snapshot_factory: created_nodes.append(
