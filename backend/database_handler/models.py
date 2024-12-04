@@ -114,6 +114,8 @@ class Transactions(Base):
         back_populates="triggered_by",
         init=False,
     )
+    appealed: Mapped[bool] = mapped_column(Boolean, default=False)
+    timestamp_accepted: Mapped[Optional[int]] = mapped_column(BigInteger, default=None)
 
 
 class Validators(Base):
