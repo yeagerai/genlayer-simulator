@@ -98,7 +98,6 @@ function prettifyTxData(x: any): any {
         },
       },
     };
-    console.log(ret);
     return ret;
   } catch (e) {
     console.log(e);

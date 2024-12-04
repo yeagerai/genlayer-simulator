@@ -143,7 +143,7 @@ class Node:
             return None
         res = datetime.datetime.fromisoformat(date)
         if res.tzinfo is None:
-            res = res.replace(tzinfo=datetime.utc)
+            res = res.replace(tzinfo=datetime.UTC)
         return res
 
     async def deploy_contract(
@@ -191,7 +191,7 @@ class Node:
             calldata,
             readonly=True,
             is_init=False,
-            transaction_datetime=datetime.datetime.now().astimezone(datetime.utc),
+            transaction_datetime=datetime.datetime.now().astimezone(datetime.UTC),
         )
 
     async def _execution_finished(
