@@ -153,6 +153,7 @@ package-lock.json
 nginx/ssl/*.key
 nginx/ssl/*.crt
 
+
 # Hardhat files
 hardhat/cache/*
 hardhat/artifacts/*
