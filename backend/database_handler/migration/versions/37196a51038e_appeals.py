@@ -24,9 +24,13 @@ def upgrade() -> None:
     op.create_unique_constraint(
         "rollup_transactions_hash", "rollup_transactions", ["transaction_hash"]
     )
-    op.add_column("transactions", sa.Column("appealed", sa.Boolean(), nullable=False))
+    op.add_column("transactions", sa.Column("appealed", sa.Boolean(), nullable=True))
     op.add_column(
         "transactions", sa.Column("timestamp_accepted", sa.BigInteger(), nullable=True)
+    )
+    op.add_column(
+        "transactions",
+        sa.Column("ghost_contract_address", sa.String(length=255), nullable=True),
     )
     # ### end Alembic commands ###
 
