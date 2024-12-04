@@ -1,11 +1,12 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import type { TransactionItem } from '@/types';
-import { useDb, useRpcClient, useWebSocketClient } from '@/hooks';
+import type { TransactionHash } from 'genlayer-js/types';
+import { useDb, useGenlayer, useWebSocketClient } from '@/hooks';
 import { useContractsStore } from '@/stores';
 
 export const useTransactionsStore = defineStore('transactionsStore', () => {
-  const rpcClient = useRpcClient();
+  const genlayer = useGenlayer();
   const webSocketClient = useWebSocketClient();
   const transactions = ref<TransactionItem[]>([]);
   const contractsStore = useContractsStore();
@@ -50,6 +51,10 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
     }
   }
 
+  async function getTransaction(hash: TransactionHash) {
+    return genlayer.client?.getTransaction({ hash });
+  }
+
   async function refreshPendingTransactions() {
     const pendingTxs = transactions.value.filter(
       (tx: TransactionItem) => tx.status !== 'FINALIZED',
@@ -57,7 +62,7 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
 
     await Promise.all(
       pendingTxs.map(async (tx) => {
-        const newTx = await getTransaction(tx.hash);
+        const newTx = await getTransaction(tx.hash as TransactionHash);
 
         if (newTx) {
           updateTransaction(newTx);
@@ -73,10 +78,6 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
     );
   }
 
-  async function getTransaction(hash: string) {
-    return rpcClient.getTransactionByHash(hash);
-  }
-
   async function clearTransactionsForContract(contractId: string) {
     const contractTxs = transactions.value.filter(
       (t) => t.localContractId === contractId,
@@ -89,6 +90,10 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
     );
 
     await db.transactions.where('localContractId').equals(contractId).delete();
+  }
+
+  async function setTransactionAppeal(tx_address: string) {
+    rpcClient.setTransactionAppeal(tx_address);
   }
 
   function subscribe(topics: string[]) {
@@ -124,6 +129,7 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
     removeTransaction,
     updateTransaction,
     clearTransactionsForContract,
+    setTransactionAppeal,
     refreshPendingTransactions,
     initSubscriptions,
     resetStorage,
