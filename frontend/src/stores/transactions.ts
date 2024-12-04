@@ -92,6 +92,10 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
     await db.transactions.where('localContractId').equals(contractId).delete();
   }
 
+  async function setTransactionAppeal(tx_address: string) {
+    rpcClient.setTransactionAppeal(tx_address);
+  }
+
   function subscribe(topics: string[]) {
     topics.forEach((topic) => {
       subscriptions.add(topic);
@@ -125,6 +129,7 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
     removeTransaction,
     updateTransaction,
     clearTransactionsForContract,
+    setTransactionAppeal,
     refreshPendingTransactions,
     initSubscriptions,
     resetStorage,
