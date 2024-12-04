@@ -245,7 +245,6 @@ def node_factory(
     mock.exec_transaction = AsyncMock(
         return_value=Receipt(
             vote=vote,
-            class_name="",
             calldata=b"",
             mode=mode,
             gas_used=0,
@@ -254,7 +253,6 @@ def node_factory(
             node_config={},
             eq_outputs={},
             execution_result=ExecutionResultStatus.SUCCESS,
-            error=None,
         )
     )
 
