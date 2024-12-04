@@ -32,6 +32,9 @@ def upgrade() -> None:
         "transactions",
         sa.Column("ghost_contract_address", sa.String(length=255), nullable=True),
     )
+    # Set all existing 'appealed' values to False
+    op.execute("UPDATE transactions SET appealed = FALSE WHERE appealed IS NULL")
+    op.alter_column("transactions", "appealed", nullable=False)
     # ### end Alembic commands ###
 
 
