@@ -34,7 +34,18 @@ def upgrade() -> None:
     )
     # Set all existing 'appealed' values to False
     op.execute("UPDATE transactions SET appealed = FALSE WHERE appealed IS NULL")
+    # Set all existing 'timestamp_accepted' values to 0
+    op.execute(
+        "UPDATE transactions SET timestamp_accepted = 0 WHERE timestamp_accepted IS NULL"
+    )
+    # Set all existing 'ghost_contract_address' values to an empty string
+    op.execute(
+        "UPDATE transactions SET ghost_contract_address = '' WHERE ghost_contract_address IS NULL"
+    )
+    # Alter the columns to be not nullable
     op.alter_column("transactions", "appealed", nullable=False)
+    op.alter_column("transactions", "timestamp_accepted", nullable=False)
+    op.alter_column("transactions", "ghost_contract_address", nullable=False)
     # ### end Alembic commands ###
 
 
