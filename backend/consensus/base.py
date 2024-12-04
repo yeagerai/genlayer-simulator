@@ -420,7 +420,6 @@ class ConsensusAlgorithm:
                     "data": {
                         "state": leader_receipt["contract_state"],
                         "code": transaction.data["contract_code"],
-                        "ghost_contract_address": transaction.ghost_contract_address,
                     },
                 }
                 leaders_contract_snapshot.register_contract(new_contract)
