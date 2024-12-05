@@ -93,10 +93,6 @@ jobs:
             exit 1
           fi
 
-      # - name: Diagnostic Logging
-      #   run: |
-      #     docker compose run your_service python -c "import os; print('FINALITY_WINDOW', os.getenv('FINALITY_WINDOW'))"
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
