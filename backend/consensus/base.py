@@ -500,6 +500,13 @@ class ProposingState(TransactionState):
             # All rotations are done, no consensus reached
             return UndeterminedState()
 
+        ConsensusAlgorithm.dispatch_transaction_status_update(
+            context.transactions_processor,
+            context.transaction.hash,
+            TransactionStatus.PROPOSING,
+            context.msg_handler,
+        )
+
         [leader, *remaining_validators] = validators
 
         if context.transaction.leader_only:
@@ -529,12 +536,6 @@ class ProposingState(TransactionState):
             context.transaction.hash, context.consensus_data.to_dict()
         )
 
-        ConsensusAlgorithm.dispatch_transaction_status_update(
-            context.transactions_processor,
-            context.transaction.hash,
-            TransactionStatus.PROPOSING,
-            context.msg_handler,
-        )
         context.transactions_processor.create_rollup_transaction(
             context.transaction.hash
         )
@@ -549,6 +550,13 @@ class ProposingState(TransactionState):
 
 class CommittingState(TransactionState):
     async def handle(self, context):
+        ConsensusAlgorithm.dispatch_transaction_status_update(
+            context.transactions_processor,
+            context.transaction.hash,
+            TransactionStatus.COMMITTING,
+            context.msg_handler,
+        )
+
         # Create the validator nodes
         context.validator_nodes = [
             context.node_factory(
@@ -569,12 +577,6 @@ class CommittingState(TransactionState):
         ]
         context.validation_results = await asyncio.gather(*validation_tasks)
 
-        ConsensusAlgorithm.dispatch_transaction_status_update(
-            context.transactions_processor,
-            context.transaction.hash,
-            TransactionStatus.COMMITTING,
-            context.msg_handler,
-        )
         context.transactions_processor.create_rollup_transaction(
             context.transaction.hash
         )
@@ -592,9 +594,12 @@ class RevealingState(TransactionState):
         )
 
         for i, validation_result in enumerate(context.validation_results):
+            # Store the vote from each validator node
             context.votes[context.validator_nodes[i].address] = (
                 validation_result.vote.value
             )
+
+            # Create a dictionary of votes for the current reveal so the rollup transaction contains leader vote and one validator vote (done for each validator)
             single_reveal_votes = {
                 context.consensus_data.leader_receipt.node_config[
                     "address"
