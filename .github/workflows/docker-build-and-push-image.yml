@@ -67,6 +67,7 @@ jobs:
           tags: |
             type=ref,event=tag
             type=raw,value=latest
+            type=semver,pattern={{version}}
 
       - name: Build and push
         uses: docker/build-push-action@v6
