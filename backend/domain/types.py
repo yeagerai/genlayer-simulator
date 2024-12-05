@@ -128,4 +128,3 @@ class Transaction:
             appealed=input.get("appealed"),
             timestamp_accepted=input.get("timestamp_accepted"),
         )
-
