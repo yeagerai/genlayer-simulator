@@ -260,6 +260,7 @@ class TransactionsProcessor:
             self.session.query(Transactions).filter_by(hash=transaction_hash).one()
         )
         transaction.consensus_data = consensus_data
+        self.session.commit()
 
     def create_rollup_transaction(self, transaction_hash: str):
         transaction = (
