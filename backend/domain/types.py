@@ -103,6 +103,7 @@ class Transaction:
             "ghost_contract_address": self.ghost_contract_address,
             "appealed": self.appealed,
             "timestamp_accepted": self.timestamp_accepted,
+            "ghost_contract_address": self.ghost_contract_address,
         }
 
 
