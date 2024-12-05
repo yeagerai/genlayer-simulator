@@ -24,10 +24,28 @@ def upgrade() -> None:
     op.create_unique_constraint(
         "rollup_transactions_hash", "rollup_transactions", ["transaction_hash"]
     )
-    op.add_column("transactions", sa.Column("appealed", sa.Boolean(), nullable=False))
+    op.add_column("transactions", sa.Column("appealed", sa.Boolean(), nullable=True))
     op.add_column(
         "transactions", sa.Column("timestamp_accepted", sa.BigInteger(), nullable=True)
     )
+    op.add_column(
+        "transactions",
+        sa.Column("ghost_contract_address", sa.String(length=255), nullable=True),
+    )
+    # Set all existing 'appealed' values to False
+    op.execute("UPDATE transactions SET appealed = FALSE WHERE appealed IS NULL")
+    # Set all existing 'timestamp_accepted' values to 0
+    op.execute(
+        "UPDATE transactions SET timestamp_accepted = 0 WHERE timestamp_accepted IS NULL"
+    )
+    # Set all existing 'ghost_contract_address' values to an empty string
+    op.execute(
+        "UPDATE transactions SET ghost_contract_address = '' WHERE ghost_contract_address IS NULL"
+    )
+    # Alter the columns to be not nullable
+    op.alter_column("transactions", "appealed", nullable=False)
+    op.alter_column("transactions", "timestamp_accepted", nullable=False)
+    op.alter_column("transactions", "ghost_contract_address", nullable=False)
     # ### end Alembic commands ###
 
 
