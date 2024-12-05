@@ -230,8 +230,6 @@ class TransactionsProcessor:
 
         self.session.flush()  # So that `created_at` gets set
 
-        self.create_rollup_transaction(new_transaction.hash)
-
         return new_transaction.hash
 
     def get_transaction_by_hash(self, transaction_hash: str) -> dict | None:
@@ -260,49 +258,6 @@ class TransactionsProcessor:
             self.session.query(Transactions).filter_by(hash=transaction_hash).one()
         )
         transaction.consensus_data = consensus_data
-
-    def create_rollup_transaction(self, transaction_hash: str):
-        transaction = (
-            self.session.query(Transactions).filter_by(hash=transaction_hash).one()
-        )
-        rollup_input_data = json.dumps(
-            self._parse_transaction_data(transaction)
-        ).encode("utf-8")
-
-        # Hardhat transaction
-        account = self.web3.eth.accounts[0]
-        private_key = os.environ.get("HARDHAT_PRIVATE_KEY")
-
-        gas_estimate = self.web3.eth.estimate_gas(
-            {
-                "from": account,
-                "to": transaction.ghost_contract_address,
-                "value": transaction.value,
-                "data": rollup_input_data,
-            }
-        )
-
-        transaction = {
-            "from": account,
-            "to": transaction.ghost_contract_address,
-            "value": transaction.value,
-            "data": rollup_input_data,
-            "nonce": self.web3.eth.get_transaction_count(account),
-            "gas": gas_estimate,
-            "gasPrice": 0,
-        }
-
-        # Sign and send the transaction
-        signed_tx = self.web3.eth.account.sign_transaction(
-            transaction, private_key=private_key
-        )
-        tx_hash = self.web3.eth.send_raw_transaction(signed_tx.raw_transaction)
-
-        # Wait for transaction to be actually mined and get the receipt
-        receipt = self.web3.eth.wait_for_transaction_receipt(tx_hash)
-
-        # Get full transaction details including input data
-        transaction = self.web3.eth.get_transaction(tx_hash)
 
     def get_transaction_count(self, address: str) -> int:
         count = (
