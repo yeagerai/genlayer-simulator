@@ -127,5 +127,4 @@ def transaction_from_dict(input: dict) -> Transaction:
         ghost_contract_address=input.get("ghost_contract_address"),
         appealed=input.get("appealed"),
         timestamp_accepted=input.get("timestamp_accepted"),
-        ghost_contract_address=input.get("ghost_contract_address"),
     )
