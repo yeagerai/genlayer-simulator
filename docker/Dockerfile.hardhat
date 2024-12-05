@@ -17,9 +17,10 @@ RUN mkdir -p /app/deployments/localhost && \
     mkdir -p /app/artifacts/build-info && \
     mkdir -p /app/cache && \
     chown -R hardhat-user:hardhat-group /app && \
-    chmod -R 777 /app/deployments && \
-    chmod -R 777 /app/artifacts && \
-    chmod -R 777 /app/cache
+    chmod -R 755 /app && \
+    chmod -R 775 /app/deployments && \
+    chmod -R 775 /app/artifacts && \
+    chmod -R 775 /app/cache
 
 ENV PATH="/app/node_modules/.bin:${PATH}"
 
@@ -40,5 +41,8 @@ RUN echo '#!/bin/sh' > /app/start.sh && \
     chmod +x /app/start.sh
 
 EXPOSE 8545
+
+# Switch to non-root user before running the command
+USER hardhat-user
 
 CMD ["/app/start.sh"]
