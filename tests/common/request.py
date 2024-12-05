@@ -125,6 +125,7 @@ def wait_for_transaction(transaction_hash: str, interval: int = 10, retries: int
     while attempts < retries:
         transaction_response = get_transaction_by_hash(str(transaction_hash))
         status = transaction_response["status"]
+        print("transaction status", status)
         if status == "FINALIZED":
             return transaction_response
         time.sleep(interval)
