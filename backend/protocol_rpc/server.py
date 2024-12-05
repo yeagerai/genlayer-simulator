@@ -30,6 +30,8 @@ def get_db_name(database: str) -> str:
 
 
 def create_app():
+    FINALITY_WINDOW = int(os.getenv("FINALITY_WINDOW"))
+    print("FINALITY_WINDOW_server:", FINALITY_WINDOW)
     # DataBase
     database_name_seed = "genlayer"
     db_uri = f"postgresql+psycopg2://{environ.get('DBUSER')}:{environ.get('DBPASSWORD')}@{environ.get('DBHOST')}/{get_db_name(database_name_seed)}"

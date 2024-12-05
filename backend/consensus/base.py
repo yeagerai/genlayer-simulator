@@ -559,6 +559,7 @@ class ConsensusAlgorithm:
 
     async def _appeal_window(self):
         FINALITY_WINDOW = int(os.getenv("FINALITY_WINDOW"))
+        print("FINALITY_WINDOW", FINALITY_WINDOW)
         while True:
             with self.get_session() as session:
                 chain_snapshot = ChainSnapshot(session)
