@@ -38,6 +38,7 @@ services:
       target: ${FRONTEND_BUILD_TARGET:-final}
       args:
         - VITE_*
+        - GIT_TAG=${GIT_TAG:-dev}
     ports:
       - "${FRONTEND_PORT}:8080"
     volumes:

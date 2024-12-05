@@ -1,5 +1,8 @@
 FROM node:21.7.3-alpine3.20 AS base
 
+ARG GIT_TAG=unknown
+ENV VITE_APP_VERSION=$GIT_TAG
+
 WORKDIR /app
 COPY ./frontend/package*.json .
 RUN --mount=type=cache,target=/root/.npm npm ci
