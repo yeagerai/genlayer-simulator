@@ -44,7 +44,6 @@ def upgrade() -> None:
     )
     # Alter the columns to be not nullable
     op.alter_column("transactions", "appealed", nullable=False)
-    op.alter_column("transactions", "timestamp_accepted", nullable=False)
     op.alter_column("transactions", "ghost_contract_address", nullable=False)
     # ### end Alembic commands ###
 
