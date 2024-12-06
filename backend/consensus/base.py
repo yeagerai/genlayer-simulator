@@ -583,9 +583,6 @@ class ConsensusAlgorithm:
                             self.finalize_transaction(
                                 transaction,
                                 transactions_processor,
-                                lambda contract_address: contract_snapshot_factory(
-                                    contract_address, session, transaction
-                                ),
                             )
                             session.commit()
                     else:
@@ -593,7 +590,11 @@ class ConsensusAlgorithm:
                             transaction.hash, False
                         )
                         self.commit_reveal_accept_transaction(
-                            transaction, transactions_processor
+                            transaction,
+                            transactions_processor,
+                            lambda contract_address: contract_snapshot_factory(
+                                contract_address, session, transaction
+                            ),
                         )
                         session.commit()
 
