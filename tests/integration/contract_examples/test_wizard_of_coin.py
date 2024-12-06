@@ -22,13 +22,6 @@ import os
 
 
 def test_wizard_of_coin(setup_validators, from_account):
-    # Override FINALITY_WINDOW if needed
-    os.environ["FINALITY_WINDOW"] = "20"
-
-    # Use the environment variable
-    FINALITY_WINDOW = int(os.getenv("FINALITY_WINDOW"))
-    print("FINALITY_WINDOW_test:", FINALITY_WINDOW)
-
     # Get contract schema
     contract_code = open("examples/contracts/wizard_of_coin.py", "r").read()
     result_schema = post_request_localhost(
