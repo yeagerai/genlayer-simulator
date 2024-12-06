@@ -564,11 +564,14 @@ class ConsensusAlgorithm:
     def run_appeal_window_loop(self):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
+        print(" ~ ~ ~ ~ ~ STARTING APPEAL WINDOW LOOP")
         loop.run_until_complete(self._appeal_window())
         loop.close()
+        print(" ~ ~ ~ ~ ~ ENDING APPEAL WINDOW LOOP")
 
     async def _appeal_window(self):
         FINALITY_WINDOW = int(os.getenv("FINALITY_WINDOW"))
+        print(" ~ ~ ~ ~ ~ FINALITY WINDOW: ", FINALITY_WINDOW)
         while True:
             with self.get_session() as session:
                 chain_snapshot = ChainSnapshot(session)
@@ -583,9 +586,6 @@ class ConsensusAlgorithm:
                             self.finalize_transaction(
                                 transaction,
                                 transactions_processor,
-                                lambda contract_address: contract_snapshot_factory(
-                                    contract_address, session, transaction
-                                ),
                             )
                             session.commit()
                     else:

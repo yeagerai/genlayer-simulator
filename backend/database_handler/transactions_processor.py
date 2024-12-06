@@ -140,6 +140,7 @@ class TransactionsProcessor:
         transaction_hash = self._generate_transaction_hash(
             from_address, to_address, data, value, type, nonce
         )
+        ghost_contract_address = None
 
         if type == TransactionType.DEPLOY_CONTRACT.value:
             # Hardhat account

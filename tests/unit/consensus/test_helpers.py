@@ -178,7 +178,6 @@ async def _appeal_window(
                     consensus.finalize_transaction(
                         transaction,
                         transactions_processor,
-                        contract_snapshot_factory=contract_snapshot_factory,
                     )
             else:
                 transactions_processor.set_transaction_appeal(transaction.hash, False)
