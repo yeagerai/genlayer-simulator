@@ -223,7 +223,7 @@ class TransactionsProcessor:
             ),
             ghost_contract_address=ghost_contract_address,
             appealed=False,
-            timestamp_accepted=None,
+            timestamp_accepted=0,
         )
 
         self.session.add(new_transaction)

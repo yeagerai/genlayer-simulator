@@ -1,4 +1,5 @@
 import { fileURLToPath, URL } from 'node:url';
+import { execSync } from 'node:child_process'; // Ensure correct import
 import svgLoader from 'vite-svg-loader';
 
 import { defineConfig, loadEnv, UserConfig } from 'vite';
@@ -7,9 +8,23 @@ import vueJsx from '@vitejs/plugin-vue-jsx';
 import VueDevTools from 'vite-plugin-vue-devtools';
 import gitDescribe from 'git-describe';
 
+// function getGitTag() {
+//   const gitInfo = gitDescribe.gitDescribeSync();
+//   return gitInfo.tag;
+// }
+
 function getGitTag() {
-  const gitInfo = gitDescribe.gitDescribeSync();
-  return gitInfo.tag;
+  try {
+    // Check if Git is available
+    execSync('git --version', { stdio: 'ignore' });
+    // If Git is available, proceed to get the tag
+    const gitInfo = gitDescribe.gitDescribeSync();
+    return gitInfo.tag;
+  } catch (error) {
+    // If Git is not available, return a default value or handle the error
+    console.warn('Git is not available, using default version');
+    return 'v0.0.0';
+  }
 }
 
 // https://vitejs.dev/config/
