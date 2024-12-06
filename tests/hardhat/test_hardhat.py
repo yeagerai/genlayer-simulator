@@ -68,11 +68,11 @@ def test_hardhat():
     11. Retrieves the transaction details and asserts the input data.
     12. Asserts that the account balance remains unchanged after the transactions.
     """
-    web3 = connect_to_hardhat()
+    # web3 = connect_to_hardhat()
 
-    account = web3.eth.accounts[0]
-    private_key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
-    account_balance = web3.eth.get_balance(account)
+    # account = web3.eth.accounts[0]
+    # private_key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+    # account_balance = web3.eth.get_balance(account)
 
     # Create ghost contract
     # Read contract ABI and bytecode from compiled contract
@@ -91,13 +91,9 @@ def test_hardhat():
                     print_directory_tree(path, prefix + "│   ")
 
     print("print_directory_tree_hardhat")
-    print_directory_tree("hardhat")
-    print("print_directory_tree_app")
-    print_directory_tree("app")
+    print_directory_tree(".")
 
-    with open(
-        "hardhat/artifacts/contracts/GhostContract.sol/GhostContract.json", "r"
-    ) as f:
+    with open("artifacts/contracts/GhostContract.sol/GhostContract.json", "r") as f:
         contract_json = json.loads(f.read())
         abi = contract_json["abi"]
         bytecode = contract_json["bytecode"]
