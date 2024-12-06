@@ -231,7 +231,8 @@ class TransactionsProcessor:
 
         self.session.flush()  # So that `created_at` gets set
 
-        self.create_rollup_transaction(new_transaction.hash)
+        if type != TransactionType.SEND.value:
+            self.create_rollup_transaction(new_transaction.hash)
 
         return new_transaction.hash
 
