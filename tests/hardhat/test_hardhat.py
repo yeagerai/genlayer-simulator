@@ -76,6 +76,25 @@ def test_hardhat():
 
     # Create ghost contract
     # Read contract ABI and bytecode from compiled contract
+
+    def print_directory_tree(root_dir, prefix=""):
+        contents = os.listdir(root_dir)
+        for i, item in enumerate(contents):
+            path = os.path.join(root_dir, item)
+            if i == len(contents) - 1:
+                print(prefix + "└── " + item)
+                if os.path.isdir(path):
+                    print_directory_tree(path, prefix + "    ")
+            else:
+                print(prefix + "├── " + item)
+                if os.path.isdir(path):
+                    print_directory_tree(path, prefix + "│   ")
+
+    print("print_directory_tree_hardhat")
+    print_directory_tree("hardhat")
+    print("print_directory_tree_app")
+    print_directory_tree("app")
+
     with open(
         "hardhat/artifacts/contracts/GhostContract.sol/GhostContract.json", "r"
     ) as f:

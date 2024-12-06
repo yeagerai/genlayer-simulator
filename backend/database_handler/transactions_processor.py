@@ -151,7 +151,7 @@ class TransactionsProcessor:
             # Read contract ABI and bytecode from compiled contract
             contract_file = os.path.join(
                 os.getcwd(),
-                "hardhat/artifacts/contracts/GhostContract.sol/GhostContract.json",
+                "app/hardhat/artifacts/contracts/GhostContract.sol/GhostContract.json",
             )
 
             with open(contract_file, "r") as f:
