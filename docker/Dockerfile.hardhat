@@ -1,4 +1,4 @@
-FROM node:20.11-alpine3.19
+FROM node:22.12-alpine3.19
 
 # Create non-root user
 RUN addgroup -S hardhat-group && adduser -S hardhat-user -G hardhat-group
