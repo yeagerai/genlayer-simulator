@@ -4,12 +4,16 @@ FROM node:20.11-alpine3.19
 RUN addgroup -S hardhat-group && adduser -S hardhat-user -G hardhat-group
 WORKDIR /app
 
-RUN apk add --no-cache g++ make netcat-openbsd python3
+# Install necessary packages including curl
+RUN apk add --no-cache g++ make netcat-openbsd python3 curl
 
 COPY ./hardhat/package*.json ./
 RUN npm install --ignore-scripts
 
 COPY ./hardhat .
+
+# Change ownership of the app directory to the non-root user
+RUN chown -R hardhat-user:hardhat-group /app
 
 # Create artifacts directory and set permissions before volume mount
 RUN mkdir -p /app/artifacts && \
@@ -20,34 +24,11 @@ RUN mkdir -p /app/artifacts && \
 
 ENV PATH="/app/node_modules/.bin:${PATH}"
 
-# Add healthcheck directly in Dockerfile
-RUN echo -e '#!/bin/sh\nnc -z localhost 8545 || exit 1' > /app/healthcheck.sh && \
-    chmod +x /app/healthcheck.sh
-
-# Modify start script to ensure node is ready
-RUN echo -e '#!/bin/sh\n\
-echo "Compiling contracts..."\n\
-npx hardhat compile --force\n\
-echo "Starting Hardhat node..."\n\
-npx hardhat node --network hardhat &\n\
-\n\
-# Wait for node to be ready\n\
-while ! nc -z localhost 8545; do\n\
-  echo "Waiting for Hardhat node..."\n\
-  sleep 1\n\
-done\n\
-\n\
-echo "Hardhat node is ready"\n\
-\n\
-# Keep container running\n\
-tail -f /dev/null\n\
-' > /app/start.sh && \
-chmod +x /app/start.sh
+RUN echo -e '#!/bin/sh\necho "Compiling contracts..."\nnpx hardhat compile --force\necho "Starting Hardhat node..."\nexec ./node_modules/.bin/hardhat node --network hardhat' > /app/start.sh && \
+    chmod +x /app/start.sh && \
+    ls -la /app/start.sh
 
 EXPOSE 8545
-
-HEALTHCHECK --interval=5s --timeout=3s --start-period=10s --retries=5 \
-    CMD /app/healthcheck.sh
 
 # Switch to non-root user
 USER hardhat-user
