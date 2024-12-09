@@ -10,6 +10,7 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.engine.reflection import Inspector
 
 
 # revision identifiers, used by Alembic.
@@ -20,8 +21,13 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Drop the rollup_transactions table as it's no longer needed
-    op.drop_table("rollup_transactions")
+    # Check if rollup_transactions table exists before dropping
+    conn = op.get_bind()
+    inspector = Inspector.from_engine(conn)
+    tables = inspector.get_table_names()
+
+    if "rollup_transactions" in tables:
+        op.drop_table("rollup_transactions")
 
 
 def downgrade() -> None:
