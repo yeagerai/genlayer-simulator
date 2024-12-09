@@ -1,4 +1,5 @@
 require("@nomicfoundation/hardhat-toolbox");
+require("hardhat-deploy");
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -21,15 +22,24 @@ module.exports = {
       chainId: 31337,
       gasPrice: 0,
       initialBaseFeePerGas: 0,
-      accounts: {
-        count: 1
-      }
+      blockGasLimit: 30000000,
+      live: false,
+      saveDeployments: true,
+      allowUnlimitedContractSize: true,
+      tags: ['local']
     }
   },
   paths: {
     sources: "./contracts",
     tests: "./test",
     cache: "./cache",
-    artifacts: "./artifacts"
+    artifacts: "./artifacts",
+    deploy: "./deploy",
+    deployments: "./deployments"
+  },
+  namedAccounts: {
+    deployer: {
+      default: 0
+    }
   }
 };
