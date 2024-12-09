@@ -573,33 +573,38 @@ class ConsensusAlgorithm:
         FINALITY_WINDOW = int(os.getenv("FINALITY_WINDOW"))
         print(" ~ ~ ~ ~ ~ FINALITY WINDOW: ", FINALITY_WINDOW)
         while True:
-            with self.get_session() as session:
-                chain_snapshot = ChainSnapshot(session)
-                transactions_processor = TransactionsProcessor(session)
-                accepted_transactions = chain_snapshot.get_accepted_transactions()
-                for transaction in accepted_transactions:
-                    transaction = transaction_from_dict(transaction)
-                    if not transaction.appealed:
-                        if (
-                            int(time.time()) - transaction.timestamp_accepted
-                        ) > FINALITY_WINDOW:
-                            self.finalize_transaction(
+            try:
+                with self.get_session() as session:
+                    chain_snapshot = ChainSnapshot(session)
+                    transactions_processor = TransactionsProcessor(session)
+                    accepted_transactions = chain_snapshot.get_accepted_transactions()
+                    for transaction in accepted_transactions:
+                        transaction = transaction_from_dict(transaction)
+                        if not transaction.appealed:
+                            if (
+                                int(time.time()) - transaction.timestamp_accepted
+                            ) > FINALITY_WINDOW:
+                                self.finalize_transaction(
+                                    transaction,
+                                    transactions_processor,
+                                )
+                                session.commit()
+                        else:
+                            transactions_processor.set_transaction_appeal(
+                                transaction.hash, False
+                            )
+                            self.commit_reveal_accept_transaction(
                                 transaction,
                                 transactions_processor,
+                                lambda contract_address: contract_snapshot_factory(
+                                    contract_address, session, transaction
+                                ),
                             )
                             session.commit()
-                    else:
-                        transactions_processor.set_transaction_appeal(
-                            transaction.hash, False
-                        )
-                        self.commit_reveal_accept_transaction(
-                            transaction,
-                            transactions_processor,
-                            lambda contract_address: contract_snapshot_factory(
-                                contract_address, session, transaction
-                            ),
-                        )
-                        session.commit()
+
+            except Exception as e:
+                print("Error running consensus", e)
+                print(traceback.format_exc())
 
             await asyncio.sleep(1)
 
