@@ -80,6 +80,8 @@ services:
       - ./backend:/app/backend
       - ./hardhat/artifacts:/app/hardhat/artifacts
     depends_on:
+      hardhat:
+        condition: service_healthy
       database-migration:
         condition: service_completed_successfully
       webrequest:
@@ -202,4 +204,10 @@ services:
       - ./hardhat/artifacts:/app/artifacts
     environment:
       - HARDHAT_NETWORK=hardhat
+    healthcheck:
+      test: ["CMD", "/app/healthcheck.sh"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
 
