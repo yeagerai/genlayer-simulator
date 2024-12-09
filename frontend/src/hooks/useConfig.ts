@@ -4,6 +4,7 @@ export const useConfig = () => {
   const canUpdateProviders = !isHostedEnvironment;
 
   return {
+    isHostedEnvironment,
     canUpdateValidators,
     canUpdateProviders,
   };
