@@ -22,3 +22,4 @@ jsf==0.11.2
 jsonschema==4.23.0
 loguru==0.7.2
 gunicorn==20.1.0
+web3==7.5.0

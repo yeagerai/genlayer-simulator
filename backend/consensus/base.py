@@ -351,6 +351,7 @@ class ConsensusAlgorithm:
             transaction.hash,
             consensus_data.to_dict(),
         )
+        transaction.consensus_data = consensus_data.to_dict()
         transactions_processor.create_rollup_transaction(transaction.hash)
         msg_handler.send_message(
             LogEvent(
@@ -362,11 +363,55 @@ class ConsensusAlgorithm:
                 transaction_hash=transaction.hash,
             )
         )
+        self.update_contract_state(transaction, contract_snapshot_factory)
+
+    def update_contract_state(
+        self,
+        transaction: Transaction,
+        contract_snapshot_factory: Callable[[str], ContractSnapshot],
+    ):
+        consensus_data = transaction.consensus_data
+        leader_receipt = consensus_data["leader_receipt"]
+        contract_snapshot_supplier = lambda: contract_snapshot_factory(
+            transaction.to_address
+        )
+
+        leaders_contract_snapshot = contract_snapshot_supplier()
+
+        if leader_receipt["execution_result"] == ExecutionResultStatus.SUCCESS.value:
+            # Register contract if it is a new contract
+            if transaction.type == TransactionType.DEPLOY_CONTRACT:
+                new_contract = {
+                    "id": transaction.data["contract_address"],
+                    "data": {
+                        "state": leader_receipt["contract_state"],
+                        "code": transaction.data["contract_code"],
+                        "ghost_contract_address": transaction.ghost_contract_address,
+                    },
+                }
+                leaders_contract_snapshot.register_contract(new_contract)
+                self.msg_handler.send_message(
+                    LogEvent(
+                        "deployed_contract",
+                        EventType.SUCCESS,
+                        EventScope.GENVM,
+                        "Contract deployed",
+                        new_contract,
+                        transaction_hash=transaction.hash,
+                    )
+                )
+
+            # Update contract state if it is an existing contract
+            else:
+                leaders_contract_snapshot.update_contract_state(
+                    leader_receipt["contract_state"]
+                )
 
     def commit_reveal_accept_transaction(
         self,
         transaction: Transaction,
         transactions_processor: TransactionsProcessor,
+        contract_snapshot_factory: Callable[[str], ContractSnapshot],
     ):
         # temporary, reuse existing code
         # and add other possible states the transaction can go to
@@ -396,50 +441,15 @@ class ConsensusAlgorithm:
             self.msg_handler,
         )
         transactions_processor.create_rollup_transaction(transaction.hash)
+        self.update_contract_state(transaction, contract_snapshot_factory)
 
     def finalize_transaction(
         self,
         transaction: Transaction,
         transactions_processor: TransactionsProcessor,
-        contract_snapshot_factory: Callable[[str], ContractSnapshot],
     ):
         consensus_data = transaction.consensus_data
         leader_receipt = consensus_data["leader_receipt"]
-
-        contract_snapshot_supplier = lambda: contract_snapshot_factory(
-            transaction.to_address
-        )
-
-        leaders_contract_snapshot = contract_snapshot_supplier()
-
-        if leader_receipt["execution_result"] == ExecutionResultStatus.SUCCESS.value:
-            # Register contract if it is a new contract
-            if transaction.type == TransactionType.DEPLOY_CONTRACT:
-                new_contract = {
-                    "id": transaction.data["contract_address"],
-                    "data": {
-                        "state": leader_receipt["contract_state"],
-                        "code": transaction.data["contract_code"],
-                    },
-                }
-                leaders_contract_snapshot.register_contract(new_contract)
-                self.msg_handler.send_message(
-                    LogEvent(
-                        "deployed_contract",
-                        EventType.SUCCESS,
-                        EventScope.GENVM,
-                        "Contract deployed",
-                        new_contract,
-                        transaction_hash=transaction.hash,
-                    )
-                )
-
-            # Update contract state if it is an existing contract
-            else:
-                leaders_contract_snapshot.update_contract_state(
-                    leader_receipt["contract_state"]
-                )
-
         # Finalize transaction
         transactions_processor.set_transaction_result(
             transaction.hash,
@@ -554,11 +564,14 @@ class ConsensusAlgorithm:
     def run_appeal_window_loop(self):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
+        print(" ~ ~ ~ ~ ~ STARTING APPEAL WINDOW LOOP")
         loop.run_until_complete(self._appeal_window())
         loop.close()
+        print(" ~ ~ ~ ~ ~ ENDING APPEAL WINDOW LOOP")
 
     async def _appeal_window(self):
         FINALITY_WINDOW = int(os.getenv("FINALITY_WINDOW"))
+        print(" ~ ~ ~ ~ ~ FINALITY WINDOW: ", FINALITY_WINDOW)
         while True:
             with self.get_session() as session:
                 chain_snapshot = ChainSnapshot(session)
@@ -573,9 +586,6 @@ class ConsensusAlgorithm:
                             self.finalize_transaction(
                                 transaction,
                                 transactions_processor,
-                                lambda contract_address: contract_snapshot_factory(
-                                    contract_address, session, transaction
-                                ),
                             )
                             session.commit()
                     else:
@@ -583,7 +593,11 @@ class ConsensusAlgorithm:
                             transaction.hash, False
                         )
                         self.commit_reveal_accept_transaction(
-                            transaction, transactions_processor
+                            transaction,
+                            transactions_processor,
+                            lambda contract_address: contract_snapshot_factory(
+                                contract_address, session, transaction
+                            ),
                         )
                         session.commit()
 
