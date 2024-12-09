@@ -11,8 +11,12 @@ RUN npm install --ignore-scripts
 
 COPY ./hardhat .
 
-# Change ownership of the app directory to the non-root user
-RUN chown -R hardhat-user:hardhat-group /app
+# Create artifacts directory and set permissions before volume mount
+RUN mkdir -p /app/artifacts && \
+    mkdir -p /app/artifacts/build-info && \
+    mkdir -p /app/artifacts/contracts && \
+    chown -R hardhat-user:hardhat-group /app && \
+    chmod -R 755 /app/artifacts
 
 ENV PATH="/app/node_modules/.bin:${PATH}"
 

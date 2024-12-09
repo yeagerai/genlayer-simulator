@@ -201,7 +201,7 @@ services:
       - ./hardhat/scripts:/app/scripts
       - ./hardhat/test:/app/test
       - ./hardhat/hardhat.config.js:/app/hardhat.config.js
-      - ./hardhat/artifacts:/app/artifacts
+      - hardhat_artifacts:/app/artifacts
     environment:
       - HARDHAT_NETWORK=hardhat
     healthcheck:
@@ -210,4 +210,7 @@ services:
       timeout: 3s
       retries: 5
       start_period: 10s
+
+volumes:
+  hardhat_artifacts:
 
