@@ -63,7 +63,7 @@ services:
     build:
       context: ./
       dockerfile: ./docker/Dockerfile.backend
-      target: ${BACKEND_BUILD_TARGET:-prod}
+      target: debug
     environment:
       - FLASK_SERVER_PORT=${RPCPORT}
       # TODO: remove this in production
