@@ -6,6 +6,7 @@ import CopyTextButton from '@/components/global/CopyTextButton.vue';
 import Alert from '@/components/global/Alert.vue';
 import Loader from '@/components/global/Loader.vue';
 import ContentLoader from '@/components/global/ContentLoader.vue';
+import MoreInfo from '@/components/global/MoreInfo.vue';
 
 export default function registerGlobalComponents(app) {
   app.component('Modal', Modal);
@@ -16,4 +17,5 @@ export default function registerGlobalComponents(app) {
   app.component('Alert', Alert);
   app.component('Loader', Loader);
   app.component('ContentLoader', ContentLoader);
+  app.component('MoreInfo', MoreInfo);
 }

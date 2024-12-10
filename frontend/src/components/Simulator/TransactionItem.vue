@@ -1,15 +1,20 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import type { TransactionItem } from '@/types';
 import TransactionStatusBadge from '@/components/Simulator/TransactionStatusBadge.vue';
 import { useTimeAgo } from '@vueuse/core';
 import ModalSection from '@/components/Simulator/ModalSection.vue';
 import JsonViewer from '@/components/JsonViewer/json-viewer.vue';
-import { useUIStore } from '@/stores';
+import { useUIStore, useNodeStore, useTransactionsStore } from '@/stores';
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/vue/16/solid';
 import CopyTextButton from '../global/CopyTextButton.vue';
+import { FilterIcon } from 'lucide-vue-next';
+import { GavelIcon } from 'lucide-vue-next';
+import * as calldata from '@/calldata';
 
 const uiStore = useUIStore();
+const nodeStore = useNodeStore();
+const transactionsStore = useTransactionsStore();
 
 const props = defineProps<{
   transaction: TransactionItem;
@@ -36,32 +41,124 @@ const leaderReceipt = computed(() => {
 });
 
 const shortHash = computed(() => {
-  return props.transaction.hash?.slice(0, 8);
+  return props.transaction.hash?.slice(0, 6);
 });
+
+const isAppealed = ref(false);
+
+const handleSetTransactionAppeal = () => {
+  transactionsStore.setTransactionAppeal(props.transaction.hash);
+
+  isAppealed.value = true;
+};
+
+watch(
+  () => props.transaction.status,
+  (newStatus) => {
+    if (newStatus !== 'ACCEPTED') {
+      isAppealed.value = false;
+    }
+  },
+);
+
+function prettifyTxData(x: any): any {
+  const oldEqOutputs = x?.consensus_data?.leader_receipt?.eq_outputs;
+  if (oldEqOutputs == undefined) {
+    return x;
+  }
+  try {
+    const new_eq_outputs = Object.fromEntries(
+      Object.entries(oldEqOutputs).map(([k, v]) => {
+        const val = Uint8Array.from(atob(v as string), (c) => c.charCodeAt(0));
+        const rest = new Uint8Array(val).slice(1);
+        if (val[0] == 0) {
+          return [
+            k,
+            {
+              status: 'success',
+              data: calldata.toString(calldata.decode(rest)),
+            },
+          ];
+        } else if (val[0] == 1) {
+          return [
+            k,
+            { status: 'rollback', data: new TextDecoder('utf-8').decode(rest) },
+          ];
+        }
+        return [k, v];
+      }),
+    );
+    const ret = {
+      ...x,
+      consensus_data: {
+        ...x.consensus_data,
+        leader_receipt: {
+          ...x.consensus_data.leader_receipt,
+          eq_outputs: new_eq_outputs,
+        },
+      },
+    };
+    return ret;
+  } catch (e) {
+    console.log(e);
+    return x;
+  }
+}
 </script>
 
 <template>
   <div
-    class="flex cursor-pointer flex-row items-center justify-between gap-2 rounded p-0.5 pl-1 hover:bg-gray-100 dark:hover:bg-zinc-700"
+    class="group flex cursor-pointer flex-row items-center justify-between gap-2 rounded p-0.5 pl-1 hover:bg-gray-100 dark:hover:bg-zinc-700"
     @click="isDetailsModalOpen = true"
   >
-    <div class="truncate text-xs text-gray-500 dark:text-gray-400">
+    <div class="flex flex-row text-xs text-gray-500 dark:text-gray-400">
       <span class="font-mono">{{ shortHash }}</span>
       <span class="font-normal">...</span>
     </div>
 
-    <div class="grow truncate text-left text-xs font-medium">
+    <div class="grow truncate text-left text-[11px] font-medium">
       {{
         transaction.type === 'method'
-          ? transaction.data.data?.function_name
+          ? transaction.decodedData?.functionName
           : 'Deploy'
       }}
+    </div>
+
+    <div class="hidden flex-row items-center gap-1 group-hover:flex">
+      <CopyTextButton
+        :text="transaction.hash"
+        v-tooltip="'Copy transaction hash'"
+        class="h-4 w-4"
+      />
+
+      <button
+        @click.stop="nodeStore.searchFilter = transaction.hash"
+        class="active:scale-90"
+      >
+        <FilterIcon
+          v-tooltip="'Filter logs by hash'"
+          class="h-4 w-4 text-gray-400 outline-none transition-all hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
+        />
+      </button>
     </div>
 
     <div class="flex items-center justify-between gap-2 p-1">
       <Loader :size="15" v-if="transaction.status !== 'FINALIZED'" />
 
-      <TransactionStatusBadge class="px-[4px] py-[1px] text-[10px]">
+      <!-- <TransactionStatusBadge
+        as="button"
+        @click.stop="handleSetTransactionAppeal"
+        :class="{ '!bg-green-500': isAppealed }"
+        v-if="transaction.status == 'ACCEPTED'"
+        v-tooltip="'Appeal transaction'"
+      >
+        <div class="flex items-center gap-1">
+          APPEAL
+          <GavelIcon class="h-3 w-3" />
+        </div>
+      </TransactionStatusBadge> -->
+
+      <TransactionStatusBadge class="px-[4px] py-[1px] text-[9px]">
         {{ transaction.status }}
       </TransactionStatusBadge>
     </div>
@@ -210,7 +307,7 @@ const shortHash = computed(() => {
 
           <JsonViewer
             class="overflow-y-auto rounded-md bg-white p-2 dark:bg-zinc-800"
-            :value="transaction.data || {}"
+            :value="prettifyTxData(transaction.data || {})"
             :theme="uiStore.mode === 'light' ? 'light' : 'dark'"
             :expand="true"
             sort

@@ -5,8 +5,11 @@ import requests
 import time
 from dotenv import load_dotenv
 from eth_account import Account
+import base64
 
 from tests.common.transactions import sign_transaction, encode_transaction_data
+
+import backend.node.genvm.origin.calldata as calldata
 
 load_dotenv()
 
@@ -44,14 +47,22 @@ def get_transaction_by_hash(transaction_hash: str):
     return parsed_raw_response["result"]
 
 
+def get_transaction_count(account_address: str):
+    payload_data = payload("eth_getTransactionCount", account_address)
+    raw_response = post_request_localhost(payload_data)
+    parsed_raw_response = raw_response.json()
+    return parsed_raw_response["result"]
+
+
 def call_contract_method(
     contract_address: str,
     from_account: Account,
     method_name: str,
     method_args: list,
 ):
-    params_as_string = json.dumps(method_args)
-    encoded_data = encode_transaction_data([method_name, params_as_string])
+    encoded_data = encode_transaction_data(
+        [calldata.encode({"method": method_name, "args": method_args})]
+    )
     method_response = post_request_localhost(
         payload(
             "eth_call",
@@ -62,7 +73,8 @@ def call_contract_method(
             },
         )
     ).json()
-    return method_response["result"]
+    enc_result = method_response["result"]
+    return calldata.decode(base64.b64decode(enc_result))
 
 
 def send_transaction(
@@ -75,17 +87,24 @@ def send_transaction(
     call_data = (
         None
         if method_name is None and method_args is None
-        else [method_name, json.dumps(method_args)]
+        else [calldata.encode({"method": method_name, "args": method_args})]
     )
-    signed_transaction = sign_transaction(account, call_data, contract_address, value)
+    nonce = get_transaction_count(account.address)
+    signed_transaction = sign_transaction(
+        account, call_data, contract_address, value, nonce
+    )
     return send_raw_transaction(signed_transaction)
 
 
 def deploy_intelligent_contract(
-    account: Account, contract_code: str, constructor_params: str
+    account: Account, contract_code: str, method_args: list
 ) -> tuple[str, dict]:
-    deploy_data = [contract_code, constructor_params]
-    signed_transaction = sign_transaction(account, deploy_data)
+    nonce = get_transaction_count(account.address)
+    deploy_data = [
+        contract_code,
+        calldata.encode({"method": "__init__", "args": method_args}),
+    ]
+    signed_transaction = sign_transaction(account, deploy_data, nonce=nonce)
     result = send_raw_transaction(signed_transaction)
     contract_address = result["data"]["contract_address"]
     return contract_address, result

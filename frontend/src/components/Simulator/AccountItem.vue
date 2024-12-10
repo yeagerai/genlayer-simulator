@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { useAccountsStore } from '@/stores';
 import { notify } from '@kyvg/vue3-notification';
-import { TrashIcon } from '@heroicons/vue/24/solid';
 import { PowerCircle } from 'lucide-vue-next';
 import { ref } from 'vue';
 import CopyTextButton from '../global/CopyTextButton.vue';
-
+import { TrashIcon, CheckCircleIcon } from '@heroicons/vue/16/solid';
+import type { Account } from 'genlayer-js/types';
 const store = useAccountsStore();
 
 const setCurentAddress = () => {
@@ -24,74 +24,91 @@ const deleteAddress = () => {
       type: 'success',
     });
   } catch (err) {
+    console.error(err);
     notify({
       title: 'Error',
       text: (err as Error)?.message || 'Error deleting account',
       type: 'error',
     });
-  } finally {
-    deleteModalOpen.value = false;
   }
 };
 
 const props = defineProps<{
   active?: Boolean;
+  account: Account;
   privateKey: `0x${string}`;
   canDelete?: Boolean;
 }>();
 
-const deleteModalOpen = ref(false);
+const showConfirmDelete = ref(false);
 </script>
 
 <template>
   <div>
     <button
-      class="group flex w-full flex-row items-center justify-between gap-2 bg-slate-100 p-2 text-left hover:bg-slate-200 dark:bg-gray-700 dark:hover:bg-gray-600"
+      class="group flex w-full flex-row items-center justify-between gap-2 truncate bg-slate-100 p-2 text-left hover:bg-slate-200 dark:bg-gray-700 dark:hover:bg-gray-600"
       @click="setCurentAddress()"
     >
       <div>
         <PowerCircle
           v-if="!active"
           class="h-4 w-4 text-gray-400 opacity-0 transition-all group-hover:opacity-100"
+          v-tooltip="'Activate Account'"
         />
         <PowerCircle class="h-4 w-4 text-green-500" v-if="active" />
       </div>
 
       <span
-        class="font-mono text-xs font-semibold"
+        class="flex grow flex-row truncate font-mono text-xs font-semibold"
         :class="[!active && 'opacity-50']"
       >
-        {{ store.accountFromPrivateKey(privateKey).address }}
+        {{ account.address }}
       </span>
 
-      <CopyTextButton
-        :text="store.accountFromPrivateKey(privateKey).address"
-        class="opacity-0 group-hover:opacity-100"
-      />
-
-      <TrashIcon
-        v-if="canDelete"
-        class="h-4 w-4 shrink-0 text-gray-400 opacity-0 transition-all hover:text-red-500 group-hover:opacity-100"
-        @click.stop="deleteModalOpen = true"
-      />
-    </button>
-
-    <ConfirmationModal
-      :open="deleteModalOpen"
-      @close="deleteModalOpen = false"
-      @confirm="deleteAddress"
-      buttonText="Delete account"
-      dangerous
-    >
-      <template #title>Delete Account</template>
-      <template #description
-        >Are you sure you want to delete this account?</template
+      <div
+        class="flex flex-row items-center gap-1 opacity-0 group-hover:opacity-100"
       >
-      <template #info>
-        <div class="font-mono text-xs">
-          {{ store.accountFromPrivateKey(privateKey).address }}
-        </div>
-      </template>
-    </ConfirmationModal>
+        <CopyTextButton :text="account.address" v-tooltip="'Copy Address'" />
+
+        <Transition mode="out-in" v-if="canDelete">
+          <button
+            v-if="!showConfirmDelete"
+            data-testid="account-item-delete"
+            @click.stop="showConfirmDelete = true"
+            v-tooltip="'Delete Account'"
+          >
+            <TrashIcon
+              class="h-5 w-5 p-[2px] text-slate-400 transition-colors hover:text-slate-800 active:scale-90 dark:hover:text-white"
+            />
+          </button>
+
+          <button
+            v-else
+            data-testid="account-item-confirm-delete"
+            @click.stop="deleteAddress"
+            v-tooltip="'Confirm deletion'"
+          >
+            <CheckCircleIcon
+              class="h-5 w-5 p-[2px] text-red-500 transition-colors hover:text-red-400 active:scale-90"
+            />
+          </button>
+        </Transition>
+      </div>
+    </button>
   </div>
 </template>
+
+<style scoped>
+.v-enter-active,
+.v-leave-active {
+  transition: all 0.08s ease;
+}
+.v-enter-from {
+  opacity: 0;
+  transform: scale(0.8) rotate(45deg);
+}
+.v-leave-to {
+  opacity: 0;
+  transform: scale(0.8) rotate(-45deg);
+}
+</style>

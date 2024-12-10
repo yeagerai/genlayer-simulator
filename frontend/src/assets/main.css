@@ -16,7 +16,7 @@
 
 @layer components {
   .input-style {
-    @apply flex w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-accent hover:focus:ring-accent sm:text-sm sm:leading-6 dark:bg-zinc-800 dark:text-white;
+    @apply flex w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-accent hover:focus:ring-accent disabled:opacity-50 sm:text-sm sm:leading-6 dark:bg-zinc-800 dark:text-white;
   }
 }
 
@@ -59,6 +59,7 @@ input[type='number'] {
 /* floating-vue customization */
 
 .v-popper--theme-tooltip .v-popper__inner {
+  max-width: 300px;
   font-size: 0.8rem !important;
   padding: 2px 8px !important;
   background: rgba(25, 26, 27, 0.95) !important;

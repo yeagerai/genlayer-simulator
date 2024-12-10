@@ -12,7 +12,6 @@ def test_chain_snapshot(session: Session):
         hash="0x123",
         from_address="0x123",
         to_address="0x456",
-        hash="0x123",
         data="data",
         consensus_data="consensus_data",
         value=10,
@@ -24,11 +23,11 @@ def test_chain_snapshot(session: Session):
         s=None,
         v=None,
         leader_only=False,
+        triggered_by_hash=None,
     )
 
     pending_transaction_2 = Transactions(
         status=TransactionStatus.PENDING,
-        hash="0x789",
         from_address="0x789",
         to_address="0xabc",
         hash="0x456",
@@ -43,6 +42,7 @@ def test_chain_snapshot(session: Session):
         s=None,
         v=None,
         leader_only=False,
+        triggered_by_hash="0xdef",
     )
 
     finalized_transaction = Transactions(
@@ -50,7 +50,6 @@ def test_chain_snapshot(session: Session):
         hash="0xdef",
         from_address="0xdef",
         to_address="0x123",
-        hash="0x789",
         data="data",
         consensus_data="consensus_data",
         value=30,
@@ -62,6 +61,7 @@ def test_chain_snapshot(session: Session):
         s=None,
         v=None,
         leader_only=False,
+        triggered_by_hash=None,
     )
 
     session.add(pending_transaction_1)

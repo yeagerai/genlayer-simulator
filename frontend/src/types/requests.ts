@@ -21,7 +21,9 @@ export interface CreateValidatorRequest {
   stake: number;
   provider: string;
   model: string;
-  config: any;
+  config?: Record<string, any>;
+  plugin?: string;
+  plugin_config?: Record<string, any>;
 }
 
 export interface UpdateValidatorRequest {
@@ -29,9 +31,36 @@ export interface UpdateValidatorRequest {
   stake: number;
   provider: string;
   model: string;
-  config: any;
+  config?: Record<string, any>;
+  plugin?: string;
+  plugin_config?: Record<string, any>;
 }
 
 export interface DeleteValidatorRequest {
+  address: string;
+}
+
+export interface AddProviderRequest {
+  provider: string;
+  model: string;
+  config: Record<string, any>;
+  plugin: string;
+  plugin_config: Record<string, any>;
+}
+
+export interface UpdateProviderRequest {
+  id: number;
+  provider: string;
+  model: string;
+  config: Record<string, any>;
+  plugin: string;
+  plugin_config: Record<string, any>;
+}
+
+export interface DeleteProviderRequest {
+  id: number;
+}
+
+export interface GetTransactionCountRequest {
   address: string;
 }

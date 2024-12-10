@@ -4,7 +4,7 @@ import { createPinia } from 'pinia';
 import Notifications from '@kyvg/vue3-notification';
 import App from './App.vue';
 import router from './router';
-import { persistStorePlugin, TransactionsListenerPlugin } from '@/plugins';
+import { persistStorePlugin } from '@/plugins';
 import { VueSpinnersPlugin } from 'vue3-spinners';
 import registerGlobalComponents from '@/components/global/registerGlobalComponents';
 import { VueQueryPlugin } from '@tanstack/vue-query';
@@ -22,6 +22,7 @@ app.use(router);
 app.use(FloatingVue, {
   themes: {
     tooltip: {
+      distance: 10,
       delay: {
         show: 0,
         hide: 0,
@@ -31,13 +32,10 @@ app.use(FloatingVue, {
 });
 app.use(Notifications);
 app.use(VueSpinnersPlugin);
-app.use(TransactionsListenerPlugin, {
-  interval: 5000,
-});
 
 const plausible = createPlausible({
   init: {
-    domain: import.meta.env.VITE_PLAUSIBLE_DOMAIN || 'simulator.genlayer.com',
+    domain: import.meta.env.VITE_PLAUSIBLE_DOMAIN || 'studio.genlayer.com',
     trackLocalhost: true,
   },
   settings: {

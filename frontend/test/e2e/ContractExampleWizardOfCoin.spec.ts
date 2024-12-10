@@ -1,7 +1,7 @@
 import { WebDriver, By, until } from 'selenium-webdriver';
 import { ContractsPage } from '../pages/ContractsPage.js';
 import { RunDebugPage } from '../pages/RunDebugPage.js';
-import { SettingsPage } from '../pages/SettingsPage.js';
+import { ValidatorsPage } from '../pages/ValidatorsPage.js';
 import { before, describe, after, it } from 'node:test';
 import { expect } from 'chai';
 import { getDriver } from '../utils/driver.js';
@@ -9,20 +9,20 @@ import { getDriver } from '../utils/driver.js';
 let driver: WebDriver;
 let contractsPage: ContractsPage;
 let runDebugPage: RunDebugPage;
-let settingsPage: SettingsPage;
+let validatorsPage: ValidatorsPage;
 
 describe('Contract Example WizardOfCoin', () => {
   before(async () => {
     driver = await getDriver();
     contractsPage = new ContractsPage(driver);
     runDebugPage = new RunDebugPage(driver);
-    settingsPage = new SettingsPage(driver);
+    validatorsPage = new ValidatorsPage(driver);
 
     await contractsPage.navigate();
     await contractsPage.waitUntilVisible();
     await contractsPage.skipTutorial();
-    await settingsPage.navigate();
-    await settingsPage.createValidatorIfRequired();
+    await validatorsPage.navigate();
+    await validatorsPage.createValidatorIfRequired();
   });
 
   it('should open WizardOfCoin example contract', async () => {
@@ -114,12 +114,12 @@ describe('Contract Example WizardOfCoin', () => {
     expect(methodResponse, 'get_have_coin result should be visible').not.null;
 
     const methodResponseText = await driver
-      .wait(until.elementTextContains(methodResponse, 'True'), 5000)
+      .wait(until.elementTextContains(methodResponse, 'true'), 5000)
       .getText();
 
     expect(
-      methodResponseText.includes('True'),
-      'get_have_coin result should contain "True"',
+      methodResponseText.includes('true'),
+      'get_have_coin result should contain "true"',
     ).to.be.true;
   });
 

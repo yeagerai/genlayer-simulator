@@ -1,5 +1,6 @@
 import json
 import os
+from backend.node.types import Address
 
 from tests.common.accounts import create_new_account
 from tests.common.request import (
@@ -36,7 +37,7 @@ def test_multi_read_erc20(setup_validators):
     doge_contract_address, transaction_response_deploy = deploy_intelligent_contract(
         from_account_doge,
         contract_code,
-        json.dumps({"total_supply": TOKEN_TOTAL_SUPPLY}),
+        [TOKEN_TOTAL_SUPPLY],
     )
     assert has_success_status(transaction_response_deploy)
 
@@ -45,7 +46,7 @@ def test_multi_read_erc20(setup_validators):
     shiba_contract_address, transaction_response_deploy = deploy_intelligent_contract(
         from_account_shiba,
         contract_code,
-        json.dumps({"total_supply": TOKEN_TOTAL_SUPPLY}),
+        [TOKEN_TOTAL_SUPPLY],
     )
     assert has_success_status(transaction_response_deploy)
 
@@ -56,7 +57,7 @@ def test_multi_read_erc20(setup_validators):
     multi_read_address, transaction_response_deploy = deploy_intelligent_contract(
         from_account_doge,
         contract_code,
-        json.dumps({}),
+        [],
     )
     assert has_success_status(transaction_response_deploy)
 

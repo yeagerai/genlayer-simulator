@@ -28,20 +28,20 @@ class EndpointResult:
 class DecodedTransaction:
     from_address: str
     to_address: str
-    data: str
+    data: str  # hex encoded
     type: str
+    nonce: int
     value: int
 
 
 @dataclass
 class DecodedMethodCallData:
-    function_name: str
-    function_args: str
+    calldata: bytes
     leader_only: bool = False
 
 
 @dataclass
 class DecodedDeploymentData:
     contract_code: str
-    constructor_args: str
+    calldata: bytes
     leader_only: bool = False
