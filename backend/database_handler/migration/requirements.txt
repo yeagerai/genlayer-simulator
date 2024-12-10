@@ -1,6 +1,6 @@
-SQLAlchemy==2.0.35
-alembic==1.13.2
-psycopg2-binary==2.9.9
+SQLAlchemy==2.0.36
+alembic==1.14.0
+psycopg2-binary==2.9.10
 rlp
 eth-utils
 eth-hash[pycryptodome]
