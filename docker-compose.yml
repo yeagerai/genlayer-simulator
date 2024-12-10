@@ -205,7 +205,7 @@ services:
     environment:
       - HARDHAT_NETWORK=hardhat
     healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "8545"]
+      test: ["CMD", "curl", "-X", "POST", "-H", "Content-Type: application/json", "--fail", "http://localhost:8545", "-d", '{"jsonrpc":"2.0","method":"net_version","params":[],"id":1}']
       interval: 10s
       timeout: 5s
       retries: 10
