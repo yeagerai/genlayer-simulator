@@ -78,7 +78,7 @@ services:
     volumes:
       - ./.env:/app/.env
       - ./backend:/app/backend
-      - ./hardhat/artifacts:/app/hardhat/artifacts
+      - hardhat_artifacts:/app/hardhat/artifacts
       - hardhat_deployments:/app/hardhat/deployments
     depends_on:
       database-migration:

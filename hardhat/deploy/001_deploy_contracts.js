@@ -53,6 +53,96 @@ async function checkDeployments(contracts, network) {
     return { missingContracts, deployedContracts };
 }
 
+
+/**
+ * Initializes contracts and sets up connections
+ * @param {Object} allContracts - Object containing all deployed contracts
+ */
+async function deployFixture(allContracts) {
+    console.log("\nInitializing contracts and setting up connections...");
+    const accounts = await ethers.getSigners();
+    const [owner, validator1, validator2, validator3] = accounts;
+
+    try {
+        // Initialize GhostFactory first
+        if (allContracts.GhostFactory && allContracts.GhostBlueprint) {
+            console.log("Setting up GhostFactory...");
+            const ghostFactory = await ethers.getContractAt('GhostFactory', allContracts.GhostFactory.address);
+            await ghostFactory.initialize();
+            await ghostFactory.setGhostBlueprint(allContracts.GhostBlueprint.address);
+            await ghostFactory.deployNewBeaconProxy();
+        }
+
+        // Initialize ConsensusMain and its connections
+        if (allContracts.ConsensusMain && allContracts.ConsensusManager) {
+            console.log("Setting up ConsensusMain...");
+            const consensusMain = await ethers.getContractAt('ConsensusMain', allContracts.ConsensusMain.address);
+            await consensusMain.initialize(allContracts.ConsensusManager.address);
+
+            // Initialize dependent contracts first
+            if (allContracts.Transactions) {
+                const transactions = await ethers.getContractAt('Transactions', allContracts.Transactions.address);
+                await transactions.initialize(allContracts.ConsensusMain.address);
+            }
+
+            if (allContracts.Queues) {
+                const queues = await ethers.getContractAt('Queues', allContracts.Queues.address);
+                await queues.initialize(allContracts.ConsensusMain.address);
+            }
+
+            // Set up ConsensusMain connections
+            if (allContracts.GhostFactory) {
+                await consensusMain.setGhostFactory(allContracts.GhostFactory.address);
+            }
+            if (allContracts.MockGenStaking) {
+                await consensusMain.setGenStaking(allContracts.MockGenStaking.address);
+            }
+            if (allContracts.Queues) {
+                await consensusMain.setGenQueue(allContracts.Queues.address);
+            }
+            if (allContracts.Transactions) {
+                await consensusMain.setGenTransactions(allContracts.Transactions.address);
+            }
+        }
+
+        // Set up GhostFactory connections
+        if (allContracts.GhostFactory && allContracts.ConsensusMain) {
+            const ghostFactory = await ethers.getContractAt('GhostFactory', allContracts.GhostFactory.address);
+            await ghostFactory.setGenConsensus(allContracts.ConsensusMain.address);
+            await ghostFactory.setGhostManager(allContracts.ConsensusMain.address);
+        }
+
+        // Set up Transactions connections
+        if (allContracts.Transactions && allContracts.ConsensusMain) {
+            const transactions = await ethers.getContractAt('Transactions', allContracts.Transactions.address);
+            await transactions.setGenConsensus(allContracts.ConsensusMain.address);
+        }
+
+        // Set acceptance timeout
+        if (allContracts.ConsensusMain) {
+            const consensusMain = await ethers.getContractAt('ConsensusMain', allContracts.ConsensusMain.address);
+            await consensusMain.setAcceptanceTimeout(0);
+        }
+
+        // Setup validators
+        if (allContracts.MockGenStaking) {
+            console.log("Setting up validators...");
+            const mockGenStaking = await ethers.getContractAt('MockGenStaking', allContracts.MockGenStaking.address);
+            await mockGenStaking.addValidators([
+                validator1.address,
+                validator2.address,
+                validator3.address
+            ]);
+        }
+
+        console.log("Contract initialization and setup complete!");
+    } catch (error) {
+        console.error("Error in deployFixture:", error);
+        throw error;
+    }
+}
+
+
 /**
  * Deploys a contract and saves its deployment information
  * @param {Object} contractConfig - Configuration for the contract to deploy
@@ -146,35 +236,38 @@ module.exports = async function ({ getNamedAccounts, deployments, network }) {
 
     // Check which contracts need deployment
     const { missingContracts, deployedContracts } = await checkDeployments(contracts, network);
+    const allContracts = {};
 
-    if (missingContracts.length === 0) {
-        console.log("\nAll contracts are already deployed!");
-        return;
+    // Load the existing contracts
+    for (const contractName of deployedContracts) {
+        const deploymentFile = path.join('./deployments', network.name, `${contractName}.json`);
+        const deploymentData = JSON.parse(fs.readFileSync(deploymentFile, 'utf8'));
+        allContracts[contractName] = {
+            address: deploymentData.address
+        };
     }
 
-    console.log("\nStarting deployment of missing contracts...");
+    if (missingContracts.length > 0) {
+        console.log("\nStarting deployment of missing contracts...");
 
-    // Deploy missing contracts and track results
-    const newlyDeployedContracts = {};
-    for (const contract of missingContracts) {
-        const deployment = await deployAndSave(contract, deployer, deployments, network);
-        newlyDeployedContracts[contract.name] = deployment;
-    }
-
-    // Initialize contracts if any were newly deployed
-    if (Object.keys(newlyDeployedContracts).length > 0) {
-        await initializeContracts(newlyDeployedContracts, deployer);
-    }
-
-    // Log newly deployed contracts
-    if (Object.keys(newlyDeployedContracts).length > 0) {
-        console.log("\nNewly deployed contracts:");
-        for (const [name, deployment] of Object.entries(newlyDeployedContracts)) {
-            console.log(`${name}: ${deployment.address}`);
+        // Deploy missing contracts and track results
+        for (const contract of missingContracts) {
+            const deployment = await deployAndSave(contract, deployer, deployments, network);
+            allContracts[contract.name] = deployment;
         }
+
+        console.log("\nNewly deployed contracts:");
+        for (const contract of missingContracts) {
+            console.log(`${contract.name}: ${allContracts[contract.name].address}`);
+        }
+    } else {
+        console.log("\nAll contracts are already deployed!");
+        // return; // Comment this to call deployFixture even if all the contracts are already deployed
     }
 
-    console.log("\nDeployment complete!");
+    // Always run deployFixture with all contracts
+    await deployFixture(allContracts);
+
 };
 
 // Add deployment tags for selective deployment

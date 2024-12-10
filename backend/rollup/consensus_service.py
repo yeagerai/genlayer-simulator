@@ -25,6 +25,23 @@ class ConsensusService:
         self.web3.eth.default_account = self.owner
         self.private_key = os.environ.get("HARDHAT_PRIVATE_KEY")
 
+        # Load all required contracts
+        self.ghost_contract = self._load_contract("GhostContract")
+        self.ghost_factory_contract = self._load_contract("GhostFactory")
+        self.ghost_blueprint_contract = self._load_contract("GhostBlueprint")
+        self.consensus_manager_contract = self._load_contract("ConsensusManager")
+        self.mock_gen_staking_contract = self._load_contract("MockGenStaking")
+        self.queues_contract = self._load_contract("Queues")
+        self.transactions_contract = self._load_contract("Transactions")
+        self.consensus_main_contract = self._load_contract("ConsensusMain")
+
+        # Accounts
+        accounts = self.get_accounts()
+        self.owner = accounts["owner"]
+        self.validator1 = accounts["validator1"]
+        self.validator2 = accounts["validator2"]
+        self.validator3 = accounts["validator3"]
+
     def _load_contract(self, contract_name: str) -> Optional[dict]:
         """
         Load contract deployment data from Hardhat deployments
@@ -77,7 +94,15 @@ class ConsensusService:
             return None
 
     def _send_transaction(self, contract_function):
-        """Helper method to send transactions"""
+        """
+        Helper method to send transactions
+
+        Args:
+            contract_function (ContractFunction): The contract function to send
+
+        Returns:
+            Optional[dict]: The transaction receipt or None if the transaction fails
+        """
         try:
             # Build the transaction
             transaction = contract_function.build_transaction(
@@ -102,41 +127,130 @@ class ConsensusService:
             print(f"CONSENSUS_SERVICE: Transaction failed: {str(e)}")
             return None
 
+    def get_accounts(self):
+        """
+        Get the available accounts from the network
+
+        Returns:
+            dict: A dictionary with the available accounts
+        """
+        accounts = self.web3.eth.accounts
+        return {
+            "owner": accounts[0],
+            "validator1": accounts[1],
+            "validator2": accounts[2],
+            "validator3": accounts[3],
+        }
+
     def deploy_fixture(self):
         """
-        Deploy the contracts using Hardhat deployments
+        Deploy and initialize all contracts with proper connections
         """
-        # Load all required contracts
-        self.consensus_manager_contract = self._load_contract("ConsensusManager")
+        try:
+            accounts = self.get_accounts()
 
-        # Initialize GhostFactory
-        self.ghost_factory_contract = self._load_contract("GhostFactory")
-        if self.ghost_factory_contract:
-            print("CONSENSUS_SERVICE: Initializing GhostFactory...")
-            receipt_ghost_factory = self._send_transaction(
-                self.ghost_factory_contract.functions.initialize()
-            )
-            if receipt_ghost_factory and receipt_ghost_factory.status == 1:
-                print("CONSENSUS_SERVICE: GhostFactory initialized successfully")
-            else:
-                print("CONSENSUS_SERVICE: Failed to initialize GhostFactory")
+            # Initialize GhostFactory
+            if self.ghost_factory_contract:
+                print("CONSENSUS_SERVICE: Setting up GhostFactory...")
+                self._send_transaction(
+                    self.ghost_factory_contract.functions.initialize()
+                )
+                self._send_transaction(
+                    self.ghost_factory_contract.functions.setGhostBlueprint(
+                        self.ghost_blueprint_contract.address
+                    )
+                )
+                self._send_transaction(
+                    self.ghost_factory_contract.functions.deployNewBeaconProxy()
+                )
 
-        # Deploy new Beacon Proxy
-        self.ghost_blueprint_contract = self._load_contract("GhostBlueprint")
-        if self.ghost_blueprint_contract:
-            print("CONSENSUS_SERVICE: Initializing GhostBlueprint...")
-            receipt_ghost_blueprint = self._send_transaction(
-                self.ghost_blueprint_contract.functions.deployNewBeaconProxy()
-            )
-            if receipt_ghost_blueprint and receipt_ghost_blueprint.status == 1:
-                print("CONSENSUS_SERVICE: GhostBlueprint initialized successfully")
-            else:
-                print("CONSENSUS_SERVICE: Failed to initialize GhostBlueprint")
+            # Initialize ConsensusMain
+            if self.consensus_main_contract:
+                print("CONSENSUS_SERVICE: Setting up ConsensusMain...")
+                self.consensus_manager_address = self.consensus_manager_contract.address
+                self.consensus_main_owner = (
+                    self.consensus_main_contract.functions.owner()
+                )
+                self._send_transaction(
+                    self.consensus_main_contract.functions.initialize(
+                        self.consensus_manager_address
+                    )
+                )
 
-        self.mock_gen_staking_contract = self._load_contract("MockGenStaking")
+                # Set up all contract connections
+                if self.transactions_contract:
+                    self._send_transaction(
+                        self.transactions_contract.functions.initialize(
+                            self.consensus_main_contract.address
+                        )
+                    )
 
-        self.queues_contract = self._load_contract("Queues")
-        self.transactions_contract = self._load_contract("Transactions")
-        self.consensus_main_contract = self._load_contract("ConsensusMain")
+                if self.queues_contract:
+                    self._send_transaction(
+                        self.queues_contract.functions.initialize(
+                            self.consensus_main_contract.address
+                        )
+                    )
 
-        self.ghost_contract = self._load_contract("GhostContract")
+                self._send_transaction(
+                    self.consensus_main_contract.functions.setGhostFactory(
+                        self.ghost_factory_contract.address
+                    )
+                )
+                self._send_transaction(
+                    self.consensus_main_contract.functions.setGenStaking(
+                        self.mock_gen_staking_contract.address
+                    )
+                )
+                self._send_transaction(
+                    self.consensus_main_contract.functions.setGenQueue(
+                        self.queues_contract.address
+                    )
+                )
+                self._send_transaction(
+                    self.consensus_main_contract.functions.setGenTransactions(
+                        self.transactions_contract.address
+                    )
+                )
+
+            # Initialize other contracts and set their connections
+            if self.ghost_factory_contract and self.consensus_main_contract:
+                self._send_transaction(
+                    self.ghost_factory_contract.functions.setGenConsensus(
+                        self.consensus_main_contract.address
+                    )
+                )
+                self._send_transaction(
+                    self.ghost_factory_contract.functions.setGhostManager(
+                        self.consensus_main_contract.address
+                    )
+                )
+
+            if self.transactions_contract and self.consensus_main_contract:
+                self._send_transaction(
+                    self.transactions_contract.functions.setGenConsensus(
+                        self.consensus_main_contract.address
+                    )
+                )
+
+            if self.consensus_main_contract:
+                self._send_transaction(
+                    self.consensus_main_contract.functions.setAcceptanceTimeout(0)
+                )
+
+            # Setup validators
+            if self.mock_gen_staking_contract:
+                print("CONSENSUS_SERVICE: Setting up validators...")
+                self._send_transaction(
+                    self.mock_gen_staking_contract.functions.addValidators(
+                        [
+                            accounts["validator1"],
+                            accounts["validator2"],
+                            accounts["validator3"],
+                        ]
+                    )
+                )
+
+        except Exception as e:
+            print(f"CONSENSUS_SERVICE: Error deploying fixture: {e}")
+            return None

@@ -86,6 +86,7 @@ def create_app():
         consensus,
         llm_provider_registry,
         sqlalchemy_db,
+        consensus_service,
     )
 
 
@@ -102,6 +103,7 @@ load_dotenv()
     consensus,
     llm_provider_registry,
     sqlalchemy_db,
+    consensus_service,
 ) = create_app()
 register_all_rpc_endpoints(
     jsonrpc,
@@ -111,6 +113,7 @@ register_all_rpc_endpoints(
     transactions_processor,
     validators_registry,
     llm_provider_registry,
+    consensus_service,
 )
 
 
