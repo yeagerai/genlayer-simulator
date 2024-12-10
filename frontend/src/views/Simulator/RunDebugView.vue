@@ -3,7 +3,7 @@ import ConstructorParameters from '@/components/Simulator/ConstructorParameters.
 import ContractReadMethods from '@/components/Simulator/ContractReadMethods.vue';
 import ContractWriteMethods from '@/components/Simulator/ContractWriteMethods.vue';
 import TransactionsList from '@/components/Simulator/TransactionsList.vue';
-import { useContractQueries } from '@/hooks';
+import { useContractQueries, useConfig } from '@/hooks';
 import MainTitle from '@/components/Simulator/MainTitle.vue';
 import { ref, watch, computed } from 'vue';
 import { useContractsStore, useNodeStore } from '@/stores';
@@ -18,6 +18,7 @@ const leaderOnly = ref(false);
 
 const isDeploymentOpen = ref(!isDeployed.value);
 const finalityWindow = ref(Number(import.meta.env.VITE_FINALITY_WINDOW));
+const { canUpdateFinalityWindow } = useConfig();
 
 // Hide constructors by default when contract is already deployed
 const setConstructorVisibility = () => {
@@ -54,7 +55,7 @@ const isFinalityWindowValid = computed(() => {
         class="p-2"
       />
 
-      <div class="p-2">
+      <div v-if="canUpdateFinalityWindow" class="p-2">
         <div class="flex flex-wrap items-center gap-2">
           <label for="finalityWindow" class="text-xs"
             >Finality Window (seconds)</label
