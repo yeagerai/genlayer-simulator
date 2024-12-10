@@ -6,7 +6,7 @@ import threading
 import logging
 from flask import Flask
 from flask_jsonrpc import JSONRPC
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, join_room, leave_room
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
@@ -15,6 +15,7 @@ from backend.database_handler.llm_providers import LLMProviderRegistry
 from backend.protocol_rpc.configuration import GlobalConfiguration
 from backend.protocol_rpc.message_handler.base import MessageHandler
 from backend.protocol_rpc.endpoints import register_all_rpc_endpoints
+from backend.protocol_rpc.validators_init import initialize_validators
 from dotenv import load_dotenv
 
 from backend.database_handler.transactions_processor import TransactionsProcessor
@@ -58,6 +59,16 @@ def create_app():
     accounts_manager = AccountsManager(sqlalchemy_db.session)
     validators_registry = ValidatorsRegistry(sqlalchemy_db.session)
     llm_provider_registry = LLMProviderRegistry(sqlalchemy_db.session)
+
+    # Initialize validators from environment configuration in a thread
+    initialize_validators_db_session = Session(engine, expire_on_commit=False)
+    initialize_validators(
+        os.getenv("VALIDATORS_CONFIG_JSON"),
+        ValidatorsRegistry(initialize_validators_db_session),
+        AccountsManager(initialize_validators_db_session),
+    )
+    initialize_validators_db_session.commit()
+
     consensus = ConsensusAlgorithm(
         lambda: Session(engine, expire_on_commit=False), msg_handler
     )
@@ -120,6 +131,17 @@ def run_socketio():
         host="0.0.0.0",
         allow_unsafe_werkzeug=True,
     )
+
+    @socketio.on("subscribe")
+    def handle_subscribe(topics):
+        for topic in topics:
+            join_room(topic)
+
+    @socketio.on("unsubscribe")
+    def handle_unsubscribe(topics):
+        for topic in topics:
+            leave_room(topic)
+
     logging.getLogger("werkzeug").setLevel(
         os.environ.get("FLASK_LOG_LEVEL", logging.ERROR)
     )
@@ -135,4 +157,8 @@ thread_crawl_snapshot.start()
 
 # Thread for the run_consensus method
 thread_consensus = threading.Thread(target=consensus.run_consensus_loop)
+thread_consensus.start()
+
+# Thread for the appeal_window method
+thread_consensus = threading.Thread(target=consensus.run_appeal_window_loop)
 thread_consensus.start()

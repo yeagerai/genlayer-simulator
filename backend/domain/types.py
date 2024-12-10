@@ -4,7 +4,7 @@
 
 from dataclasses import dataclass
 import decimal
-from enum import Enum
+from enum import Enum, IntEnum
 
 from backend.database_handler.models import TransactionStatus
 
@@ -54,7 +54,7 @@ class Validator:
         return result
 
 
-class TransactionType(Enum):
+class TransactionType(IntEnum):
     SEND = 0
     DEPLOY_CONTRACT = 1
     RUN_CONTRACT = 2
@@ -65,8 +65,8 @@ class Transaction:
     hash: str
     status: TransactionStatus
     type: TransactionType
-    from_address: str | None = None
-    to_address: str | None = None
+    from_address: str | None
+    to_address: str | None
     input_data: dict | None = None
     data: dict | None = None
     consensus_data: dict | None = None
@@ -79,7 +79,10 @@ class Transaction:
     leader_only: bool = (
         False  # Flag to indicate if this transaction should be processed only by the leader. Used for fast and cheap execution of transactions.
     )
-    client_session_id: str | None = None
+    created_at: str | None = None
+    ghost_contract_address: str | None = None
+    appealed: bool = False
+    timestamp_accepted: int | None = None
 
     def to_dict(self):
         return {
@@ -98,7 +101,10 @@ class Transaction:
             "s": self.s,
             "v": self.v,
             "leader_only": self.leader_only,
-            "client_session_id": self.client_session_id,
+            "created_at": self.created_at,
+            "ghost_contract_address": self.ghost_contract_address,
+            "appealed": self.appealed,
+            "timestamp_accepted": self.timestamp_accepted,
         }
 
 
@@ -119,5 +125,8 @@ def transaction_from_dict(input: dict) -> Transaction:
         s=input.get("s"),
         v=input.get("v"),
         leader_only=input.get("leader_only", False),
-        client_session_id=input["client_session_id"],
+        created_at=input.get("created_at"),
+        ghost_contract_address=input.get("ghost_contract_address"),
+        appealed=input.get("appealed"),
+        timestamp_accepted=input.get("timestamp_accepted"),
     )

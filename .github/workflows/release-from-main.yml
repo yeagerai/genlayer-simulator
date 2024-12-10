@@ -1,8 +1,8 @@
-name: Create releases from main every day
+name: Create releases from main
 on:
   schedule:
     - cron: "00 08 * * 1-4" # 08:00 AM (UTC) from Monday to Thursday
-
+  workflow_dispatch:
 permissions:
   contents: read # for checkout
 
@@ -33,3 +33,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release # Uses `release.config.js` for configuration
+  push-docker-images:
+    name: Build images and push to DockerHub # Since GH Actions do not trigger other GH Actions (https://github.com/orgs/community/discussions/25702) we trigger it manually
+    uses: ./.github/workflows/docker-build-and-push-all.yml
+    needs: release
+    secrets: inherit

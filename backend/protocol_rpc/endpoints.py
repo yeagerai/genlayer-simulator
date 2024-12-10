@@ -4,19 +4,21 @@ import json
 from functools import partial
 from typing import Any
 from flask_jsonrpc import JSONRPC
+from flask_jsonrpc.exceptions import JSONRPCError
 from sqlalchemy import Table
 from sqlalchemy.orm import Session
 
+import backend.node.genvm.origin.calldata as genvm_calldata
 
 from backend.database_handler.contract_snapshot import ContractSnapshot
 from backend.database_handler.llm_providers import LLMProviderRegistry
 from backend.database_handler.models import Base
-from backend.domain.types import LLMProvider, Validator
+from backend.domain.types import LLMProvider, Validator, TransactionType
 from backend.node.create_nodes.providers import (
     get_default_provider_for,
     validate_provider,
 )
-from backend.node.genvm.llms import get_llm_plugin
+from backend.llms import get_llm_plugin
 from backend.protocol_rpc.message_handler.base import (
     MessageHandler,
     get_client_session_id,
@@ -37,11 +39,16 @@ from backend.protocol_rpc.transactions_parser import (
 )
 from backend.errors.errors import InvalidAddressError, InvalidTransactionError
 
-from backend.database_handler.transactions_processor import TransactionsProcessor
+from backend.database_handler.transactions_processor import (
+    TransactionAddressFilter,
+    TransactionsProcessor,
+)
 from backend.node.base import Node
-from backend.node.genvm.types import ExecutionMode
+from backend.node.types import ExecutionMode, ExecutionResultStatus
 
 from flask import request
+from flask_jsonrpc.exceptions import JSONRPCError
+import base64
 
 
 ####### HELPER ENDPOINTS #######
@@ -69,7 +76,7 @@ def fund_account(
 
     nonce = transactions_processor.get_transaction_count(None)
     transaction_hash = transactions_processor.insert_transaction(
-        None, account_address, None, amount, 0, nonce, False, get_client_session_id()
+        None, account_address, None, amount, 0, nonce, False
     )
     return transaction_hash
 
@@ -78,8 +85,10 @@ def reset_defaults_llm_providers(llm_provider_registry: LLMProviderRegistry) -> 
     llm_provider_registry.reset_defaults()
 
 
-def get_providers_and_models(llm_provider_registry: LLMProviderRegistry) -> list[dict]:
-    return llm_provider_registry.get_all_dict()
+async def get_providers_and_models(
+    llm_provider_registry: LLMProviderRegistry,
+) -> list[dict]:
+    return await llm_provider_registry.get_all_dict()
 
 
 def add_provider(llm_provider_registry: LLMProviderRegistry, params: dict) -> int:
@@ -90,6 +99,7 @@ def add_provider(llm_provider_registry: LLMProviderRegistry, params: dict) -> in
         plugin=params["plugin"],
         plugin_config=params["plugin_config"],
     )
+
     validate_provider(provider)
 
     return llm_provider_registry.add(provider)
@@ -125,9 +135,9 @@ def create_validator(
     plugin_config: dict | None = None,
 ) -> dict:
     # fallback for default provider
-    # TODO: only accept all or none of the config fields
     llm_provider = None
-    if not (config and plugin and plugin_config):
+
+    if config is None or plugin is None or plugin_config is None:
         llm_provider = get_default_provider_for(provider, model)
     else:
         llm_provider = LLMProvider(
@@ -149,23 +159,25 @@ def create_validator(
     )
 
 
-def create_random_validator(
+async def create_random_validator(
     validators_registry: ValidatorsRegistry,
     accounts_manager: AccountsManager,
     llm_provider_registry: LLMProviderRegistry,
     stake: int,
 ) -> dict:
-    return create_random_validators(
-        validators_registry,
-        accounts_manager,
-        llm_provider_registry,
-        1,
-        stake,
-        stake,
+    return (
+        await create_random_validators(
+            validators_registry,
+            accounts_manager,
+            llm_provider_registry,
+            1,
+            stake,
+            stake,
+        )
     )[0]
 
 
-def create_random_validators(
+async def create_random_validators(
     validators_registry: ValidatorsRegistry,
     accounts_manager: AccountsManager,
     llm_provider_registry: LLMProviderRegistry,
@@ -178,7 +190,7 @@ def create_random_validators(
     limit_providers = limit_providers or []
     limit_models = limit_models or []
 
-    details = random_validator_config(
+    details = await random_validator_config(
         llm_provider_registry.get_all,
         get_llm_plugin,
         limit_providers=set(limit_providers),
@@ -274,7 +286,7 @@ def count_validators(validators_registry: ValidatorsRegistry) -> int:
 
 
 ####### GEN ENDPOINTS #######
-def get_contract_schema(
+async def get_contract_schema(
     accounts_manager: AccountsManager,
     msg_handler: MessageHandler,
     contract_address: str,
@@ -310,10 +322,11 @@ def get_contract_schema(
         msg_handler=msg_handler.with_client_session(get_client_session_id()),
         contract_snapshot_factory=None,
     )
-    return node.get_contract_schema(contract_account["data"]["code"])
+    schema = await node.get_contract_schema(contract_account["data"]["code"])
+    return json.loads(schema)
 
 
-def get_contract_schema_for_code(
+async def get_contract_schema_for_code(
     msg_handler: MessageHandler, contract_code: str
 ) -> dict:
     node = Node(  # Mock node just to get the data from the GenVM
@@ -334,7 +347,8 @@ def get_contract_schema_for_code(
         msg_handler=msg_handler.with_client_session(get_client_session_id()),
         contract_snapshot_factory=None,
     )
-    return node.get_contract_schema(contract_code)
+    schema = await node.get_contract_schema(contract_code)
+    return json.loads(schema)
 
 
 ####### ETH ENDPOINTS #######
@@ -357,17 +371,17 @@ def get_transaction_count(
 
 def get_transaction_by_hash(
     transactions_processor: TransactionsProcessor, transaction_hash: str
-) -> dict:
+) -> dict | None:
     return transactions_processor.get_transaction_by_hash(transaction_hash)
 
 
-def call(
+async def call(
     session: Session,
     accounts_manager: AccountsManager,
     msg_handler: MessageHandler,
     params: dict,
     block_tag: str = "latest",
-) -> Any:
+) -> str:
     to_address = params["to"]
     from_address = params["from"] if "from" in params else None
     data = params["data"]
@@ -380,9 +394,9 @@ def call(
 
     decoded_data = decode_method_call_data(data)
 
-    contract_account = accounts_manager.get_account_or_fail(to_address)
     node = Node(  # Mock node just to get the data from the GenVM
-        contract_snapshot=None,
+        contract_snapshot=ContractSnapshot(to_address, session),
+        contract_snapshot_factory=partial(ContractSnapshot, session=session),
         validator_mode=ExecutionMode.LEADER,
         validator=Validator(
             address="",
@@ -397,22 +411,17 @@ def call(
         ),
         leader_receipt=None,
         msg_handler=msg_handler.with_client_session(get_client_session_id()),
-        contract_snapshot_factory=partial(ContractSnapshot, session=session),
     )
 
-    method_args = decoded_data.function_args
-    if isinstance(method_args, str):
-        try:
-            method_args = json.loads(method_args)
-        except json.JSONDecodeError:
-            method_args = [method_args]
-
-    return node.get_contract_data(
-        code=contract_account["data"]["code"],
-        state=contract_account["data"]["state"],
-        method_name=decoded_data.function_name,
-        method_args=method_args,
+    receipt = await node.get_contract_data(
+        from_address="0x" + "00" * 20,
+        calldata=decoded_data.calldata,
     )
+    if receipt.execution_result != ExecutionResultStatus.SUCCESS:
+        raise JSONRPCError(
+            message="running contract failed", data={"receipt": receipt.to_dict()}
+        )
+    return base64.b64encode(receipt.result[1:]).decode("ascii")
 
 
 def send_raw_transaction(
@@ -447,11 +456,11 @@ def send_raw_transaction(
 
     transaction_data = {}
     result = {}
-    transaction_type = None
+    transaction_type: TransactionType
     leader_only = False
     if not decoded_transaction.data:
         # Sending value transaction
-        transaction_type = 0
+        transaction_type = TransactionType.SEND
     elif not to_address or to_address == "0x":
         # Contract deployment
         if value > 0:
@@ -463,11 +472,11 @@ def send_raw_transaction(
         transaction_data = {
             "contract_address": new_contract_address,
             "contract_code": decoded_data.contract_code,
-            "constructor_args": decoded_data.constructor_args,
+            "calldata": decoded_data.calldata,
         }
         result["contract_address"] = new_contract_address
-        to_address = None
-        transaction_type = 1
+        to_address = new_contract_address
+        transaction_type = TransactionType.DEPLOY_CONTRACT
         leader_only = decoded_data.leader_only
     else:
         # Contract Call
@@ -476,11 +485,8 @@ def send_raw_transaction(
                 to_address, f"Invalid address to_address: {to_address}"
             )
         decoded_data = decode_method_call_data(decoded_transaction.data)
-        transaction_data = {
-            "function_name": decoded_data.function_name,
-            "function_args": decoded_data.function_args,
-        }
-        transaction_type = 2
+        transaction_data = {"calldata": decoded_data.calldata}
+        transaction_type = TransactionType.RUN_CONTRACT
         leader_only = decoded_data.leader_only
 
     # Insert transaction into the database
@@ -489,13 +495,32 @@ def send_raw_transaction(
         to_address,
         transaction_data,
         value,
-        transaction_type,
+        transaction_type.value,
         nonce,
         leader_only,
-        get_client_session_id(),
     )
 
     return transaction_hash
+
+
+def get_transactions_for_address(
+    transactions_processor: TransactionsProcessor,
+    accounts_manager: AccountsManager,
+    address: str,
+    filter: str = TransactionAddressFilter.ALL.value,
+) -> list[dict]:
+    if not accounts_manager.is_valid_address(address):
+        raise InvalidAddressError(address)
+
+    return transactions_processor.get_transactions_for_address(
+        address, TransactionAddressFilter(filter)
+    )
+
+
+def set_transaction_appeal(
+    transactions_processor: TransactionsProcessor, transaction_hash: str
+) -> None:
+    transactions_processor.set_transaction_appeal(transaction_hash, True)
 
 
 def register_all_rpc_endpoints(
@@ -611,4 +636,12 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint(
         partial(get_transaction_count, transactions_processor),
         method_name="eth_getTransactionCount",
+    )
+    register_rpc_endpoint(
+        partial(get_transactions_for_address, transactions_processor, accounts_manager),
+        method_name="sim_getTransactionsForAddress",
+    )
+    register_rpc_endpoint(
+        partial(set_transaction_appeal, transactions_processor),
+        method_name="sim_appealTransaction",
     )

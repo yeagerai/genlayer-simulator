@@ -8,7 +8,7 @@ The purpose of these tests is to have a small feedback loop for developing the L
 import asyncio
 
 import pytest
-from backend.node.genvm.llms import AnthropicPlugin, OllamaPlugin, OpenAIPlugin
+from webrequest.llms import AnthropicPlugin, OllamaPlugin, OpenAIPlugin
 
 
 def test_openai_plugin():
@@ -37,10 +37,9 @@ def test_openai_plugin():
 @pytest.mark.parametrize(
     "model",
     [
-        "mistralai/mixtral-8x7b-instruct",
-        "meta-llama/llama-2-70b-chat",
-        "openhermes-2-yi-34b-gptq",
-        "dolphin-2.9-llama3-8b",
+        "mistralai/mixtral-8x22b-instruct",
+        "meta-llama/llama-3.1-405b-instruct",
+        "meta-llama/llama-3-70b-instruct",
     ],
 )
 def test_heuristai_plugin(model):

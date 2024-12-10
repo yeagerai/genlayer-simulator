@@ -21,13 +21,38 @@ export interface NewValidatorDataModel {
   model: string;
   provider: string;
   stake: number;
+  plugin: string;
+  plugin_config: Record<string, any>;
 }
 
-export interface ContractMethod {
-  type: string;
-  name: string;
-  inputs: [{ name: string; type: string }];
-  outputs: [{ name: string; type: string }];
+export interface ProviderModel {
+  id: number;
+  provider: string;
+  model: string;
+  config: Record<string, any>;
+  plugin: string;
+  plugin_config: Record<string, any>;
+  is_available: boolean;
+  is_model_available: boolean;
+}
+
+export interface NewProviderDataModel {
+  provider: string;
+  model: string;
+  config: Record<string, any>;
+  plugin: string;
+  plugin_config: Record<string, any>;
 }
 
 export type Address = `0x${string}`;
+
+export interface SchemaProperty {
+  type?: string | string[];
+  default?: any;
+  minimum?: number;
+  maximum?: number;
+  multipleOf?: number;
+  enum?: any[];
+  $comment?: string;
+  properties?: Record<string, SchemaProperty>;
+}

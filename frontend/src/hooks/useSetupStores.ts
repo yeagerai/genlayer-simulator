@@ -5,7 +5,7 @@ import {
   useNodeStore,
   useTutorialStore,
 } from '@/stores';
-import { useDb } from '@/hooks';
+import { useDb, useGenlayer, useTransactionListener } from '@/hooks';
 import { v4 as uuidv4 } from 'uuid';
 import type { Address } from '@/types';
 
@@ -17,6 +17,8 @@ export const useSetupStores = () => {
     const nodeStore = useNodeStore();
     const tutorialStore = useTutorialStore();
     const db = useDb();
+    const genlayer = useGenlayer();
+    const transactionListener = useTransactionListener();
     const contractFiles = await db.contractFiles.toArray();
     const exampleFiles = contractFiles.filter((c) => c.example);
 
@@ -48,9 +50,13 @@ export const useSetupStores = () => {
     contractsStore.deployedContracts = await db.deployedContracts.toArray();
     transactionsStore.transactions = await db.transactions.toArray();
 
+    transactionsStore.initSubscriptions();
+    transactionsStore.refreshPendingTransactions();
+    transactionListener.init();
     contractsStore.getInitialOpenedFiles();
     tutorialStore.resetTutorialState();
     nodeStore.getValidatorsData();
+    nodeStore.getProvidersData();
 
     if (accountsStore.privateKeys.length < 1) {
       accountsStore.generateNewAccount();
@@ -63,6 +69,8 @@ export const useSetupStores = () => {
           ) as Address[])
         : [];
     }
+
+    genlayer.initClient();
   };
 
   return {

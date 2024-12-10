@@ -2,12 +2,12 @@
 import PageSection from '@/components/Simulator/PageSection.vue';
 import { CheckCircleIcon } from '@heroicons/vue/24/outline';
 import EmptyListPlaceholder from '@/components/Simulator/EmptyListPlaceholder.vue';
-import { PlusIcon } from '@heroicons/vue/16/solid';
 import { useNodeStore } from '@/stores';
-import { useWallet, useContractQueries } from '@/hooks';
+import { useContractQueries, useShortAddress } from '@/hooks';
+import { UploadIcon } from 'lucide-vue-next';
 
 const nodeStore = useNodeStore();
-const { shortenAddress } = useWallet();
+const { shorten } = useShortAddress();
 
 defineProps<{
   showNewDeploymentButton: boolean;
@@ -36,7 +36,7 @@ const { isDeployed, address, contract } = useContractQueries();
       Deployed at
 
       <div class="font-semibold">
-        {{ shortenAddress(address) }}
+        {{ shorten(address) }}
       </div>
 
       <CopyTextButton :text="address" />
@@ -53,8 +53,8 @@ const { isDeployed, address, contract } = useContractQueries();
       You need at least one validator before you can deploy or interact with a
       contract.
 
-      <RouterLink :to="{ name: 'settings' }"
-        ><Btn secondary tiny class="mt-1">Go to settings</Btn></RouterLink
+      <RouterLink :to="{ name: 'validators' }"
+        ><Btn secondary tiny class="mt-1">Go to validators</Btn></RouterLink
       >
     </Alert>
 
@@ -64,9 +64,9 @@ const { isDeployed, address, contract } = useContractQueries();
       class="inline-flex w-auto shrink grow-0"
       v-else-if="showNewDeploymentButton"
       @click="emit('openDeployment')"
-      :icon="PlusIcon"
+      :icon="UploadIcon"
     >
-      New Deployment
+      Deploy new instance
     </Btn>
   </PageSection>
 </template>
