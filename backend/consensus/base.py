@@ -605,7 +605,6 @@ class ConsensusAlgorithm:
 
     def set_finality_window_time(self, time: int):
         self.finality_window_time = time
-        print(" ~ ~ ~ ~ ~ FINALITY WINDOW TIME SET TO: ", self.finality_window_time)
 
 
 def rotate(nodes: list) -> Iterator[list]:

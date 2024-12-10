@@ -9,9 +9,7 @@ import { ref, watch, computed } from 'vue';
 import { useContractsStore, useNodeStore } from '@/stores';
 import ContractInfo from '@/components/Simulator/ContractInfo.vue';
 import BooleanField from '@/components/global/fields/BooleanField.vue';
-import IntegerField from '@/components/global/fields/IntegerField.vue';
 import FieldError from '@/components/global/fields/FieldError.vue';
-import FieldLabel from '@/components/global/fields/FieldLabel.vue';
 import NumberInput from '@/components/global/inputs/NumberInput.vue';
 const contractsStore = useContractsStore();
 const { isDeployed, address, contract } = useContractQueries();
@@ -19,12 +17,7 @@ const nodeStore = useNodeStore();
 const leaderOnly = ref(false);
 
 const isDeploymentOpen = ref(!isDeployed.value);
-console.log(
-  'Initial Finality Window:',
-  Number(import.meta.env.VITE_FINALITY_WINDOW),
-);
 const finalityWindow = ref(Number(import.meta.env.VITE_FINALITY_WINDOW));
-console.log('Initial Finality Window:', finalityWindow.value);
 
 // Hide constructors by default when contract is already deployed
 const setConstructorVisibility = () => {
@@ -39,7 +32,6 @@ watch(
 watch(finalityWindow, (newTime) => {
   if (isFinalityWindowValid.value) {
     nodeStore.setFinalityWindowTime(newTime);
-    console.log('Finality Window changed to:', newTime);
   }
 });
 
