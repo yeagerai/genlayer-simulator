@@ -93,6 +93,7 @@ class ConsensusAlgorithm:
         self.get_session = get_session
         self.msg_handler = msg_handler
         self.queues: dict[str, asyncio.Queue] = {}
+        self.finality_window_time = int(os.getenv("VITE_FINALITY_WINDOW"))
 
     def run_crawl_snapshot_loop(self):
         loop = asyncio.new_event_loop()
@@ -570,8 +571,7 @@ class ConsensusAlgorithm:
         print(" ~ ~ ~ ~ ~ ENDING APPEAL WINDOW LOOP")
 
     async def _appeal_window(self):
-        FINALITY_WINDOW = int(os.getenv("FINALITY_WINDOW"))
-        print(" ~ ~ ~ ~ ~ FINALITY WINDOW: ", FINALITY_WINDOW)
+        print(" ~ ~ ~ ~ ~ FINALITY WINDOW: ", self.finality_window_time)
         while True:
             with self.get_session() as session:
                 chain_snapshot = ChainSnapshot(session)
@@ -582,7 +582,7 @@ class ConsensusAlgorithm:
                     if not transaction.appealed:
                         if (
                             int(time.time()) - transaction.timestamp_accepted
-                        ) > FINALITY_WINDOW:
+                        ) > self.finality_window_time:
                             self.finalize_transaction(
                                 transaction,
                                 transactions_processor,
@@ -602,6 +602,10 @@ class ConsensusAlgorithm:
                         session.commit()
 
             await asyncio.sleep(1)
+
+    def set_finality_window_time(self, time: int):
+        self.finality_window_time = time
+        print(" ~ ~ ~ ~ ~ FINALITY WINDOW TIME SET TO: ", self.finality_window_time)
 
 
 def rotate(nodes: list) -> Iterator[list]:

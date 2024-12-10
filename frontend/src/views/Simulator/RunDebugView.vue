@@ -5,16 +5,26 @@ import ContractWriteMethods from '@/components/Simulator/ContractWriteMethods.vu
 import TransactionsList from '@/components/Simulator/TransactionsList.vue';
 import { useContractQueries } from '@/hooks';
 import MainTitle from '@/components/Simulator/MainTitle.vue';
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { useContractsStore, useNodeStore } from '@/stores';
 import ContractInfo from '@/components/Simulator/ContractInfo.vue';
 import BooleanField from '@/components/global/fields/BooleanField.vue';
+import IntegerField from '@/components/global/fields/IntegerField.vue';
+import FieldError from '@/components/global/fields/FieldError.vue';
+import FieldLabel from '@/components/global/fields/FieldLabel.vue';
+import NumberInput from '@/components/global/inputs/NumberInput.vue';
 const contractsStore = useContractsStore();
 const { isDeployed, address, contract } = useContractQueries();
 const nodeStore = useNodeStore();
 const leaderOnly = ref(false);
 
 const isDeploymentOpen = ref(!isDeployed.value);
+console.log(
+  'Initial Finality Window:',
+  Number(import.meta.env.VITE_FINALITY_WINDOW),
+);
+const finalityWindow = ref(Number(import.meta.env.VITE_FINALITY_WINDOW));
+console.log('Initial Finality Window:', finalityWindow.value);
 
 // Hide constructors by default when contract is already deployed
 const setConstructorVisibility = () => {
@@ -25,6 +35,17 @@ watch(
   [() => contract.value?.id, () => isDeployed.value, () => address.value],
   setConstructorVisibility,
 );
+
+watch(finalityWindow, (newTime) => {
+  if (isFinalityWindowValid.value) {
+    nodeStore.setFinalityWindowTime(newTime);
+    console.log('Finality Window changed to:', newTime);
+  }
+});
+
+const isFinalityWindowValid = computed(() => {
+  return Number.isInteger(finalityWindow.value) && finalityWindow.value >= 0;
+});
 </script>
 
 <template>
@@ -40,6 +61,31 @@ watch(
         label="Leader Only (Fast Execution)"
         class="p-2"
       />
+
+      <div class="p-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <label for="finalityWindow" class="text-xs"
+            >Finality Window (seconds)</label
+          >
+          <NumberInput
+            id="finalityWindow"
+            name="finalityWindow"
+            :min="1"
+            :step="1"
+            :invalid="!isFinalityWindowValid"
+            v-model.number="finalityWindow"
+            required
+            testId="input-finalityWindow"
+            :disabled="false"
+            class="w-20"
+          />
+        </div>
+
+        <FieldError v-if="!isFinalityWindowValid"
+          >Please enter a positive integer.</FieldError
+        >
+      </div>
+
       <ContractInfo
         :showNewDeploymentButton="!isDeploymentOpen"
         @openDeployment="isDeploymentOpen = true"
