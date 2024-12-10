@@ -363,7 +363,6 @@ class ConsensusAlgorithm:
                 transaction_hash=transaction.hash,
             )
         )
-        self.update_contract_state(transaction, contract_snapshot_factory)
 
     def update_contract_state(
         self,
