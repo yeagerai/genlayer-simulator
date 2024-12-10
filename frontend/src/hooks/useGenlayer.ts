@@ -23,6 +23,7 @@ export function useGenlayer() {
   function initClient() {
     client = createClient({
       chain: simulator,
+      endpoint: import.meta.env.VITE_JSON_RPC_SERVER_URL,
       account: createAccount(accountsStore.currentPrivateKey || undefined),
     });
   }
