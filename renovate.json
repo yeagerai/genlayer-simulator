@@ -20,5 +20,5 @@
   "npm": {
     "minimumReleaseAge": "3 days"
   },
-  "reviewers": ["denishacquin", "AgustinRamiroDiaz"]
+  "reviewers": ["denishacquin", "mpaya5", "kstroobants", "epsjunior"]
 }
