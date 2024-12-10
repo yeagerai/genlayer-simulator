@@ -3,7 +3,7 @@
     <div
       class="flex w-full flex-row items-center justify-between truncate bg-gray-100 p-2 dark:dark:bg-zinc-700"
     >
-      <h4 class="text-md flex flex-row items-center gap-1">
+      <h4 class="text-md flex flex-row items-center gap-1 truncate">
         <slot name="title" />
       </h4>
 

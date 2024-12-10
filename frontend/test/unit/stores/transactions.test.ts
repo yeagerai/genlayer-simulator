@@ -1,42 +1,68 @@
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useTransactionsStore } from '@/stores';
-import { useRpcClient } from '@/hooks';
+import { useDb, useRpcClient, useGenlayer } from '@/hooks';
 import { type TransactionItem } from '@/types';
+import type { TransactionHash } from 'genlayer-js/types';
 
 vi.mock('@/hooks', () => ({
+  useGenlayer: vi.fn(),
   useRpcClient: vi.fn(),
+  useWebSocketClient: vi.fn(() => ({
+    connected: true,
+    emit: vi.fn(),
+  })),
+  useDb: vi.fn(() => ({
+    transaction: vi.fn(),
+    get: vi.fn(),
+    put: vi.fn(),
+  })),
+  useSetupStores: vi.fn(() => ({
+    setupStores: vi.fn(),
+  })),
+  useFileName: vi.fn(() => ({
+    cleanupFileName: vi.fn(),
+  })),
 }));
 
 const testTransaction: TransactionItem = {
+  hash: '0x1234567890123456789012345678901234567890',
   type: 'deploy',
   status: 'PENDING',
   contractAddress: '0xAf4ec2548dBBdc43ab6dCFbD4EdcEedde3FEAFB5',
+  data: {
+    contract_address: '0xAf4ec2548dBBdc43ab6dCFbD4EdcEedde3FEAFB5',
+  },
   localContractId: '47490604-6ee9-4c0e-bf31-05d33197eedd',
-  txId: 140,
 };
 
 const updatedTransactionPayload = {
-  id: 140,
-  type: 'deploy',
+  ...testTransaction,
   status: 'FINALIZED',
-  contractAddress: '0xAf4ec2548dBBdc43ab6dCFbD4EdcEedde3FEAFB5',
-  localContractId: '47490604-6ee9-4c0e-bf31-05d33197eedd',
 };
 
 describe('useTransactionsStore', () => {
   let transactionsStore: ReturnType<typeof useTransactionsStore>;
-  const mockRpcClient = {
-    getTransactionById: vi.fn(),
+  const mockGenlayerClient = {
+    getTransaction: vi.fn(),
+  };
+  const mockDb = {
+    transactions: {
+      where: vi.fn().mockReturnThis(),
+      anyOf: vi.fn().mockReturnThis(),
+      equals: vi.fn().mockReturnThis(),
+      modify: vi.fn().mockResolvedValue(undefined),
+      delete: vi.fn(),
+    },
   };
 
   beforeEach(() => {
     setActivePinia(createPinia());
-    (useRpcClient as Mock).mockReturnValue(mockRpcClient);
+    (useGenlayer as Mock).mockReturnValue({ client: mockGenlayerClient });
+    (useDb as Mock).mockReturnValue(mockDb);
     transactionsStore = useTransactionsStore();
     transactionsStore.transactions = [];
-    transactionsStore.processingQueue = [];
-    mockRpcClient.getTransactionById.mockClear();
+    mockGenlayerClient.getTransaction.mockClear();
   });
 
   it('should add a transaction', () => {
@@ -57,40 +83,70 @@ describe('useTransactionsStore', () => {
     expect(transactionsStore.transactions[0].status).toBe('FINALIZED');
   });
 
-  it('should get a transaction by id using rpcClient', async () => {
-    const transactionId = 123;
-    const transactionData = { id: transactionId, status: 'PENDING' };
-    mockRpcClient.getTransactionById.mockResolvedValue(transactionData);
+  it('should get a transaction by hash using genlayer', async () => {
+    const transactionHash =
+      '0x1234567890123456789012345678901234567890' as TransactionHash;
+    const transactionData = { id: transactionHash, status: 'PENDING' };
+    mockGenlayerClient.getTransaction.mockResolvedValue(transactionData);
 
-    const result = await transactionsStore.getTransaction(transactionId);
+    const result = await transactionsStore.getTransaction(transactionHash);
 
-    expect(mockRpcClient.getTransactionById).toHaveBeenCalledWith(
-      transactionId,
-    );
+    expect(mockGenlayerClient.getTransaction).toHaveBeenCalledWith({
+      hash: transactionHash,
+    });
     expect(result).toEqual(transactionData);
   });
 
   it('should clear transactions for a specific contract', () => {
-    const tx1 = { ...testTransaction, txId: 1, localContractId: 'contract-1' };
-    const tx2 = { ...testTransaction, txId: 2, localContractId: 'contract-2' };
+    const tx1 = {
+      ...testTransaction,
+      hash: '0x1234567890123456789012345678901234567891',
+      localContractId: 'contract-1',
+    };
+    const tx2 = {
+      ...testTransaction,
+      hash: '0x1234567890123456789012345678901234567892',
+      localContractId: 'contract-2',
+    };
 
     transactionsStore.addTransaction(tx1);
     transactionsStore.addTransaction(tx2);
 
-    transactionsStore.processingQueue = [tx1];
-
     transactionsStore.clearTransactionsForContract('contract-1');
 
+    expect(mockDb.transactions.where).toHaveBeenCalledWith('localContractId');
+    expect(mockDb.transactions.equals).toHaveBeenCalledWith('contract-1');
+    expect(mockDb.transactions.delete).toHaveBeenCalled();
+
     expect(transactionsStore.transactions).toEqual([tx2]);
-    expect(transactionsStore.processingQueue).toEqual([]);
   });
 
-  it('should compute pending transactions', () => {
-    const tx1 = { ...testTransaction, txId: 1, status: 'FINALIZED' };
-    const tx2 = { ...testTransaction, txId: 2, status: 'PENDING' };
+  it('should refresh pending transactions', async () => {
+    const pendingTransaction = {
+      ...testTransaction,
+      status: 'PENDING',
+    };
+    const updatedTransaction = {
+      ...pendingTransaction,
+      status: 'FINALIZED',
+    };
 
-    transactionsStore.transactions = [tx1, tx2];
+    transactionsStore.addTransaction(pendingTransaction);
+    mockGenlayerClient.getTransaction.mockResolvedValue(updatedTransaction);
 
-    expect(transactionsStore.pendingTransactions).toEqual([tx2]);
+    await transactionsStore.refreshPendingTransactions();
+
+    expect(mockGenlayerClient.getTransaction).toHaveBeenCalledWith({
+      hash: pendingTransaction.hash,
+    });
+    expect(mockDb.transactions.where).toHaveBeenCalledWith('hash');
+    expect(mockDb.transactions.equals).toHaveBeenCalledWith(
+      pendingTransaction.hash,
+    );
+    expect(mockDb.transactions.modify).toHaveBeenCalledWith({
+      status: 'FINALIZED',
+      data: updatedTransaction,
+    });
+    expect(transactionsStore.transactions[0].status).toBe('FINALIZED');
   });
 });

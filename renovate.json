@@ -19,5 +19,6 @@
   "dependencyDashboard": true,
   "npm": {
     "minimumReleaseAge": "3 days"
-  }
+  },
+  "reviewers": ["denishacquin", "mpaya5", "kstroobants", "epsjunior"]
 }

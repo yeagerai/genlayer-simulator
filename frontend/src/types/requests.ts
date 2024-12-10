@@ -4,16 +4,9 @@ export interface JsonRPCRequest {
 }
 
 export interface GetContractStateRequest {
-  contractAddress: string;
-  userAccount: string;
+  to: string;
+  from: string;
   data: string;
-}
-
-export interface DeployContractRequest {
-  userAccount: string;
-  className: string;
-  code: string;
-  constructorParams: string;
 }
 
 export interface GetContractSchemaRequest {
@@ -28,7 +21,9 @@ export interface CreateValidatorRequest {
   stake: number;
   provider: string;
   model: string;
-  config: any;
+  config?: Record<string, any>;
+  plugin?: string;
+  plugin_config?: Record<string, any>;
 }
 
 export interface UpdateValidatorRequest {
@@ -36,9 +31,36 @@ export interface UpdateValidatorRequest {
   stake: number;
   provider: string;
   model: string;
-  config: any;
+  config?: Record<string, any>;
+  plugin?: string;
+  plugin_config?: Record<string, any>;
 }
 
 export interface DeleteValidatorRequest {
+  address: string;
+}
+
+export interface AddProviderRequest {
+  provider: string;
+  model: string;
+  config: Record<string, any>;
+  plugin: string;
+  plugin_config: Record<string, any>;
+}
+
+export interface UpdateProviderRequest {
+  id: number;
+  provider: string;
+  model: string;
+  config: Record<string, any>;
+  plugin: string;
+  plugin_config: Record<string, any>;
+}
+
+export interface DeleteProviderRequest {
+  id: number;
+}
+
+export interface GetTransactionCountRequest {
   address: string;
 }

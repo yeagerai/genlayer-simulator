@@ -18,27 +18,25 @@ export interface DeployedContract {
 }
 
 export interface NodeLog {
-  date: string;
-  message: {
-    function: string;
-    trace_id: string;
-    response: {
-      status: string;
-      message: string;
-      data?: any;
-    };
-  };
-  mock?: boolean;
+  scope: string;
+  name: string;
+  type: 'error' | 'warning' | 'info' | 'success';
+  message: string;
+  data?: any;
 }
 
 export interface TransactionItem {
-  id?: number;
+  hash: string;
   type: 'deploy' | 'method';
   status: string;
   contractAddress: string;
   localContractId: string;
-  txId: number;
   data?: any;
+  decodedData?: {
+    functionName: string;
+    args: any[];
+    kwargs: { [key: string]: any };
+  };
 }
 
 export type UIMode = 'light' | 'dark';

@@ -3,8 +3,30 @@ import { useAccountsStore } from '@/stores';
 import AccountItem from '@/components/Simulator/AccountItem.vue';
 import { Dropdown } from 'floating-vue';
 import { Wallet } from 'lucide-vue-next';
-
+import { PlusIcon } from '@heroicons/vue/16/solid';
+import { notify } from '@kyvg/vue3-notification';
+import { useEventTracking } from '@/hooks';
+import { createAccount } from 'genlayer-js';
 const store = useAccountsStore();
+const { trackEvent } = useEventTracking();
+
+const handleCreateNewAccount = async () => {
+  const privateKey = store.generateNewAccount();
+
+  if (privateKey) {
+    notify({
+      title: 'New Account Created',
+      type: 'success',
+    });
+
+    trackEvent('created_account');
+  } else {
+    notify({
+      title: 'Error creating a new account',
+      type: 'error',
+    });
+  }
+};
 </script>
 
 <template>
@@ -20,8 +42,9 @@ const store = useAccountsStore();
           v-for="privateKey in store.privateKeys"
           :key="privateKey"
           :privateKey="privateKey"
+          :account="createAccount(privateKey)"
           :active="privateKey === store.currentPrivateKey"
-          :canDelete="false"
+          :canDelete="true"
           v-close-popper
         />
       </div>
@@ -29,9 +52,13 @@ const store = useAccountsStore();
       <div
         class="flex w-full border-t border-gray-300 bg-gray-200 p-1 dark:border-gray-600 dark:bg-gray-800"
       >
-        <RouterLink :to="{ name: 'profile' }" class="w-full">
-          <Btn v-close-popper secondary class="w-full">Manage accounts</Btn>
-        </RouterLink>
+        <Btn
+          @click="handleCreateNewAccount"
+          secondary
+          class="w-full"
+          :icon="PlusIcon"
+          >New account</Btn
+        >
       </div>
     </template>
   </Dropdown>

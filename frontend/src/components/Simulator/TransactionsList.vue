@@ -14,11 +14,15 @@ const transactions = computed(() => {
     (t) => t.localContractId === contractsStore.currentContractId,
   );
 
-  const transactionsOrderedById = contractTransactions
+  const transactionsOrderedByDate = contractTransactions
     .slice()
-    .sort((a, b) => b.txId - a.txId);
+    .sort(
+      (a, b) =>
+        new Date(b.data.created_at).getTime() -
+        new Date(a.data.created_at).getTime(),
+    );
 
-  return transactionsOrderedById;
+  return transactionsOrderedByDate;
 });
 
 const isClearTransactionsModalOpen = ref(false);
@@ -35,6 +39,7 @@ const handleClearTransactions = () => {
 <template>
   <PageSection data-testid="latest-transactions">
     <template #title>Transactions</template>
+
     <template #actions
       ><GhostBtn
         v-if="transactions.length > 0"
@@ -47,7 +52,7 @@ const handleClearTransactions = () => {
     <div class="flex flex-col">
       <TransactionItem
         v-for="transaction in transactions"
-        :key="transaction.txId"
+        :key="transaction.hash"
         :transaction="transaction"
       />
     </div>

@@ -31,17 +31,11 @@ const testValidator2: ValidatorModel = {
 };
 
 const testLog: NodeLog = {
-  date: new Date().toISOString(),
-  message: {
-    function: 'test_function',
-    trace_id: '123456',
-    response: {
-      status: 'success',
-      message: 'Test message',
-      data: {},
-    },
-  },
-  mock: false,
+  scope: 'TestScope',
+  name: 'test_event_name',
+  type: 'info',
+  message: 'Test message',
+  data: { test: true },
 };
 
 vi.mock('@/hooks', () => ({
@@ -93,20 +87,21 @@ describe('useNodeStore', () => {
   });
 
   it('should fetch validators data successfully', async () => {
-    mockRpcClient.getValidators.mockResolvedValue({
-      status: 'success',
-      data: [],
-    });
-    mockRpcClient.getProvidersAndModels.mockResolvedValue({
-      status: 'success',
-      data: {},
-    });
+    mockRpcClient.getValidators.mockResolvedValue([]);
 
     await nodeStore.getValidatorsData();
 
     expect(mockRpcClient.getValidators).toHaveBeenCalled();
-    expect(mockRpcClient.getProvidersAndModels).toHaveBeenCalled();
     expect(nodeStore.isLoadingValidatorData).toBe(false);
+  });
+
+  it('should fetch providers data successfully', async () => {
+    mockRpcClient.getProvidersAndModels.mockResolvedValue([]);
+
+    await nodeStore.getProvidersData();
+
+    expect(mockRpcClient.getProvidersAndModels).toHaveBeenCalled();
+    expect(nodeStore.isLoadingProviders).toBe(false);
   });
 
   it('should handle error when fetching validators data', async () => {
@@ -130,10 +125,7 @@ describe('useNodeStore', () => {
   it('should create a new validator', async () => {
     const newValidatorData = testValidator1;
 
-    mockRpcClient.createValidator.mockResolvedValue({
-      status: 'success',
-      data: newValidatorData,
-    });
+    mockRpcClient.createValidator.mockResolvedValue(newValidatorData);
 
     await nodeStore.createNewValidator(newValidatorData);
     expect(nodeStore.validators).to.deep.include(newValidatorData);
@@ -146,13 +138,15 @@ describe('useNodeStore', () => {
       provider: 'provider2',
       model: 'model2',
       config: '{}',
+      plugin: 'openai',
+      plugin_config: {},
     };
 
     nodeStore.validators = [testValidator1];
 
     mockRpcClient.updateValidator.mockResolvedValue({
-      status: 'success',
-      data: { ...validator, ...newValidatorData },
+      ...validator,
+      ...newValidatorData,
     });
     await nodeStore.updateValidator(validator, newValidatorData);
 
@@ -178,10 +172,6 @@ describe('useNodeStore', () => {
     nodeStore.clearLogs();
 
     expect(nodeStore.logs).toHaveLength(0);
-  });
-
-  it('should compute contractsToDelete', () => {
-    expect(nodeStore.contractsToDelete).toEqual([{ id: 1, example: true }]);
   });
 
   it('should compute validatorsOrderedById', () => {

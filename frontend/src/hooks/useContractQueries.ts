@@ -1,6 +1,6 @@
 import { watch, ref, computed } from 'vue';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
-import type { Address, TransactionItem } from '@/types';
+import type { TransactionItem } from '@/types';
 import {
   useContractsStore,
   useTransactionsStore,
@@ -9,18 +9,23 @@ import {
 import { useDebounceFn } from '@vueuse/core';
 import { notify } from '@kyvg/vue3-notification';
 import { useMockContractData } from './useMockContractData';
-import { useEventTracking, useRpcClient, useWallet } from '@/hooks';
+import { useEventTracking, useGenlayer } from '@/hooks';
+import * as calldata from '@/calldata';
+import type {
+  Address,
+  TransactionHash,
+  ContractSchema,
+} from 'genlayer-js/types';
 
 const schema = ref<any>();
 
 export function useContractQueries() {
-  const rpcClient = useRpcClient();
+  const genlayer = useGenlayer();
   const accountsStore = useAccountsStore();
   const transactionsStore = useTransactionsStore();
   const contractsStore = useContractsStore();
   const queryClient = useQueryClient();
   const { trackEvent } = useEventTracking();
-  const wallet = useWallet();
   const contract = computed(() => contractsStore.currentContract);
 
   const { mockContractId, mockContractSchema } = useMockContractData();
@@ -62,75 +67,61 @@ export function useContractQueries() {
       return mockContractSchema;
     }
 
-    const result = await rpcClient.getContractSchema({
-      code: contract.value?.content ?? '',
-    });
+    const result = await genlayer.client?.getContractSchemaForCode(
+      contract.value?.content ?? '',
+    );
 
-    if (result?.status === 'error') {
-      throw new Error(result?.message || 'Error fetching contract schema');
-    }
-
-    schema.value = result?.data;
+    schema.value = result;
 
     return schema.value;
   }
 
   const isDeploying = ref(false);
 
-  async function deployContract({
-    constructorParams,
-  }: {
-    constructorParams: { [k: string]: string };
-  }) {
+  async function deployContract(
+    args: {
+      args: calldata.CalldataEncodable[];
+      kwargs: { [key: string]: calldata.CalldataEncodable };
+    },
+    leaderOnly: boolean,
+  ) {
     isDeploying.value = true;
 
     try {
       if (!contract.value || !accountsStore.currentPrivateKey) {
         throw new Error('Error Deploying the contract');
       }
-      const constructorParamsAsString = JSON.stringify(constructorParams);
-      const data = [contract.value?.content ?? '', constructorParamsAsString];
-      const signed = await wallet.signTransaction({
-        privateKey: accountsStore.currentPrivateKey,
-        data,
+
+      const result = await genlayer.client?.deployContract({
+        code: contract.value?.content ?? '',
+        args: args.args,
+        leaderOnly,
       });
-      const result = await rpcClient.sendTransaction(signed);
 
-      if (result?.status === 'success') {
-        const tx: TransactionItem = {
-          contractAddress: result?.data.contract_address,
-          localContractId: contract.value?.id ?? '',
-          txId: result?.data.transaction_id,
-          type: 'deploy',
-          status: 'PENDING',
-          data: {},
-        };
+      const tx: TransactionItem = {
+        contractAddress: '',
+        localContractId: contract.value?.id ?? '',
+        hash: result as TransactionHash,
+        type: 'deploy',
+        status: 'PENDING',
+        data: {},
+      };
 
-        notify({
-          title: 'Started deploying contract',
-          type: 'success',
-        });
+      notify({
+        title: 'Started deploying contract',
+        type: 'success',
+      });
 
-        trackEvent('deployed_contract', {
-          contract_name: contract.value?.name || '',
-        });
+      trackEvent('deployed_contract', {
+        contract_name: contract.value?.name || '',
+      });
 
-        transactionsStore.clearTransactionsForContract(
-          contract.value?.id ?? '',
-        );
-        transactionsStore.addTransaction(tx);
-
-        return tx;
-      } else {
-        throw new Error(
-          typeof result?.message === 'string'
-            ? result.message
-            : 'Error Deploying the contract',
-        );
-      }
+      transactionsStore.clearTransactionsForContract(contract.value?.id ?? '');
+      transactionsStore.addTransaction(tx);
+      contractsStore.removeDeployedContract(contract.value?.id ?? '');
+      return tx;
     } catch (error) {
       isDeploying.value = false;
-      console.error(error);
       notify({
         type: 'error',
         title: 'Error deploying contract',
@@ -160,36 +151,28 @@ export function useContractQueries() {
       return mockContractSchema;
     }
 
-    const result = await rpcClient.getDeployedContractSchema({
-      address: deployedContract.value?.address ?? '',
-    });
+    const result = await genlayer.client?.getContractSchema(
+      deployedContract.value?.address ?? '',
+    );
 
-    if (result?.status === 'error') {
-      console.error(result.message);
-      throw new Error('Error fetching contract abi');
-    }
-
-    return result?.data;
+    return result;
   }
 
-  async function callReadMethod(method: string, methodArguments: string[]) {
+  async function callReadMethod(
+    method: string,
+    args: {
+      args: calldata.CalldataEncodable[];
+      kwargs: { [key: string]: calldata.CalldataEncodable };
+    },
+  ) {
     try {
-      const methodParamsAsString = JSON.stringify(methodArguments);
-      const data = [method, methodParamsAsString];
-      const encodedData = wallet.encodeTransactionData(data);
-
-      const result = await rpcClient.getContractState({
-        contractAddress: address.value || '',
-        userAccount: accountsStore.currentUserAddress,
-        data: encodedData,
+      const result = await genlayer.client?.readContract({
+        address: address.value as Address,
+        functionName: method,
+        args: args.args,
       });
 
-      if (result?.status === 'error') {
-        console.error(result.message);
-        throw new Error(result.message);
-      }
-
-      return result?.data;
+      return result;
     } catch (error) {
       console.error(error);
       throw new Error('Error getting the contract state');
@@ -198,44 +181,46 @@ export function useContractQueries() {
 
   async function callWriteMethod({
     method,
-    params,
+    args,
+    leaderOnly,
   }: {
     method: string;
-    params: any[];
+    args: {
+      args: calldata.CalldataEncodable[];
+      kwargs: { [key: string]: calldata.CalldataEncodable };
+    };
+    leaderOnly: boolean;
   }) {
     try {
       if (!accountsStore.currentPrivateKey) {
-        throw new Error('Error Deploying the contract');
+        throw new Error('Error writing to contract');
       }
-      const methodParamsAsString = JSON.stringify(params);
-      const data = [method, methodParamsAsString];
-      const to = (address.value as Address) || null;
 
-      const signed = await wallet.signTransaction({
-        privateKey: accountsStore.currentPrivateKey,
-        data,
-        to,
+      const result = await genlayer.client?.writeContract({
+        address: address.value as Address,
+        functionName: method,
+        args: args.args,
+        value: BigInt(0),
+        leaderOnly,
       });
 
-      const result = await rpcClient.sendTransaction(signed);
-
-      if (result?.status === 'success') {
-        transactionsStore.addTransaction({
-          contractAddress: address.value || '',
-          localContractId: contract.value?.id || '',
-          txId: (result?.data as any).transaction_id,
-          type: 'method',
-          status: 'PENDING',
-          data: {},
-        });
-
-        return true;
-      }
+      transactionsStore.addTransaction({
+        contractAddress: address.value || '',
+        localContractId: contract.value?.id || '',
+        hash: result,
+        type: 'method',
+        status: 'PENDING',
+        data: {},
+        decodedData: {
+          functionName: method,
+          ...args,
+        },
+      });
+      return true;
     } catch (error) {
       console.error(error);
       throw new Error('Error writing to contract');
     }
-    return false;
   }
 
   return {

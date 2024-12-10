@@ -1,17 +1,37 @@
+from enum import Enum
 from dataclasses import dataclass
 
-from backend.protocol_rpc.types import EndpointResult
+
+class EventType(Enum):
+    DEBUG = "debug"
+    INFO = "info"
+    SUCCESS = "success"
+    ERROR = "error"
+
+
+class EventScope(Enum):
+    RPC = "RPC"
+    GENVM = "GenVM"
+    CONSENSUS = "Consensus"
 
 
 @dataclass
-class FormattedResponse:
-    function_name: str
-    trace_id: str
-    response: EndpointResult
+class LogEvent:
+    name: str
+    type: EventType
+    scope: EventScope
+    message: str
+    data: dict | None = None
+    transaction_hash: str | None = None
+    client_session_id: str | None = None
 
-    def to_json(self):
+    def to_dict(self):
         return {
-            "function_name": self.function_name,
-            "trace_id": self.trace_id,
-            "response": self.response.to_json(),
+            "name": self.name,
+            "type": self.type.value,
+            "scope": self.scope.value,
+            "message": self.message,
+            "data": self.data,
+            "transaction_hash": self.transaction_hash,
+            "client_id": self.client_session_id,
         }

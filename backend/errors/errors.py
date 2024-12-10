@@ -56,10 +56,16 @@ class InvalidAddressError(Exception):
     def __init__(
         self,
         address: str,
-        message: str = "Incorrect address format. Please provide a valid address.",
+        message: str = "",
     ):
         self.address = address
         self.message = message
+        if not self.message and self.address:
+            self.message = f"Incorrect address format. Please provide a valid address: {self.address}"
+        self.message = (
+            self.message or "Incorrect address format. Please provide a valid address."
+        )
+
         super().__init__(self.message)
 
 

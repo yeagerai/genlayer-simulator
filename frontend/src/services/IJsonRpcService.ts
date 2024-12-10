@@ -1,35 +1,35 @@
 import type {
   GetContractStateRequest,
-  JsonRPCRequest,
-  JsonRPCResponse,
-  JsonRpcResult,
   GetContractStateResult,
-  DeployContractRequest,
   GetDeployedContractSchemaRequest,
+  AddProviderRequest,
+  UpdateProviderRequest,
+  DeleteProviderRequest,
   CreateValidatorRequest,
   UpdateValidatorRequest,
   DeleteValidatorRequest,
   GetContractSchemaRequest,
-  GetProvidersAndModelsData,
+  GetTransactionCountRequest,
 } from '@/types';
 
 export interface IJsonRpcService {
-  call(request: JsonRPCRequest): Promise<JsonRPCResponse<any>>;
   getContractState(
     request: GetContractStateRequest,
-  ): Promise<JsonRpcResult<GetContractStateResult>>;
-  sendTransaction(singedTransaction: string): Promise<JsonRpcResult<any>>;
-  deployContract(request: DeployContractRequest): Promise<JsonRpcResult<any>>;
-  getContractSchema(
-    request: GetContractSchemaRequest,
-  ): Promise<JsonRpcResult<any>>;
+  ): Promise<GetContractStateResult>;
+  sendTransaction(signedTransaction: string): Promise<string>;
+  getContractSchema(request: GetContractSchemaRequest): Promise<any>;
   getDeployedContractSchema(
     request: GetDeployedContractSchemaRequest,
-  ): Promise<JsonRpcResult<any>>;
-  getValidators(): Promise<JsonRpcResult<any>>;
-  getProvidersAndModels(): Promise<JsonRpcResult<GetProvidersAndModelsData>>;
-  createValidator(request: CreateValidatorRequest): Promise<JsonRpcResult<any>>;
-  updateValidator(request: UpdateValidatorRequest): Promise<JsonRpcResult<any>>;
-  deleteValidator(request: DeleteValidatorRequest): Promise<JsonRpcResult<any>>;
-  getTransactionById(txId: number): Promise<JsonRpcResult<any>>;
+  ): Promise<any>;
+  getValidators(): Promise<any[]>;
+  getProvidersAndModels(): Promise<any[]>;
+  addProvider(request: AddProviderRequest): Promise<any>;
+  updateProvider(request: UpdateProviderRequest): Promise<any>;
+  deleteProvider(request: DeleteProviderRequest): Promise<any>;
+  createValidator(request: CreateValidatorRequest): Promise<any>;
+  updateValidator(request: UpdateValidatorRequest): Promise<any>;
+  deleteValidator(request: DeleteValidatorRequest): Promise<any>;
+  getTransactionByHash(hash: string): Promise<any>;
+  getTransactionCount(address: GetTransactionCountRequest): Promise<number>;
+  setTransactionAppeal(tx_address: string): Promise<any>;
 }

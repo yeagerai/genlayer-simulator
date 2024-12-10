@@ -1,7 +1,13 @@
-import type { NodeLog, NewValidatorDataModel, ValidatorModel } from '@/types';
+import type {
+  NodeLog,
+  NewValidatorDataModel,
+  ValidatorModel,
+  GetProvidersAndModelsData,
+  NewProviderDataModel,
+  ProviderModel,
+} from '@/types';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
-import { useContractsStore } from './contracts';
 import { notify } from '@kyvg/vue3-notification';
 import { useRpcClient, useWebSocketClient } from '@/hooks';
 
@@ -9,75 +15,57 @@ export const useNodeStore = defineStore('nodeStore', () => {
   const rpcClient = useRpcClient();
   const webSocketClient = useWebSocketClient();
   const logs = ref<NodeLog[]>([]);
-  const listenWebsocket = ref<boolean>(true);
-  const contractsStore = useContractsStore();
-  const nodeProviders = ref<Record<string, string[]>>({});
-  // state
+  const nodeProviders = ref<GetProvidersAndModelsData>([]);
   const validators = ref<ValidatorModel[]>([]);
   const isLoadingValidatorData = ref<boolean>(true);
+  const isLoadingProviders = ref<boolean>(true);
+  const searchFilter = ref<string>('');
 
   if (!webSocketClient.connected) webSocketClient.connect();
-  webSocketClient.on('status_update', (event) => {
-    if (listenWebsocket.value) {
-      if (event.message?.function !== 'get_transaction_by_id') {
-        if (event.message?.function === 'intelligent_contract_execution') {
-          const executionLogs: string[] =
-            event.message.response.message.split('\n\n');
-          executionLogs
-            .filter((log: string) => log.trim().length > 0)
-            .forEach((log: string) => {
-              logs.value.push({
-                date: new Date().toISOString(),
-                message: {
-                  function: 'Intelligent Contract Execution Log',
-                  trace_id: String(Math.random() * 100),
-                  response: {
-                    status: 'contractLog',
-                    message: log,
-                  },
-                },
-              });
-            });
-        } else {
-          logs.value.push({
-            date: new Date().toISOString(),
-            message: event.message,
-          });
-        }
-      }
-    }
+
+  const trackedEvents = [
+    'endpoint_call',
+    'endpoint_success',
+    'endpoint_error',
+    'transaction_status_updated',
+    'consensus_reached',
+    'consensus_failed',
+    'contract_stdout',
+    'read_contract',
+    'write_contract',
+    'write_contract_failed',
+    'deploying_contract',
+    'deployed_contract',
+    'contract_deployment_failed',
+    'execution_finished',
+  ];
+
+  trackedEvents.forEach((eventName) => {
+    webSocketClient.on(eventName, (eventData: any) => {
+      addLog({
+        scope: eventData.scope,
+        name: eventData.name,
+        type: eventData.type,
+        message: eventData.message,
+        data: eventData.data,
+      });
+    });
   });
+
+  function addLog(log: NodeLog) {
+    logs.value.push(log);
+  }
+
+  async function resetProviders() {
+    await rpcClient.resetDefaultsLlmProviders();
+    getProvidersData();
+  }
 
   async function getValidatorsData() {
     isLoadingValidatorData.value = true;
 
     try {
-      const [validatorsResult, modelsResult] = await Promise.all([
-        rpcClient.getValidators(),
-        rpcClient.getProvidersAndModels(),
-      ]);
-
-      if (validatorsResult?.status === 'success') {
-        validators.value = validatorsResult.data;
-      } else {
-        throw new Error('Error getting validators');
-      }
-
-      if (modelsResult?.status === 'success') {
-        nodeProviders.value = modelsResult.data.reduce(
-          (acc: Record<string, string[]>, llmprovider) => {
-            const provider = llmprovider.provider;
-            if (!acc[provider]) {
-              acc[provider] = [];
-            }
-            acc[provider].push(llmprovider.model);
-            return acc;
-          },
-          {},
-        );
-      } else {
-        throw new Error('Error getting Providers and Models data');
-      }
+      validators.value = await rpcClient.getValidators();
     } catch (error) {
       console.error(error);
       notify({
@@ -87,6 +75,23 @@ export const useNodeStore = defineStore('nodeStore', () => {
       });
     } finally {
       isLoadingValidatorData.value = false;
+    }
+  }
+
+  async function getProvidersData() {
+    isLoadingProviders.value = true;
+
+    try {
+      nodeProviders.value = await rpcClient.getProvidersAndModels();
+    } catch (error) {
+      console.error(error);
+      notify({
+        title: 'Error',
+        text: (error as Error)?.message || 'Error loading providers',
+        type: 'error',
+      });
+    } finally {
+      isLoadingProviders.value = false;
     }
   }
 
@@ -107,16 +112,12 @@ export const useNodeStore = defineStore('nodeStore', () => {
       model,
       config: validatorConfig,
     });
-    if (result?.status === 'success') {
-      const index = validators.value.findIndex(
-        (v) => v.address === validator.address,
-      );
+    const index = validators.value.findIndex(
+      (v) => v.address === validator.address,
+    );
 
-      if (index >= 0) {
-        validators.value.splice(index, 1, result.data);
-      }
-    } else {
-      throw new Error('Error udpating the validator');
+    if (index >= 0) {
+      validators.value.splice(index, 1, result);
     }
   }
 
@@ -124,46 +125,56 @@ export const useNodeStore = defineStore('nodeStore', () => {
     if (validators.value.length === 1) {
       throw new Error('You must have at least one validator');
     }
-    const result = await rpcClient.deleteValidator({
+    await rpcClient.deleteValidator({
       address: validator.address || '',
     });
-    if (result?.status === 'success') {
-      validators.value = validators.value.filter(
-        (v) => v.address !== validator.address,
-      );
-    } else {
-      throw new Error('Error deleting the validator');
-    }
+    validators.value = validators.value.filter(
+      (v) => v.address !== validator.address,
+    );
   };
 
   async function createNewValidator(newValidatorData: NewValidatorDataModel) {
-    const { stake, provider, model, config } = newValidatorData;
+    const { stake, provider, model, config, plugin, plugin_config } =
+      newValidatorData;
     const validatorConfig = JSON.parse(config || '{}');
     const result = await rpcClient.createValidator({
       stake,
       provider,
       model,
       config: validatorConfig,
+      plugin,
+      plugin_config,
     });
-    if (result?.status === 'success') {
-      validators.value.push(result.data);
-    } else {
-      throw new Error('Error creating a new validator');
-    }
+    validators.value.push(result);
   }
 
   async function cloneValidator(validator: ValidatorModel) {
     const result = await rpcClient.createValidator(validator);
-    if (result?.status === 'success') {
-      validators.value.push(result.data);
-    } else {
-      throw new Error('Error cloning validator');
-    }
+    validators.value.push(result);
   }
 
-  const contractsToDelete = computed(() =>
-    contractsStore.contracts.filter((c) => c.example),
-  );
+  async function addProvider(providerData: NewProviderDataModel) {
+    await rpcClient.addProvider({
+      ...providerData,
+    });
+    getProvidersData();
+  }
+
+  async function updateProvider(
+    provider: ProviderModel,
+    newProviderData: NewProviderDataModel,
+  ) {
+    await rpcClient.updateProvider({
+      id: provider.id,
+      ...newProviderData,
+    });
+    getProvidersData();
+  }
+
+  async function deleteProvider(id: number) {
+    await rpcClient.deleteProvider({ id });
+    getProvidersData();
+  }
 
   const validatorsOrderedById = computed(() =>
     validators.value.slice().sort((a, b) => a.id - b.id),
@@ -175,21 +186,50 @@ export const useNodeStore = defineStore('nodeStore', () => {
 
   const hasAtLeastOneValidator = computed(() => validators.value.length >= 1);
 
+  const availableProviders = computed(() => [
+    ...new Set(
+      nodeProviders.value
+        .filter((provider) => provider.is_available)
+        .map((provider) => provider.provider),
+    ),
+  ]);
+
+  const availableModelsForProvider = computed(
+    () => (selectedProvider: string) => [
+      ...new Set(
+        nodeProviders.value
+          .filter(
+            (provider) =>
+              provider.is_model_available &&
+              provider.provider === selectedProvider,
+          )
+          .map((provider) => provider.model),
+      ),
+    ],
+  );
+
   return {
     logs,
-    listenWebsocket,
     validators,
     nodeProviders,
-    contractsToDelete,
     isLoadingValidatorData,
+    isLoadingProviders,
+    searchFilter,
 
     getValidatorsData,
+    getProvidersData,
+    resetProviders,
     createNewValidator,
     cloneValidator,
     deleteValidator,
     updateValidator,
     clearLogs,
+    addProvider,
+    updateProvider,
+    deleteProvider,
 
+    availableProviders,
+    availableModelsForProvider,
     validatorsOrderedById,
     hasAtLeastOneValidator,
   };

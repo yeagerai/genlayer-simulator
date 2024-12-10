@@ -4,42 +4,37 @@ on:
   pull_request:
     types:
       - opened
-      - labeled
       - synchronize
-  pull_request_review:
-    types:
-      - submitted
-      - edited
-
-concurrency:
-  group: unit-tests-${{ github.event.number }}
-  cancel-in-progress: true
+  push:
+    branches:
+      - main # so that test reports get uploaded to Codecov and SonarCloud
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  triggers:
-    name: Get Triggers
-    runs-on: ubuntu-latest
-    outputs:
-      is_pull_request_opened: ${{ github.event_name == 'pull_request' && github.event.action == 'opened'}}
-      is_pull_request_review_approved: ${{ github.event_name == 'pull_request_review' && github.event.review.state == 'APPROVED'}}
-      is_pull_request_labeled_with_run_tests: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-tests')}}
-    steps:
-      - run: true
-  test:
+  frontend-unit-tests:
+    if: (github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]')
     name: Unit Tests
-    needs: triggers
-    if: ${{ needs.triggers.outputs.is_pull_request_opened == 'true' || needs.triggers.outputs.is_pull_request_review_approved == 'true' || needs.triggers.outputs.is_pull_request_labeled_with_run_tests == 'true' }}
     uses: ./.github/workflows/frontend-unit-tests.yml
     secrets:
       codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
-  load-test:
-    name: Load Tests
-    needs: triggers
-    if: ${{ needs.triggers.outputs.is_pull_request_opened == 'true' || needs.triggers.outputs.is_pull_request_review_approved == 'true' || needs.triggers.outputs.is_pull_request_labeled_with_run_tests == 'true' }}
-    uses: ./.github/workflows/load-test-oha.yml
-    with:
-      oha-version: "v1.4.5"
+  backend-unit-tests:
+    if: (github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12.4
+          cache: pip
+      - run: pip install -r backend/protocol_rpc/requirements.txt
+      - run: pip install pytest-cov
+      - run: pytest tests/unit --cov=backend --cov-report=xml --cov-branch
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@v4.0.0
+
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
