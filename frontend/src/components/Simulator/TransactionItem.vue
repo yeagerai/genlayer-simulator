@@ -143,7 +143,14 @@ function prettifyTxData(x: any): any {
     </div>
 
     <div class="flex items-center justify-between gap-2 p-1">
-      <Loader :size="15" v-if="transaction.status !== 'FINALIZED'" />
+      <Loader
+        :size="15"
+        v-if="
+          transaction.status !== 'FINALIZED' &&
+          transaction.status !== 'ACCEPTED' &&
+          transaction.status !== 'UNDETERMINED'
+        "
+      />
 
       <!-- <TransactionStatusBadge
         as="button"
@@ -158,7 +165,12 @@ function prettifyTxData(x: any): any {
         </div>
       </TransactionStatusBadge> -->
 
-      <TransactionStatusBadge class="px-[4px] py-[1px] text-[9px]">
+      <TransactionStatusBadge
+        :class="[
+          'px-[4px] py-[1px] text-[9px]',
+          transaction.status === 'FINALIZED' ? '!bg-green-500' : '',
+        ]"
+      >
         {{ transaction.status }}
       </TransactionStatusBadge>
     </div>
@@ -198,8 +210,20 @@ function prettifyTxData(x: any): any {
             class="text-md mb-1 flex flex-row items-center gap-2 font-semibold"
           >
             Status:
-            <Loader :size="15" v-if="transaction.status !== 'FINALIZED'" />
-            <TransactionStatusBadge>
+            <Loader
+              :size="15"
+              v-if="
+                transaction.status !== 'FINALIZED' &&
+                transaction.status !== 'ACCEPTED' &&
+                transaction.status !== 'UNDETERMINED'
+              "
+            />
+            <TransactionStatusBadge
+              :class="[
+                'px-[4px] py-[1px] text-[9px]',
+                transaction.status === 'FINALIZED' ? '!bg-green-500' : '',
+              ]"
+            >
               {{ transaction.status }}
             </TransactionStatusBadge>
           </p>
