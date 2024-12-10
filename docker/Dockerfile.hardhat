@@ -4,7 +4,11 @@ FROM node:20.11-alpine3.19
 RUN addgroup -S hardhat-group && adduser -S hardhat-user -G hardhat-group
 WORKDIR /app
 
-RUN apk add --no-cache g++ make netcat-openbsd python3
+# Install necessary packages and set up the environment
+RUN apk add --no-cache curl g++ make netcat-openbsd python3 && \
+    # Copy and install npm packages
+    mkdir -p /app && \
+    chown -R hardhat-user:hardhat-group /app
 
 COPY ./hardhat/package*.json ./
 RUN npm install --ignore-scripts
@@ -15,6 +19,7 @@ COPY ./hardhat .
 RUN mkdir -p /app/deployments/localhost && \
     mkdir -p /app/deployments/hardhat && \
     mkdir -p /app/artifacts/build-info && \
+    mkdir -p /app/artifacts/contracts && \
     mkdir -p /app/cache && \
     chown -R hardhat-user:hardhat-group /app && \
     chmod -R 755 /app && \
