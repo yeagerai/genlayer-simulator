@@ -3,11 +3,14 @@
 DEFAULT_VALIDATORS_COUNT = 5
 DEFAULT_CONSENSUS_SLEEP_TIME = 5
 
+import os
 import asyncio
 from collections import deque
 import json
 import traceback
 from typing import Callable, Iterator
+import time
+import base64
 
 from sqlalchemy.orm import Session
 from backend.consensus.vrf import get_validators_for_transaction
@@ -27,7 +30,7 @@ from backend.domain.types import (
     Validator,
 )
 from backend.node.base import Node
-from backend.node.genvm.types import ExecutionMode, Receipt, Vote
+from backend.node.types import ExecutionMode, Receipt, Vote, ExecutionResultStatus
 from backend.protocol_rpc.message_handler.base import MessageHandler
 from backend.protocol_rpc.message_handler.types import (
     LogEvent,
@@ -62,6 +65,23 @@ def node_factory(
         ),
         contract_snapshot_factory=contract_snapshot_factory,
     )
+
+
+def contract_snapshot_factory(
+    contract_address: str,
+    session: Session,
+    transaction: Transaction,
+):
+    if (
+        transaction.type == TransactionType.DEPLOY_CONTRACT
+        and contract_address == transaction.to_address
+    ):
+        ret = ContractSnapshot(None, session)
+        ret.contract_address = transaction.to_address
+        ret.contract_code = transaction.data["contract_code"]
+        ret.encoded_state = {}
+        return ret
+    return ContractSnapshot(contract_address, session)
 
 
 class ConsensusAlgorithm:
@@ -110,7 +130,7 @@ class ConsensusAlgorithm:
                     for queue in [q for q in self.queues.values() if not q.empty()]:
                         # sessions cannot be shared between coroutines, we need to create a new session for each coroutine
                         # https://docs.sqlalchemy.org/en/20/orm/session_basics.html#is-the-session-thread-safe-is-asyncsession-safe-to-share-in-concurrent-tasks
-                        transaction = await queue.get()
+                        transaction: Transaction = await queue.get()
                         with self.get_session() as session:
 
                             async def exec_transaction_with_session_handling():
@@ -119,8 +139,8 @@ class ConsensusAlgorithm:
                                     TransactionsProcessor(session),
                                     ChainSnapshot(session),
                                     AccountsManager(session),
-                                    lambda contract_address, session=session: ContractSnapshot(
-                                        contract_address, session
+                                    lambda contract_address: contract_snapshot_factory(
+                                        contract_address, session, transaction
                                     ),
                                 )
                                 session.commit()
@@ -185,6 +205,15 @@ class ConsensusAlgorithm:
         )
 
         for validators in rotate(involved_validators):
+            consensus_data = ConsensusData(
+                votes={},
+                leader_receipt=None,
+                validators=[],
+            )
+            transactions_processor.set_transaction_result(
+                transaction.hash,
+                consensus_data.to_dict(),
+            )
             # Update transaction status
             ConsensusAlgorithm.dispatch_transaction_status_update(
                 transactions_processor,
@@ -192,6 +221,7 @@ class ConsensusAlgorithm:
                 TransactionStatus.PROPOSING,
                 msg_handler,
             )
+            transactions_processor.create_rollup_transaction(transaction.hash)
 
             [leader, *remaining_validators] = validators
 
@@ -200,13 +230,17 @@ class ConsensusAlgorithm:
 
             num_validators = len(remaining_validators) + 1
 
-            contract_snapshot = contract_snapshot_factory(transaction.to_address)
+            contract_snapshot_supplier = lambda: contract_snapshot_factory(
+                transaction.to_address
+            )
+
+            leaders_contract_snapshot = contract_snapshot_supplier()
 
             # Create Leader
             leader_node = node_factory(
                 leader,
                 ExecutionMode.LEADER,
-                contract_snapshot,
+                leaders_contract_snapshot,
                 None,
                 msg_handler,
                 contract_snapshot_factory,
@@ -214,7 +248,14 @@ class ConsensusAlgorithm:
 
             # Leader executes transaction
             leader_receipt = await leader_node.exec_transaction(transaction)
+
             votes = {leader["address"]: leader_receipt.vote.value}
+            consensus_data.votes = votes
+            consensus_data.leader_receipt = leader_receipt
+            transactions_processor.set_transaction_result(
+                transaction.hash,
+                consensus_data.to_dict(),
+            )
             # Update transaction status
             ConsensusAlgorithm.dispatch_transaction_status_update(
                 transactions_processor,
@@ -222,13 +263,14 @@ class ConsensusAlgorithm:
                 TransactionStatus.COMMITTING,
                 msg_handler,
             )
+            transactions_processor.create_rollup_transaction(transaction.hash)
 
             # Create Validators
             validator_nodes = [
                 node_factory(
                     validator,
                     ExecutionMode.VALIDATOR,
-                    contract_snapshot,
+                    contract_snapshot_supplier(),
                     leader_receipt,
                     msg_handler,
                     contract_snapshot_factory,
@@ -245,8 +287,6 @@ class ConsensusAlgorithm:
             ]
             validation_results = await asyncio.gather(*validation_tasks)
 
-            for i, validation_result in enumerate(validation_results):
-                votes[validator_nodes[i].address] = validation_result.vote.value
             ConsensusAlgorithm.dispatch_transaction_status_update(
                 transactions_processor,
                 transaction.hash,
@@ -254,9 +294,23 @@ class ConsensusAlgorithm:
                 msg_handler,
             )
 
+            for i, validation_result in enumerate(validation_results):
+                votes[validator_nodes[i].address] = validation_result.vote.value
+                single_reveal_votes = {
+                    leader["address"]: leader_receipt.vote.value,
+                    validator_nodes[i].address: validation_result.vote.value,
+                }
+                consensus_data.votes = single_reveal_votes
+                consensus_data.validators = [validation_result]
+                transactions_processor.set_transaction_result(
+                    transaction.hash,
+                    consensus_data.to_dict(),
+                )
+                transactions_processor.create_rollup_transaction(transaction.hash)
+
             if (
                 len([vote for vote in votes.values() if vote == Vote.AGREE.value])
-                >= num_validators // 2
+                >= (num_validators + 1) // 2
             ):
                 break  # Consensus reached
 
@@ -272,6 +326,7 @@ class ConsensusAlgorithm:
                     EventType.ERROR,
                     EventScope.CONSENSUS,
                     "Failed to reach consensus",
+                    transaction_hash=transaction.hash,
                 )
             )
             ConsensusAlgorithm.dispatch_transaction_status_update(
@@ -282,78 +337,141 @@ class ConsensusAlgorithm:
             )
             return
 
+        transactions_processor.set_transaction_timestamp_accepted(transaction.hash)
+
         ConsensusAlgorithm.dispatch_transaction_status_update(
             transactions_processor,
             transaction.hash,
             TransactionStatus.ACCEPTED,
             msg_handler,
         )
-
-        final = False
-        consensus_data = ConsensusData(
-            final=final,
-            votes=votes,
-            leader_receipt=leader_receipt,
-            validators=validation_results,
-        ).to_dict()
-
+        consensus_data.votes = votes
+        consensus_data.validators = validation_results
+        transactions_processor.set_transaction_result(
+            transaction.hash,
+            consensus_data.to_dict(),
+        )
+        transaction.consensus_data = consensus_data.to_dict()
+        transactions_processor.create_rollup_transaction(transaction.hash)
         msg_handler.send_message(
             LogEvent(
                 "consensus_reached",
                 EventType.SUCCESS,
                 EventScope.CONSENSUS,
                 "Reached consensus",
-                consensus_data,
+                consensus_data.to_dict(),
+                transaction_hash=transaction.hash,
             )
         )
+        self.update_contract_state(transaction, contract_snapshot_factory)
 
-        # Register contract if it is a new contract
-        if transaction.type == TransactionType.DEPLOY_CONTRACT:
-            new_contract = {
-                "id": transaction.data["contract_address"],
-                "data": {
-                    "state": leader_receipt.contract_state,
-                    "code": transaction.data["contract_code"],
-                },
-            }
-            contract_snapshot.register_contract(new_contract)
+    def update_contract_state(
+        self,
+        transaction: Transaction,
+        contract_snapshot_factory: Callable[[str], ContractSnapshot],
+    ):
+        consensus_data = transaction.consensus_data
+        leader_receipt = consensus_data["leader_receipt"]
+        contract_snapshot_supplier = lambda: contract_snapshot_factory(
+            transaction.to_address
+        )
 
-            msg_handler.send_message(
-                LogEvent(
-                    "deployed_contract",
-                    EventType.SUCCESS,
-                    EventScope.GENVM,
-                    "Contract deployed",
-                    new_contract,
+        leaders_contract_snapshot = contract_snapshot_supplier()
+
+        if leader_receipt["execution_result"] == ExecutionResultStatus.SUCCESS.value:
+            # Register contract if it is a new contract
+            if transaction.type == TransactionType.DEPLOY_CONTRACT:
+                new_contract = {
+                    "id": transaction.data["contract_address"],
+                    "data": {
+                        "state": leader_receipt["contract_state"],
+                        "code": transaction.data["contract_code"],
+                        "ghost_contract_address": transaction.ghost_contract_address,
+                    },
+                }
+                leaders_contract_snapshot.register_contract(new_contract)
+                self.msg_handler.send_message(
+                    LogEvent(
+                        "deployed_contract",
+                        EventType.SUCCESS,
+                        EventScope.GENVM,
+                        "Contract deployed",
+                        new_contract,
+                        transaction_hash=transaction.hash,
+                    )
                 )
-            )
 
-        # Update contract state if it is an existing contract
-        else:
-            contract_snapshot.update_contract_state(leader_receipt.contract_state)
+            # Update contract state if it is an existing contract
+            else:
+                leaders_contract_snapshot.update_contract_state(
+                    leader_receipt["contract_state"]
+                )
+
+    def commit_reveal_accept_transaction(
+        self,
+        transaction: Transaction,
+        transactions_processor: TransactionsProcessor,
+        contract_snapshot_factory: Callable[[str], ContractSnapshot],
+    ):
+        # temporary, reuse existing code
+        # and add other possible states the transaction can go to
+        ConsensusAlgorithm.dispatch_transaction_status_update(
+            transactions_processor,
+            transaction.hash,
+            TransactionStatus.COMMITTING,
+            self.msg_handler,
+        )
+        transactions_processor.create_rollup_transaction(transaction.hash)
 
         ConsensusAlgorithm.dispatch_transaction_status_update(
             transactions_processor,
             transaction.hash,
-            TransactionStatus.FINALIZED,
-            msg_handler,
+            TransactionStatus.REVEALING,
+            self.msg_handler,
         )
+        transactions_processor.create_rollup_transaction(transaction.hash)
 
+        time.sleep(2)  # remove this
+
+        transactions_processor.set_transaction_timestamp_accepted(transaction.hash)
+        ConsensusAlgorithm.dispatch_transaction_status_update(
+            transactions_processor,
+            transaction.hash,
+            TransactionStatus.ACCEPTED,
+            self.msg_handler,
+        )
+        transactions_processor.create_rollup_transaction(transaction.hash)
+        self.update_contract_state(transaction, contract_snapshot_factory)
+
+    def finalize_transaction(
+        self,
+        transaction: Transaction,
+        transactions_processor: TransactionsProcessor,
+    ):
+        consensus_data = transaction.consensus_data
+        leader_receipt = consensus_data["leader_receipt"]
         # Finalize transaction
         transactions_processor.set_transaction_result(
             transaction.hash,
             consensus_data,
         )
+        ConsensusAlgorithm.dispatch_transaction_status_update(
+            transactions_processor,
+            transaction.hash,
+            TransactionStatus.FINALIZED,
+            self.msg_handler,
+        )
+        transactions_processor.create_rollup_transaction(transaction.hash)
 
         # Insert pending transactions generated by contract-to-contract calls
-        pending_transactions_to_insert = leader_receipt.pending_transactions
+        pending_transactions_to_insert = leader_receipt["pending_transactions"]
         for pending_transaction in pending_transactions_to_insert:
             nonce = transactions_processor.get_transaction_count(transaction.to_address)
             transactions_processor.insert_transaction(
                 transaction.to_address,  # new calls are done by the contract
-                pending_transaction.address,
+                pending_transaction["address"],
                 {
-                    "calldata": pending_transaction.calldata,
+                    "calldata": base64.b64decode(pending_transaction["calldata"]),
                 },
                 value=0,  # we only handle EOA transfers at the moment, so no value gets transferred
                 type=TransactionType.RUN_CONTRACT.value,
@@ -439,8 +557,56 @@ class ConsensusAlgorithm:
                     "hash": str(transaction_hash),
                     "new_status": str(new_status.value),
                 },
+                transaction_hash=transaction_hash,
             )
         )
+
+    def run_appeal_window_loop(self):
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        print(" ~ ~ ~ ~ ~ STARTING APPEAL WINDOW LOOP")
+        loop.run_until_complete(self._appeal_window())
+        loop.close()
+        print(" ~ ~ ~ ~ ~ ENDING APPEAL WINDOW LOOP")
+
+    async def _appeal_window(self):
+        FINALITY_WINDOW = int(os.getenv("FINALITY_WINDOW"))
+        print(" ~ ~ ~ ~ ~ FINALITY WINDOW: ", FINALITY_WINDOW)
+        while True:
+            try:
+                with self.get_session() as session:
+                    chain_snapshot = ChainSnapshot(session)
+                    transactions_processor = TransactionsProcessor(session)
+                    accepted_transactions = chain_snapshot.get_accepted_transactions()
+                    for transaction in accepted_transactions:
+                        transaction = transaction_from_dict(transaction)
+                        if not transaction.appealed:
+                            if (
+                                int(time.time()) - transaction.timestamp_accepted
+                            ) > FINALITY_WINDOW:
+                                self.finalize_transaction(
+                                    transaction,
+                                    transactions_processor,
+                                )
+                                session.commit()
+                        else:
+                            transactions_processor.set_transaction_appeal(
+                                transaction.hash, False
+                            )
+                            self.commit_reveal_accept_transaction(
+                                transaction,
+                                transactions_processor,
+                                lambda contract_address: contract_snapshot_factory(
+                                    contract_address, session, transaction
+                                ),
+                            )
+                            session.commit()
+
+            except Exception as e:
+                print("Error running consensus", e)
+                print(traceback.format_exc())
+
+            await asyncio.sleep(1)
 
 
 def rotate(nodes: list) -> Iterator[list]:

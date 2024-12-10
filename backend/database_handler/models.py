@@ -13,6 +13,7 @@ from sqlalchemy import (
     func,
     text,
     ForeignKey,
+    Text,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import (
@@ -93,6 +94,7 @@ class Transactions(Base):
     r: Mapped[Optional[int]] = mapped_column(Integer)
     s: Mapped[Optional[int]] = mapped_column(Integer)
     v: Mapped[Optional[int]] = mapped_column(Integer)
+    ghost_contract_address: Mapped[Optional[str]] = mapped_column(String(255))
 
     # Relationship for triggered transactions
     triggered_by_hash: Mapped[Optional[str]] = mapped_column(
@@ -112,21 +114,8 @@ class Transactions(Base):
         back_populates="triggered_by",
         init=False,
     )
-
-
-class TransactionsAudit(Base):
-    __tablename__ = "transactions_audit"
-    __table_args__ = (PrimaryKeyConstraint("id", name="transactions_audit_pkey"),)
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, init=False)
-    transaction_hash: Mapped[Optional[str]] = mapped_column(
-        String(66),
-        ForeignKey("transactions.hash", ondelete="CASCADE"),
-    )
-    data: Mapped[Optional[dict]] = mapped_column(JSONB)
-    created_at: Mapped[Optional[datetime.datetime]] = mapped_column(
-        DateTime(True), server_default=func.current_timestamp(), init=False
-    )
+    appealed: Mapped[bool] = mapped_column(Boolean, default=False)
+    timestamp_accepted: Mapped[Optional[int]] = mapped_column(BigInteger, default=None)
 
 
 class Validators(Base):

@@ -1,22 +1,56 @@
 FROM python:3.13.0-slim AS base
 
+ARG TARGETPLATFORM
+
+ARG GENVM_TAG=v0.0.9
+
 ARG path=/app
 WORKDIR $path
 
 ADD backend/protocol_rpc/requirements.txt backend/protocol_rpc/requirements.txt
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --cache-dir=/root/.cache/pip torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu \
-    && pip install --cache-dir=/root/.cache/pip -r backend/protocol_rpc/requirements.txt
+    pip install --cache-dir=/root/.cache/pip -r backend/protocol_rpc/requirements.txt
 
 RUN groupadd -r backend-group \
     && useradd -r -g backend-group backend-user \
     && mkdir -p /home/backend-user/.cache/huggingface \
     && chown -R backend-user:backend-group /home/backend-user \
-    && chown -R backend-user:backend-group $path
+    && chown -R backend-user:backend-group $path \
+    && mkdir -p /genvm
 
 ENV PYTHONPATH "${PYTHONPATH}:/${path}"
 ENV FLASK_APP backend/protocol_rpc/server.py
 ENV HUGGINGFACE_HUB_CACHE /home/backend-user/.cache/huggingface
+
+SHELL ["/bin/bash", "-c"]
+RUN apt-get update -y && apt-get install -y --no-install-recommends curl unzip xz-utils && apt-get clean && rm -rf /var/lib/apt/lists/*
+ENV RUST_BACKTRACE=1
+
+# FIXME(kp2pml30): rewrite when genvm becomes public
+RUN cd /genvm \
+    && if [[ "$TARGETPLATFORM" == "linux/amd64" ]] ; \
+       then \
+           EXECUTOR_URL="https://github.com/yeagerai/genvm/releases/download/$GENVM_TAG/genvm-linux-amd64.zip" ; \
+       elif [[ "$TARGETPLATFORM" == "linux/arm64" ]] ; \
+       then \
+           EXECUTOR_URL="https://github.com/yeagerai/genvm/releases/download/$GENVM_TAG/genvm-linux-arm64.zip" && \
+           DIR="$(pwd)" && \
+           mkdir -p /openssl && cd /openssl && \
+           curl -L --fail-with-body -H 'Accept: application/octet-stream' -o "openssl.tar.xz" "http://mirror.archlinuxarm.org/aarch64/core/openssl-1.0-1.0.2.u-1-aarch64.pkg.tar.xz" && \
+           tar -xf openssl.tar.xz && \
+           cp usr/lib/*.so* /usr/lib/ && \
+           cd "$DIR" || exit 1 ; \
+       else echo "Sorry, $TARGETPLATFORM is not supported yet" ; exit 1 ; \
+       fi \
+    && curl -L --fail-with-body -H 'Accept: application/octet-stream' -o executor.zip "$EXECUTOR_URL" \
+    && RUNNERS_URL="https://github.com/yeagerai/genvm/releases/download/$GENVM_TAG/genvm-runners.zip" \
+    && curl -L --fail-with-body -H 'Accept: application/octet-stream' -o runners.zip "$RUNNERS_URL" \
+    && unzip runners.zip && unzip executor.zip && rm runners.zip executor.zip \
+    && ls -R . \
+    && cd "$path" \
+    && true
+
+RUN su - backend-user -c '/genvm/bin/genvm precompile'
 
 COPY ../.env .
 COPY backend $path/backend

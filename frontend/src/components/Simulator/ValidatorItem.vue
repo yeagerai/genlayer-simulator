@@ -10,8 +10,10 @@ import ValidatorModal from '@/components/Simulator/ValidatorModal.vue';
 import { ref } from 'vue';
 import { useNodeStore } from '@/stores';
 import { notify } from '@kyvg/vue3-notification';
+import { useConfig } from '@/hooks';
 
 const nodeStore = useNodeStore();
+const { canUpdateValidators } = useConfig();
 
 const isUpdateModalMopen = ref(false);
 const showConfirmDelete = ref(false);
@@ -75,7 +77,10 @@ async function handleDeleteValidator() {
       </span>
     </div>
 
-    <div class="hidden flex-row gap-1 group-hover:flex">
+    <div
+      v-if="canUpdateValidators"
+      class="hidden flex-row gap-1 group-hover:flex"
+    >
       <button
         @click.stop="isUpdateModalMopen = true"
         v-tooltip="'Update Validator'"
