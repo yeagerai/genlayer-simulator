@@ -1,24 +1,30 @@
-FROM node:20.11-alpine3.19
+FROM node:22.12-alpine3.19
 
 # Create non-root user
 RUN addgroup -S hardhat-group && adduser -S hardhat-user -G hardhat-group
 WORKDIR /app
 
-RUN apk add --no-cache g++ make netcat-openbsd python3
+# Install necessary packages and set up the environment
+RUN apk add --no-cache curl g++ make netcat-openbsd python3 && \
+    # Copy and install npm packages
+    mkdir -p /app && \
+    chown -R hardhat-user:hardhat-group /app
 
 COPY ./hardhat/package*.json ./
 RUN npm install --ignore-scripts
 
 COPY ./hardhat .
 
-# Change ownership of the app directory to the non-root user
-RUN chown -R hardhat-user:hardhat-group /app
+# Set up directories and permissions
+RUN mkdir -p /app/artifacts/build-info && \
+    mkdir -p /app/artifacts/contracts && \
+    chown -R hardhat-user:hardhat-group /app && \
+    chmod -R 755 /app/artifacts && \
+    # Create start script
+    echo -e '#!/bin/sh\necho "Compiling contracts..."\nnpx hardhat compile --force\necho "Starting Hardhat node..."\nexec ./node_modules/.bin/hardhat node --network hardhat' > /app/start.sh && \
+    chmod +x /app/start.sh
 
 ENV PATH="/app/node_modules/.bin:${PATH}"
-
-RUN echo -e '#!/bin/sh\necho "Compiling contracts..."\nnpx hardhat compile --force\necho "Starting Hardhat node..."\nexec ./node_modules/.bin/hardhat node --network hardhat' > /app/start.sh && \
-    chmod +x /app/start.sh && \
-    ls -la /app/start.sh
 
 EXPOSE 8545
 
