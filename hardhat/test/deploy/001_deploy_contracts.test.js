@@ -1,118 +1,99 @@
 const { expect } = require("chai");
-const { ethers, deployments } = require("hardhat");
+const { ethers } = require("hardhat");
+const { deployments } = require("hardhat");
 const fs = require('fs');
 const path = require('path');
 
+// Define the AddressZero constant
+const { ZeroAddress } = ethers;
+
 describe("Deploy Script", function () {
-  let deployer;
-  const deploymentDir = path.join('./deployments/hardhat');
+    let deployer, validator1, validator2, validator3;
+    const deploymentDir = path.join('./deployments/localhost');
+    const expectedContracts = [
+        'GhostContract',
+        'ConsensusManager',
+        'GhostBlueprint',
+        'GhostFactory',
+        'MockGenStaking',
+        'Queues',
+        'Transactions',
+        'ConsensusMain'
+    ];
 
-  // Setup before all tests
-  before(async function () {
-    [deployer] = await ethers.getSigners();
-    // Create deployment directory and .chainId file
-    fs.mkdirSync(deploymentDir, { recursive: true });
-    fs.writeFileSync(path.join(deploymentDir, '.chainId'), '31337');
-  });
+    // Deploy all contracts before tests
+    before(async function () {
+        // Reset deployments to ensure clean state
+        await deployments.fixture(['GhostContract']);
 
-  // Cleanup after all tests
-  after(async function () {
-    if (fs.existsSync(deploymentDir)) {
-      fs.rmSync(deploymentDir, { recursive: true, force: true });
-    }
-  });
+        [deployer, validator1, validator2, validator3] = await ethers.getSigners();
+        console.log("\n=== Starting Contract Verification ===");
 
-  beforeEach(async function () {
-    // Clear deployments before each test
-    if (fs.existsSync(deploymentDir)) {
-      const files = fs.readdirSync(deploymentDir);
-      for (const file of files) {
-        if (file !== '.chainId') {
-          fs.unlinkSync(path.join(deploymentDir, file));
+        // Verificar que todos los contratos estén desplegados
+        console.log("\n[Test] Verifying all contracts are deployed...");
+        for (const contractName of expectedContracts) {
+            const deployment = await deployments.get(contractName).catch(() => null);
+            if (!deployment) {
+                throw new Error(`Required contract ${contractName} is not deployed!`);
+            }
+            console.log(`[Test] ✓ ${contractName} deployment verified`);
         }
-      }
-    }
-  });
-
-  it("should correctly identify missing and deployed contracts", async function () {
-    // Deploy one contract first
-    await deployments.deploy('GhostContract', {
-      from: deployer.address,
-      args: []
     });
 
-    const contracts = [
-      { name: 'GhostContract', args: [] },
-      { name: 'ConsensusManager', args: [] }
-    ];
+    describe("Contract Deployment Data", function() {
+        it("should have valid deployment data for all contracts", async function () {
+            for (const contractName of expectedContracts) {
+                const deployment = await deployments.get(contractName);
 
-    const { missingContracts, deployedContracts } = await checkDeployments(contracts, { name: 'hardhat' });
+                expect(deployment).to.have.property('address').that.matches(/^0x[a-fA-F0-9]{40}$/);
+                expect(deployment).to.have.property('abi').that.is.an('array').that.is.not.empty;
+                expect(deployment).to.have.property('transactionHash').that.matches(/^0x[a-fA-F0-9]{64}$/);
+                expect(deployment).to.have.property('bytecode').that.matches(/^0x[a-fA-F0-9]+$/);
 
-    expect(deployedContracts).to.include('GhostContract');
-    expect(missingContracts.map(c => c.name)).to.include('ConsensusManager');
-  });
-
-  it("should only deploy missing contracts", async function () {
-    // Deploy one contract manually first
-    await deployments.deploy('GhostContract', {
-      from: deployer.address,
-      args: []
+                console.log(`[Test] ✓ ${contractName} deployment data is valid`);
+            }
+        });
     });
 
-    // Run the deployment script
-    await deployments.fixture(['AllContracts']);
+    describe("Contract Initialization and Connections", function() {
+        it("should have GhostFactory properly initialized with blueprint", async function() {
+            console.log("\n[Test] Verifying GhostFactory initialization...");
+            const deployment = await deployments.get('GhostFactory');
+            const ghostFactory = await ethers.getContractAt('GhostFactory', deployment.address);
 
-    // Check that all contracts are deployed
-    const files = fs.readdirSync(deploymentDir);
-    expect(files).to.include('GhostContract.json');
-    expect(files).to.include('ConsensusManager.json');
-    expect(files).to.include('GhostBlueprint.json');
-    expect(files).to.include('GhostFactory.json');
-    expect(files).to.include('MockGenStaking.json');
-    expect(files).to.include('Queues.json');
-    expect(files).to.include('Transactions.json');
-    expect(files).to.include('ConsensusMain.json');
-  });
+            const blueprintAddress = await ghostFactory.ghostBlueprint();
+            expect(blueprintAddress).to.not.equal(ZeroAddress, "GhostFactory blueprint not set");
+            console.log("[Test] ✓ GhostFactory blueprint is properly set");
+        });
 
-  it("should save correct deployment data for each contract", async function () {
-    await deployments.fixture(['AllContracts']);
+        it("should have ConsensusMain properly connected to all contracts", async function() {
+            console.log("\n[Test] Verifying ConsensusMain connections...");
+            const deployment = await deployments.get('ConsensusMain');
+            const consensusMain = await ethers.getContractAt('ConsensusMain', deployment.address);
 
-    const contracts = [
-      'GhostContract',
-      'ConsensusManager',
-      'GhostBlueprint',
-      'GhostFactory',
-      'MockGenStaking',
-      'Queues',
-      'Transactions',
-      'ConsensusMain'
-    ];
+            const ghostFactoryAddress = await consensusMain.ghostFactory();
+            const genStakingAddress = await consensusMain.genStaking();
+            const genQueueAddress = await consensusMain.genQueue();
+            const genTransactionsAddress = await consensusMain.genTransactions();
 
-    for (const contractName of contracts) {
-      const deploymentPath = path.join(deploymentDir, `${contractName}.json`);
-      expect(fs.existsSync(deploymentPath), `${contractName} deployment file should exist`).to.be.true;
+            expect(ghostFactoryAddress).to.not.equal(ZeroAddress, "GhostFactory connection not set");
+            expect(genStakingAddress).to.not.equal(ZeroAddress, "GenStaking connection not set");
+            expect(genQueueAddress).to.not.equal(ZeroAddress, "GenQueue connection not set");
+            expect(genTransactionsAddress).to.not.equal(ZeroAddress, "GenTransactions connection not set");
 
-      const deploymentData = JSON.parse(fs.readFileSync(deploymentPath, 'utf8'));
-      expect(deploymentData.address).to.match(/^0x[a-fA-F0-9]{40}$/);
-      expect(deploymentData.abi).to.be.an('array');
-      expect(deploymentData.bytecode).to.match(/^0x[a-fA-F0-9]+$/);
-      expect(deploymentData.transactionHash).to.match(/^0x[a-fA-F0-9]{64}$/);
-    }
-  });
+            console.log("[Test] ✓ ConsensusMain connections are properly set");
+        });
 
-  it("should handle constructor arguments correctly", async function () {
-    await deployments.fixture(['AllContracts']);
+        it("should have validators properly set up in MockGenStaking", async function() {
+            console.log("\n[Test] Verifying validator setup...");
+            const deployment = await deployments.get('MockGenStaking');
+            const mockGenStaking = await ethers.getContractAt('MockGenStaking', deployment.address);
 
-    const mockGenStakingPath = path.join(deploymentDir, 'MockGenStaking.json');
-    const deploymentData = JSON.parse(fs.readFileSync(mockGenStakingPath, 'utf8'));
+            expect(await mockGenStaking.isValidator(validator1.address)).to.be.true, "Validator1 not set";
+            expect(await mockGenStaking.isValidator(validator2.address)).to.be.true, "Validator2 not set";
+            expect(await mockGenStaking.isValidator(validator3.address)).to.be.true, "Validator3 not set";
 
-    const MockGenStaking = await ethers.getContractAt('MockGenStaking', deploymentData.address);
-    expect(await MockGenStaking.isValidator(deployer.address)).to.be.true;
-  });
-
-  it("should create and maintain .chainId file", async function () {
-    const chainIdPath = path.join(deploymentDir, '.chainId');
-    expect(fs.existsSync(chainIdPath)).to.be.true;
-    expect(fs.readFileSync(chainIdPath, 'utf8')).to.equal('31337');
-  });
+            console.log("[Test] ✓ Validators are properly set up");
+        });
+    });
 });

@@ -13,6 +13,7 @@
     "@openzeppelin/contracts": "^5.1.0",
     "@openzeppelin/contracts-upgradeable": "^5.1.0",
     "@typechain/hardhat": "^9.0.0",
+    "ethereumjs-wallet": "^1.0.2",
     "ethers": "^6.4.0",
     "hardhat": "^2.22.1",
     "hardhat-gas-reporter": "^1.0.8",
@@ -22,6 +23,7 @@
     "node": ">=18.0.0"
   },
   "devDependencies": {
+    "@nomicfoundation/hardhat-ignition": "^0.15.8",
     "hardhat-deploy": "^0.14.0"
   }
 }

@@ -15,37 +15,39 @@ RUN npm install --ignore-scripts
 
 COPY ./hardhat .
 
-# Create directories and set permissions BEFORE switching user
+# Create directories and set permissions
 RUN mkdir -p /app/deployments/localhost && \
     mkdir -p /app/deployments/hardhat && \
     mkdir -p /app/artifacts/build-info && \
     mkdir -p /app/artifacts/contracts && \
     mkdir -p /app/cache && \
+    mkdir -p /app/copy_deployments && \
     chown -R hardhat-user:hardhat-group /app && \
     chmod -R 755 /app && \
     chmod -R 775 /app/deployments && \
     chmod -R 775 /app/artifacts && \
-    chmod -R 775 /app/cache
+    chmod -R 775 /app/cache && \
+    chmod -R 775 /app/copy_deployments
 
 ENV PATH="/app/node_modules/.bin:${PATH}"
 
-# Add the start script directly in the Dockerfile
+# Add the start script
 RUN echo '#!/bin/sh' > /app/start.sh && \
     echo 'echo "Checking and compiling contracts if needed..."' >> /app/start.sh && \
     echo 'mkdir -p /app/deployments/hardhat' >> /app/start.sh && \
+    echo 'mkdir -p /app/copy_deployments/localhost' >> /app/start.sh && \
+    echo 'mkdir -p /app/copy_deployments/hardhat' >> /app/start.sh && \
+    echo 'chmod -R 775 /app/copy_deployments' >> /app/start.sh && \
     echo 'echo "31337" > /app/deployments/hardhat/.chainId' >> /app/start.sh && \
     echo 'npx hardhat compile' >> /app/start.sh && \
     echo 'echo "Starting Hardhat node..."' >> /app/start.sh && \
-    echo 'npx hardhat node --hostname 0.0.0.0 --no-deploy &' >> /app/start.sh && \
-    echo 'sleep 5' >> /app/start.sh && \
-    echo 'echo "Running deployments..."' >> /app/start.sh && \
-    echo 'npx hardhat deploy' >> /app/start.sh && \
+    echo 'npx hardhat node --hostname 0.0.0.0 & sleep 5' >> /app/start.sh && \
+    echo 'node scripts/copy-deployments.js &' >> /app/start.sh && \
     echo 'wait' >> /app/start.sh && \
     chmod +x /app/start.sh
 
 EXPOSE 8545
 
-# Switch to non-root user before running the command
 USER hardhat-user
 
 CMD ["/app/start.sh"]

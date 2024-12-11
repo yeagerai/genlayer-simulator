@@ -55,7 +55,7 @@ class ConsensusService:
         try:
             # Path to deployment file (using Docker volume path)
             deployment_path = (
-                Path("/app/hardhat/deployments/hardhat") / f"{contract_name}.json"
+                Path("/app/hardhat/deployments/localhost") / f"{contract_name}.json"
             )
 
             if not deployment_path.exists():

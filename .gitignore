@@ -163,3 +163,6 @@ hardhat/coverage.json
 hardhat/typechain
 hardhat/typechain-types
 hardhat/deployments/*
+
+# Geth keystore
+hardhat/geth_keystore/*
