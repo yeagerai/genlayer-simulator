@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import type { TransactionItem } from '@/types';
 import type { TransactionHash } from 'genlayer-js/types';
-import { useDb, useGenlayer, useWebSocketClient } from '@/hooks';
+import { useDb, useGenlayer, useWebSocketClient, useRpcClient } from '@/hooks';
 import { useContractsStore } from '@/stores';
 
 export const useTransactionsStore = defineStore('transactionsStore', () => {
@@ -12,6 +12,7 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
   const contractsStore = useContractsStore();
   const subscriptions = new Set();
   const db = useDb();
+  const rpcClient = useRpcClient();
 
   function addTransaction(tx: TransactionItem) {
     transactions.value.unshift(tx); // Push on top in case there's no date property yet
@@ -37,7 +38,7 @@ export const useTransactionsStore = defineStore('transactionsStore', () => {
         data: tx,
       });
 
-      if (currentTx.type === 'deploy' && tx.status === 'FINALIZED') {
+      if (currentTx.type === 'deploy' && tx.status === 'ACCEPTED') {
         contractsStore.addDeployedContract({
           contractId: currentTx.localContractId,
           address: tx.data.contract_address,

@@ -93,6 +93,7 @@ class ConsensusAlgorithm:
         self.get_session = get_session
         self.msg_handler = msg_handler
         self.queues: dict[str, asyncio.Queue] = {}
+        self.finality_window_time = int(os.getenv("VITE_FINALITY_WINDOW"))
 
     def run_crawl_snapshot_loop(self):
         loop = asyncio.new_event_loop()
@@ -221,7 +222,6 @@ class ConsensusAlgorithm:
                 TransactionStatus.PROPOSING,
                 msg_handler,
             )
-            transactions_processor.create_rollup_transaction(transaction.hash)
 
             [leader, *remaining_validators] = validators
 
@@ -263,7 +263,6 @@ class ConsensusAlgorithm:
                 TransactionStatus.COMMITTING,
                 msg_handler,
             )
-            transactions_processor.create_rollup_transaction(transaction.hash)
 
             # Create Validators
             validator_nodes = [
@@ -306,7 +305,6 @@ class ConsensusAlgorithm:
                     transaction.hash,
                     consensus_data.to_dict(),
                 )
-                transactions_processor.create_rollup_transaction(transaction.hash)
 
             if (
                 len([vote for vote in votes.values() if vote == Vote.AGREE.value])
@@ -351,6 +349,7 @@ class ConsensusAlgorithm:
             transaction.hash,
             consensus_data.to_dict(),
         )
+        transaction.consensus_data = consensus_data.to_dict()
         transactions_processor.create_rollup_transaction(transaction.hash)
         msg_handler.send_message(
             LogEvent(
@@ -362,50 +361,15 @@ class ConsensusAlgorithm:
                 transaction_hash=transaction.hash,
             )
         )
+        self.update_contract_state(transaction, contract_snapshot_factory)
 
-    def commit_reveal_accept_transaction(
+    def update_contract_state(
         self,
         transaction: Transaction,
-        transactions_processor: TransactionsProcessor,
-    ):
-        # temporary, reuse existing code
-        # and add other possible states the transaction can go to
-        ConsensusAlgorithm.dispatch_transaction_status_update(
-            transactions_processor,
-            transaction.hash,
-            TransactionStatus.COMMITTING,
-            self.msg_handler,
-        )
-        transactions_processor.create_rollup_transaction(transaction.hash)
-
-        ConsensusAlgorithm.dispatch_transaction_status_update(
-            transactions_processor,
-            transaction.hash,
-            TransactionStatus.REVEALING,
-            self.msg_handler,
-        )
-        transactions_processor.create_rollup_transaction(transaction.hash)
-
-        time.sleep(2)  # remove this
-
-        transactions_processor.set_transaction_timestamp_accepted(transaction.hash)
-        ConsensusAlgorithm.dispatch_transaction_status_update(
-            transactions_processor,
-            transaction.hash,
-            TransactionStatus.ACCEPTED,
-            self.msg_handler,
-        )
-        transactions_processor.create_rollup_transaction(transaction.hash)
-
-    def finalize_transaction(
-        self,
-        transaction: Transaction,
-        transactions_processor: TransactionsProcessor,
         contract_snapshot_factory: Callable[[str], ContractSnapshot],
     ):
         consensus_data = transaction.consensus_data
         leader_receipt = consensus_data["leader_receipt"]
-
         contract_snapshot_supplier = lambda: contract_snapshot_factory(
             transaction.to_address
         )
@@ -441,6 +405,49 @@ class ConsensusAlgorithm:
                     leader_receipt["contract_state"]
                 )
 
+    def commit_reveal_accept_transaction(
+        self,
+        transaction: Transaction,
+        transactions_processor: TransactionsProcessor,
+        contract_snapshot_factory: Callable[[str], ContractSnapshot],
+    ):
+        # temporary, reuse existing code
+        # and add other possible states the transaction can go to
+        ConsensusAlgorithm.dispatch_transaction_status_update(
+            transactions_processor,
+            transaction.hash,
+            TransactionStatus.COMMITTING,
+            self.msg_handler,
+        )
+        transactions_processor.create_rollup_transaction(transaction.hash)
+
+        ConsensusAlgorithm.dispatch_transaction_status_update(
+            transactions_processor,
+            transaction.hash,
+            TransactionStatus.REVEALING,
+            self.msg_handler,
+        )
+        transactions_processor.create_rollup_transaction(transaction.hash)
+
+        time.sleep(2)  # remove this
+
+        transactions_processor.set_transaction_timestamp_accepted(transaction.hash)
+        ConsensusAlgorithm.dispatch_transaction_status_update(
+            transactions_processor,
+            transaction.hash,
+            TransactionStatus.ACCEPTED,
+            self.msg_handler,
+        )
+        transactions_processor.create_rollup_transaction(transaction.hash)
+        self.update_contract_state(transaction, contract_snapshot_factory)
+
+    def finalize_transaction(
+        self,
+        transaction: Transaction,
+        transactions_processor: TransactionsProcessor,
+    ):
+        consensus_data = transaction.consensus_data
+        leader_receipt = consensus_data["leader_receipt"]
         # Finalize transaction
         transactions_processor.set_transaction_result(
             transaction.hash,
@@ -452,7 +459,6 @@ class ConsensusAlgorithm:
             TransactionStatus.FINALIZED,
             self.msg_handler,
         )
-        transactions_processor.create_rollup_transaction(transaction.hash)
 
         # Insert pending transactions generated by contract-to-contract calls
         pending_transactions_to_insert = leader_receipt["pending_transactions"]
@@ -555,23 +561,35 @@ class ConsensusAlgorithm:
     def run_appeal_window_loop(self):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
+        print(" ~ ~ ~ ~ ~ STARTING APPEAL WINDOW LOOP")
         loop.run_until_complete(self._appeal_window())
         loop.close()
+        print(" ~ ~ ~ ~ ~ ENDING APPEAL WINDOW LOOP")
 
     async def _appeal_window(self):
-        FINALITY_WINDOW = int(os.getenv("FINALITY_WINDOW"))
+        print(" ~ ~ ~ ~ ~ FINALITY WINDOW: ", self.finality_window_time)
         while True:
-            with self.get_session() as session:
-                chain_snapshot = ChainSnapshot(session)
-                transactions_processor = TransactionsProcessor(session)
-                accepted_transactions = chain_snapshot.get_accepted_transactions()
-                for transaction in accepted_transactions:
-                    transaction = transaction_from_dict(transaction)
-                    if not transaction.appealed:
-                        if (
-                            int(time.time()) - transaction.timestamp_accepted
-                        ) > FINALITY_WINDOW:
-                            self.finalize_transaction(
+            try:
+                with self.get_session() as session:
+                    chain_snapshot = ChainSnapshot(session)
+                    transactions_processor = TransactionsProcessor(session)
+                    accepted_transactions = chain_snapshot.get_accepted_transactions()
+                    for transaction in accepted_transactions:
+                        transaction = transaction_from_dict(transaction)
+                        if not transaction.appealed:
+                            if (
+                                int(time.time()) - transaction.timestamp_accepted
+                            ) > self.finality_window_time:
+                                self.finalize_transaction(
+                                    transaction,
+                                    transactions_processor,
+                                )
+                                session.commit()
+                        else:
+                            transactions_processor.set_transaction_appeal(
+                                transaction.hash, False
+                            )
+                            self.commit_reveal_accept_transaction(
                                 transaction,
                                 transactions_processor,
                                 lambda contract_address: contract_snapshot_factory(
@@ -579,16 +597,15 @@ class ConsensusAlgorithm:
                                 ),
                             )
                             session.commit()
-                    else:
-                        transactions_processor.set_transaction_appeal(
-                            transaction.hash, False
-                        )
-                        self.commit_reveal_accept_transaction(
-                            transaction, transactions_processor
-                        )
-                        session.commit()
+
+            except Exception as e:
+                print("Error running consensus", e)
+                print(traceback.format_exc())
 
             await asyncio.sleep(1)
+
+    def set_finality_window_time(self, time: int):
+        self.finality_window_time = time
 
 
 def rotate(nodes: list) -> Iterator[list]:
