@@ -32,4 +32,5 @@ export interface IJsonRpcService {
   getTransactionByHash(hash: string): Promise<any>;
   getTransactionCount(address: GetTransactionCountRequest): Promise<number>;
   setTransactionAppeal(tx_address: string): Promise<any>;
+  setFinalityWindowTime(time: number): Promise<any>;
 }
