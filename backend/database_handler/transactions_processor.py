@@ -62,7 +62,6 @@ class TransactionsProcessor:
             "ghost_contract_address": transaction_data.ghost_contract_address,
             "appealed": transaction_data.appealed,
             "timestamp_accepted": transaction_data.timestamp_accepted,
-            "ghost_contract_address": transaction_data.ghost_contract_address,
         }
 
     @staticmethod
