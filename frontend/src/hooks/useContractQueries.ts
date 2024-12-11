@@ -85,8 +85,8 @@ export function useContractQueries() {
       const details = JSON.parse(error.details);
       const message = details.data.error.args[1].stderr;
       return message;
-    } catch (error) {
-      return 'Could not parse error details. Please check the logs.';
+    } catch (err) {
+      return error.details;
     }
   };
 
