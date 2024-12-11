@@ -31,7 +31,7 @@ const showHome = computed(() => store.currentContractId === '');
 
       <div
         v-if="!!error"
-        class="max-h-[120px] w-full shrink-0 overflow-y-auto whitespace-pre-wrap bg-red-500 bg-opacity-80 px-2 py-1 text-xs text-white"
+        class="max-h-[160px] w-full shrink-0 overflow-y-auto whitespace-pre-wrap bg-red-500 bg-opacity-80 px-2 py-1 text-xs text-white"
       >
         {{ error }}
       </div>
