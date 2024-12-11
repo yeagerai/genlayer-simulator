@@ -91,6 +91,7 @@ class ConsensusAlgorithm:
         self.get_session = get_session
         self.msg_handler = msg_handler
         self.queues: dict[str, asyncio.Queue] = {}
+        self.finality_window_time = int(os.getenv("VITE_FINALITY_WINDOW"))
 
     def run_crawl_snapshot_loop(self):
         loop = asyncio.new_event_loop()
@@ -274,23 +275,43 @@ class ConsensusAlgorithm:
     def run_appeal_window_loop(self):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
+        print(" ~ ~ ~ ~ ~ STARTING APPEAL WINDOW LOOP")
         loop.run_until_complete(self._appeal_window())
         loop.close()
+        print(" ~ ~ ~ ~ ~ ENDING APPEAL WINDOW LOOP")
 
     async def _appeal_window(self):
-        FINALITY_WINDOW = int(os.getenv("FINALITY_WINDOW"))
+        print(" ~ ~ ~ ~ ~ FINALITY WINDOW: ", self.finality_window_time)
         while True:
-            with self.get_session() as session:
-                chain_snapshot = ChainSnapshot(session)
-                accepted_transactions = (
-                    chain_snapshot.get_accepted_transactions()
-                )  # TODO: also get undetermined transactions
-                for transaction in accepted_transactions:
-                    transaction = Transaction.from_dict(transaction)
-                    if not transaction.appealed:
-                        if (
-                            int(time.time()) - transaction.timestamp_accepted
-                        ) > FINALITY_WINDOW:
+            try:
+                with self.get_session() as session:
+                    chain_snapshot = ChainSnapshot(session)
+                    accepted_transactions = (
+                        chain_snapshot.get_accepted_transactions()
+                    )  # TODO: also get undetermined transactions
+                    for transaction in accepted_transactions:
+                        transaction = Transaction.from_dict(transaction)
+                        if not transaction.appealed:
+                            if (
+                                int(time.time()) - transaction.timestamp_accepted
+                            ) > self.finality_window_time:
+                                context = TransactionContext(
+                                    transaction=transaction,
+                                    transactions_processor=TransactionsProcessor(
+                                        session
+                                    ),
+                                    snapshot=chain_snapshot,
+                                    accounts_manager=AccountsManager(session),
+                                    contract_snapshot_factory=lambda contract_address: contract_snapshot_factory(
+                                        contract_address, session, transaction
+                                    ),
+                                    node_factory=node_factory,
+                                    msg_handler=self.msg_handler,
+                                )
+                                state = FinalizingState()
+                                await state.handle(context)
+                                session.commit()
+                        else:
                             context = TransactionContext(
                                 transaction=transaction,
                                 transactions_processor=TransactionsProcessor(session),
@@ -302,57 +323,45 @@ class ConsensusAlgorithm:
                                 node_factory=node_factory,
                                 msg_handler=self.msg_handler,
                             )
-                            state = FinalizingState()
-                            await state.handle(context)
-                            session.commit()
-                    else:
-                        transactions_processor = TransactionsProcessor(session)
-                        context = TransactionContext(
-                            transaction=transaction,
-                            transactions_processor=transactions_processor,
-                            snapshot=chain_snapshot,
-                            accounts_manager=AccountsManager(session),
-                            contract_snapshot_factory=lambda contract_address: contract_snapshot_factory(
-                                contract_address, session, transaction
-                            ),
-                            node_factory=node_factory,
-                            msg_handler=self.msg_handler,
-                        )
-                        context.consensus_data.leader_receipt = (
-                            transaction.consensus_data.leader_receipt
-                        )
-                        try:
-                            context.remaining_validators = (
-                                ConsensusAlgorithm.get_extra_validators(
-                                    chain_snapshot, transaction.consensus_data
+                            context.consensus_data.leader_receipt = (
+                                transaction.consensus_data.leader_receipt
+                            )
+                            try:
+                                context.remaining_validators = (
+                                    ConsensusAlgorithm.get_extra_validators(
+                                        chain_snapshot, transaction.consensus_data
+                                    )
                                 )
-                            )
-                        except ValueError as e:
-                            print(e, transaction)
-                            context.transactions_processor.set_transaction_appeal(
-                                context.transaction.hash, False
-                            )
-                            context.transaction.appealed = False
-                            session.commit()
-                        else:
-                            context.num_validators = len(
-                                context.remaining_validators
-                            )  # new amount added (N + 2)
-                            context.votes = {}
-                            context.contract_snapshot_supplier = (
-                                lambda: context.contract_snapshot_factory(
-                                    context.transaction.to_address
+                            except ValueError as e:
+                                print(e, transaction)
+                                context.transactions_processor.set_transaction_appeal(
+                                    context.transaction.hash, False
                                 )
-                            )
+                                context.transaction.appealed = False
+                                session.commit()
+                            else:
+                                context.num_validators = len(
+                                    context.remaining_validators
+                                )  # new amount added (N + 2)
+                                context.votes = {}
+                                context.contract_snapshot_supplier = (
+                                    lambda: context.contract_snapshot_factory(
+                                        context.transaction.to_address
+                                    )
+                                )
 
-                            # State transitions
-                            state = CommittingState()
-                            while True:
-                                next_state = await state.handle(context)
-                                if next_state is None:
-                                    break
-                                state = next_state
-                            session.commit()
+                                # State transitions
+                                state = CommittingState()
+                                while True:
+                                    next_state = await state.handle(context)
+                                    if next_state is None:
+                                        break
+                                    state = next_state
+                                session.commit()
+
+            except Exception as e:
+                print("Error running consensus", e)
+                print(traceback.format_exc())
 
             await asyncio.sleep(1)
 
@@ -389,6 +398,9 @@ class ConsensusAlgorithm:
             for validator in all_validators
             if validator["address"] in current_validators_addresses
         ]
+
+    def set_finality_window_time(self, time: int):
+        self.finality_window_time = time
 
 
 class TransactionContext:
@@ -686,6 +698,7 @@ class AcceptedState(TransactionState):
         context.transactions_processor.set_transaction_result(
             context.transaction.hash, context.consensus_data.to_dict()
         )
+
         context.transactions_processor.create_rollup_transaction(
             context.transaction.hash
         )
@@ -700,6 +713,39 @@ class AcceptedState(TransactionState):
                 transaction_hash=context.transaction.hash,
             )
         )
+
+        # Update contract state
+        leader_receipt = context.consensus_data.leader_receipt
+        leaders_contract_snapshot = context.contract_snapshot_supplier()
+        if leader_receipt.execution_result == ExecutionResultStatus.SUCCESS:
+            # Register contract if it is a new contract
+            if context.transaction.type == TransactionType.DEPLOY_CONTRACT:
+                new_contract = {
+                    "id": context.transaction.data["contract_address"],
+                    "data": {
+                        "state": leader_receipt.contract_state,
+                        "code": context.transaction.data["contract_code"],
+                        "ghost_contract_address": context.transaction.ghost_contract_address,
+                    },
+                }
+                leaders_contract_snapshot.register_contract(new_contract)
+
+                context.msg_handler.send_message(
+                    LogEvent(
+                        "deployed_contract",
+                        EventType.SUCCESS,
+                        EventScope.GENVM,
+                        "Contract deployed",
+                        new_contract,
+                        transaction_hash=context.transaction.hash,
+                    )
+                )
+            # Update contract state if it is an existing contract
+            else:
+                leaders_contract_snapshot.update_contract_state(
+                    leader_receipt.contract_state
+                )
+
         return None
 
 
@@ -730,40 +776,6 @@ class UndeterminedState(TransactionState):
 
 class FinalizingState(TransactionState):
     async def handle(self, context):
-        leader_receipt = context.transaction.consensus_data.leader_receipt
-        contract_snapshot_supplier = lambda: context.contract_snapshot_factory(
-            context.transaction.to_address
-        )
-        leaders_contract_snapshot = contract_snapshot_supplier()
-
-        if leader_receipt.execution_result == ExecutionResultStatus.SUCCESS:
-            # Register contract if it is a new contract
-            if context.transaction.type == TransactionType.DEPLOY_CONTRACT:
-                new_contract = {
-                    "id": context.transaction.data["contract_address"],
-                    "data": {
-                        "state": leader_receipt.contract_state,
-                        "code": context.transaction.data["contract_code"],
-                    },
-                }
-                leaders_contract_snapshot.register_contract(new_contract)
-
-                context.msg_handler.send_message(
-                    LogEvent(
-                        "deployed_contract",
-                        EventType.SUCCESS,
-                        EventScope.GENVM,
-                        "Contract deployed",
-                        new_contract,
-                        transaction_hash=context.transaction.hash,
-                    )
-                )
-            # Update contract state if it is an existing contract
-            else:
-                leaders_contract_snapshot.update_contract_state(
-                    leader_receipt.contract_state
-                )
-
         # Finalize transaction
         context.transactions_processor.set_transaction_result(
             context.transaction.hash,
@@ -780,7 +792,9 @@ class FinalizingState(TransactionState):
         )
 
         # Insert pending transactions generated by contract-to-contract calls
-        pending_transactions = leader_receipt.pending_transactions
+        pending_transactions = (
+            context.transaction.consensus_data.leader_receipt.pending_transactions
+        )
         for pending_transaction in pending_transactions:
             nonce = context.transactions_processor.get_transaction_count(
                 context.transaction.to_address

@@ -4,6 +4,7 @@ import json
 from functools import partial
 from typing import Any
 from flask_jsonrpc import JSONRPC
+from flask_jsonrpc.exceptions import JSONRPCError
 from sqlalchemy import Table
 from sqlalchemy.orm import Session
 
@@ -44,6 +45,7 @@ from backend.database_handler.transactions_processor import (
 )
 from backend.node.base import Node
 from backend.node.types import ExecutionMode, ExecutionResultStatus
+from backend.consensus.base import ConsensusAlgorithm
 
 from flask import request
 from flask_jsonrpc.exceptions import JSONRPCError
@@ -346,7 +348,8 @@ async def get_contract_schema_for_code(
         msg_handler=msg_handler.with_client_session(get_client_session_id()),
         contract_snapshot_factory=None,
     )
-    return json.loads(await node.get_contract_schema(contract_code))
+    schema = await node.get_contract_schema(contract_code)
+    return json.loads(schema)
 
 
 ####### ETH ENDPOINTS #######
@@ -415,15 +418,11 @@ async def call(
         from_address="0x" + "00" * 20,
         calldata=decoded_data.calldata,
     )
-    # FIXME #621
-    # this place is defective because
-    # - write methods can return as well and it is not supported at all in the UI
-    # - no calldata decoding should happen here, the frontend (caller) should be responsible for that
     if receipt.execution_result != ExecutionResultStatus.SUCCESS:
         raise JSONRPCError(
             message="running contract failed", data={"receipt": receipt.to_dict()}
         )
-    return base64.b64encode(receipt.returned).decode("ascii")
+    return base64.b64encode(receipt.result[1:]).decode("ascii")
 
 
 def send_raw_transaction(
@@ -525,6 +524,10 @@ def set_transaction_appeal(
     transactions_processor.set_transaction_appeal(transaction_hash, True)
 
 
+def set_finality_window_time(consensus: ConsensusAlgorithm, time: int) -> None:
+    consensus.set_finality_window_time(time)
+
+
 def register_all_rpc_endpoints(
     jsonrpc: JSONRPC,
     msg_handler: MessageHandler,
@@ -533,6 +536,7 @@ def register_all_rpc_endpoints(
     transactions_processor: TransactionsProcessor,
     validators_registry: ValidatorsRegistry,
     llm_provider_registry: LLMProviderRegistry,
+    consensus: ConsensusAlgorithm,
 ):
     register_rpc_endpoint = partial(generate_rpc_endpoint, jsonrpc, msg_handler)
 
@@ -646,4 +650,8 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint(
         partial(set_transaction_appeal, transactions_processor),
         method_name="sim_appealTransaction",
+    )
+    register_rpc_endpoint(
+        partial(set_finality_window_time, consensus),
+        method_name="sim_setFinalityWindowTime",
     )
