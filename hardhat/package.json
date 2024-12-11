@@ -13,7 +13,6 @@
     "@openzeppelin/contracts": "^5.1.0",
     "@openzeppelin/contracts-upgradeable": "^5.1.0",
     "@typechain/hardhat": "^9.0.0",
-    "ethereumjs-wallet": "^1.0.2",
     "ethers": "^6.4.0",
     "hardhat": "^2.22.1",
     "hardhat-gas-reporter": "^1.0.8",

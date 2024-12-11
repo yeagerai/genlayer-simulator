@@ -173,10 +173,10 @@ module.exports = async function (hre) {
             const backupDir = path.join('./copy_deployments/localhost');
             const deployDir = path.join('./deployments/localhost');
 
-            // Asegurar que el directorio de deployments existe
+            // Ensure the deployments directory exists
             await fs.ensureDir(deployDir);
 
-            // Copiar desde el backup a deployments
+            // Copy from backup to deployments
             console.log("Restoring contracts from backup...");
             await fs.copy(backupDir, deployDir, { overwrite: true });
             console.log("Contracts restored from backup successfully.");
