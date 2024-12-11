@@ -48,7 +48,7 @@
     "splitpanes": "^3.1.5",
     "tippy.js": "^6.3.7",
     "typescript-parsec": "^0.3.4",
-    "uuid": "^10.0.0",
+    "uuid": "^11.0.0",
     "v-plausible": "^1.2.0",
     "viem": "^2.16.5",
     "vite-svg-loader": "^5.1.0",
