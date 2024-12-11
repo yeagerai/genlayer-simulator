@@ -45,6 +45,7 @@ from backend.database_handler.transactions_processor import (
 )
 from backend.node.base import Node
 from backend.node.types import ExecutionMode, ExecutionResultStatus
+from backend.consensus.base import ConsensusAlgorithm
 
 from flask import request
 from flask_jsonrpc.exceptions import JSONRPCError
@@ -523,6 +524,10 @@ def set_transaction_appeal(
     transactions_processor.set_transaction_appeal(transaction_hash, True)
 
 
+def set_finality_window_time(consensus: ConsensusAlgorithm, time: int) -> None:
+    consensus.set_finality_window_time(time)
+
+
 def register_all_rpc_endpoints(
     jsonrpc: JSONRPC,
     msg_handler: MessageHandler,
@@ -531,6 +536,7 @@ def register_all_rpc_endpoints(
     transactions_processor: TransactionsProcessor,
     validators_registry: ValidatorsRegistry,
     llm_provider_registry: LLMProviderRegistry,
+    consensus: ConsensusAlgorithm,
 ):
     register_rpc_endpoint = partial(generate_rpc_endpoint, jsonrpc, msg_handler)
 
@@ -644,4 +650,8 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint(
         partial(set_transaction_appeal, transactions_processor),
         method_name="sim_appealTransaction",
+    )
+    register_rpc_endpoint(
+        partial(set_finality_window_time, consensus),
+        method_name="sim_setFinalityWindowTime",
     )
