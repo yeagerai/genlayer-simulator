@@ -67,14 +67,28 @@ export function useContractQueries() {
       return mockContractSchema;
     }
 
-    const result = await genlayer.client?.getContractSchemaForCode(
-      contract.value?.content ?? '',
-    );
+    try {
+      const result = await genlayer.client?.getContractSchemaForCode(
+        contract.value?.content ?? '',
+      );
 
-    schema.value = result;
-
-    return schema.value;
+      schema.value = result;
+      return schema.value;
+    } catch (error: any) {
+      const errorMessage = extractErrorMessage(error);
+      throw new Error(errorMessage);
+    }
   }
+
+  const extractErrorMessage = (error: any) => {
+    try {
+      const details = JSON.parse(error.details);
+      const message = details.data.error.args[1].stderr;
+      return message;
+    } catch (err) {
+      return error.details;
+    }
+  };
 
   const isDeploying = ref(false);
 
