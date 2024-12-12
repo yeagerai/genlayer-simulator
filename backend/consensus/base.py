@@ -221,7 +221,7 @@ class ConsensusAlgorithm:
 
         Args:
             transaction (Transaction): The transaction to execute.
-            transactions_processor (TransactionsProcessor): Processor for transactions.
+            transactions_processor (TransactionsProcessor): Instance responsible for handling transaction operations within the database.
             snapshot (ChainSnapshot): Snapshot of the chain state.
             accounts_manager (AccountsManager): Manager for accounts.
             contract_snapshot_factory (Callable[[str], ContractSnapshot]): Factory function to create contract snapshots.
@@ -259,7 +259,7 @@ class ConsensusAlgorithm:
         Dispatch a transaction status update.
 
         Args:
-            transactions_processor (TransactionsProcessor): Processor for transactions.
+            transactions_processor (TransactionsProcessor): Instance responsible for handling transaction operations within the database.
             transaction_hash (str): Hash of the transaction.
             new_status (TransactionStatus): New status of the transaction.
             msg_handler (MessageHandler): Handler for messaging.
@@ -298,7 +298,7 @@ class ConsensusAlgorithm:
 
         Args:
             transaction (dict): The transaction details including from_address, to_address, and value.
-            transactions_processor (TransactionsProcessor): Processor to update transaction status.
+            transactions_processor (TransactionsProcessor): Instance responsible for handling transaction operations within the database.
             accounts_manager (AccountsManager): Manager to handle account balance updates.
         """
 
@@ -582,7 +582,7 @@ class TransactionContext:
 
     Attributes:
         transaction (Transaction): The transaction.
-        transactions_processor (TransactionsProcessor): Processor for transactions.
+        transactions_processor (TransactionsProcessor): Instance responsible for handling transaction operations within the database.
         snapshot (ChainSnapshot): Snapshot of the chain state.
         accounts_manager (AccountsManager): Manager for accounts.
         contract_snapshot_factory (Callable[[str], ContractSnapshot]): Factory function to create contract snapshots.
@@ -623,7 +623,7 @@ class TransactionContext:
 
         Args:
             transaction (Transaction): The transaction.
-            transactions_processor (TransactionsProcessor): Processor for transactions.
+            transactions_processor (TransactionsProcessor): Instance responsible for handling transaction operations within the database.
             snapshot (ChainSnapshot): Snapshot of the chain state.
             accounts_manager (AccountsManager): Manager for accounts.
             contract_snapshot_factory (Callable[[str], ContractSnapshot]): Factory function to create contract snapshots.
