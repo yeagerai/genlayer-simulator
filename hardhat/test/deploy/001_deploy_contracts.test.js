@@ -22,11 +22,11 @@ describe("Deploy Script", function () {
     before(async function () {
         [deployer] = await ethers.getSigners();
 
-        // Ejecutar el deployment usando Ignition
+        // Execute the deployment using Ignition
         const DeployFixture = require("../../ignition/modules/DeployFixture");
         const result = await hre.ignition.deploy(DeployFixture);
 
-        // Guardar las referencias a los contratos
+        // Save the references to the contracts
         contracts = result;
     });
 
