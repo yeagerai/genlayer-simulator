@@ -1,14 +1,12 @@
 const { expect } = require("chai");
-const { ethers, deployments } = require("hardhat");
-const fs = require('fs-extra');
-const path = require('path');
-
+const { ethers } = require("hardhat");
 const { ZeroAddress } = ethers;
+const fs = require("fs-extra");
+const path = require("path");
 
 describe("Deploy Script", function () {
-    let deployer, validator1, validator2, validator3;
-    const deployPath = path.join('./deployments/localhost');
-    const backupPath = path.join('./copy_deployments/localhost');
+    let contracts = {};
+    let deployer;
 
     const expectedContracts = [
         'GhostContract',
@@ -22,13 +20,21 @@ describe("Deploy Script", function () {
     ];
 
     before(async function () {
-        await deployments.fixture(['GhostContract']);
-        [deployer, validator1, validator2, validator3] = await ethers.getSigners();
+        [deployer] = await ethers.getSigners();
+
+        // Ejecutar el deployment usando Ignition
+        const DeployFixture = require("../../ignition/modules/DeployFixture");
+        const result = await hre.ignition.deploy(DeployFixture);
+
+        // Guardar las referencias a los contratos
+        contracts = result;
     });
 
     describe("Deployment Files Verification", function() {
-        it("should have all contracts in both deployment and backup directories", async function() {
-            console.log("\n[Test] Verifying contract files in both directories...");
+        it("should have all contracts in directories", async function() {
+            console.log("\n[Test] Verifying contract files in directories...");
+
+            const deployPath = path.join('./deployments/localhost');
 
             for (const contractName of expectedContracts) {
                 // Verify in deployments
@@ -38,28 +44,121 @@ describe("Deploy Script", function () {
                     `${contractName} should exist in deployments directory`
                 ).to.be.true;
 
-                // Verify in backup
-                const backupContractPath = path.join(backupPath, `${contractName}.json`);
-                expect(
-                    await fs.pathExists(backupContractPath),
-                    `${contractName} should exist in backup directory`
-                ).to.be.true;
 
                 // Verify that the files are valid and match
                 const deployData = JSON.parse(await fs.readFile(deployContractPath, 'utf8'));
-                const backupData = JSON.parse(await fs.readFile(backupContractPath, 'utf8'));
 
+                const contractAddress = await contracts[contractName].getAddress();
                 expect(deployData.address, `${contractName} should have valid address in deployments`)
-                    .to.match(/^0x[a-fA-F0-9]{40}$/);
-                expect(backupData.address, `${contractName} should have valid address in backup`)
-                    .to.match(/^0x[a-fA-F0-9]{40}$/);
-                expect(deployData.address, `${contractName} should have same address in both directories`)
-                    .to.equal(backupData.address);
+                    .to.equal(contractAddress);
 
-                console.log(`[Test] ✓ ${contractName} verified in both directories`);
+                console.log(`[Test] ✓ ${contractName} verified`);
             }
         });
     });
 
-    // We need to add more tests to verify the contract connections and configurations
+    describe("Deployment Initialization and Configuration Validation", function() {
+        console.log("\n[Test] Verifying contract initialization and configuration...");
+
+        it("should get all the contracts addresses", async function() {
+            for (const contractName of expectedContracts) {
+                expect(
+                    await contracts[contractName].getAddress(),
+                    `${contractName} should have an address`
+                ).to.not.equal(ZeroAddress);
+            }
+        });
+
+        it("should have initialized GhostFactory properly", async function() {
+            const ghostBlueprintAddress = await contracts.GhostFactory.ghostBlueprint();
+            expect(ghostBlueprintAddress, "GhostFactory should have been initialized with GhostBlueprint address")
+                .to.equal(await contracts.GhostBlueprint.getAddress());
+        });
+
+        it("should have initialized ConsensusMain properly", async function() {
+            const genManagerAddress = await contracts.ConsensusMain.genManager();
+            expect(genManagerAddress, "ConsensusMain should have been initialized with GenManager address")
+                .to.equal(await contracts.ConsensusManager.getAddress());
+        });
+
+        it("should have initialized Transactions and Queues with the ConsensusMain address", async function() {
+            const consensusMainAddress = await contracts.ConsensusMain.getAddress();
+
+            expect(
+                await contracts.Transactions.genConsensus(),
+                "Transactions should have been initialized with ConsensusMain address"
+            ).to.equal(consensusMainAddress);
+
+            expect(
+                await contracts.Queues.genConsensus(),
+                "Queues should have been initialized with ConsensusMain address"
+            ).to.equal(consensusMainAddress);
+        });
+
+        it("should have set contract connections for ConsensusMain properly", async function() {
+            const ghostFactoryAddress = await contracts.GhostFactory.getAddress();
+            const genStakingAddress = await contracts.MockGenStaking.getAddress();
+            const genQueueAddress = await contracts.Queues.getAddress();
+            const genTransactionsAddress = await contracts.Transactions.getAddress();
+
+            expect(
+                await contracts.ConsensusMain.ghostFactory(),
+                "ConsensusMain should have set GhostFactory address"
+            ).to.equal(ghostFactoryAddress);
+            expect(
+                await contracts.ConsensusMain.genStaking(),
+                "ConsensusMain should have set GenStaking address"
+            ).to.equal(genStakingAddress);
+            expect(
+                await contracts.ConsensusMain.genQueue(),
+                "ConsensusMain should have set GenQueue address"
+            ).to.equal(genQueueAddress);
+            expect(
+                await contracts.ConsensusMain.genTransactions(),
+                "ConsensusMain should have set GenTransactions address"
+            ).to.equal(genTransactionsAddress);
+        });
+
+        it("should have configured GhostFactory and Transactions final settings properly", async function() {
+            const consensusMainAddress = await contracts.ConsensusMain.getAddress();
+
+            expect(
+                await contracts.GhostFactory.genConsensus(),
+                "GhostFactory should have set GenConsensus address"
+            ).to.equal(consensusMainAddress);
+            expect(
+                await contracts.GhostFactory.ghostManager(),
+                "GhostFactory should have set GhostManager address"
+            ).to.equal(consensusMainAddress);
+            expect(
+                await contracts.Transactions.genConsensus(),
+                "Transactions should have set GenConsensus address"
+            ).to.equal(consensusMainAddress);
+        });
+
+        it("should have set Acceptance Timeout in ConsensusMain properly", async function() {
+            const acceptanceTimeout = await contracts.ConsensusMain.ACCEPTANCE_TIMEOUT();
+
+            expect(acceptanceTimeout, "Acceptance Timeout should have been set in ConsensusMain")
+                .to.equal(0);
+        });
+
+        it("should have set up validators in MockGenStaking properly", async function() {
+            const [owner, validator1, validator2, validator3] = await ethers.getSigners();
+            const validatorCount = await contracts.MockGenStaking.getValidatorCount();
+            const validators = [];
+
+            for (let i = 0; i < validatorCount; i++) {
+                validators.push(await contracts.MockGenStaking.validators(i));
+            }
+
+            expect(validators, "MockGenStaking should have set up validators")
+                .to.deep.equal([
+                    validator1.address,
+                    validator2.address,
+                    validator3.address
+                ]);
+        });
+
+    });
 });

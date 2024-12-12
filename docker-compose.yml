@@ -203,11 +203,11 @@ services:
       - ./hardhat/test:/app/test:ro
       - ./hardhat/hardhat.config.js:/app/hardhat.config.js:ro
       - ./hardhat/deploy:/app/deploy:ro
-      - ./hardhat/scripts/copy-deployments.js:/app/scripts/copy-deployments.js:ro
+      - ./hardhat/scripts:/app/scripts:ro
       - hardhat_artifacts:/app/artifacts
       - hardhat_cache:/app/cache
       - hardhat_deployments:/app/deployments
-      - copy_deployments:/app/copy_deployments
+      - ignition_deployments:/app/ignition/deployments
     environment:
       - HARDHAT_NETWORK=hardhat
     restart: always
@@ -222,4 +222,4 @@ volumes:
   hardhat_artifacts:
   hardhat_cache:
   hardhat_deployments:
-  copy_deployments:
+  ignition_deployments:

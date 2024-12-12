@@ -1,7 +1,6 @@
 require("@nomicfoundation/hardhat-toolbox");
-require("hardhat-deploy");
+require("@nomicfoundation/hardhat-ignition-ethers");
 
-/** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: {
     version: "0.8.24",
@@ -23,23 +22,15 @@ module.exports = {
       gasPrice: 0,
       initialBaseFeePerGas: 0,
       blockGasLimit: 30000000,
-      live: false,
-      saveDeployments: true,
-      allowUnlimitedContractSize: true,
-      tags: ['local']
-    }
-  },
-  paths: {
-    sources: "./contracts",
-    tests: "./test",
-    cache: "./cache",
-    artifacts: "./artifacts",
-    deploy: "./deploy",
-    deployments: "./deployments"
-  },
-  namedAccounts: {
-    deployer: {
-      default: 0
-    }
+      ignition: {
+        blockPollingInterval: 1_000,
+        timeBeforeBumpingFees: 3 * 60 * 1_000,
+        maxFeeBumps: 4,
+        requiredConfirmations: 5,
+        disableFeeBumping: false,
+        deploymentDir: "deployments/localhost",
+      },
+    },
+
   }
 };
