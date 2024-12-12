@@ -1,7 +1,7 @@
 """appeal_failed
 
 Revision ID: 2a4ac5eb9455
-Revises: 37196a51038e
+Revises: b9421e9f12aa
 Create Date: 2024-11-22 09:48:50.048787
 
 """
@@ -14,7 +14,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = "2a4ac5eb9455"
-down_revision: Union[str, None] = "37196a51038e"
+down_revision: Union[str, None] = "b9421e9f12aa"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -24,6 +24,8 @@ def upgrade() -> None:
     op.add_column(
         "transactions", sa.Column("appeal_failed", sa.Integer(), nullable=True)
     )
+    # Set all existing 'appeal_failed' values to 0
+    op.execute("UPDATE transactions SET appeal_failed = 0 WHERE appeal_failed IS NULL")
     # ### end Alembic commands ###
 
 

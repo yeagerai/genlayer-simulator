@@ -98,7 +98,6 @@ function prettifyTxData(x: any): any {
         },
       },
     };
-    console.log(ret);
     return ret;
   } catch (e) {
     console.log(e);
@@ -144,9 +143,16 @@ function prettifyTxData(x: any): any {
     </div>
 
     <div class="flex items-center justify-between gap-2 p-1">
-      <Loader :size="15" v-if="transaction.status !== 'FINALIZED'" />
+      <Loader
+        :size="15"
+        v-if="
+          transaction.status !== 'FINALIZED' &&
+          transaction.status !== 'ACCEPTED' &&
+          transaction.status !== 'UNDETERMINED'
+        "
+      />
 
-      <TransactionStatusBadge
+      <!-- <TransactionStatusBadge
         as="button"
         @click.stop="handleSetTransactionAppeal"
         :class="{ '!bg-green-500': isAppealed }"
@@ -157,9 +163,14 @@ function prettifyTxData(x: any): any {
           APPEAL
           <GavelIcon class="h-3 w-3" />
         </div>
-      </TransactionStatusBadge>
+      </TransactionStatusBadge> -->
 
-      <TransactionStatusBadge class="px-[4px] py-[1px] text-[9px]">
+      <TransactionStatusBadge
+        :class="[
+          'px-[4px] py-[1px] text-[9px]',
+          transaction.status === 'FINALIZED' ? '!bg-green-500' : '',
+        ]"
+      >
         {{ transaction.status }}
       </TransactionStatusBadge>
     </div>
@@ -199,8 +210,20 @@ function prettifyTxData(x: any): any {
             class="text-md mb-1 flex flex-row items-center gap-2 font-semibold"
           >
             Status:
-            <Loader :size="15" v-if="transaction.status !== 'FINALIZED'" />
-            <TransactionStatusBadge>
+            <Loader
+              :size="15"
+              v-if="
+                transaction.status !== 'FINALIZED' &&
+                transaction.status !== 'ACCEPTED' &&
+                transaction.status !== 'UNDETERMINED'
+              "
+            />
+            <TransactionStatusBadge
+              :class="[
+                'px-[4px] py-[1px] text-[9px]',
+                transaction.status === 'FINALIZED' ? '!bg-green-500' : '',
+              ]"
+            >
               {{ transaction.status }}
             </TransactionStatusBadge>
           </p>
