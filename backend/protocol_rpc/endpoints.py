@@ -529,6 +529,28 @@ def set_finality_window_time(consensus: ConsensusAlgorithm, time: int) -> None:
     consensus.set_finality_window_time(time)
 
 
+def get_contract(consensus_service: ConsensusService, contract_name: str) -> dict:
+    """
+    Get contract instance by name
+
+    Args:
+        consensus_service: The consensus service instance
+        contract_name: Name of the contract to retrieve
+
+    Returns:
+        dict: Contract information including address and ABI
+    """
+    contract = consensus_service._load_contract(contract_name)
+
+    if contract is None:
+        raise JSONRPCError(
+            message=f"Contract {contract_name} not found",
+            data={"contract_name": contract_name},
+        )
+
+    return {"contract_name": contract_name, "address": contract.address}
+
+
 def register_all_rpc_endpoints(
     jsonrpc: JSONRPC,
     msg_handler: MessageHandler,
@@ -538,6 +560,7 @@ def register_all_rpc_endpoints(
     validators_registry: ValidatorsRegistry,
     llm_provider_registry: LLMProviderRegistry,
     consensus: ConsensusAlgorithm,
+    consensus_service: ConsensusService,
 ):
     register_rpc_endpoint = partial(generate_rpc_endpoint, jsonrpc, msg_handler)
 
@@ -655,4 +678,8 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint(
         partial(set_finality_window_time, consensus),
         method_name="sim_setFinalityWindowTime",
+    )
+    register_rpc_endpoint(
+        partial(get_contract, consensus_service),
+        method_name="eth_getContract",
     )

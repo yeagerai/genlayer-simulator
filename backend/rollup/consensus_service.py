@@ -25,23 +25,6 @@ class ConsensusService:
         self.web3.eth.default_account = self.owner
         self.private_key = os.environ.get("HARDHAT_PRIVATE_KEY")
 
-        # Load all required contracts
-        self.ghost_contract = self._load_contract("GhostContract")
-        self.ghost_factory_contract = self._load_contract("GhostFactory")
-        self.ghost_blueprint_contract = self._load_contract("GhostBlueprint")
-        self.consensus_manager_contract = self._load_contract("ConsensusManager")
-        self.mock_gen_staking_contract = self._load_contract("MockGenStaking")
-        self.queues_contract = self._load_contract("Queues")
-        self.transactions_contract = self._load_contract("Transactions")
-        self.consensus_main_contract = self._load_contract("ConsensusMain")
-
-        # Accounts
-        accounts = self.get_accounts()
-        self.owner = accounts["owner"]
-        self.validator1 = accounts["validator1"]
-        self.validator2 = accounts["validator2"]
-        self.validator3 = accounts["validator3"]
-
     def _load_contract(self, contract_name: str) -> Optional[dict]:
         """
         Load contract deployment data from Hardhat deployments
