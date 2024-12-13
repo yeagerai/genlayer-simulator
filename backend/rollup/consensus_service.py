@@ -1,13 +1,14 @@
 import json
 import os
 from web3 import Web3
-from eth_account import Account
 from typing import Optional
 from pathlib import Path
+from backend.protocol_rpc.message_handler.base import MessageHandler
+from backend.protocol_rpc.message_handler.types import EventType, EventScope, LogEvent
 
 
 class ConsensusService:
-    def __init__(self):
+    def __init__(self, msg_handler: MessageHandler):
         """
         Initialize the ConsensusService class
         """
@@ -16,6 +17,8 @@ class ConsensusService:
         url = os.environ.get("HARDHAT_URL")
         hardhat_url = f"{url}:{port}"
         self.web3 = Web3(Web3.HTTPProvider(hardhat_url))
+
+        self.msg_handler = msg_handler
 
         if not self.web3.is_connected():
             raise ConnectionError(f"Failed to connect to Hardhat node at {hardhat_url}")
@@ -37,36 +40,68 @@ class ConsensusService:
             )
 
             if not deployment_path.exists():
-                print(
-                    f"CONSENSUS_SERVICE: Deployment file not found at {deployment_path}"
+                self.msg_handler.send_message(
+                    LogEvent(
+                        "consensus_service_call",
+                        EventType.ERROR,
+                        EventScope.CONSENSUS,
+                        f"CONSENSUS_SERVICE: Deployment file not found at {deployment_path}",
+                        {
+                            "function_name": "_load_contract",
+                            "contract_name": contract_name,
+                        },
+                    )
                 )
                 return None
 
             with open(deployment_path, "r") as f:
                 deployment_data = json.load(f)
 
-            # Create contract instance
-            contract = self.web3.eth.contract(
-                address=deployment_data["address"], abi=deployment_data["abi"]
-            )
-            print(
-                f"CONSENSUS_SERVICE: Loaded {contract_name} contract with address {contract.address}"
+            self.msg_handler.send_message(
+                LogEvent(
+                    "consensus_service_call",
+                    EventType.INFO,
+                    EventScope.CONSENSUS,
+                    f"CONSENSUS_SERVICE: Loaded {contract_name} contract with address {deployment_data['address']}",
+                    {"function_name": "_load_contract", "contract_name": contract_name},
+                )
             )
 
-            return contract
+            return {
+                "address": deployment_data["address"],
+                "abi": deployment_data["abi"],
+            }
 
         except FileNotFoundError:
-            print(
-                f"CONSENSUS_SERVICE: Warning: {contract_name} deployment file not found"
+            self.msg_handler.send_message(
+                LogEvent(
+                    "consensus_service_call",
+                    EventType.WARNING,
+                    EventScope.CONSENSUS,
+                    f"CONSENSUS_SERVICE: Warning: {contract_name} deployment file not found",
+                    {"function_name": "_load_contract", "contract_name": contract_name},
+                )
             )
             return None
         except json.JSONDecodeError as e:
-            print(
-                f"CONSENSUS_SERVICE: Error decoding {contract_name} deployment file: {str(e)}"
+            self.msg_handler.send_message(
+                LogEvent(
+                    "consensus_service_call",
+                    EventType.ERROR,
+                    EventScope.CONSENSUS,
+                    f"CONSENSUS_SERVICE: Error decoding {contract_name} deployment file: {str(e)}",
+                    {"function_name": "_load_contract", "contract_name": contract_name},
+                )
             )
             return None
         except Exception as e:
-            print(
-                f"CONSENSUS_SERVICE: Error loading {contract_name} contract: {str(e)}"
+            self.msg_handler.send_message(
+                LogEvent(
+                    "consensus_service_call",
+                    EventType.ERROR,
+                    EventScope.CONSENSUS,
+                    f"CONSENSUS_SERVICE: Error loading {contract_name} contract: {str(e)}",
+                    {"function_name": "_load_contract", "contract_name": contract_name},
+                )
             )
             return None

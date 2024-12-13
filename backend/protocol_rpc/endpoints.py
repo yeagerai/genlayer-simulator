@@ -548,7 +548,11 @@ def get_contract(consensus_service: ConsensusService, contract_name: str) -> dic
             data={"contract_name": contract_name},
         )
 
-    return {"contract_name": contract_name, "address": contract.address}
+    return {
+        "contract_name": contract_name,
+        "address": contract["address"],
+        "abi": contract["abi"],
+    }
 
 
 def register_all_rpc_endpoints(
