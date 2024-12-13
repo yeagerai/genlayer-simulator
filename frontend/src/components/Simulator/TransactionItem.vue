@@ -18,6 +18,7 @@ const transactionsStore = useTransactionsStore();
 
 const props = defineProps<{
   transaction: TransactionItem;
+  finalityWindow: number;
 }>();
 
 const isDetailsModalOpen = ref(false);
@@ -157,9 +158,9 @@ function prettifyTxData(x: any): any {
         @click.stop="handleSetTransactionAppeal"
         :class="{ '!bg-green-500': isAppealed }"
         v-if="
-          transaction.data.leader_only == false &&
-          (transaction.status == 'ACCEPTED' ||
-            transaction.status == 'UNDETERMINED')
+          (transaction.data.leader_only == false) &&
+          (transaction.status == 'ACCEPTED' || transaction.status == 'UNDETERMINED') &&
+          ((Date.now() / 1000) - transaction.data.timestamp_awaiting_finalization <= finalityWindow)
         "
         v-tooltip="'Appeal transaction'"
       >
@@ -235,9 +236,9 @@ function prettifyTxData(x: any): any {
               @click.stop="handleSetTransactionAppeal"
               :class="{ '!bg-green-500': isAppealed }"
               v-if="
-                transaction.data.leader_only == false &&
-                (transaction.status == 'ACCEPTED' ||
-                  transaction.status == 'UNDETERMINED')
+                (transaction.data.leader_only == false) &&
+                (transaction.status == 'ACCEPTED' || transaction.status == 'UNDETERMINED') &&
+                ((Date.now() / 1000) - transaction.data.timestamp_awaiting_finalization <= finalityWindow)
               "
               v-tooltip="'Appeal transaction'"
             >
