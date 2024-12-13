@@ -515,23 +515,21 @@ class ConsensusAlgorithm:
                 validator["address"]: validator for validator in validators
             }
 
-            # List to store current validators for each receipt
+            # Get leader and current validators for consensus data receipts
             current_validators = [
                 validator_map[consensus_data.leader_receipt.node_config["address"]]
+            ] + [
+                validator_map[receipt.node_config["address"]]
+                for receipt in consensus_data.validators
+                if receipt.node_config["address"] in validator_map
             ]
         else:
             current_validators = []
 
-        # Set to track addresses found in receipts
-        receipt_addresses = set([consensus_data.leader_receipt.node_config["address"]])
-
-        # Iterate over receipts to find matching validators
-        for receipt in consensus_data.validators:
-            address = receipt.node_config["address"]
-            receipt_addresses.add(address)
-            if appeal_failed > 0:
-                if address in validator_map:
-                    current_validators.append(validator_map[address])
+        # Set containing addresses found in leader and validator receipts
+        receipt_addresses = {consensus_data.leader_receipt.node_config["address"]} | {
+            receipt.node_config["address"] for receipt in consensus_data.validators
+        }
 
         # Get all validators where the address is not in the receipts
         not_used_validators = [
