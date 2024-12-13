@@ -182,11 +182,11 @@ class Receipt:
                 mode=ExecutionMode.from_string(input.get("mode")),
                 contract_state=input.get("contract_state"),
                 node_config=input.get("node_config"),
-                eq_outputs=input.get("eq_outputs"),
-                pending_transactions=tuple(
+                eq_outputs={int(k): v for k, v in input.get("eq_outputs", {}).items()},
+                pending_transactions=[
                     PendingTransaction.from_dict(pending_transaction)
                     for pending_transaction in input.get("pending_transactions", [])
-                ),
+                ],
             )
         else:
             return None
