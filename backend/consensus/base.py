@@ -390,11 +390,14 @@ class ConsensusAlgorithm:
                         # Check if the transaction is appealed
                         if not transaction.appealed:
 
-                            # Check if the transaction has exceeded the finality window
-                            if (
-                                int(time.time())
-                                - transaction.timestamp_awaiting_finalization
-                            ) > self.finality_window_time:
+                            # Check if the transaction has exceeded the finality window or if it is a leader only transaction
+                            if (transaction.leader_only) or (
+                                (
+                                    int(time.time())
+                                    - transaction.timestamp_awaiting_finalization
+                                )
+                                > self.finality_window_time
+                            ):
 
                                 # Create a transaction context for finalizing the transaction
                                 context = TransactionContext(
@@ -779,12 +782,6 @@ class PendingState(TransactionState):
             )
             involved_validators = current_validators + extra_validators
 
-            # Reset the transaction appeal status
-            context.transactions_processor.set_transaction_appeal_undetermined(
-                context.transaction.hash, False
-            )
-            context.transaction.appeal_undetermined = False
-
         else:
             # If not appealed, get the default number of validators for the transaction
             involved_validators = get_validators_for_transaction(
@@ -1062,18 +1059,11 @@ class AcceptedState(TransactionState):
         Returns:
             None: The transaction is accepted.
         """
+        # When appeal fails, the appeal window is not reset
         if not context.transaction.appealed:
-            # When appeal fails, the appeal window is not reset
-            if context.transaction.leader_only:
-                # No appeal window for leader-only transactions
-                context.transactions_processor.set_transaction_timestamp_awaiting_finalization(
-                    context.transaction.hash,
-                    int(time.time()) - int(os.getenv("FINALITY_WINDOW")),
-                )
-            else:
-                context.transactions_processor.set_transaction_timestamp_awaiting_finalization(
-                    context.transaction.hash
-                )
+            context.transactions_processor.set_transaction_timestamp_awaiting_finalization(
+                context.transaction.hash
+            )
 
         # Set the transaction appeal status to False
         context.transactions_processor.set_transaction_appeal(
@@ -1173,17 +1163,17 @@ class UndeterminedState(TransactionState):
             )
         )
 
-        # Set the start of the appeal window
-        if context.transaction.leader_only:
-            # No appeal window for leader-only transactions
-            context.transactions_processor.set_transaction_timestamp_awaiting_finalization(
-                context.transaction.hash,
-                int(time.time()) - int(os.getenv("FINALITY_WINDOW")),
-            )
-        else:
+        # When appeal fails, the appeal window is not reset
+        if not context.transaction.appeal_undetermined:
             context.transactions_processor.set_transaction_timestamp_awaiting_finalization(
                 context.transaction.hash
             )
+
+        # Set the transaction appeal undetermined status to false
+        context.transactions_processor.set_transaction_appeal_undetermined(
+            context.transaction.hash, False
+        )
+        context.transaction.appeal_undetermined = False
 
         # Set the transaction result with the current consensus data
         context.transactions_processor.set_transaction_result(

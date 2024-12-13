@@ -187,9 +187,10 @@ async def _appeal_window(
         for transaction in accepted_undetermined_transactions:
             transaction = Transaction.from_dict(transaction)
             if not transaction.appealed:
-                if (
-                    int(time.time()) - transaction.timestamp_awaiting_finalization
-                ) > DEFAULT_FINALITY_WINDOW:
+                if (transaction.leader_only) or (
+                    (int(time.time()) - transaction.timestamp_awaiting_finalization)
+                    > DEFAULT_FINALITY_WINDOW
+                ):
                     context = TransactionContext(
                         transaction=transaction,
                         transactions_processor=transactions_processor,
