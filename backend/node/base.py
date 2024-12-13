@@ -60,7 +60,7 @@ class _SnapshotView(genvmbase.StateProxy):
         account: Address,
         slot: bytes,
         index: int,
-        got: memoryview,
+        got: collections.abc.Buffer,
         /,
     ) -> None:
         assert account == self.contract_address

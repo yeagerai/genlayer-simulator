@@ -44,7 +44,7 @@ def _decode_exception(x: Exception) -> typing.Any:
                 "args": x.args,
                 "traceback": traceback.format_exception(x),
             }
-        if isinstance(x, memoryview):
+        if isinstance(x, collections.abc.Buffer):
             return base64.b64encode(x).decode("ascii")
         if dataclasses.is_dataclass(x) and not isinstance(x, type):
             return dataclasses.asdict(x)

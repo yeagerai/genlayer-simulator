@@ -16,7 +16,7 @@ class Address:
     _as_bytes: bytes
     _as_hex: str | None
 
-    def __init__(self, val: str | memoryview):
+    def __init__(self, val: str | collections.abc.Buffer):
         self._as_hex = None
         if isinstance(val, str):
             if len(val) == 2 + Address.SIZE * 2 and val.startswith("0x"):

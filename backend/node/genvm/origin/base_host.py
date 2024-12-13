@@ -34,15 +34,17 @@ class IHost(typing.Protocol):
         account: bytes,
         slot: bytes,
         index: int,
-        got: memoryview,
+        got: collections.abc.Buffer,
         /,
     ) -> None: ...
-    async def consume_result(self, type: ResultCode, data: memoryview, /) -> None: ...
+    async def consume_result(
+        self, type: ResultCode, data: collections.abc.Buffer, /
+    ) -> None: ...
     async def get_leader_nondet_result(
         self, call_no: int, /
-    ) -> tuple[ResultCode, memoryview] | None: ...
+    ) -> tuple[ResultCode, collections.abc.Buffer] | None: ...
     async def post_nondet_result(
-        self, call_no: int, type: ResultCode, data: memoryview, /
+        self, call_no: int, type: ResultCode, data: collections.abc.Buffer, /
     ) -> None: ...
     async def post_message(
         self, gas: int, account: bytes, calldata: bytes, code: bytes, /
@@ -55,7 +57,7 @@ async def host_loop(handler: IHost):
 
     sock = await handler.loop_enter()
 
-    async def send_all(data: memoryview):
+    async def send_all(data: collections.abc.Buffer):
         await async_loop.sock_sendall(sock, data)
 
     async def read_exact(le: int) -> bytes:

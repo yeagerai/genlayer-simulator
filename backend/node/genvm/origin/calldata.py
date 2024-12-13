@@ -106,7 +106,7 @@ def encode(
     return bytes(mem)
 
 
-def decode(mem0: memoryview) -> typing.Any:
+def decode(mem0: collections.abc.Buffer) -> typing.Any:
     mem: memoryview = memoryview(mem0)
 
     def read_uleb128() -> int:

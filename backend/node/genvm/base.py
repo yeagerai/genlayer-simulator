@@ -73,7 +73,7 @@ class StateProxy(typing.Protocol):
         account: Address,
         slot: bytes,
         index: int,
-        got: memoryview,
+        got: collections.abc.Buffer,
         /,
     ) -> None: ...
     def get_code(self, addr: Address) -> bytes: ...
@@ -114,7 +114,7 @@ class _StateProxyNone(StateProxy):
         account: Address,
         slot: bytes,
         index: int,
-        got: memoryview,
+        got: collections.abc.Buffer,
         /,
     ) -> None:
         assert False
@@ -237,12 +237,14 @@ class _Host(genvmhost.IHost):
         account: bytes,
         slot: bytes,
         index: int,
-        got: memoryview,
+        got: collections.abc.Buffer,
         /,
     ) -> None:
         return self._state_proxy.storage_write(Address(account), slot, index, got)
 
-    async def consume_result(self, type: ResultCode, data: memoryview, /) -> None:
+    async def consume_result(
+        self, type: ResultCode, data: collections.abc.Buffer, /
+    ) -> None:
         if type == ResultCode.RETURN:
             self._result = ExecutionReturn(ret=bytes(data))
         elif type == ResultCode.ROLLBACK:
@@ -256,7 +258,7 @@ class _Host(genvmhost.IHost):
 
     async def get_leader_nondet_result(
         self, call_no: int, /
-    ) -> tuple[ResultCode, memoryview] | None:
+    ) -> tuple[ResultCode, collections.abc.Buffer] | None:
         leader_results = self._leader_results
         if leader_results is None:
             return None
@@ -264,7 +266,7 @@ class _Host(genvmhost.IHost):
         return (ResultCode(leader_results_mem[0]), leader_results_mem[1:])
 
     async def post_nondet_result(
-        self, call_no: int, type: genvmhost.ResultCode, data: memoryview, /
+        self, call_no: int, type: genvmhost.ResultCode, data: collections.abc.Buffer, /
     ) -> None:
         encoded_result = bytearray()
         encoded_result.append(type.value)
