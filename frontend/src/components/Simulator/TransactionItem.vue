@@ -230,13 +230,14 @@ function prettifyTxData(x: any): any {
             >
               {{ transaction.status }}
             </TransactionStatusBadge>
-            <TransactionStatusBadge
+            <!-- <TransactionStatusBadge
               as="button"
               @click.stop="handleSetTransactionAppeal"
               :class="{ '!bg-green-500': isAppealed }"
               v-if="
-                transaction.status == 'ACCEPTED' ||
-                transaction.status == 'UNDETERMINED'
+                transaction.data.leader_only == false &&
+                (transaction.status == 'ACCEPTED' ||
+                  transaction.status == 'UNDETERMINED')
               "
               v-tooltip="'Appeal transaction'"
             >
@@ -244,7 +245,7 @@ function prettifyTxData(x: any): any {
                 APPEAL
                 <GavelIcon class="h-3 w-3" />
               </div>
-            </TransactionStatusBadge>
+            </TransactionStatusBadge> -->
           </p>
         </div>
 
