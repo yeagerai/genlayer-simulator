@@ -13,7 +13,8 @@ local restricted_methods = {
     "sim_createRandomValidators",
     "sim_updateValidator",
     "sim_deleteValidator",
-    "sim_deleteAllValidators"
+    "sim_deleteAllValidators",
+    "sim_setFinalityWindowTime"
 }
 
 -- Create a lookup table for faster checking

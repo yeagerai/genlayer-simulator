@@ -70,9 +70,6 @@ class TransactionsProcessorMock:
         else:
             transaction["timestamp_awaiting_finalization"] = int(time.time())
 
-    def add_transaction(self, new_transaction: dict):
-        self.transactions.append(new_transaction)
-
     def get_accepted_undetermined_transactions(self):
         result = []
         for transaction in self.transactions:
@@ -123,6 +120,8 @@ def transaction_to_dict(transaction: Transaction) -> dict:
         "s": transaction.s,
         "v": transaction.v,
         "leader_only": transaction.leader_only,
+        "created_at": transaction.created_at,
+        "ghost_contract_address": transaction.ghost_contract_address,
         "appealed": transaction.appealed,
         "timestamp_awaiting_finalization": transaction.timestamp_awaiting_finalization,
         "appeal_failed": transaction.appeal_failed,
@@ -391,16 +390,14 @@ def node_factory(
     mock.exec_transaction = AsyncMock(
         return_value=Receipt(
             vote=vote,
-            class_name="",
             calldata=b"",
             mode=mode,
             gas_used=0,
             contract_state={},
-            returned=DEFAULT_EXEC_RESULT,
+            result=DEFAULT_EXEC_RESULT,
             node_config={"address": node["address"]},
             eq_outputs={},
             execution_result=ExecutionResultStatus.SUCCESS,
-            error=None,
         )
     )
 

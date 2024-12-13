@@ -78,7 +78,10 @@ services:
     volumes:
       - ./.env:/app/.env
       - ./backend:/app/backend
+      - ./hardhat/artifacts:/app/hardhat/artifacts
     depends_on:
+      hardhat:
+        condition: service_healthy
       database-migration:
         condition: service_completed_successfully
       webrequest:
@@ -131,7 +134,7 @@ services:
         max-file: "3"
 
   ollama:
-    image: ollama/ollama:0.3.11
+    image: ollama/ollama:0.4.1
     ports:
       - 11434:11434
     volumes:
@@ -186,3 +189,28 @@ services:
         condition: service_healthy
       webrequest:
         condition: service_healthy
+
+  hardhat:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.hardhat
+    ports:
+      - "${HARDHAT_PORT:-8545}:8545"
+    volumes:
+      - ./hardhat/contracts:/app/contracts
+      - ./hardhat/scripts:/app/scripts
+      - ./hardhat/test:/app/test
+      - ./hardhat/hardhat.config.js:/app/hardhat.config.js
+      - hardhat_artifacts:/app/artifacts
+    environment:
+      - HARDHAT_NETWORK=hardhat
+    healthcheck:
+      test: ["CMD", "curl", "-X", "POST", "-H", "Content-Type: application/json", "--fail", "http://localhost:8545", "-d", '{"jsonrpc":"2.0","method":"net_version","params":[],"id":1}']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  hardhat_artifacts:
+
