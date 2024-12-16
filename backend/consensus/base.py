@@ -509,34 +509,23 @@ class ConsensusAlgorithm:
         # Get all validators
         validators = snapshot.get_all_validators()
 
-        if appeal_failed > 0:
-            # Create a dictionary to map addresses to validator entries
-            validator_map = {
-                validator["address"]: validator for validator in validators
-            }
+        # Create a dictionary to map addresses to validator entries
+        validator_map = {validator["address"]: validator for validator in validators}
 
-            # Get leader and current validators for consensus data receipts
-            current_validators = [
-                validator_map[consensus_data.leader_receipt.node_config["address"]]
-            ] + [
-                validator_map[receipt.node_config["address"]]
-                for receipt in consensus_data.validators
-                if receipt.node_config["address"] in validator_map
-            ]
-        else:
-            current_validators = []
-
-        # Set containing addresses found in leader and validator receipts
-        receipt_addresses = {consensus_data.leader_receipt.node_config["address"]} | {
+        # List containing addresses found in leader and validator receipts
+        receipt_addresses = [consensus_data.leader_receipt.node_config["address"]] + [
             receipt.node_config["address"] for receipt in consensus_data.validators
-        }
-
-        # Get all validators where the address is not in the receipts
-        not_used_validators = [
-            validator
-            for validator in validators
-            if validator["address"] not in receipt_addresses
         ]
+
+        # Get leader and current validators from consensus data receipt addresses
+        current_validators = [
+            validator_map.pop(receipt_address)
+            for receipt_address in receipt_addresses
+            if receipt_address in validator_map
+        ]
+
+        # Set not_used_validators to the remaining validators in validator_map
+        not_used_validators = list(validator_map.values())
 
         if len(not_used_validators) == 0:
             raise ValueError(
