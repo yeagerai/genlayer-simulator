@@ -1,6 +1,7 @@
 import json
 import os
 from web3 import Web3
+
 from typing import Optional
 from pathlib import Path
 from backend.protocol_rpc.message_handler.base import MessageHandler
@@ -17,6 +18,7 @@ class ConsensusService:
         url = os.environ.get("HARDHAT_URL")
         hardhat_url = f"{url}:{port}"
         self.web3 = Web3(Web3.HTTPProvider(hardhat_url))
+
 
         self.msg_handler = msg_handler
 
@@ -51,6 +53,7 @@ class ConsensusService:
                             "contract_name": contract_name,
                         },
                     )
+
                 )
                 return None
 
@@ -103,5 +106,6 @@ class ConsensusService:
                     f"CONSENSUS_SERVICE: Error loading {contract_name} contract: {str(e)}",
                     {"function_name": "_load_contract", "contract_name": contract_name},
                 )
+
             )
             return None
