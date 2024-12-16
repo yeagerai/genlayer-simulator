@@ -685,5 +685,5 @@ def register_all_rpc_endpoints(
     )
     register_rpc_endpoint(
         partial(get_contract, consensus_service),
-        method_name="eth_getContract",
+        method_name="sim_getContract",
     )
