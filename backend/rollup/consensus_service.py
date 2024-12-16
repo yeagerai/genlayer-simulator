@@ -25,23 +25,6 @@ class ConsensusService:
         self.web3.eth.default_account = self.owner
         self.private_key = os.environ.get("HARDHAT_PRIVATE_KEY")
 
-        # Load all required contracts
-        self.ghost_contract = self._load_contract("GhostContract")
-        self.ghost_factory_contract = self._load_contract("GhostFactory")
-        self.ghost_blueprint_contract = self._load_contract("GhostBlueprint")
-        self.consensus_manager_contract = self._load_contract("ConsensusManager")
-        self.mock_gen_staking_contract = self._load_contract("MockGenStaking")
-        self.queues_contract = self._load_contract("Queues")
-        self.transactions_contract = self._load_contract("Transactions")
-        self.consensus_main_contract = self._load_contract("ConsensusMain")
-
-        # Accounts
-        accounts = self.get_accounts()
-        self.owner = accounts["owner"]
-        self.validator1 = accounts["validator1"]
-        self.validator2 = accounts["validator2"]
-        self.validator3 = accounts["validator3"]
-
     def _load_contract(self, contract_name: str) -> Optional[dict]:
         """
         Load contract deployment data from Hardhat deployments
@@ -92,52 +75,3 @@ class ConsensusService:
                 f"CONSENSUS_SERVICE: Error loading {contract_name} contract: {str(e)}"
             )
             return None
-
-    def _send_transaction(self, contract_function):
-        """
-        Helper method to send transactions
-
-        Args:
-            contract_function (ContractFunction): The contract function to send
-
-        Returns:
-            Optional[dict]: The transaction receipt or None if the transaction fails
-        """
-        try:
-            # Build the transaction
-            transaction = contract_function.build_transaction(
-                {
-                    "from": self.owner,
-                    "nonce": self.web3.eth.get_transaction_count(self.owner),
-                    "gas": 500000,  # Adjust gas as needed
-                    "gasPrice": self.web3.eth.gas_price,
-                }
-            )
-
-            # Send the transaction
-            signed_tx = self.web3.eth.account.sign_transaction(
-                transaction, private_key=self.private_key
-            )
-            tx_hash = self.web3.eth.send_raw_transaction(signed_tx.raw_transaction)
-
-            # Wait for the transaction to be mined
-            receipt = self.web3.eth.wait_for_transaction_receipt(tx_hash)
-            return receipt
-        except Exception as e:
-            print(f"CONSENSUS_SERVICE: Transaction failed: {str(e)}")
-            return None
-
-    def get_accounts(self):
-        """
-        Get the available accounts from the network
-
-        Returns:
-            dict: A dictionary with the available accounts
-        """
-        accounts = self.web3.eth.accounts
-        return {
-            "owner": accounts[0],
-            "validator1": accounts[1],
-            "validator2": accounts[2],
-            "validator3": accounts[3],
-        }
