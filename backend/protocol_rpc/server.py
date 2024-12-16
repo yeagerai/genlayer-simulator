@@ -60,7 +60,7 @@ def create_app():
     accounts_manager = AccountsManager(sqlalchemy_db.session)
     validators_registry = ValidatorsRegistry(sqlalchemy_db.session)
     llm_provider_registry = LLMProviderRegistry(sqlalchemy_db.session)
-    consensus_service = ConsensusService(msg_handler)
+    consensus_service = ConsensusService()
 
     # Initialize validators from environment configuration in a thread
     initialize_validators_db_session = Session(engine, expire_on_commit=False)

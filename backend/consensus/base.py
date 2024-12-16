@@ -135,7 +135,9 @@ class ConsensusAlgorithm:
                             async def exec_transaction_with_session_handling():
                                 await self.exec_transaction(
                                     transaction,
-                                    TransactionsProcessor(session),
+                                    TransactionsProcessor(
+                                        session,
+                                    ),
                                     ChainSnapshot(session),
                                     AccountsManager(session),
                                     lambda contract_address: contract_snapshot_factory(

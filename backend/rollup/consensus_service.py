@@ -57,5 +57,5 @@ class ConsensusService:
             print(f"[CONSENSUS_SERVICE]: Error decoding deployment file: {str(e)}")
             return None
         except Exception as e:
-            print(f"[CONSENSUS_SERVICE]: Error loading contract: {str(e)}")
+            print(f"[CONSENSUS_SERVICE] Error loading contract: {str(e)}")
             return None
