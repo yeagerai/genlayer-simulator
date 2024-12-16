@@ -70,6 +70,7 @@ class ConsensusService:
             return {
                 "address": deployment_data["address"],
                 "abi": deployment_data["abi"],
+                "bytecode": deployment_data["bytecode"],
             }
 
         except FileNotFoundError:

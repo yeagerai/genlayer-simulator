@@ -549,9 +549,9 @@ def get_contract(consensus_service: ConsensusService, contract_name: str) -> dic
         )
 
     return {
-        "contract_name": contract_name,
         "address": contract["address"],
         "abi": contract["abi"],
+        "bytecode": contract["bytecode"],
     }
 
 
