@@ -384,7 +384,7 @@ class ConsensusAlgorithm:
                     accepted_undetermined_transactions = (
                         chain_snapshot.get_accepted_undetermined_transactions()
                     )
-                    for transaction in accepted_undetermined_transactions:
+                    for i, transaction in enumerate(accepted_undetermined_transactions):
                         transaction = Transaction.from_dict(transaction)
 
                         # Check if the transaction is appealed
@@ -398,26 +398,50 @@ class ConsensusAlgorithm:
                                 )
                                 > self.finality_window_time
                             ):
+                                # Get the transactions processor
+                                transactions_processor = TransactionsProcessor(session)
 
-                                # Create a transaction context for finalizing the transaction
-                                context = TransactionContext(
-                                    transaction=transaction,
-                                    transactions_processor=TransactionsProcessor(
-                                        session
-                                    ),
-                                    snapshot=chain_snapshot,
-                                    accounts_manager=AccountsManager(session),
-                                    contract_snapshot_factory=lambda contract_address: contract_snapshot_factory(
-                                        contract_address, session, transaction
-                                    ),
-                                    node_factory=node_factory,
-                                    msg_handler=self.msg_handler,
-                                )
+                                # Check if the previous transaction is finalized
+                                if i == 0:
+                                    finalize_current_transaction = True
+                                else:
+                                    previous_transaction_hash = (
+                                        accepted_undetermined_transactions[i - 1][
+                                            "hash"
+                                        ]
+                                    )
+                                    previous_transaction = Transaction.from_dict(
+                                        transactions_processor.get_transaction_by_hash(
+                                            previous_transaction_hash
+                                        )
+                                    )
+                                    if (
+                                        previous_transaction.status
+                                        == TransactionStatus.FINALIZED
+                                    ):
+                                        finalize_current_transaction = True
+                                    else:
+                                        finalize_current_transaction = False
 
-                                # Transition to the FinalizingState
-                                state = FinalizingState()
-                                await state.handle(context)
-                                session.commit()
+                                # Finalize the transaction if the previous transaction is finalized
+                                if finalize_current_transaction:
+                                    # Create a transaction context for finalizing the transaction
+                                    context = TransactionContext(
+                                        transaction=transaction,
+                                        transactions_processor=transactions_processor,
+                                        snapshot=chain_snapshot,
+                                        accounts_manager=AccountsManager(session),
+                                        contract_snapshot_factory=lambda contract_address: contract_snapshot_factory(
+                                            contract_address, session, transaction
+                                        ),
+                                        node_factory=node_factory,
+                                        msg_handler=self.msg_handler,
+                                    )
+
+                                    # Transition to the FinalizingState
+                                    state = FinalizingState()
+                                    await state.handle(context)
+                                    session.commit()
 
                         else:
                             # Handle transactions that are appealed
