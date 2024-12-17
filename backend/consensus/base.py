@@ -138,6 +138,12 @@ class ConsensusAlgorithm:
         self.msg_handler = msg_handler
         self.queues: dict[str, asyncio.Queue] = {}
         self.finality_window_time = int(os.getenv("VITE_FINALITY_WINDOW"))
+        self.pending_queue_stop_events: dict[str, asyncio.Event] = (
+            {}
+        )  # Events to stop tasks for each pending queue
+        self.pending_queue_task_running: dict[str, bool] = (
+            {}
+        )  # Track running state for each pending queue
 
     def run_crawl_snapshot_loop(self):
         """
@@ -161,9 +167,26 @@ class ConsensusAlgorithm:
                     transaction = Transaction.from_dict(transaction)
                     address = transaction.to_address or transaction.from_address
 
+                    # Initialize queue and stop event for the address if not present
                     if address not in self.queues:
                         self.queues[address] = asyncio.Queue()
-                    await self.queues[address].put(transaction)
+                    if address not in self.pending_queue_stop_events:
+                        self.pending_queue_stop_events[address] = asyncio.Event()
+
+                    # Only add to the queue if the stop event is not set
+                    if not self.pending_queue_stop_events[address].is_set():
+                        await self.queues[address].put(transaction)
+                        print(
+                            f"Transaction {transaction.hash} added to queue for address {address}"
+                        )
+
+            # Print the contents of the queues
+            for address, queue in self.queues.items():
+                queue_contents = [txn.hash for txn in queue._queue]
+                print(
+                    f"Queue for address {address} contains transactions: {queue_contents}"
+                )
+
             await asyncio.sleep(DEFAULT_CONSENSUS_SLEEP_TIME)
 
     def run_consensus_loop(self):
@@ -187,30 +210,68 @@ class ConsensusAlgorithm:
         while True:
             try:
                 async with asyncio.TaskGroup() as tg:
-                    for queue in [q for q in self.queues.values() if not q.empty()]:
-                        # Sessions cannot be shared between coroutines; create a new session for each coroutine
-                        # Reference: https://docs.sqlalchemy.org/en/20/orm/session_basics.html#is-the-session-thread-safe-is-asyncsession-safe-to-share-in-concurrent-tasks
-                        transaction: Transaction = await queue.get()
-                        with self.get_session() as session:
+                    for queue_address, queue in self.queues.items():
+                        if (
+                            not queue.empty()
+                            and not self.pending_queue_stop_events.get(
+                                queue_address, asyncio.Event()
+                            ).is_set()
+                        ):
+                            # Sessions cannot be shared between coroutines; create a new session for each coroutine
+                            # Reference: https://docs.sqlalchemy.org/en/20/orm/session_basics.html#is-the-session-thread-safe-is-asyncsession-safe-to-share-in-concurrent-tasks
+                            self.pending_queue_task_running[queue_address] = True
+                            transaction: Transaction = await queue.get()
+                            with self.get_session() as session:
 
-                            async def exec_transaction_with_session_handling():
-                                await self.exec_transaction(
-                                    transaction,
-                                    TransactionsProcessor(session),
-                                    ChainSnapshot(session),
-                                    AccountsManager(session),
-                                    lambda contract_address: contract_snapshot_factory(
-                                        contract_address, session, transaction
-                                    ),
-                                )
-                                session.commit()
+                                async def exec_transaction_with_session_handling():
+                                    print(
+                                        f"Creating task for transaction {transaction.hash} in queue {queue_address}"
+                                    )
+                                    await self.exec_transaction(
+                                        transaction,
+                                        TransactionsProcessor(session),
+                                        ChainSnapshot(session),
+                                        AccountsManager(session),
+                                        lambda contract_address: contract_snapshot_factory(
+                                            contract_address, session, transaction
+                                        ),
+                                    )
+                                    session.commit()
+                                    self.pending_queue_task_running[queue_address] = (
+                                        False
+                                    )
 
-                            tg.create_task(exec_transaction_with_session_handling())
+                                tg.create_task(exec_transaction_with_session_handling())
 
             except Exception as e:
                 print("Error running consensus", e)
                 print(traceback.format_exc())
+            finally:
+                for queue_address in self.queues:
+                    self.pending_queue_task_running[queue_address] = False
             await asyncio.sleep(DEFAULT_CONSENSUS_SLEEP_TIME)
+
+    def is_pending_queue_task_running(self, address: str):
+        """
+        Check if a task for a specific pending queue is currently running.
+        """
+        return self.pending_queue_task_running.get(address, False)
+
+    def stop_pending_queue_task(self, address: str):
+        """
+        Signal the task for a specific pending queue to stop.
+        """
+        if address in self.queues:
+            if address not in self.pending_queue_stop_events:
+                self.pending_queue_stop_events[address] = asyncio.Event()
+            self.pending_queue_stop_events[address].set()
+
+    def start_pending_queue_task(self, address: str):
+        """
+        Allow the task for a specific pending queue to start.
+        """
+        if address in self.pending_queue_stop_events:
+            self.pending_queue_stop_events[address].clear()
 
     async def exec_transaction(
         self,
@@ -521,6 +582,43 @@ class ConsensusAlgorithm:
                                     while True:
                                         next_state = await state.handle(context)
                                         if next_state is None:
+                                            break
+                                        elif isinstance(next_state, PendingState):
+                                            # Rollback all future transactions for the current contract
+                                            # Stop the _crawl_snapshot and the _run_consensus for the current contract
+                                            address = (
+                                                transaction.to_address
+                                                or transaction.from_address
+                                            )
+                                            self.stop_pending_queue_task(address)
+
+                                            # Wait until task is finished
+                                            while self.is_pending_queue_task_running(
+                                                address
+                                            ):
+                                                time.sleep(1)
+
+                                            # Empty the pending queue
+                                            self.queues[address] = asyncio.Queue()
+
+                                            # Set all transactions with higher created_at to PENDING
+                                            future_transactions = transactions_processor.get_newer_transactions(
+                                                transaction.hash
+                                            )
+                                            for (
+                                                future_transaction
+                                            ) in future_transactions:
+                                                ConsensusAlgorithm.dispatch_transaction_status_update(
+                                                    context.transactions_processor,
+                                                    future_transaction["hash"],
+                                                    TransactionStatus.PENDING,
+                                                    context.msg_handler,
+                                                )
+
+                                            # Start the queue loop again
+                                            self.start_pending_queue_task(address)
+
+                                            # Transaction will be picked up by _crawl_snapshot
                                             break
                                         state = next_state
                                     session.commit()
@@ -995,6 +1093,9 @@ class RevealingState(TransactionState):
         )
 
         if context.transaction.appealed:
+            majority_agrees = False
+
+        if context.transaction.appealed:
             # Update the consensus results with all new votes and validators
             context.consensus_data.votes = (
                 context.transaction.consensus_data.votes | context.votes
@@ -1046,8 +1147,7 @@ class RevealingState(TransactionState):
                     context.transaction.hash,
                     0,
                 )
-                # TODO: put all the transactions that came after this one back in the pending queue
-                return None  # Transaction will be picked up by _crawl_snapshot
+                return PendingState()
 
         else:
             # Not appealed, update consensus data with current votes and validators

@@ -378,3 +378,24 @@ class TransactionsProcessor:
             self.session.query(Transactions).filter_by(hash=transaction_hash).one()
         )
         transaction.appeal_undetermined = appeal_undetermined
+
+    def get_newer_transactions(self, transaction_hash: str):
+        transaction = (
+            self.session.query(Transactions).filter_by(hash=transaction_hash).one()
+        )
+        address = transaction.to_address or transaction.from_address
+        transactions = (
+            self.session.query(Transactions)
+            .filter(
+                Transactions.created_at > transaction.created_at,
+                or_(
+                    Transactions.to_address == address,
+                    Transactions.from_address == address,
+                ),
+            )
+            .order_by(Transactions.created_at)
+            .all()
+        )
+        return [
+            self._parse_transaction_data(transaction) for transaction in transactions
+        ]
