@@ -1,6 +1,6 @@
 require("@nomicfoundation/hardhat-toolbox");
+require("@nomicfoundation/hardhat-ignition-ethers");
 
-/** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: {
     version: "0.8.24",
@@ -21,15 +21,16 @@ module.exports = {
       chainId: 31337,
       gasPrice: 0,
       initialBaseFeePerGas: 0,
-      accounts: {
-        count: 1
-      }
-    }
-  },
-  paths: {
-    sources: "./contracts",
-    tests: "./test",
-    cache: "./cache",
-    artifacts: "./artifacts"
+      blockGasLimit: 30000000,
+      ignition: {
+        blockPollingInterval: 1_000,
+        timeBeforeBumpingFees: 3 * 60 * 1_000,
+        maxFeeBumps: 4,
+        requiredConfirmations: 5,
+        disableFeeBumping: false,
+        deploymentDir: "deployments/localhost",
+      },
+    },
+
   }
 };

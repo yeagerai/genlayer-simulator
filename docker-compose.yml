@@ -78,7 +78,8 @@ services:
     volumes:
       - ./.env:/app/.env
       - ./backend:/app/backend
-      - ./hardhat/artifacts:/app/hardhat/artifacts
+      - hardhat_artifacts:/app/hardhat/artifacts
+      - hardhat_deployments:/app/hardhat/deployments
     depends_on:
       hardhat:
         condition: service_healthy
@@ -197,13 +198,19 @@ services:
     ports:
       - "${HARDHAT_PORT:-8545}:8545"
     volumes:
-      - ./hardhat/contracts:/app/contracts
-      - ./hardhat/scripts:/app/scripts
-      - ./hardhat/test:/app/test
-      - ./hardhat/hardhat.config.js:/app/hardhat.config.js
+      - ./hardhat/contracts:/app/contracts:ro
+      - ./hardhat/scripts:/app/scripts:ro
+      - ./hardhat/test:/app/test:ro
+      - ./hardhat/hardhat.config.js:/app/hardhat.config.js:ro
+      - ./hardhat/deploy:/app/deploy:ro
+      - ./hardhat/scripts:/app/scripts:ro
       - hardhat_artifacts:/app/artifacts
+      - hardhat_cache:/app/cache
+      - hardhat_deployments:/app/deployments
+      - ignition_deployments:/app/ignition/deployments
     environment:
       - HARDHAT_NETWORK=hardhat
+    restart: always
     healthcheck:
       test: ["CMD", "curl", "-X", "POST", "-H", "Content-Type: application/json", "--fail", "http://localhost:8545", "-d", '{"jsonrpc":"2.0","method":"net_version","params":[],"id":1}']
       interval: 10s
@@ -213,4 +220,6 @@ services:
 
 volumes:
   hardhat_artifacts:
-
+  hardhat_cache:
+  hardhat_deployments:
+  ignition_deployments:
