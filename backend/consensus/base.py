@@ -319,9 +319,7 @@ class ConsensusAlgorithm:
                     msg_handler,
                 )
 
-                transactions_processor.create_rollup_transaction(
-                    transaction.hash
-                )
+                transactions_processor.create_rollup_transaction(transaction.hash)
                 return
 
             # Update the balance of the sender account
@@ -783,7 +781,7 @@ class ProposingState(TransactionState):
             TransactionStatus.PROPOSING,
             context.msg_handler,
         )
-        
+
         context.transactions_processor.create_rollup_transaction(
             context.transaction.hash
         )
@@ -854,7 +852,7 @@ class CommittingState(TransactionState):
             TransactionStatus.COMMITTING,
             context.msg_handler,
         )
-        
+
         context.transactions_processor.create_rollup_transaction(
             context.transaction.hash
         )
@@ -989,7 +987,7 @@ class RevealingState(TransactionState):
                     TransactionStatus.PENDING,
                     context.msg_handler,
                 )
-                
+
                 context.transactions_processor.create_rollup_transaction(
                     context.transaction.hash
                 )
@@ -1150,11 +1148,10 @@ class UndeterminedState(TransactionState):
             TransactionStatus.UNDETERMINED,
             context.msg_handler,
         )
-        
+
         context.transactions_processor.create_rollup_transaction(
             context.transaction.hash
         )
-
 
         # Set the transaction result with the current consensus data
         context.transactions_processor.set_transaction_result(
