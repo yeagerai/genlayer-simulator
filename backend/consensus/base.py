@@ -318,7 +318,6 @@ class ConsensusAlgorithm:
                     TransactionStatus.UNDETERMINED,
                     msg_handler,
                 )
-
                 return
 
             # Update the balance of the sender account
@@ -972,7 +971,6 @@ class RevealingState(TransactionState):
                     TransactionStatus.PENDING,
                     context.msg_handler,
                 )
-
                 context.transactions_processor.set_transaction_appeal_failed(
                     context.transaction.hash,
                     0,

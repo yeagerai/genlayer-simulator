@@ -16,8 +16,6 @@ from web3 import Web3
 from backend.database_handler.contract_snapshot import ContractSnapshot
 import os
 
-from backend.rollup.consensus_service import ConsensusService
-
 
 class TransactionAddressFilter(Enum):
     ALL = "all"
