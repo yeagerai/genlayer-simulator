@@ -699,7 +699,7 @@ class ConsensusAlgorithm:
 
     @staticmethod
     def get_validators_from_consensus_data(
-        all_validators: List[dict], consensus_data: ConsensusData
+        all_validators: List[dict], consensus_data: ConsensusData, include_leader: bool
     ):
         """
         Get validators from consensus data.
@@ -707,7 +707,7 @@ class ConsensusAlgorithm:
         Args:
             all_validators (List[dict]): List of all validators.
             consensus_data (ConsensusData): Data related to the consensus process.
-
+            include_leader (bool): Whether to get the leader in the validator set.
         Returns:
             list: List of validators involved in the consensus process.
         """
@@ -715,6 +715,10 @@ class ConsensusAlgorithm:
         current_validators_addresses = {
             validator.node_config["address"] for validator in consensus_data.validators
         }
+        if include_leader:
+            current_validators_addresses.add(
+                consensus_data.leader_receipt.node_config["address"]
+            )
         # Return validators whose addresses are in the current validators addresses
         return [
             validator
@@ -872,7 +876,7 @@ class PendingState(TransactionState):
         if context.transaction.appealed:
             # If the transaction is appealed, remove the old leader
             involved_validators = ConsensusAlgorithm.get_validators_from_consensus_data(
-                all_validators, context.transaction.consensus_data
+                all_validators, context.transaction.consensus_data, False
             )
 
             # Reset the transaction appeal status
@@ -884,7 +888,7 @@ class PendingState(TransactionState):
         elif context.transaction.appeal_undetermined:
             # Add n+2 validators, remove the old leader
             current_validators = ConsensusAlgorithm.get_validators_from_consensus_data(
-                all_validators, context.transaction.consensus_data
+                all_validators, context.transaction.consensus_data, False
             )
             extra_validators = ConsensusAlgorithm.get_extra_validators(
                 context.snapshot, context.transaction.consensus_data, 0
@@ -892,10 +896,20 @@ class PendingState(TransactionState):
             involved_validators = current_validators + extra_validators
 
         else:
-            # If not appealed, get the default number of validators for the transaction
-            involved_validators = get_validators_for_transaction(
-                all_validators, DEFAULT_VALIDATORS_COUNT
-            )
+            # If there was no validator appeal or leader appeal
+            if context.transaction.consensus_data:
+                # Transaction was rolled back, so we need to reuse the validators and leader
+                involved_validators = (
+                    ConsensusAlgorithm.get_validators_from_consensus_data(
+                        all_validators, context.transaction.consensus_data, True
+                    )
+                )
+                involved_validators = context.transaction.consensus_data.validators
+            else:
+                # Transaction was never executed, get the default number of validators for the transaction
+                involved_validators = get_validators_for_transaction(
+                    all_validators, DEFAULT_VALIDATORS_COUNT
+                )
 
         # Set up the iterator for rotating through the involved validators
         context.iterator_rotation = rotate(involved_validators)
