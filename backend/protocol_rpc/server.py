@@ -114,6 +114,7 @@ register_all_rpc_endpoints(
     validators_registry,
     llm_provider_registry,
     consensus,
+    consensus_service,
 )
 
 

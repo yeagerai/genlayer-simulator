@@ -11,16 +11,13 @@ const path = require("path");
 async function saveDeployment(name, contract, folder = "deployments/localhost") {
     const deploymentData = {
         address: await contract.getAddress(),
-        abi: JSON.parse(contract.interface.formatJson())
+        abi: JSON.parse(contract.interface.formatJson()),
+        bytecode: (await hre.artifacts.readArtifact(name)).bytecode
     };
 
     await fs.ensureDir(folder);
     const savePath = path.join(folder, `${name}.json`);
     await fs.writeJson(savePath, deploymentData, { spaces: 2 });
-
-    const backupFolder = path.join("copy_deployments/localhost");
-    await fs.ensureDir(backupFolder);
-    await fs.writeJson(path.join(backupFolder, `${name}.json`), deploymentData, { spaces: 2 });
 }
 
 /**
