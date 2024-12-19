@@ -178,7 +178,9 @@ class ConsensusAlgorithm:
                         transaction: Transaction = await queue.get()
                         with self.get_session() as session:
 
-                            async def exec_transaction_with_session_handling():
+                            async def exec_transaction_with_session_handling(
+                                session: Session, transaction: Transaction
+                            ):
                                 await self.exec_transaction(
                                     transaction,
                                     TransactionsProcessor(session),
@@ -190,7 +192,11 @@ class ConsensusAlgorithm:
                                 )
                                 session.commit()
 
-                            tg.create_task(exec_transaction_with_session_handling())
+                            tg.create_task(
+                                exec_transaction_with_session_handling(
+                                    session, transaction
+                                )
+                            )
 
             except Exception as e:
                 print("Error running consensus", e)
