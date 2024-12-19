@@ -1179,15 +1179,39 @@ class UndeterminedState(TransactionState):
                 transaction_hash=context.transaction.hash,
             )
         )
+
+        # When appeal fails, the appeal window is not reset
+        if not context.transaction.appeal_undetermined:
+            context.transactions_processor.set_transaction_timestamp_awaiting_finalization(
+                context.transaction.hash
+            )
+
+        # Set the transaction appeal undetermined status to false
+        context.transactions_processor.set_transaction_appeal_undetermined(
+            context.transaction.hash, False
+        )
+        context.transaction.appeal_undetermined = False
+
+        # Set the transaction result with the current consensus data
+        context.transactions_processor.set_transaction_result(
+            context.transaction.hash,
+            context.consensus_data.to_dict(),
+        )
+
+        # Update the transaction status to undetermined
         ConsensusAlgorithm.dispatch_transaction_status_update(
             context.transactions_processor,
             context.transaction.hash,
             TransactionStatus.UNDETERMINED,
             context.msg_handler,
         )
-        context.transactions_processor.set_transaction_result(
-            context.transaction.hash,
-            context.consensus_data.to_dict(),
+
+        # Log the failure to reach consensus for the transaction
+        print(
+            "Consensus not reached for transaction: ",
+            context.transactions_processor.get_transaction_by_hash(
+                context.transaction.hash
+            ),
         )
         return None
 
