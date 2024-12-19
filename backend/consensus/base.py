@@ -176,16 +176,6 @@ class ConsensusAlgorithm:
                     # Only add to the queue if the stop event is not set
                     if not self.pending_queue_stop_events[address].is_set():
                         await self.queues[address].put(transaction)
-                        print(
-                            f"Transaction {transaction.hash} added to queue for address {address}"
-                        )
-
-            # Print the contents of the queues
-            for address, queue in self.queues.items():
-                queue_contents = [txn.hash for txn in queue._queue]
-                print(
-                    f"Queue for address {address} contains transactions: {queue_contents}"
-                )
 
             await asyncio.sleep(DEFAULT_CONSENSUS_SLEEP_TIME)
 
@@ -224,9 +214,6 @@ class ConsensusAlgorithm:
                             with self.get_session() as session:
 
                                 async def exec_transaction_with_session_handling():
-                                    print(
-                                        f"Creating task for transaction {transaction.hash} in queue {queue_address}"
-                                    )
                                     await self.exec_transaction(
                                         transaction,
                                         TransactionsProcessor(session),
@@ -1091,9 +1078,6 @@ class RevealingState(TransactionState):
             len([vote for vote in context.votes.values() if vote == Vote.AGREE.value])
             > context.num_validators // 2
         )
-
-        if context.transaction.appealed:
-            majority_agrees = False
 
         if context.transaction.appealed:
             # Update the consensus results with all new votes and validators
