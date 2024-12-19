@@ -11,9 +11,7 @@ RUN apk add --no-cache curl g++ make netcat-openbsd python3 && \
 
 COPY ./hardhat/package*.json ./
 RUN npm install --ignore-scripts
-
 COPY ./hardhat .
-
 # Create directories and set permissions
 RUN mkdir -p /app/deployments/localhost && \
     mkdir -p /app/deployments/hardhat && \
