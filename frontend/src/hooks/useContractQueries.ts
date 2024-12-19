@@ -110,7 +110,7 @@ export function useContractQueries() {
       const code_bytes = new TextEncoder().encode(code);
 
       const result = await genlayer.client?.deployContract({
-        code: code_bytes,
+        code: code_bytes as any as string, // FIXME: code should accept both bytes and string in genlayer-js
         args: args.args,
         leaderOnly,
       });
