@@ -12,6 +12,7 @@ import backend.node.genvm.origin.calldata as genvm_calldata
 
 from backend.database_handler.contract_snapshot import ContractSnapshot
 from backend.database_handler.llm_providers import LLMProviderRegistry
+from backend.rollup.consensus_service import ConsensusService
 from backend.database_handler.models import Base
 from backend.domain.types import LLMProvider, Validator, TransactionType
 from backend.node.create_nodes.providers import (
@@ -323,7 +324,9 @@ async def get_contract_schema(
         msg_handler=msg_handler.with_client_session(get_client_session_id()),
         contract_snapshot_factory=None,
     )
-    schema = await node.get_contract_schema(contract_account["data"]["code"])
+    schema = await node.get_contract_schema(
+        base64.b64decode(contract_account["data"]["code"])
+    )
     return json.loads(schema)
 
 
@@ -348,7 +351,7 @@ async def get_contract_schema_for_code(
         msg_handler=msg_handler.with_client_session(get_client_session_id()),
         contract_snapshot_factory=None,
     )
-    schema = await node.get_contract_schema(contract_code)
+    schema = await node.get_contract_schema(contract_code.encode("utf-8"))
     return json.loads(schema)
 
 
@@ -528,6 +531,32 @@ def set_finality_window_time(consensus: ConsensusAlgorithm, time: int) -> None:
     consensus.set_finality_window_time(time)
 
 
+def get_contract(consensus_service: ConsensusService, contract_name: str) -> dict:
+    """
+    Get contract instance by name
+
+    Args:
+        consensus_service: The consensus service instance
+        contract_name: Name of the contract to retrieve
+
+    Returns:
+        dict: Contract information including address and ABI
+    """
+    contract = consensus_service._load_contract(contract_name)
+
+    if contract is None:
+        raise JSONRPCError(
+            message=f"Contract {contract_name} not found",
+            data={"contract_name": contract_name},
+        )
+
+    return {
+        "address": contract["address"],
+        "abi": contract["abi"],
+        "bytecode": contract["bytecode"],
+    }
+
+
 def register_all_rpc_endpoints(
     jsonrpc: JSONRPC,
     msg_handler: MessageHandler,
@@ -537,6 +566,7 @@ def register_all_rpc_endpoints(
     validators_registry: ValidatorsRegistry,
     llm_provider_registry: LLMProviderRegistry,
     consensus: ConsensusAlgorithm,
+    consensus_service: ConsensusService,
 ):
     register_rpc_endpoint = partial(generate_rpc_endpoint, jsonrpc, msg_handler)
 
@@ -654,4 +684,8 @@ def register_all_rpc_endpoints(
     register_rpc_endpoint(
         partial(set_finality_window_time, consensus),
         method_name="sim_setFinalityWindowTime",
+    )
+    register_rpc_endpoint(
+        partial(get_contract, consensus_service),
+        method_name="sim_getConsensusContract",
     )

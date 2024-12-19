@@ -193,7 +193,9 @@ class ConsensusAlgorithm:
                         transaction: Transaction = await queue.get()
                         with self.get_session() as session:
 
-                            async def exec_transaction_with_session_handling():
+                            async def exec_transaction_with_session_handling(
+                                session: Session, transaction: Transaction
+                            ):
                                 await self.exec_transaction(
                                     transaction,
                                     TransactionsProcessor(session),
@@ -205,7 +207,11 @@ class ConsensusAlgorithm:
                                 )
                                 session.commit()
 
-                            tg.create_task(exec_transaction_with_session_handling())
+                            tg.create_task(
+                                exec_transaction_with_session_handling(
+                                    session, transaction
+                                )
+                            )
 
             except Exception as e:
                 print("Error running consensus", e)
@@ -516,7 +522,28 @@ class ConsensusAlgorithm:
         Get extra validators for the appeal process according to the following formula:
         - when appeal_failed = 0, add n + 2 validators
         - when appeal_failed > 0, add (2 * appeal_failed * n + 1) + 2 validators
-        Nota that for appeal_failed > 0, the set contains the old validators from the previous appeal round and new validators.
+        Note that for appeal_failed > 0, the returned set contains the old validators
+        from the previous appeal round and new validators.
+
+        Selection of the extra validators:
+        appeal_failed | PendingState | Reused validators | Extra selected     | Total
+                      | validators   | from the previous | validators for the | validators
+                      |              | appeal round      | appeal             |
+        ----------------------------------------------------------------------------------
+               0      |       n      |          0        |        n+2         |    2n+2
+               1      |       n      |        n+2        |        n+1         |    3n+3
+               2      |       n      |       2n+3        |         2n         |    5n+3
+               3      |       n      |       4n+3        |         2n         |    7n+3
+                              └───────┬──────┘  └─────────┬────────┘
+                                      │                   |
+        Validators after the ◄────────┘                   └──► Validators during the appeal
+        appeal. This equals                                    for appeal_failed > 0
+        the Total validators                                   = (2*appeal_failed*n+1)+2
+        of the row above,                                      This is the formula from
+        and are in consensus_data.                             above and it is what is
+        For appeal_failed > 0                                  returned by this function
+        = (2*appeal_failed-1)*n+3
+        This is used to calculate n
 
         Args:
             snapshot (ChainSnapshot): Snapshot of the chain state.
@@ -529,36 +556,23 @@ class ConsensusAlgorithm:
         # Get all validators
         validators = snapshot.get_all_validators()
 
-        if appeal_failed > 0:
-            # Create a dictionary to map addresses to validator entries
-            validator_map = {
-                validator["address"]: validator for validator in validators
-            }
+        # Create a dictionary to map addresses to validator entries
+        validator_map = {validator["address"]: validator for validator in validators}
 
-            # List to store current validators for each receipt
-            current_validators = [
-                validator_map[consensus_data.leader_receipt.node_config["address"]]
-            ]
-        else:
-            current_validators = []
-
-        # Set to track addresses found in receipts
-        receipt_addresses = set([consensus_data.leader_receipt.node_config["address"]])
-
-        # Iterate over receipts to find matching validators
-        for receipt in consensus_data.validators:
-            address = receipt.node_config["address"]
-            receipt_addresses.add(address)
-            if appeal_failed > 0:
-                if address in validator_map:
-                    current_validators.append(validator_map[address])
-
-        # Get all validators where the address is not in the receipts
-        not_used_validators = [
-            validator
-            for validator in validators
-            if validator["address"] not in receipt_addresses
+        # List containing addresses found in leader and validator receipts
+        receipt_addresses = [consensus_data.leader_receipt.node_config["address"]] + [
+            receipt.node_config["address"] for receipt in consensus_data.validators
         ]
+
+        # Get leader and current validators from consensus data receipt addresses
+        current_validators = [
+            validator_map.pop(receipt_address)
+            for receipt_address in receipt_addresses
+            if receipt_address in validator_map
+        ]
+
+        # Set not_used_validators to the remaining validators in validator_map
+        not_used_validators = list(validator_map.values())
 
         if len(not_used_validators) == 0:
             raise ValueError(
@@ -1100,6 +1114,9 @@ class AcceptedState(TransactionState):
         # Retrieve the leader's receipt from the consensus data
         leader_receipt = context.consensus_data.leader_receipt
 
+        # Get the contract snapshot for the transaction's target address
+        leaders_contract_snapshot = context.contract_snapshot_supplier()
+
         # Do not deploy the contract if the execution failed
         if leader_receipt.execution_result == ExecutionResultStatus.SUCCESS:
             # Get the contract snapshot for the transaction's target address
@@ -1162,39 +1179,15 @@ class UndeterminedState(TransactionState):
                 transaction_hash=context.transaction.hash,
             )
         )
-
-        # When appeal fails, the appeal window is not reset
-        if not context.transaction.appeal_undetermined:
-            context.transactions_processor.set_transaction_timestamp_awaiting_finalization(
-                context.transaction.hash
-            )
-
-        # Set the transaction appeal undetermined status to false
-        context.transactions_processor.set_transaction_appeal_undetermined(
-            context.transaction.hash, False
-        )
-        context.transaction.appeal_undetermined = False
-
-        # Set the transaction result with the current consensus data
-        context.transactions_processor.set_transaction_result(
-            context.transaction.hash,
-            context.consensus_data.to_dict(),
-        )
-
-        # Update the transaction status to undetermined
         ConsensusAlgorithm.dispatch_transaction_status_update(
             context.transactions_processor,
             context.transaction.hash,
             TransactionStatus.UNDETERMINED,
             context.msg_handler,
         )
-
-        # Log the failure to reach consensus for the transaction
-        print(
-            "Consensus not reached for transaction: ",
-            context.transactions_processor.get_transaction_by_hash(
-                context.transaction.hash
-            ),
+        context.transactions_processor.set_transaction_result(
+            context.transaction.hash,
+            context.consensus_data.to_dict(),
         )
         return None
 
@@ -1231,14 +1224,51 @@ class FinalizingState(TransactionState):
                 nonce = context.transactions_processor.get_transaction_count(
                     context.transaction.to_address
                 )
+                data: dict
+                transaction_type: TransactionType
+                if pending_transaction.is_deploy():
+                    transaction_type = TransactionType.DEPLOY_CONTRACT
+                    new_contract_address: str
+                    if pending_transaction.salt_nonce == 0:
+                        # NOTE: this address is random, which doesn't 100% align with consensus spec
+                        new_contract_address = (
+                            context.accounts_manager.create_new_account().address
+                        )
+                    else:
+                        from eth_utils.crypto import keccak
+                        from backend.node.types import Address
+                        from backend.node.base import SIMULATOR_CHAIN_ID
+
+                        arr = bytearray()
+                        arr.append(1)
+                        arr.extend(Address(context.transaction.to_address).as_bytes)
+                        arr.extend(
+                            pending_transaction.salt_nonce.to_bytes(
+                                32, "big", signed=False
+                            )
+                        )
+                        arr.extend(SIMULATOR_CHAIN_ID.to_bytes(32, "big", signed=False))
+                        new_contract_address = Address(keccak(arr)[:20]).as_hex
+                        context.accounts_manager.create_new_account_with_address(
+                            new_contract_address
+                        )
+                    pending_transaction.address = new_contract_address
+                    data = {
+                        "contract_address": new_contract_address,
+                        "contract_code": pending_transaction.code,
+                        "calldata": pending_transaction.calldata,
+                    }
+                else:
+                    transaction_type = TransactionType.RUN_CONTRACT
+                    data = {
+                        "calldata": pending_transaction.calldata,
+                    }
                 context.transactions_processor.insert_transaction(
                     context.transaction.to_address,  # new calls are done by the contract
                     pending_transaction.address,
-                    {
-                        "calldata": pending_transaction.calldata,
-                    },
+                    data,
                     value=0,  # we only handle EOA transfers at the moment, so no value gets transferred
-                    type=TransactionType.RUN_CONTRACT.value,
+                    type=transaction_type.value,
                     nonce=nonce,
                     leader_only=context.transaction.leader_only,  # Cascade
                     triggered_by_hash=context.transaction.hash,
